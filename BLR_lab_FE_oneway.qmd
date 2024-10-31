@@ -1,13 +1,11 @@
 ---
-title: "Beyond Linear Regression Lab 1: Fixed Effects Model for the One-Way Layout"
+title: "Beyond MLR Lab 1: Fixed Effects Model for the One-Way Layout"
 author: "Douwe Postmus"
 format: 
   html:
     toc: true       # Enable the table of contents
     toc-depth: 3    # Set the depth of headers included in the ToC (e.g., H1, H2, H3)
     toc-location: right   # Optional: Can be left, right, or floating    
-    #code-fold: true   # Enable code folding (adds show/hide button)
-    #code-summary: "Show code"   # Text for the button
   pdf:
     toc: true       # Enable the table of contents in PDF
     toc-depth: 3    # Set the depth of headers in the ToC  
@@ -23,9 +21,21 @@ editor_options:
 # warning = F to suppress the display of warning messages generated during the execution of code chunks
 # message = F to suppress the display of messages produced during the execution of code chunks
 knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
 
-# This qmd file requires the following packages to be installed:
-# c("dplyr", "ggplot2", "emmeans", "lme4")
+Welcome to lab 1 of the Beyond MLR course. In this lab, we make use of the following R packages: `gglot2`, `dplyr`, and `emmeans`. You can use the script below to check if these packages are installed. Any missing packages can be installed using `install.packages("package_name")`. 
+
+```{r}
+#| eval: false
+packages <- c("dplyr", "ggplot2", "emmeans")
+
+installed <- sapply(packages, requireNamespace, quietly = TRUE)
+if (all(installed)) {
+  message("All packages are installed.")
+} else {
+  missing <- names(installed)[!installed]
+  message("The following packages are not installed: ", paste(missing, collapse = ", "))
+}
 ```
 
 # Example: Effect of Three Different Drug Treatments on Blood Pressure Reduction
@@ -47,7 +57,7 @@ data_oneway <- data.frame(
 )
 ```
 
-The above R chunk simulates hypothetical results for 120 parients (40 per treatment group) and stores the results in the data frame `data_oneway` that consists of the following two columns:
+The above R chunk simulates hypothetical results for 120 patients (40 per treatment group) and stores the results in the data frame `data_oneway` that consists of the following two columns:
 
 * `Treatment`: Factor variable indicating the treatment group.
 * `BP_Reduction`: Numeric variable representing blood pressure reduction (in mm Hg).
@@ -104,56 +114,10 @@ where:
 - $\tau_i$: The effect of the $i$-th treatment (deviation from the overall mean).
 - $\epsilon_{ij}$: The error term, assumed to be independently and normally distributed with mean zero and constant variance.
 
-::: {#nte-codings .callout-note title="Understanding Coding Schemes" collapse="true"}
-In regression models, categorical variables are represented using coding schemes. Two common coding schemes are:
+::: {#nte-codings .callout-note title="Coding schemes for categorical variables"}
+In regression models, categorical variables are represented using coding schemes that allow their inclusion as explanatory variables. In R, dummy coding is the default coding scheme for nominal variables, where each level is compared to a reference category. For ordinal variables (i.e., ordered factors), R uses orthogonal polynomials as the default coding scheme, which can capture linear or nonlinear trends across ordered levels.
 
-### Dummy Coding (Treatment Coding)
-
-#### Description
-
-- Compares each level of the factor to a reference level.
-- In R, this is the **default coding scheme**.
-- The first category is used as the reference level (unless specified otherwise).
-- The intercept represents the mean of the reference group.
-- Coefficients represent differences from the reference group.
-
-#### Example of Dummy Coding in R (for a factor with three levels A, B, C)
-
-  | Level | Dummy Variable for B | Dummy Variable for C |
-  |-------|----------------------|----------------------|
-  | A     | 0                    | 0                    |
-  | B     | 1                    | 0                    |
-  | C     | 0                    | 1                    |
-
-- **Interpretation:**
-  - **Intercept:** Mean of the reference group (A).
-  - **Coefficient for B:** Difference between mean of group A and group B.
-  - **Coefficient for C:** Difference between mean of group A and group C.
-
-#### Effects Coding (Deviation Coding)
-
-#### Description
-
-- Compares each level of the factor to the overall mean.
-- The sum of the coefficients equals zero.
-- The intercept represents the overall mean.
-- Coefficients represent deviations from the overall mean.
-
-#### Example of Effects Coding in R (for a factor with three levels A, B, C)
-
-  | Level | Effects Code for A | Effects Code for B |
-  |-------|--------------------|--------------------|
-  | A     |  1                 |  0                 |
-  | B     |  0                 |  1                 |
-  | C     | -1                 | -1                 |
-
-- **Interpretation:**
-  - **Intercept:** Overall mean of all groups.
-  - **Coefficient for A:** Deviation of group A's mean from the overall mean.
-  - **Coefficient for B:** Deviation of group B's mean from the overall mean.
-  - **Coefficient for C:** Can be calculated as $-(\beta_{\text{A}} + \beta_{\text{B}})$ since the sum of coefficients is zero.
-
-### Changing Coding Schemes in R
+While dummy coding is widely used in multiple linear regression models, effects coding is more common in ANOVA models, as it enables interpretation of group differences relative to the grand mean rather than a single reference category. This interpretative difference makes effects coding particularly useful for examining group-level effects in experimental designs. 
 
 To change the coding scheme globally to effects coding:
 ```{r}

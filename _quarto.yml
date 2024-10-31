@@ -11,9 +11,9 @@ website:
       - text: "Week 1"
         menu:
           - text: "Lab 1"
-            href: Beyond_MLR/BLR_lab1.qmd
+            href: BLR_lab_FE_oneway.qmd
           - text: "Lab 2"
-            href: Beyond_MLR/BLR_lab2.qmd
+            href: BLR_lab_RE_oneway.qmd
 
 format:
   html:

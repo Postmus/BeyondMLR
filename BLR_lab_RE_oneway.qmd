@@ -1,16 +1,14 @@
 ---
-title: "Beyond Linear Regression Lab 2: Random Effects Model for the One-Way Layout"
+title: "Beyond MLR Lab 2: Random Effects Model for the One-Way Layout"
 author: "Douwe Postmus"
 format: 
   html:
     toc: true       # Enable the table of contents
     toc-depth: 3    # Set the depth of headers included in the ToC (e.g., H1, H2, H3)
     toc-location: right   # Optional: Can be left, right, or floating    
-    #code-fold: true   # Enable code folding (adds show/hide button)
-    #code-summary: "Show code"   # Text for the button
-  #pdf:
-    #toc: true       # Enable the table of contents in PDF
-    #toc-depth: 3    # Set the depth of headers in the ToC  
+  pdf:
+    toc: true       # Enable the table of contents in PDF
+    toc-depth: 3    # Set the depth of headers in the ToC  
 editor_options:
   chunk_output_type: console
 ---
@@ -23,9 +21,21 @@ editor_options:
 # warning = F to suppress the display of warning messages generated during the execution of code chunks
 # message = F to suppress the display of messages produced during the execution of code chunks
 knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
 
-# This qmd file requires the following packages to be installed:
-#c("dplyr", "ggplot2", "emmeans", "lme4")
+Welcome to lab 2 of the Beyond MLR course. In this lab, we make use of the following R packages: `gglot2`, `dplyr`, and `emmeans`. You can use the script below to check if these packages are installed. Any missing packages can be installed using `install.packages("package_name")`. 
+
+```{r}
+#| eval: false
+packages <- c("dplyr", "ggplot2", "emmeans", "lme4")
+
+installed <- sapply(packages, requireNamespace, quietly = TRUE)
+if (all(installed)) {
+  message("All packages are installed.")
+} else {
+  missing <- names(installed)[!installed]
+  message("The following packages are not installed: ", paste(missing, collapse = ", "))
+}
 ```
 
 # Example: Waist Circumference Measurements Recorded by Different Nurses
