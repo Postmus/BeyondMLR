@@ -1,0 +1,5 @@
+---
+title: "R labs for the Beyond MLR course"
+---
+
+This website hosts the R labs for the beyond MLR course. You can navigate between the different labs using the menu above.

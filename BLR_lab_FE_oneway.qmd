@@ -90,7 +90,7 @@ How do the mean blood pressure reductions compare among the treatment groups?
 
 ### Model Specification
 
-Using effects coding (see @nte-codings), the one-way Analysis of Variance (ANOVA) model can be specified as:
+Using effects coding, the one-way Analysis of Variance (ANOVA) model can be specified as:
 
 
 $$

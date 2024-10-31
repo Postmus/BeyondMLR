@@ -1,0 +1,25 @@
+project:
+  type: website
+  output-dir: "docs"
+
+website:
+  title: "Beyond MLR"
+  navbar:
+    left:
+      - text: "Home"
+        href: index.qmd
+      - text: "Week 1"
+        menu:
+          - text: "Lab 1"
+            href: Beyond_MLR/BLR_lab1.qmd
+          - text: "Lab 2"
+            href: Beyond_MLR/BLR_lab2.qmd
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+
+
+
