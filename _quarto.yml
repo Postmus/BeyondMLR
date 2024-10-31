@@ -1,7 +1,9 @@
 project:
   type: website
   output-dir: "docs"
-
+  resources:
+    - "Assignments/Week 1/downloads"
+    
 website:
   title: "Beyond MLR"
   navbar:
@@ -12,9 +14,11 @@ website:
         menu:
           - text: "Lab 1"
             href: BLR_lab_FE_oneway.qmd
-          - text: "Lab 2"
-            href: BLR_lab_RE_oneway.qmd
-
+      - text: "Assignments"
+        menu:
+          - text: "Week 1"
+            href: Assignments/Week 1/Assignment_week_1.qmd
+            
 format:
   html:
     theme: cosmo

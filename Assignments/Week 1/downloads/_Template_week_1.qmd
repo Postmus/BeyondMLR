@@ -1,0 +1,95 @@
+---
+title: "Assignment 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients"
+author: "Your Name"
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+# configure global options for R code chunks:
+# warning = F to suppress the display of warning messages generated during the execution of code chunks
+# message = F to suppress the display of messages produced during the execution of code chunks
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
+```
+
+# Introduction
+
+*Provide a brief introduction to the dataset and the objective of the analysis.*
+
+# Exploratory Data Analysis
+
+*Perform an exploratory data analysis to understand the distribution of mobility improvement across treatment groups.*
+
+```{r}
+#| label: load dataset
+#| echo: true
+
+# Ensure your working directory is set correctly so that R can locate the data file.
+# You can set the working directory with setwd("path/to/your/directory") if needed,
+# or use the RStudio Session > Set Working Directory > To Source File Location menu.
+data_mobility_2 <- read.csv("data_mobility.csv")
+```
+
+```{r}
+#| label: exploratory-analysis
+#| echo: true
+
+# Code for exploratory data analysis goes here
+```
+
+# One-Way ANOVA
+
+## Model Estimation
+
+*Fit a one-way ANOVA model.*
+
+```{r}
+#| label: anova-model
+#| echo: true
+
+# Code for fitting the ANOVA model goes here
+```
+
+## ANOVA Table
+
+*Generate the ANOVA table to assess the significance of the treatment effect.*
+
+```{r}
+#| label: anova-table
+#| echo: true
+
+# Code to generate the ANOVA table
+```
+
+# Post-Hoc Analysis
+
+*If significant differences are found, conduct post-hoc comparisons.*
+
+```{r}
+#| label: post-hoc
+#| echo: true
+
+# Code for post-hoc analysis
+```
+
+# Model Diagnostics
+
+*Assess the model fit by generating diagnostic plots.*
+
+```{r}
+#| label: diagnostics
+#| echo: true
+
+# Code for diagnostics
+```
+
+# Conclusion
+
+*Summarize the findings of your analysis and any conclusions about the treatment effects on mobility improvement.*

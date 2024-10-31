@@ -1,0 +1,33 @@
+---
+title: "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients"
+format: html
+---
+
+## Introduction
+
+In this assignment, you will analyze a dataset that examines the effect of different rehabilitation programs on the mobility of stroke patients. The dataset includes mobility improvement measurements taken using the **6-Minute Walk Test (6MWT)**, a standard assessment to evaluate physical mobility and endurance.
+
+Patients in the study were randomly assigned to one of three rehabilitation programs:
+
+1. **Control**: Standard physical therapy.
+2. **Robotic-Assisted Therapy**: Rehabilitation involving robotic devices designed to support movement.
+3. **Aquatic Therapy**: Water-based exercises aimed at improving mobility with reduced joint stress.
+
+## Objective
+
+Your objective is to determine whether there is a statistically significant difference in mobility improvement among the three rehabilitation groups. To complete this analysis, follow these steps:
+
+- **Explore the Data**: Perform an exploratory data analysis (EDA) to understand the distribution of mobility improvements across treatment groups.
+- **Fit a One-Way ANOVA Model**: Fit a one-way ANOVA model to test for overall group differences.
+- **Post-Hoc Comparisons**: If you identify significant group differences, calculate estimated marginal means and conduct post-hoc comparisons to determine which groups differ.
+- **Model Diagnostics**: Conduct diagnostic tests and visualizations to evaluate model assumptions, including homoscedasticity and normality of residuals.
+
+## Requirements for the Report
+
+Submit both the **Quarto source file (`.qmd`)** and the **rendered HTML file**. The quarto source file should include all R code and annotations, and the html file should be rendered with code visibility enabled (`echo = TRUE`, which is the default option). The Quarto file in the downloads section below provides a starter template that you can use for this assignment.
+
+## Downloads 
+
+- [Download dataset](downloads/data_mobility.csv)
+- [Download Quarto Template](downloads/_Template_week_1.qmd)
+
