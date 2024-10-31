@@ -6,7 +6,6 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Douwe Postmus">
 
 <title>Beyond MLR - Beyond MLR Lab 2: Random Effects Model for the One-Way Layout</title>
 <style>
@@ -163,7 +162,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#assessing-the-variance-components" id="toc-assessing-the-variance-components" class="nav-link" data-scroll-target="#assessing-the-variance-components">Assessing the variance components</a></li>
   <li><a href="#model-diagnostics" id="toc-model-diagnostics" class="nav-link" data-scroll-target="#model-diagnostics">Model Diagnostics</a></li>
   </ul></li>
-  <li><a href="#reporting" id="toc-reporting" class="nav-link" data-scroll-target="#reporting">Reporting</a></li>
   </ul></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="BLR_lab_RE_oneway.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
@@ -180,12 +178,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Douwe Postmus </p>
-          </div>
-  </div>
     
   
     
@@ -194,7 +186,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<p>Welcome to lab 2 of the Beyond MLR course. In this lab, we make use of the following R packages: <code>gglot2</code>, <code>dplyr</code>, and <code>emmeans</code>. You can use the script below to check if these packages are installed. Any missing packages can be installed using <code>install.packages("package_name")</code>.</p>
+<p>Welcome to lab 2 of the Beyond MLR course. In this lab, we make use of the following R packages: <code>gglot2</code>, <code>dplyr</code>, <code>emmeans</code>, and <code>lme4</code>. You can use the script below to check if these packages are installed. Any missing packages can be installed using <code>install.packages("package_name")</code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"dplyr"</span>, <span class="st">"ggplot2"</span>, <span class="st">"emmeans"</span>, <span class="st">"lme4"</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -258,9 +250,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Nurse"</span>, <span class="at">y =</span> <span class="st">"Waist Circumference (cm)"</span>) <span class="sc">+</span></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="BLR_lab_RE_oneway_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
-</div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate summary statistics</span></span>
@@ -273,15 +262,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>summary_stats_random</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 4 × 3
-  Nurse   Mean_Waist SD_Waist
-  &lt;fct&gt;        &lt;dbl&gt;    &lt;dbl&gt;
-1 Nurse A       80.4     2.69
-2 Nurse B       76.9     3.01
-3 Nurse C       79.9     3.15
-4 Nurse D       79.7     3.56</code></pre>
-</div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
 <div class="callout-header d-flex align-content-center">
@@ -350,31 +330,10 @@ ICC = \frac{\sigma^2_{b}}{\sigma^2_{b} + \sigma^2}
 <h3 class="anchored" data-anchor-id="model-estimation">Model Estimation</h3>
 <p>We will fit the random effects model using the <code>lmer()</code> function from the <code>lme4</code> package.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fitting the random effects model</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lme4)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>model_random <span class="ot">&lt;-</span> <span class="fu">lmer</span>(Waist_Circumference <span class="sc">~</span> <span class="dv">1</span> <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> Nurse), <span class="at">data =</span> data_waist_circumference)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_random)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Linear mixed model fit by REML ['lmerMod']
-Formula: Waist_Circumference ~ 1 + (1 | Nurse)
-   Data: data_waist_circumference
-
-REML criterion at convergence: 1030.5
-
-Scaled residuals: 
-     Min       1Q   Median       3Q      Max 
--2.83380 -0.59987  0.00698  0.66169  2.96673 
-
-Random effects:
- Groups   Name        Variance Std.Dev.
- Nurse    (Intercept) 2.358    1.536   
- Residual             9.730    3.119   
-Number of obs: 200, groups:  Nurse, 4
-
-Fixed effects:
-            Estimate Std. Error t value
-(Intercept)  79.2094     0.7989   99.15</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fitting the random effects model</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lme4)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>model_random <span class="ot">&lt;-</span> <span class="fu">lmer</span>(Waist_Circumference <span class="sc">~</span> <span class="dv">1</span> <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> Nurse), <span class="at">data =</span> data_waist_circumference)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_random)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="syntax-overview" class="level4">
 <h4 class="anchored" data-anchor-id="syntax-overview">Syntax overview</h4>
@@ -439,26 +398,21 @@ Question
 <li>Normal Q-Q Plot: This plot assesses whether the residuals follow a normal distribution.</li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract conditional residuals and predicted values</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>residuals_model_random <span class="ot">&lt;-</span> <span class="fu">resid</span>(model_random)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>fitted_model_random <span class="ot">&lt;-</span> <span class="fu">fitted</span>(model_random)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Residuals vs Fitted</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">Fitted =</span> fitted_model_random, <span class="at">Residuals =</span> residuals_model_random), <span class="fu">aes</span>(<span class="at">x =</span> Fitted, <span class="at">y =</span> Residuals)) <span class="sc">+</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Residuals vs Fitted"</span>,</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Fitted Values"</span>, <span class="at">y =</span> <span class="st">"Residuals"</span>) <span class="sc">+</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="BLR_lab_RE_oneway_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
-</div>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Normal Q-Q</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(residuals_model_random, <span class="at">main =</span> <span class="st">"Normal Q-Q"</span>)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(residuals_model_random)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="BLR_lab_RE_oneway_files/figure-html/unnamed-chunk-7-2.png" class="img-fluid" width="672"></p>
-</div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract conditional residuals and predicted values</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>residuals_model_random <span class="ot">&lt;-</span> <span class="fu">resid</span>(model_random)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>fitted_model_random <span class="ot">&lt;-</span> <span class="fu">fitted</span>(model_random)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Residuals vs Fitted</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">Fitted =</span> fitted_model_random, <span class="at">Residuals =</span> residuals_model_random), <span class="fu">aes</span>(<span class="at">x =</span> Fitted, <span class="at">y =</span> Residuals)) <span class="sc">+</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Residuals vs Fitted"</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Fitted Values"</span>, <span class="at">y =</span> <span class="st">"Residuals"</span>) <span class="sc">+</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Normal Q-Q</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(residuals_model_random, <span class="at">main =</span> <span class="st">"Normal Q-Q"</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(residuals_model_random)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
 <div class="callout-header d-flex align-content-center">
@@ -473,15 +427,13 @@ Question
 <p>Do the diagnostic plots suggest any violations of the model assumptions regarding the error term?</p>
 </div>
 </div>
-</section>
-</section>
-<section id="reporting" class="level2">
-<h2 class="anchored" data-anchor-id="reporting">Reporting</h2>
-<blockquote class="blockquote">
-<p>A random effects model was fitted to assess the variability in waist circumference measurements across nurses. The overall mean waist circumference was estimated at 79.21 cm. The variance due to differences among nurses was 2.36 cm² and the residual variance was 9.73 cm², resulting in an Intraclass Correlation Coefficient (ICC) of 0.195.</p>
-</blockquote>
+<!-- 
+## Reporting
+> A random effects model was fitted to assess the variability in waist circumference measurements across nurses. The overall mean waist circumference was estimated at 79.21 cm. The variance due to differences among nurses was 2.36 cm² and the residual variance was 9.73 cm², resulting in an Intraclass Correlation Coefficient (ICC) of 0.195.
+-->
 
 
+</section>
 </section>
 </section>
 

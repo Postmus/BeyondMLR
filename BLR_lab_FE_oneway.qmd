@@ -1,14 +1,12 @@
 ---
 title: "Beyond MLR Lab 1: Fixed Effects Model for the One-Way Layout"
-author: "Douwe Postmus"
 format: 
   html:
-    toc: true       # Enable the table of contents
-    toc-depth: 3    # Set the depth of headers included in the ToC (e.g., H1, H2, H3)
+    toc: true       
+    toc-depth: 3    
     toc-location: right   # Optional: Can be left, right, or floating    
   pdf:
-    toc: true       # Enable the table of contents in PDF
-    toc-depth: 3    # Set the depth of headers in the ToC  
+    toc: false      
 editor_options:
   chunk_output_type: console
 ---
@@ -20,7 +18,7 @@ editor_options:
 # configure global options for R code chunks:
 # warning = F to suppress the display of warning messages generated during the execution of code chunks
 # message = F to suppress the display of messages produced during the execution of code chunks
-knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
 ```
 
 Welcome to lab 1 of the Beyond MLR course. In this lab, we make use of the following R packages: `gglot2`, `dplyr`, and `emmeans`. You can use the script below to check if these packages are installed. Any missing packages can be installed using `install.packages("package_name")`. 
@@ -220,6 +218,8 @@ plot(model_oneway, which = 2, main = "Normal Q-Q")
 Do the diagnostic plots suggest any violations of the model assumptions?
 :::
 
+<!-- 
 ### Reporting
 > A one-way ANOVA was conducted to compare the effect of three treatments on blood pressure reduction. There was a statistically significant effect of treatment on blood pressure reduction [F(2, 117) = 43.71, p < 0.001]. Estimated marginal means indicated that Drug A (M = 19.93 mm Hg, 95% CI = [17.11 mm Hg, 22.76 mm Hg]) resulted in significantly greater blood pressure reduction than both the Control group (M = 2.45 mm Hg, 95% CI = [-0.37 mm Hg, 5.28 mm Hg], p < 0.001) and Drug B (M = 5.08 mm Hg, 95% CI = [2.26 mm Hg, 7.90 mm Hg], p < 0.001). There was no significant difference between the Control group and Drug B (p = 0.586). P-values were adjusted for multiple testing using the Bonferroni correction.
+--> 
 

@@ -82,7 +82,7 @@ The R code chunk above simulates wound healing observations (measured on a conti
 To explore the data and investigate the presence of a potential interaction between treatments and laboratories, we create an  **interaction plot**. An interaction plot is a graphical tool that helps visualize whether the effect of one factor (in this case, treatment) depends on the levels of another factor (in this case, laboratory). Specifically, it shows how the mean response (wound healing) for each treatment varies across different laboratories. If the lines on the interaction plot are parallel, this suggests there is no interaction, meaning the treatment effect is consistent across laboratories. If the lines are not parallel, this indicates a potential interaction, meaning the effect of treatment differs depending on the laboratory.
 
 ```{r}
-# Calculate mean Wound Healing for each Treatment-Labortory combination
+# Calculate mean Wound Healing for each Treatment-Laboratory combination
 library(dplyr)
 mean_data <- data_rep_block %>%
   group_by(Laboratory, Treatment) %>%

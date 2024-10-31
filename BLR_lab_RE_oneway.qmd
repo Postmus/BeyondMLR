@@ -1,14 +1,12 @@
 ---
 title: "Beyond MLR Lab 2: Random Effects Model for the One-Way Layout"
-author: "Douwe Postmus"
 format: 
   html:
-    toc: true       # Enable the table of contents
-    toc-depth: 3    # Set the depth of headers included in the ToC (e.g., H1, H2, H3)
+    toc: true       
+    toc-depth: 3    
     toc-location: right   # Optional: Can be left, right, or floating    
   pdf:
-    toc: true       # Enable the table of contents in PDF
-    toc-depth: 3    # Set the depth of headers in the ToC  
+    toc: false       
 editor_options:
   chunk_output_type: console
 ---
@@ -20,10 +18,10 @@ editor_options:
 # configure global options for R code chunks:
 # warning = F to suppress the display of warning messages generated during the execution of code chunks
 # message = F to suppress the display of messages produced during the execution of code chunks
-knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
 ```
 
-Welcome to lab 2 of the Beyond MLR course. In this lab, we make use of the following R packages: `gglot2`, `dplyr`, and `emmeans`. You can use the script below to check if these packages are installed. Any missing packages can be installed using `install.packages("package_name")`. 
+Welcome to lab 2 of the Beyond MLR course. In this lab, we make use of the following R packages: `gglot2`, `dplyr`, `emmeans`, and `lme4`. You can use the script below to check if these packages are installed. Any missing packages can be installed using `install.packages("package_name")`. 
 
 ```{r}
 #| eval: false
@@ -233,7 +231,7 @@ qqline(residuals_model_random)
 Do the diagnostic plots suggest any violations of the model assumptions regarding the error term?
 :::
 
+<!-- 
 ## Reporting
-
 > A random effects model was fitted to assess the variability in waist circumference measurements across nurses. The overall mean waist circumference was estimated at 79.21 cm. The variance due to differences among nurses was 2.36 cm² and the residual variance was 9.73 cm², resulting in an Intraclass Correlation Coefficient (ICC) of 0.195.
-
+-->
