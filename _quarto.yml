@@ -10,10 +10,12 @@ website:
     left:
       - text: "Home"
         href: index.qmd
-      - text: "Week 1"
+      - text: "Labs week 1"
         menu:
           - text: "Lab 1"
             href: BLR_lab_FE_oneway.qmd
+          - text: "Lab 2"
+            href: BLR_lab_RE_oneway.qmd
       - text: "Assignments"
         menu:
           - text: "Week 1"
