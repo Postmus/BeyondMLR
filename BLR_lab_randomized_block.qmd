@@ -1,18 +1,12 @@
 ---
-title: "Beyond Linear Regression Lab 3: Randomized Block Designs"
-author: "Douwe Postmus"
+title: "Beyond MLR Lab 3: Randomized Block Designs"
 format: 
   html:
     toc: true       # Enable the table of contents
     toc-depth: 3    # Set the depth of headers included in the ToC (e.g., H1, H2, H3)
     toc-location: right   # Optional: Can be left, right, or floating    
-    #code-fold: true   # Enable code folding (adds show/hide button)
-    #code-summary: "Show code"   # Text for the button
-  #pdf:
-    #toc: true       # Enable the table of contents in PDF
-    #toc-depth: 3    # Set the depth of headers in the ToC  
-editor_options:
-  chunk_output_type: console
+  pdf:
+    toc: false
 ---
 
 ```{r}
@@ -22,7 +16,7 @@ editor_options:
 # configure global options for R code chunks:
 # warning = F to suppress the display of warning messages generated during the execution of code chunks
 # message = F to suppress the display of messages produced during the execution of code chunks
-knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
 
 # This qmd file requires the following packages to be installed:
 #c("dplyr", "ggplot2", "emmeans", "lme4", "lmerTest")
@@ -244,7 +238,3 @@ qqline(residuals_cond, col = "red")
 ::: {.callout-important icon=false title="Question"}
 Do the diagnostic plots suggest any violations of the model assumptions regarding the error term?
 :::
-
-## Reporting
-
-> A linear mixed-effects model was fitted to assess the effect of treatment on wound healing, with laboratory included as a random effect to account for variability across different laboratory settings. The treatment effect was statistically significant [F(2, 8) = 11.13, p = 0.0045], indicating differences among the treatments. Estimated marginal means analysis revealed that Treatment B had the highest wound healing score (M = 57.5, 95% CI = [54.7, 60.3]), significantly higher than Treatment A (M = 54.4, 95% CI = [51.6, 57.2], p = 0.0045). However, no significant differences were found between Treatment A and Treatment C (M = 56.0, 95% CI = [53.3, 58.8], p = 0.1066), nor between Treatment B and Treatment C (p = 0.1799). Degrees of freedom were calculated using Satterthwaite's approximation. P-values were adjusted using the Bonferroni correction.

@@ -16,6 +16,12 @@ website:
             href: BLR_lab_FE_oneway.qmd
           - text: "Lab 2"
             href: BLR_lab_RE_oneway.qmd
+      - text: "Labs week 2"
+        menu:
+          - text: "Lab 3"
+            href: BLR_lab_randomized_block.qmd
+          - text: "Lab 4"
+            href: BLR_lab_replicated_randomized_block.qmd
       - text: "Assignments"
         menu:
           - text: "Week 1"

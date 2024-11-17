@@ -1,18 +1,12 @@
 ---
-title: "Beyond Linear Regression Lab 4: Replicated Randomized Block Designs"
-author: "Douwe Postmus"
+title: "Beyond MLR Lab 4: Replicated Randomized Block Designs"
 format: 
   html:
     toc: true       # Enable the table of contents
     toc-depth: 3    # Set the depth of headers included in the ToC (e.g., H1, H2, H3)
     toc-location: right   # Optional: Can be left, right, or floating    
-    #code-fold: true   # Enable code folding (adds show/hide button)
-    #code-summary: "Show code"   # Text for the button
-  #pdf:
-    #toc: true       # Enable the table of contents in PDF
-    #toc-depth: 3    # Set the depth of headers in the ToC  
-editor_options:
-  chunk_output_type: console
+  pdf:
+    toc: false
 ---
 
 ```{r}
@@ -22,7 +16,7 @@ editor_options:
 # configure global options for R code chunks:
 # warning = F to suppress the display of warning messages generated during the execution of code chunks
 # message = F to suppress the display of messages produced during the execution of code chunks
-knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
 
 # This qmd file requires the following packages to be installed:
 #c("dplyr", "ggplot2", "emmeans", "lme4", "lmerTest")
