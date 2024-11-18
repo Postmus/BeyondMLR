@@ -84,6 +84,55 @@
     "text": "Downloads\n\nDownload dataset\nDownload Quarto Template"
   },
   {
+    "objectID": "Assignments/Week 2/Assignment_week_2.html",
+    "href": "Assignments/Week 2/Assignment_week_2.html",
+    "title": "Assignment Week 2: Effectiveness of Exercise Routines on Functional Mobility",
+    "section": "",
+    "text": "In this assignment, you will analyze a dataset that evaluates the effectiveness of different exercise routines on improving functional mobility in patients recovering from knee replacement surgery. The study uses a replicated randomized block design to account for individual variability among patients.\nEach patient participated in all three exercise routines, and each routine was performed three times. Functional mobility was assessed after each session, with scores ranging from 40 to 80 (higher scores indicate better mobility). The dataset contains 54 observations (6 patients x 3 routines x 3 replications) and is provided in the downloads section below."
+  },
+  {
+    "objectID": "Assignments/Week 2/Assignment_week_2.html#introduction",
+    "href": "Assignments/Week 2/Assignment_week_2.html#introduction",
+    "title": "Assignment Week 2: Effectiveness of Exercise Routines on Functional Mobility",
+    "section": "",
+    "text": "In this assignment, you will analyze a dataset that evaluates the effectiveness of different exercise routines on improving functional mobility in patients recovering from knee replacement surgery. The study uses a replicated randomized block design to account for individual variability among patients.\nEach patient participated in all three exercise routines, and each routine was performed three times. Functional mobility was assessed after each session, with scores ranging from 40 to 80 (higher scores indicate better mobility). The dataset contains 54 observations (6 patients x 3 routines x 3 replications) and is provided in the downloads section below."
+  },
+  {
+    "objectID": "Assignments/Week 2/Assignment_week_2.html#dataset-description",
+    "href": "Assignments/Week 2/Assignment_week_2.html#dataset-description",
+    "title": "Assignment Week 2: Effectiveness of Exercise Routines on Functional Mobility",
+    "section": "Dataset Description",
+    "text": "Dataset Description\nThe dataset consists of the following variables:\n\nPatient: A numeric variable representing individual patients (blocks).\nExerciseRoutine: A factor variable representing the type of exercise routine:\n\nA: Low-impact walking exercises.\nB: Resistance training exercises.\nC: Balance and flexibility exercises.\n\nFunctionalMobility: A numeric variable (40-80) representing the mobility score measured after each session."
+  },
+  {
+    "objectID": "Assignments/Week 2/Assignment_week_2.html#objective",
+    "href": "Assignments/Week 2/Assignment_week_2.html#objective",
+    "title": "Assignment Week 2: Effectiveness of Exercise Routines on Functional Mobility",
+    "section": "Objective",
+    "text": "Objective\nYour goal is to determine:\n\nWhether there are significant differences in functional mobility scores between the three exercise routines.\nHow much of the variability in mobility scores can be attributed to:\n\nDifferences between patients.\nDifferences between exercise routines.\nResidual variability (within patient-treatment combinations).\n\n\nTo complete this analysis, follow the detailed steps outlined below."
+  },
+  {
+    "objectID": "Assignments/Week 2/Assignment_week_2.html#steps-to-complete-the-analysis",
+    "href": "Assignments/Week 2/Assignment_week_2.html#steps-to-complete-the-analysis",
+    "title": "Assignment Week 2: Effectiveness of Exercise Routines on Functional Mobility",
+    "section": "Steps to Complete the Analysis",
+    "text": "Steps to Complete the Analysis\n\n1. Load the dataset\nWhen loading the dataset in R, ensure that the ExerciseRoutine variable is treated as a factor. One way to achieve this is by specifying the column type explicitly using the colClasses argument in the read.csv() function. For example:\n\n# Load the dataset and specify ExerciseRoutine as a factor\ndataset &lt;- read.csv(\"functional_mobility.csv\", colClasses = c(\"ExerciseRoutine\" = \"factor\"))\n\n\n\n2. Perform an Exploratory Data Analysis (EDA)\n\nVisualize the data using an interaction plot.\nCalculate descriptive statistics for each exercise routine and patient.\n\n\n\n3. Fit a Mixed-Effects Model\n\nFit a mixed-effects model with:\n\nFixed Effects: ExerciseRoutine (to estimate differences between exercise routines).\nRandom Effects:\n\nPatient (to account for variability between individuals).\nPatient × ExerciseRoutine (to account for potential variability in how patients respond to different routines).\n\n\nTest whether the Patient × ExerciseRoutine random interaction term is necessary by comparing the full model (with the interaction term) to a reduced model (without the interaction term).\nBased on the results of this test:\n\nIf the interaction term is significant, proceed with the full model for further analysis.\nIf the interaction term is not significant, proceed with the reduced model.\n\nSummarize the chosen model:\n\nReport the fixed effects and variance components.\n\n\n\n\n4. Test for Overall Differences\n\nUse the selected model to test for overall differences in functional mobility scores across exercise routines.\n\n\n\n5. Perform Pairwise Comparisons\n\nIf significant overall differences are found, calculate estimated marginal means and perform pairwise comparisons to identify which routines differ.\n\n\n\n6. Evaluate Model Assumptions\n\nAssess the model’s assumptions (e.g., normality of residuals, homoscedasticity) using diagnostic plots."
+  },
+  {
+    "objectID": "Assignments/Week 2/Assignment_week_2.html#requirements-for-the-report",
+    "href": "Assignments/Week 2/Assignment_week_2.html#requirements-for-the-report",
+    "title": "Assignment Week 2: Effectiveness of Exercise Routines on Functional Mobility",
+    "section": "Requirements for the Report",
+    "text": "Requirements for the Report\nSubmit both the Quarto source file (.qmd) and the rendered HTML file. The quarto source file should include all R code and annotations, and the html file should be rendered with code visibility enabled (echo = TRUE)."
+  },
+  {
+    "objectID": "Assignments/Week 2/Assignment_week_2.html#downloads",
+    "href": "Assignments/Week 2/Assignment_week_2.html#downloads",
+    "title": "Assignment Week 2: Effectiveness of Exercise Routines on Functional Mobility",
+    "section": "Downloads",
+    "text": "Downloads\nDownload dataset"
+  },
+  {
     "objectID": "BLR_lab_randomized_block.html",
     "href": "BLR_lab_randomized_block.html",
     "title": "Beyond MLR Lab 3: Randomized Block Designs",
