@@ -22,6 +22,10 @@ website:
             href: BLR_lab_randomized_block.qmd
           - text: "Lab 4"
             href: BLR_lab_replicated_randomized_block.qmd
+      - text: "Labs week 3"
+        menu:
+          - text: "Lab 5"
+            href: BLR_lab_MLA.qmd
       - text: "Assignments"
         menu:
           - text: "Week 1"
