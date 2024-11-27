@@ -1,0 +1,67 @@
+---
+title: "Assignment Week 3: Multilevel Analysis of School Effectiveness"
+subtitle: "Examining Student and School-Level Factors in Inner London"
+format: html
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+# configure global options for R code chunks:
+# warning = F to suppress the display of warning messages generated during the execution of code chunks
+# message = F to suppress the display of messages produced during the execution of code chunks
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
+```
+
+## Introduction
+
+In this assignment, you will analyze a dataset collected by the Inner London Education Authority (ILEA) to examine the effectiveness of schools. The dataset consists of examination records of 15,362 students from 140 secondary schools over the years 1985, 1986, and 1987. This dataset was sourced from the data library of the Centre for Multilevel Modelling at the University of Bristol. 
+
+## Dataset Description
+
+The dataset consists of the following variables:
+
+- `School`: A numeric variable representing the school identifier (codes 1 to 139)
+- `ExamScore`: A numeric variable representing the exam score of each student
+- `PercentFSM`: The percentage of students in the school eligible for free school meals (an indicator of socioeconomic status)
+- `Gender`: A categorical variable representing the gender of the student
+- `VRBand`: The verbal reasoning band of the student (VR1, VR2, or VR3). VR band is an indicator of the student's assessed ability level, with VR1 typically representing the highest ability group, VR2 representing intermediate ability, and VR3 representing lower ability.
+- `SchoolDenomination`: The denomination of the school (Maintained, Church of England, Roman Catholic)
+
+## Objective
+
+Your goals are to determine:
+
+1. How much of the variability in exam scores can be attributed to:
+   - Differences between students
+   - Differences between schools
+2. Whether individual-level factors (e.g., `Gender`, `VRBand`) significantly influence student exam scores
+3. Whether school-level factors (e.g., `PercentFSM`) significantly influence student exam scores
+
+## Steps to Complete the Analysis
+
+### Load the Dataset
+Download the dataset (see link in the Downloads section below) and read it into R. Make sure all character variables are correctly encoded as factors.
+
+### Exploratory Data Analysis (EDA): 
+- Visualize the nesting structure of the data (i.e., number of students per school)
+- Explore the distribution of the outcome variable (`ExamScore`)
+
+### Multi-Level Modeling
+- Start by fitting a **null model** (i.e., a random intercept model without any predictors) to partition the variance in exam scores between students and schools. Assess how much of the variability in exam scores is due to differences between students and schools.
+- Next, add **individual-level variables** (`Gender`, `VRBand`) to the model to explore how these factors influence exam scores.
+- After that, add **context-level variables** (e.g., `PercentFSM`) to your model to understand how factors at the school level contribute to differences in exam scores.
+- Finally, explore potential **cross-level interactions** between individual-level and context-level variables.
+
+### Interpret the Results
+Interpret the findings from your analysis, focusing on the variance components and the effects of individual-level and context-level variables.
+
+## Requirements for the Report
+
+Submit both the **Quarto source file (`.qmd`)** and the **rendered HTML file**. The HTML file should be rendered with code visibility enabled (`echo = TRUE`).
+
+## Downloads
+
+[Download dataset](downloads/ilea_data.csv)
+

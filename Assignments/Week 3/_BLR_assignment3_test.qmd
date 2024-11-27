@@ -1,0 +1,148 @@
+---
+title: "Assignment 3: Multilevel Modeling"
+format: 
+  html:
+    toc: true       # Enable the table of contents
+    toc-depth: 3    # Set the depth of headers included in the ToC (e.g., H1, H2, H3)
+    toc-location: right   # Optional: Can be left, right, or floating    
+    code-overflow: wrap 
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+# configure global options for R code chunks:
+# warning = F to suppress the display of warning messages generated during the execution of code chunks
+# message = F to suppress the display of messages produced during the execution of code chunks
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = TRUE)
+
+# This qmd file requires the following packages to be installed:
+#c("dplyr", "ggplot2", "emmeans", "lme4", "lmerTest")
+```
+
+## Exploratory Data Analysis
+
+Let's load the data and use the `str()` function to inspect the structure of the dataset.
+
+```{r}
+# Load the required libraries
+library(dplyr)
+library(ggplot2)
+library(lmerTest)
+
+ilea_data <- read.csv("downloads/ilea_data.csv")
+
+# Convert all character variables into factors
+ilea_data <- ilea_data %>%
+  mutate_if(is.character, as.factor)
+
+# Inspect the structure of the dataset
+str(ilea_data)
+```
+
+To get a better feeling for this grouping structure, we begin by summarizing the number of students within each school:
+```{r}
+# Summarize number of students within each school
+school_summary <- ilea_data %>%
+  group_by(School) %>%
+  summarise(num_students = n())
+
+# Visualize the distribution of students across schools
+ggplot(school_summary, aes(x = reorder(School, num_students), y = num_students)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
+  coord_flip() +
+  labs(title = "Number of Students per School",
+       x = "School",
+       y = "Number of Students")
+```
+
+Next, we create a histogram to visualize the distribution of the outcome variable `ExamScore`:
+
+We also want to get a sense of the variability in the exam scores within and between schools. For this, we are going to select the 10 neighborhoods with the most listings and create a scatter plot with the exam core price on the y-axis and the school on the x-axis:
+
+```{r}
+# Select the top 10 schools with the most students
+top_schools <- school_summary %>%
+  slice_max(num_students, n = 10) %>%
+  pull(School)
+
+# Filter the data to include only the top schools
+top_school_data <- ilea_data %>%
+  filter(School %in% top_schools)
+```
+
+```{r}
+# Create a scatterplot of the exam scores by school for the 10 schools with the most students
+ggplot(top_school_data, aes(x = as.factor(School), y = ExamScore)) +
+  geom_point(alpha = 0.5) +
+  labs(title = "Exam Scores by School",
+       x = "School",
+       y = "Exam Score") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  geom_hline(yintercept = mean(ilea_data$ExamScore), linetype = "dashed", color = "blue") 
+```
+
+## Random intercept model 
+
+```{r}
+# Fit the random intercept model
+random_intercept_model <- lmer(ExamScore ~ 1 + (1 | School), data = ilea_data)
+summary(random_intercept_model)
+```
+
+## Extending the random intercept model with subject-level variables
+
+```{r}
+# Use effects coding for the categorical variables
+options(contrasts = c("contr.sum", "contr.poly"))
+```
+
+Next, we fit the random intercept model with the subject-level variables included:
+
+```{r}
+# Fit the random intercept model with subject-level variables    
+random_intercept_model_L1variables <- lmer(ExamScore ~ Gender + VRBand + (1 | School), data = ilea_data)
+summary(random_intercept_model_L1variables)
+
+contrasts(ilea_data$Gender)
+contrasts(ilea_data$VRBand)
+
+# Obtain the ANOVA table for the subject-level variables
+anova(random_intercept_model_L1variables)
+```
+
+## Including context-level variables
+
+As a third step, we extend the previously fitted model with context-level variables. We start by centering the context-level variables:
+
+```{r}
+# Center the context-level variables
+ilea_data <- ilea_data %>%
+  mutate(PercentFSM_c = scale(PercentFSM, scale = FALSE))
+```
+
+Next, we fit the random intercept model with both subject-level and context-level variables included:
+
+```{r}
+# Fit the random intercept model with subject-level and context-level variables
+random_intercept_model_L1L2variables <- lmer(ExamScore ~PercentFSM_c + (1 | School), data = ilea_data)
+summary(random_intercept_model_L1L2variables)
+
+# Obtain the ANOVA table
+anova(random_intercept_model_L1L2variables)  
+```
+
+## Exploring cross-level interactions
+
+Finally, we explore the possibility of cross-level interactions between individual-level and context-level variables.
+
+```{r}
+# Fit the model with the interaction between PercentFSM_c and Gender
+random_intercept_model_interaction1 <- lmer(ExamScore ~ PercentFSM_c*Gender + (1 | School), data = ilea_data)
+summary(random_intercept_model_interaction1)
+
+# Fit the model with the interaction between PercentFSM_c and VRBand
+random_intercept_model_interaction2 <- lmer(ExamScore ~ PercentFSM_c*VRBand + (1 | School), data = ilea_data)
+summary(random_intercept_model_interaction2)
+```
