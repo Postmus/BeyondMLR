@@ -91,6 +91,90 @@
     "text": "Performing a One-Way ANOVA\n\nModel Specification\nUsing effects coding, the one-way Analysis of Variance (ANOVA) model can be specified as:\n\\[\nY_{ij} = \\mu + \\tau_i + \\epsilon_{ij}\n\\]\nwhere:\n\n\\(Y_{ij}\\): The blood pressure reduction for the \\(j\\)-th patient in the \\(i\\)-th treatment group.\n\\(\\mu\\): The overall mean blood pressure reduction.\n\\(\\tau_i\\): The effect of the \\(i\\)-th treatment (deviation from the overall mean).\n\\(\\epsilon_{ij}\\): The error term, assumed to be independently and normally distributed with mean zero and constant variance.\n\n\n\n\n\n\n\nNote 1: Coding schemes for categorical variables\n\n\n\nIn regression models, categorical variables are represented using coding schemes that allow their inclusion as explanatory variables. In R, dummy coding is the default coding scheme for nominal variables, where each level is compared to a reference category. For ordinal variables (i.e., ordered factors), R uses orthogonal polynomials as the default coding scheme, which can capture linear or nonlinear trends across ordered levels.\nWhile dummy coding is widely used in multiple linear regression models, effects coding is more common in ANOVA models, as it enables interpretation of group differences relative to the grand mean rather than a single reference category. This interpretative difference makes effects coding particularly useful for examining group-level effects in experimental designs.\nTo change the coding scheme globally to effects coding:\n\n# Set contrasts to effects coding globally\noptions(contrasts = c(\"contr.sum\", \"contr.poly\"))  # Effects coding\n\nTo reset the coding scheme to the default dummy coding:\n\n# Reset contrasts to default dummy coding\noptions(contrasts = c(\"contr.treatment\", \"contr.poly\"))  # Dummy coding\n\n\n\n\n\nModel Estimation\nWe can fit the one-way ANOVA model using the lm() function:\n\noptions(contrasts = c(\"contr.sum\", \"contr.poly\"))  # Effects coding\n\n# Fitting the model with effects coding\nmodel_oneway &lt;- lm(BP_Reduction ~ Treatment, data = data_oneway)\nsummary(model_oneway)\n\n\n\n\n\n\n\nQuestion\n\n\n\nHow do the estimated coefficients relate to the group means?\n\n\n\n\nANOVA Table\nTo test whether the effect of treatment is statistically significant, we use the anova() function to obtain the ANOVA table:\n\n# ANOVA table\nanova_results &lt;- anova(model_oneway)\nanova_results\n\n\n\n\n\n\n\nQuestion\n\n\n\nWhat does the F-test tell us about the treatment effect?\n\n\n\n\nEstimated Marginal Means\nEstimated marginal means, also known as least-squares means, are model-based means that represent the predicted (or expected) response at each level of a factor, averaged over the levels of other variables in the model.\nIn the context of a one-way ANOVA, where there is only one factor (e.g., treatment group), the estimated marginal means are equal to the observed group means. In more complex models with multiple factors, estimated marginal means provide predicted group means that are averaged over the levels of these additional factors. For example, in a model with both treatment and age as factors, the estimated marginal means for the treatment groups show the treatment means averaged over age, illustrating what these group means are expected to be at specific values of age (or averaged over a grid of age values).\nWe can calculate the estimated marginal means using the emmeans() function from the emmeans package:\n\n# Obtain estimated marginal means\nlibrary(emmeans)\nemms &lt;- emmeans(model_oneway, ~ Treatment)\nemms\n\n\n\n\n\n\n\nQuestion\n\n\n\nHow do the estimated marginal means compare to the observed group means calculated during the exploratory data analysis?\n\n\n\n\nPairwise comparisons\nSince we found a significant treatment effect, we will conduct pairwise comparisons of the estimated marginal means to identify which specific treatment groups differ significantly from one another. We perform these pairwise comparisons using the contrast() function from the emmeans package. To account for the increased risk of Type I error due to multiple comparisons, we apply the Bonferroni correction to adjust the p-values, ensuring that the overall significance level remains controlled.\n\n# Performing post-hoc analysis with emmeans\ncontrast(emms, method=\"pairwise\", adjust=\"Bonferroni\")\n\n\n\n\n\n\n\nQuestion\n\n\n\nBased on the results of the pairwise comparisons, which treatment groups differ significantly?\n\n\n\n\nModel Diagnostics\nTo assess the adequacy of the fitted model, we create two diagnostic plots:\n\nResiduals vs Fitted Plot: Used to assess homoscedasticity (constant variance) for the errors. A random scatter of residuals around zero indicates equal variance.\nNormal Q-Q Plot: Used to assess normality of the errors. Residuals following the reference line suggest normally distributed errors.\n\n\n# Residuals vs Fitted\nplot(model_oneway, which = 1, main = \"Residuals vs Fitted\")\n\n# Normal Q-Q\nplot(model_oneway, which = 2, main = \"Normal Q-Q\")\n\n\n\n\n\n\n\nQuestion\n\n\n\nDo the diagnostic plots suggest any violations of the model assumptions?"
   },
   {
+    "objectID": "Assignments/Week 3/Assignment_week_3.html",
+    "href": "Assignments/Week 3/Assignment_week_3.html",
+    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "section": "",
+    "text": "In this assignment, you will analyze a dataset collected by the Inner London Education Authority (ILEA) to examine the effectiveness of schools. The dataset consists of examination records of 15,362 students from 140 secondary schools over the years 1985, 1986, and 1987. This dataset was sourced from the data library of the Centre for Multilevel Modelling at the University of Bristol."
+  },
+  {
+    "objectID": "Assignments/Week 3/Assignment_week_3.html#introduction",
+    "href": "Assignments/Week 3/Assignment_week_3.html#introduction",
+    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "section": "",
+    "text": "In this assignment, you will analyze a dataset collected by the Inner London Education Authority (ILEA) to examine the effectiveness of schools. The dataset consists of examination records of 15,362 students from 140 secondary schools over the years 1985, 1986, and 1987. This dataset was sourced from the data library of the Centre for Multilevel Modelling at the University of Bristol."
+  },
+  {
+    "objectID": "Assignments/Week 3/Assignment_week_3.html#dataset-description",
+    "href": "Assignments/Week 3/Assignment_week_3.html#dataset-description",
+    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "section": "Dataset Description",
+    "text": "Dataset Description\nThe dataset consists of the following variables:\n\nSchool: A numeric variable representing the school identifier (codes 1 to 139)\nExamScore: A numeric variable representing the exam score of each student\nPercentFSM: The percentage of students in the school eligible for free school meals (an indicator of socioeconomic status)\nGender: A categorical variable representing the gender of the student\nVRBand: The verbal reasoning band of the student (VR1, VR2, or VR3). VR band is an indicator of the student’s assessed ability level, with VR1 typically representing the highest ability group, VR2 representing intermediate ability, and VR3 representing lower ability.\nSchoolDenomination: The denomination of the school (Maintained, Church of England, Roman Catholic)"
+  },
+  {
+    "objectID": "Assignments/Week 3/Assignment_week_3.html#objective",
+    "href": "Assignments/Week 3/Assignment_week_3.html#objective",
+    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "section": "Objective",
+    "text": "Objective\nYour goals are to determine:\n\nHow much of the variability in exam scores can be attributed to:\n\nDifferences between students\nDifferences between schools\n\nWhether individual-level factors (e.g., Gender, VRBand) significantly influence student exam scores\nWhether school-level factors (e.g., PercentFSM) significantly influence student exam scores"
+  },
+  {
+    "objectID": "Assignments/Week 3/Assignment_week_3.html#steps-to-complete-the-analysis",
+    "href": "Assignments/Week 3/Assignment_week_3.html#steps-to-complete-the-analysis",
+    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "section": "Steps to Complete the Analysis",
+    "text": "Steps to Complete the Analysis\n\nLoad the Dataset\nDownload the dataset (see link in the Downloads section below) and read it into R. Make sure all character variables are correctly encoded as factors.\n\n\nExploratory Data Analysis (EDA):\n\nVisualize the nesting structure of the data (i.e., number of students per school)\nExplore the distribution of the outcome variable (ExamScore)\n\n\n\nMulti-Level Modeling\n\nStart by fitting a null model (i.e., a random intercept model without any predictors) to partition the variance in exam scores between students and schools. Assess how much of the variability in exam scores is due to differences between students and schools.\nNext, add individual-level variables (Gender, VRBand) to the model to explore how these factors influence exam scores.\nAfter that, add context-level variables (e.g., PercentFSM) to your model to understand how factors at the school level contribute to differences in exam scores.\nFinally, explore potential cross-level interactions between individual-level and context-level variables.\n\n\n\nInterpret the Results\nInterpret the findings from your analysis, focusing on the variance components and the effects of individual-level and context-level variables."
+  },
+  {
+    "objectID": "Assignments/Week 3/Assignment_week_3.html#requirements-for-the-report",
+    "href": "Assignments/Week 3/Assignment_week_3.html#requirements-for-the-report",
+    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "section": "Requirements for the Report",
+    "text": "Requirements for the Report\nSubmit both the Quarto source file (.qmd) and the rendered HTML file. The HTML file should be rendered with code visibility enabled (echo = TRUE)."
+  },
+  {
+    "objectID": "Assignments/Week 3/Assignment_week_3.html#downloads",
+    "href": "Assignments/Week 3/Assignment_week_3.html#downloads",
+    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "section": "Downloads",
+    "text": "Downloads\nDownload dataset"
+  },
+  {
+    "objectID": "Assignments/Week 1/Assignment_week_1.html",
+    "href": "Assignments/Week 1/Assignment_week_1.html",
+    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
+    "section": "",
+    "text": "In this assignment, you will analyze a dataset that examines the effect of different rehabilitation programs on the mobility of stroke patients. The dataset includes mobility improvement measurements taken using the 6-Minute Walk Test (6MWT), a standard assessment to evaluate physical mobility and endurance.\nPatients in the study were randomly assigned to one of three rehabilitation programs:\n\nControl: Standard physical therapy.\nRobotic-Assisted Therapy: Rehabilitation involving robotic devices designed to support movement.\nAquatic Therapy: Water-based exercises aimed at improving mobility with reduced joint stress."
+  },
+  {
+    "objectID": "Assignments/Week 1/Assignment_week_1.html#introduction",
+    "href": "Assignments/Week 1/Assignment_week_1.html#introduction",
+    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
+    "section": "",
+    "text": "In this assignment, you will analyze a dataset that examines the effect of different rehabilitation programs on the mobility of stroke patients. The dataset includes mobility improvement measurements taken using the 6-Minute Walk Test (6MWT), a standard assessment to evaluate physical mobility and endurance.\nPatients in the study were randomly assigned to one of three rehabilitation programs:\n\nControl: Standard physical therapy.\nRobotic-Assisted Therapy: Rehabilitation involving robotic devices designed to support movement.\nAquatic Therapy: Water-based exercises aimed at improving mobility with reduced joint stress."
+  },
+  {
+    "objectID": "Assignments/Week 1/Assignment_week_1.html#objective",
+    "href": "Assignments/Week 1/Assignment_week_1.html#objective",
+    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
+    "section": "Objective",
+    "text": "Objective\nYour objective is to determine whether there is a statistically significant difference in mobility improvement among the three rehabilitation groups. To complete this analysis, follow these steps:\n\nExplore the Data: Perform an exploratory data analysis (EDA) to understand the distribution of mobility improvements across treatment groups.\nFit a One-Way ANOVA Model: Fit a one-way ANOVA model to test for overall group differences.\nPost-Hoc Comparisons: If you identify significant group differences, calculate estimated marginal means and conduct post-hoc comparisons to determine which groups differ.\nModel Diagnostics: Conduct diagnostic tests and visualizations to evaluate model assumptions, including homoscedasticity and normality of residuals."
+  },
+  {
+    "objectID": "Assignments/Week 1/Assignment_week_1.html#requirements-for-the-report",
+    "href": "Assignments/Week 1/Assignment_week_1.html#requirements-for-the-report",
+    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
+    "section": "Requirements for the Report",
+    "text": "Requirements for the Report\nSubmit both the Quarto source file (.qmd) and the rendered HTML file. The quarto source file should include all R code and annotations, and the html file should be rendered with code visibility enabled (echo = TRUE, which is the default option). The Quarto file in the downloads section below provides a starter template that you can use for this assignment."
+  },
+  {
+    "objectID": "Assignments/Week 1/Assignment_week_1.html#downloads",
+    "href": "Assignments/Week 1/Assignment_week_1.html#downloads",
+    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
+    "section": "Downloads",
+    "text": "Downloads\n\nDownload dataset\nDownload Quarto Template"
+  },
+  {
     "objectID": "Assignments/Week 2/Assignment_week_2.html",
     "href": "Assignments/Week 2/Assignment_week_2.html",
     "title": "Assignment Week 2: Effectiveness of Exercise Routines on Functional Mobility",
@@ -140,86 +224,51 @@
     "text": "Downloads\nDownload dataset"
   },
   {
-    "objectID": "Assignments/Week 1/Assignment_week_1.html",
-    "href": "Assignments/Week 1/Assignment_week_1.html",
-    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
+    "objectID": "Assignments/Week 4/Assignment_week_4.html",
+    "href": "Assignments/Week 4/Assignment_week_4.html",
+    "title": "Assignment Week 4: Longitudinal Data Analysis",
     "section": "",
-    "text": "In this assignment, you will analyze a dataset that examines the effect of different rehabilitation programs on the mobility of stroke patients. The dataset includes mobility improvement measurements taken using the 6-Minute Walk Test (6MWT), a standard assessment to evaluate physical mobility and endurance.\nPatients in the study were randomly assigned to one of three rehabilitation programs:\n\nControl: Standard physical therapy.\nRobotic-Assisted Therapy: Rehabilitation involving robotic devices designed to support movement.\nAquatic Therapy: Water-based exercises aimed at improving mobility with reduced joint stress."
+    "text": "You will work with longitudinal data from a growth curve study. The dataset captures weight measurements of 568 Asian children, recorded during clinic visits on up to five occasions. Ages range from approximately 6 weeks to 27 months. Your task is to model the children’s growth trajectories over time.\nThis dataset was sourced from the data library of the centre for Multilevel Modelling, University of Bristol."
   },
   {
-    "objectID": "Assignments/Week 1/Assignment_week_1.html#introduction",
-    "href": "Assignments/Week 1/Assignment_week_1.html#introduction",
-    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
+    "objectID": "Assignments/Week 4/Assignment_week_4.html#introduction",
+    "href": "Assignments/Week 4/Assignment_week_4.html#introduction",
+    "title": "Assignment Week 4: Longitudinal Data Analysis",
     "section": "",
-    "text": "In this assignment, you will analyze a dataset that examines the effect of different rehabilitation programs on the mobility of stroke patients. The dataset includes mobility improvement measurements taken using the 6-Minute Walk Test (6MWT), a standard assessment to evaluate physical mobility and endurance.\nPatients in the study were randomly assigned to one of three rehabilitation programs:\n\nControl: Standard physical therapy.\nRobotic-Assisted Therapy: Rehabilitation involving robotic devices designed to support movement.\nAquatic Therapy: Water-based exercises aimed at improving mobility with reduced joint stress."
+    "text": "You will work with longitudinal data from a growth curve study. The dataset captures weight measurements of 568 Asian children, recorded during clinic visits on up to five occasions. Ages range from approximately 6 weeks to 27 months. Your task is to model the children’s growth trajectories over time.\nThis dataset was sourced from the data library of the centre for Multilevel Modelling, University of Bristol."
   },
   {
-    "objectID": "Assignments/Week 1/Assignment_week_1.html#objective",
-    "href": "Assignments/Week 1/Assignment_week_1.html#objective",
-    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
-    "section": "Objective",
-    "text": "Objective\nYour objective is to determine whether there is a statistically significant difference in mobility improvement among the three rehabilitation groups. To complete this analysis, follow these steps:\n\nExplore the Data: Perform an exploratory data analysis (EDA) to understand the distribution of mobility improvements across treatment groups.\nFit a One-Way ANOVA Model: Fit a one-way ANOVA model to test for overall group differences.\nPost-Hoc Comparisons: If you identify significant group differences, calculate estimated marginal means and conduct post-hoc comparisons to determine which groups differ.\nModel Diagnostics: Conduct diagnostic tests and visualizations to evaluate model assumptions, including homoscedasticity and normality of residuals."
+    "objectID": "Assignments/Week 4/Assignment_week_4.html#dataset-description",
+    "href": "Assignments/Week 4/Assignment_week_4.html#dataset-description",
+    "title": "Assignment Week 4: Longitudinal Data Analysis",
+    "section": "Dataset description",
+    "text": "Dataset description\nThe dataset consists of the following variables:\n\nChildID: Unique identifier for each child\nAge: Child’s age at the time of measurement (months)\nWeight: Child’s weight at the time of measurement (grams)\nGender: Child’s gender (Boy or Girl)"
   },
   {
-    "objectID": "Assignments/Week 1/Assignment_week_1.html#requirements-for-the-report",
-    "href": "Assignments/Week 1/Assignment_week_1.html#requirements-for-the-report",
-    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
-    "section": "Requirements for the Report",
-    "text": "Requirements for the Report\nSubmit both the Quarto source file (.qmd) and the rendered HTML file. The quarto source file should include all R code and annotations, and the html file should be rendered with code visibility enabled (echo = TRUE, which is the default option). The Quarto file in the downloads section below provides a starter template that you can use for this assignment."
+    "objectID": "Assignments/Week 4/Assignment_week_4.html#objectives",
+    "href": "Assignments/Week 4/Assignment_week_4.html#objectives",
+    "title": "Assignment Week 4: Longitudinal Data Analysis",
+    "section": "Objectives",
+    "text": "Objectives\nYour objectives are to:\n\nDevelop an appropriate model to describe the growth curve of children’s weight over time, considering fixed and random effects.\nUse the model to answer the following research questions:\n\nHow does the weight of children change over time (e.g., constant, linear, quadratic)?\nHow does gender influence the mean growth curve of children’s weight?"
   },
   {
-    "objectID": "Assignments/Week 1/Assignment_week_1.html#downloads",
-    "href": "Assignments/Week 1/Assignment_week_1.html#downloads",
-    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
-    "section": "Downloads",
-    "text": "Downloads\n\nDownload dataset\nDownload Quarto Template"
+    "objectID": "Assignments/Week 4/Assignment_week_4.html#steps-to-complete-the-analysis",
+    "href": "Assignments/Week 4/Assignment_week_4.html#steps-to-complete-the-analysis",
+    "title": "Assignment Week 4: Longitudinal Data Analysis",
+    "section": "Steps to complete the analysis",
+    "text": "Steps to complete the analysis\n\nLoad the dataset\nDownload the dataset (see link in the Downloads section below) and read it into R. Ensure that the Gender variable is correctly encoded as a factor.\n\n\nExploratory data analysis\n\nExplore the individual and mean trajectories of weight gain over time.\n\n\n\nModel building\n\nBegin with a comprehensive (saturated) model and iteratively simplify it to determine the best fixed and random effects structure.\nUse likelihood ratio tests to refine random effects (models not refitted with ML).\nUse likelihood ratio tests with models refitted using ML to refine fixed effects.\n\n\n\nInterpret the results\nInterpret the findings from your analysis, focusing on answering the research questions outlined in the Objectives section."
   },
   {
-    "objectID": "Assignments/Week 3/Assignment_week_3.html",
-    "href": "Assignments/Week 3/Assignment_week_3.html",
-    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
-    "section": "",
-    "text": "In this assignment, you will analyze a dataset collected by the Inner London Education Authority (ILEA) to examine the effectiveness of schools. The dataset consists of examination records of 15,362 students from 140 secondary schools over the years 1985, 1986, and 1987. This dataset was sourced from the data library of the Centre for Multilevel Modelling at the University of Bristol."
+    "objectID": "Assignments/Week 4/Assignment_week_4.html#requirements-for-the-report",
+    "href": "Assignments/Week 4/Assignment_week_4.html#requirements-for-the-report",
+    "title": "Assignment Week 4: Longitudinal Data Analysis",
+    "section": "Requirements for the report",
+    "text": "Requirements for the report\nYour report should clearly explain:\n\nThe reasoning behind your choice of model structure.\nThe interpretation of key model parameters in the context of the research questions.\nAny limitations or assumptions affecting your analysis.\n\nSubmit both the Quarto source file (.qmd) and the rendered HTML file. Ensure that the HTML file includes visible code (echo = TRUE) for reproducibility."
   },
   {
-    "objectID": "Assignments/Week 3/Assignment_week_3.html#introduction",
-    "href": "Assignments/Week 3/Assignment_week_3.html#introduction",
-    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
-    "section": "",
-    "text": "In this assignment, you will analyze a dataset collected by the Inner London Education Authority (ILEA) to examine the effectiveness of schools. The dataset consists of examination records of 15,362 students from 140 secondary schools over the years 1985, 1986, and 1987. This dataset was sourced from the data library of the Centre for Multilevel Modelling at the University of Bristol."
-  },
-  {
-    "objectID": "Assignments/Week 3/Assignment_week_3.html#dataset-description",
-    "href": "Assignments/Week 3/Assignment_week_3.html#dataset-description",
-    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
-    "section": "Dataset Description",
-    "text": "Dataset Description\nThe dataset consists of the following variables:\n\nSchool: A numeric variable representing the school identifier (codes 1 to 139)\nExamScore: A numeric variable representing the exam score of each student\nPercentFSM: The percentage of students in the school eligible for free school meals (an indicator of socioeconomic status)\nGender: A categorical variable representing the gender of the student\nVRBand: The verbal reasoning band of the student (VR1, VR2, or VR3). VR band is an indicator of the student’s assessed ability level, with VR1 typically representing the highest ability group, VR2 representing intermediate ability, and VR3 representing lower ability.\nSchoolDenomination: The denomination of the school (Maintained, Church of England, Roman Catholic)"
-  },
-  {
-    "objectID": "Assignments/Week 3/Assignment_week_3.html#objective",
-    "href": "Assignments/Week 3/Assignment_week_3.html#objective",
-    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
-    "section": "Objective",
-    "text": "Objective\nYour goals are to determine:\n\nHow much of the variability in exam scores can be attributed to:\n\nDifferences between students\nDifferences between schools\n\nWhether individual-level factors (e.g., Gender, VRBand) significantly influence student exam scores\nWhether school-level factors (e.g., PercentFSM) significantly influence student exam scores"
-  },
-  {
-    "objectID": "Assignments/Week 3/Assignment_week_3.html#steps-to-complete-the-analysis",
-    "href": "Assignments/Week 3/Assignment_week_3.html#steps-to-complete-the-analysis",
-    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
-    "section": "Steps to Complete the Analysis",
-    "text": "Steps to Complete the Analysis\n\nLoad the Dataset\nDownload the dataset (see link in the Downloads section below) and read it into R. Make sure all character variables are correctly encoded as factors.\n\n\nExploratory Data Analysis (EDA):\n\nVisualize the nesting structure of the data (i.e., number of students per school)\nExplore the distribution of the outcome variable (ExamScore)\n\n\n\nMulti-Level Modeling\n\nStart by fitting a null model (i.e., a random intercept model without any predictors) to partition the variance in exam scores between students and schools. Assess how much of the variability in exam scores is due to differences between students and schools.\nNext, add individual-level variables (Gender, VRBand) to the model to explore how these factors influence exam scores.\nAfter that, add context-level variables (e.g., PercentFSM) to your model to understand how factors at the school level contribute to differences in exam scores.\nFinally, explore potential cross-level interactions between individual-level and context-level variables.\n\n\n\nInterpret the Results\nInterpret the findings from your analysis, focusing on the variance components and the effects of individual-level and context-level variables."
-  },
-  {
-    "objectID": "Assignments/Week 3/Assignment_week_3.html#requirements-for-the-report",
-    "href": "Assignments/Week 3/Assignment_week_3.html#requirements-for-the-report",
-    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
-    "section": "Requirements for the Report",
-    "text": "Requirements for the Report\nSubmit both the Quarto source file (.qmd) and the rendered HTML file. The HTML file should be rendered with code visibility enabled (echo = TRUE)."
-  },
-  {
-    "objectID": "Assignments/Week 3/Assignment_week_3.html#downloads",
-    "href": "Assignments/Week 3/Assignment_week_3.html#downloads",
-    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "objectID": "Assignments/Week 4/Assignment_week_4.html#downloads",
+    "href": "Assignments/Week 4/Assignment_week_4.html#downloads",
+    "title": "Assignment Week 4: Longitudinal Data Analysis",
     "section": "Downloads",
     "text": "Downloads\nDownload dataset"
   },

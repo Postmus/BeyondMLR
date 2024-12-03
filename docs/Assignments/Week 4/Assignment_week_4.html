@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Assignment Week 2: Effectiveness of Exercise Routines on Functional Mobility – Beyond MLR</title>
+<title>Assignment Week 4: Longitudinal Data Analysis – Beyond MLR</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,40 +19,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -218,18 +184,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
-  <li><a href="#dataset-description" id="toc-dataset-description" class="nav-link" data-scroll-target="#dataset-description">Dataset Description</a></li>
-  <li><a href="#objective" id="toc-objective" class="nav-link" data-scroll-target="#objective">Objective</a></li>
-  <li><a href="#steps-to-complete-the-analysis" id="toc-steps-to-complete-the-analysis" class="nav-link" data-scroll-target="#steps-to-complete-the-analysis">Steps to Complete the Analysis</a>
+  <li><a href="#dataset-description" id="toc-dataset-description" class="nav-link" data-scroll-target="#dataset-description">Dataset description</a></li>
+  <li><a href="#objectives" id="toc-objectives" class="nav-link" data-scroll-target="#objectives">Objectives</a></li>
+  <li><a href="#steps-to-complete-the-analysis" id="toc-steps-to-complete-the-analysis" class="nav-link" data-scroll-target="#steps-to-complete-the-analysis">Steps to complete the analysis</a>
   <ul class="collapse">
-  <li><a href="#load-the-dataset" id="toc-load-the-dataset" class="nav-link" data-scroll-target="#load-the-dataset">1. Load the dataset</a></li>
-  <li><a href="#perform-an-exploratory-data-analysis-eda" id="toc-perform-an-exploratory-data-analysis-eda" class="nav-link" data-scroll-target="#perform-an-exploratory-data-analysis-eda">2. Perform an Exploratory Data Analysis (EDA)</a></li>
-  <li><a href="#fit-a-mixed-effects-model" id="toc-fit-a-mixed-effects-model" class="nav-link" data-scroll-target="#fit-a-mixed-effects-model">3. Fit a Mixed-Effects Model</a></li>
-  <li><a href="#test-for-overall-differences" id="toc-test-for-overall-differences" class="nav-link" data-scroll-target="#test-for-overall-differences">4. Test for Overall Differences</a></li>
-  <li><a href="#perform-pairwise-comparisons" id="toc-perform-pairwise-comparisons" class="nav-link" data-scroll-target="#perform-pairwise-comparisons">5. Perform Pairwise Comparisons</a></li>
-  <li><a href="#evaluate-model-assumptions" id="toc-evaluate-model-assumptions" class="nav-link" data-scroll-target="#evaluate-model-assumptions">6. Evaluate Model Assumptions</a></li>
+  <li><a href="#load-the-dataset" id="toc-load-the-dataset" class="nav-link" data-scroll-target="#load-the-dataset">Load the dataset</a></li>
+  <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis">Exploratory data analysis</a></li>
+  <li><a href="#model-building" id="toc-model-building" class="nav-link" data-scroll-target="#model-building">Model building</a></li>
+  <li><a href="#interpret-the-results" id="toc-interpret-the-results" class="nav-link" data-scroll-target="#interpret-the-results">Interpret the results</a></li>
   </ul></li>
-  <li><a href="#requirements-for-the-report" id="toc-requirements-for-the-report" class="nav-link" data-scroll-target="#requirements-for-the-report">Requirements for the Report</a></li>
+  <li><a href="#requirements-for-the-report" id="toc-requirements-for-the-report" class="nav-link" data-scroll-target="#requirements-for-the-report">Requirements for the report</a></li>
   <li><a href="#downloads" id="toc-downloads" class="nav-link" data-scroll-target="#downloads">Downloads</a></li>
   </ul>
 </nav>
@@ -239,7 +203,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Assignment Week 2: Effectiveness of Exercise Routines on Functional Mobility</h1>
+<h1 class="title">Assignment Week 4: Longitudinal Data Analysis</h1>
+<p class="subtitle lead">Modeling Growth Curves in Asian Children’s Weight Data</p>
 </div>
 
 
@@ -258,104 +223,69 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>In this assignment, you will analyze a dataset that evaluates the effectiveness of different exercise routines on improving functional mobility in patients recovering from knee replacement surgery. The study uses a replicated randomized block design to account for individual variability among patients.</p>
-<p>Each patient participated in all three exercise routines, and each routine was performed three times. Functional mobility was assessed after each session, with scores ranging from 40 to 80 (higher scores indicate better mobility). The dataset contains 54 observations (6 patients x 3 routines x 3 replications) and is provided in the downloads section below.</p>
+<p>You will work with longitudinal data from a growth curve study. The dataset captures weight measurements of 568 Asian children, recorded during clinic visits on up to five occasions. Ages range from approximately 6 weeks to 27 months. Your task is to model the children’s growth trajectories over time.</p>
+<p>This dataset was sourced from the data library of the centre for Multilevel Modelling, University of Bristol.</p>
 </section>
 <section id="dataset-description" class="level2">
-<h2 class="anchored" data-anchor-id="dataset-description">Dataset Description</h2>
+<h2 class="anchored" data-anchor-id="dataset-description">Dataset description</h2>
 <p>The dataset consists of the following variables:</p>
 <ul>
-<li><code>Patient</code>: A numeric variable representing individual patients (blocks).</li>
-<li><code>ExerciseRoutine</code>: A factor variable representing the type of exercise routine:
-<ul>
-<li><strong>A</strong>: Low-impact walking exercises.</li>
-<li><strong>B</strong>: Resistance training exercises.</li>
-<li><strong>C</strong>: Balance and flexibility exercises.</li>
-</ul></li>
-<li><code>FunctionalMobility</code>: A numeric variable (40-80) representing the mobility score measured after each session.</li>
+<li><code>ChildID</code>: Unique identifier for each child</li>
+<li><code>Age</code>: Child’s age at the time of measurement (months)</li>
+<li><code>Weight</code>: Child’s weight at the time of measurement (grams)</li>
+<li><code>Gender</code>: Child’s gender (Boy or Girl)</li>
 </ul>
 </section>
-<section id="objective" class="level2">
-<h2 class="anchored" data-anchor-id="objective">Objective</h2>
-<p>Your goal is to determine:</p>
+<section id="objectives" class="level2">
+<h2 class="anchored" data-anchor-id="objectives">Objectives</h2>
+<p>Your objectives are to:</p>
 <ol type="1">
-<li>Whether there are significant differences in functional mobility scores between the three exercise routines.</li>
-<li>How much of the variability in mobility scores can be attributed to:
+<li>Develop an appropriate model to describe the growth curve of children’s weight over time, considering fixed and random effects.</li>
+<li>Use the model to answer the following research questions:
 <ul>
-<li>Differences between patients.</li>
-<li>Differences between exercise routines.</li>
-<li>Residual variability (within patient-treatment combinations).</li>
+<li>How does the weight of children change over time (e.g., constant, linear, quadratic)?</li>
+<li>How does gender influence the mean growth curve of children’s weight?</li>
 </ul></li>
 </ol>
-<p>To complete this analysis, follow the detailed steps outlined below.</p>
 </section>
 <section id="steps-to-complete-the-analysis" class="level2">
-<h2 class="anchored" data-anchor-id="steps-to-complete-the-analysis">Steps to Complete the Analysis</h2>
+<h2 class="anchored" data-anchor-id="steps-to-complete-the-analysis">Steps to complete the analysis</h2>
 <section id="load-the-dataset" class="level3">
-<h3 class="anchored" data-anchor-id="load-the-dataset">1. Load the dataset</h3>
-<p>When loading the dataset in R, ensure that the <code>ExerciseRoutine</code> variable is treated as a factor. One way to achieve this is by specifying the column type explicitly using the <code>colClasses</code> argument in the <code>read.csv()</code> function. For example:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset and specify ExerciseRoutine as a factor</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"functional_mobility.csv"</span>, <span class="at">colClasses =</span> <span class="fu">c</span>(<span class="st">"ExerciseRoutine"</span> <span class="ot">=</span> <span class="st">"factor"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+<h3 class="anchored" data-anchor-id="load-the-dataset">Load the dataset</h3>
+<p>Download the dataset (see link in the Downloads section below) and read it into R. Ensure that the <code>Gender</code> variable is correctly encoded as a factor.</p>
 </section>
-<section id="perform-an-exploratory-data-analysis-eda" class="level3">
-<h3 class="anchored" data-anchor-id="perform-an-exploratory-data-analysis-eda">2. Perform an Exploratory Data Analysis (EDA)</h3>
+<section id="exploratory-data-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory data analysis</h3>
 <ul>
-<li>Visualize the data using an interaction plot.</li>
-<li>Calculate descriptive statistics for each exercise routine and patient.</li>
+<li>Explore the individual and mean trajectories of weight gain over time.</li>
 </ul>
 </section>
-<section id="fit-a-mixed-effects-model" class="level3">
-<h3 class="anchored" data-anchor-id="fit-a-mixed-effects-model">3. Fit a Mixed-Effects Model</h3>
+<section id="model-building" class="level3">
+<h3 class="anchored" data-anchor-id="model-building">Model building</h3>
 <ul>
-<li>Fit a mixed-effects model with:
-<ul>
-<li><strong>Fixed Effects</strong>: <code>ExerciseRoutine</code> (to estimate differences between exercise routines).</li>
-<li><strong>Random Effects</strong>:
-<ul>
-<li><code>Patient</code> (to account for variability between individuals).</li>
-<li><code>Patient × ExerciseRoutine</code> (to account for potential variability in how patients respond to different routines).</li>
-</ul></li>
-</ul></li>
-<li>Test whether the <code>Patient × ExerciseRoutine</code> random interaction term is necessary by comparing the full model (with the interaction term) to a reduced model (without the interaction term).</li>
-<li>Based on the results of this test:
-<ul>
-<li>If the interaction term is significant, proceed with the full model for further analysis.</li>
-<li>If the interaction term is not significant, proceed with the reduced model.</li>
-</ul></li>
-<li>Summarize the chosen model:
-<ul>
-<li>Report the fixed effects and variance components.</li>
-</ul></li>
+<li>Begin with a comprehensive (saturated) model and iteratively simplify it to determine the best fixed and random effects structure.</li>
+<li>Use likelihood ratio tests to refine random effects (models not refitted with ML).</li>
+<li>Use likelihood ratio tests with models refitted using ML to refine fixed effects.</li>
 </ul>
 </section>
-<section id="test-for-overall-differences" class="level3">
-<h3 class="anchored" data-anchor-id="test-for-overall-differences">4. Test for Overall Differences</h3>
-<ul>
-<li>Use the selected model to test for overall differences in functional mobility scores across exercise routines.</li>
-</ul>
-</section>
-<section id="perform-pairwise-comparisons" class="level3">
-<h3 class="anchored" data-anchor-id="perform-pairwise-comparisons">5. Perform Pairwise Comparisons</h3>
-<ul>
-<li>If significant overall differences are found, calculate estimated marginal means and perform pairwise comparisons to identify which routines differ.</li>
-</ul>
-</section>
-<section id="evaluate-model-assumptions" class="level3">
-<h3 class="anchored" data-anchor-id="evaluate-model-assumptions">6. Evaluate Model Assumptions</h3>
-<ul>
-<li>Assess the model’s assumptions (e.g., normality of residuals, homoscedasticity) using diagnostic plots.</li>
-</ul>
+<section id="interpret-the-results" class="level3">
+<h3 class="anchored" data-anchor-id="interpret-the-results">Interpret the results</h3>
+<p>Interpret the findings from your analysis, focusing on answering the research questions outlined in the Objectives section.</p>
 </section>
 </section>
 <section id="requirements-for-the-report" class="level2">
-<h2 class="anchored" data-anchor-id="requirements-for-the-report">Requirements for the Report</h2>
-<p>Submit both the <strong>Quarto source file (<code>.qmd</code>)</strong> and the <strong>rendered HTML file</strong>. The quarto source file should include all R code and annotations, and the html file should be rendered with code visibility enabled (<code>echo = TRUE</code>).</p>
+<h2 class="anchored" data-anchor-id="requirements-for-the-report">Requirements for the report</h2>
+<p>Your report should clearly explain:</p>
+<ol type="1">
+<li>The reasoning behind your choice of model structure.</li>
+<li>The interpretation of key model parameters in the context of the research questions.</li>
+<li>Any limitations or assumptions affecting your analysis.</li>
+</ol>
+<p>Submit both the <strong>Quarto source file (<code>.qmd</code>)</strong> and the <strong>rendered HTML file</strong>. Ensure that the HTML file includes visible code (<code>echo = TRUE</code>) for reproducibility.</p>
 </section>
 <section id="downloads" class="level2">
 <h2 class="anchored" data-anchor-id="downloads">Downloads</h2>
-<p><a href="downloads/functional_mobility.csv">Download dataset</a></p>
+<p><a href="downloads/asian_data.csv">Download dataset</a></p>
 
 
 </section>

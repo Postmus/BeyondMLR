@@ -1,0 +1,71 @@
+---
+title: "Assignment Week 4: Longitudinal Data Analysis"
+subtitle: "Modeling Growth Curves in Asian Children's Weight Data"
+format: html
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+# Configure global options for R code chunks:
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
+```
+
+## Introduction
+
+You will work with longitudinal data from a growth curve study. The dataset captures weight measurements of 568 Asian children, recorded during clinic visits on up to five occasions. Ages range from approximately 6 weeks to 27 months. Your task is to model the children's growth trajectories over time.
+
+This dataset was sourced from the data library of the centre for Multilevel Modelling, University of Bristol.
+
+## Dataset description
+
+The dataset consists of the following variables:
+
+- `ChildID`: Unique identifier for each child
+- `Age`: Child's age at the time of measurement (months)
+- `Weight`: Child's weight at the time of measurement (grams)
+- `Gender`: Child's gender (Boy or Girl)
+
+## Objectives
+
+Your objectives are to:
+
+1. Develop an appropriate model to describe the growth curve of children's weight over time, considering fixed and random effects.
+2. Use the model to answer the following research questions:
+   - How does the weight of children change over time (e.g., constant, linear, quadratic)?
+   - How does gender influence the mean growth curve of children's weight?
+
+## Steps to complete the analysis
+
+### Load the dataset
+
+Download the dataset (see link in the Downloads section below) and read it into R. Ensure that the `Gender` variable is correctly encoded as a factor.
+
+### Exploratory data analysis
+
+- Explore the individual and mean trajectories of weight gain over time.
+
+### Model building
+
+- Begin with a comprehensive (saturated) model and iteratively simplify it to determine the best fixed and random effects structure.
+- Use likelihood ratio tests to refine random effects (models not refitted with ML).
+- Use likelihood ratio tests with models refitted using ML to refine fixed effects.
+
+### Interpret the results
+
+Interpret the findings from your analysis, focusing on answering the research questions outlined in the Objectives section.
+
+## Requirements for the report
+
+Your report should clearly explain:
+
+1. The reasoning behind your choice of model structure.
+2. The interpretation of key model parameters in the context of the research questions.
+3. Any limitations or assumptions affecting your analysis.
+
+Submit both the **Quarto source file (`.qmd`)** and the **rendered HTML file**. Ensure that the HTML file includes visible code (`echo = TRUE`) for reproducibility.
+
+## Downloads
+
+[Download dataset](downloads/asian_data.csv)

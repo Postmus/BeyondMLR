@@ -1,0 +1,106 @@
+---
+title: "Assignment 4: longitudinal data analysis"
+format: 
+  html:
+    toc: true       # Enable the table of contents
+    toc-depth: 3    # Set the depth of headers included in the ToC (e.g., H1, H2, H3)
+    toc-location: right   # Optional: Can be left, right, or floating    
+    code-overflow: wrap 
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+# configure global options for R code chunks:
+# warning = F to suppress the display of warning messages generated during the execution of code chunks
+# message = F to suppress the display of messages produced during the execution of code chunks
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = TRUE)
+
+# This qmd file requires the following packages to be installed:
+#c("dplyr", "ggplot2", "emmeans", "lme4", "lmerTest")
+```
+
+## Exploratory Data Analysis
+
+Let's load the data and use the `str()` function to inspect the structure of the dataset.
+
+```{r}
+# Load the required libraries
+library(dplyr)
+library(ggplot2)
+library(lmerTest)
+
+asian_data <- read.csv("downloads/asian_data.csv")
+
+# Convert all character variables into factors
+asian_data <- asian_data %>%
+  mutate_if(is.character, as.factor)
+
+# Inspect the structure of the dataset
+str(asian_data)
+```
+
+<!-- > str(asian_data) -->
+<!-- 'data.frame':	1572 obs. of  5 variables: -->
+<!--  $ ChildID    : int  2 2 3 3 3 3 22 22 22 22 ... -->
+<!--  $ Age        : num  12.39 27.1 1.77 7.95 12.39 ... -->
+<!--  $ Weight     : int  10262 14500 4053 8136 9752 13180 4510 8360 8480 13150 ... -->
+<!--  $ BirthWeight: int  3360 3360 3310 3310 3310 3310 2710 2710 2710 2710 ... -->
+<!--  $ Gender     : Factor w/ 2 levels "Boy","Girl": 2 2 2 2 2 2 2 2 2 2 ... -->
+
+## Exploratory data analysis
+
+### Individual trajectories of alcohol use
+
+We will start by examining the individual trajectories of Weight over time. One way to achieve this is a facet plot, which displays each individual's trajectory in a separate subplot. In this case, however, the dataset consists of 568 individuals, making it impractical to display all trajectories. We therefore take a random sample of 25 individuals for visualization.
+
+```{r}
+# Sample 25 individuals for visualization
+set.seed(123)
+sample_ids <- sample(unique(asian_data$ChildID), 25)
+
+# Filter the data for the sampled individuals
+sample_data <- asian_data %>%
+  filter(ChildID %in% sample_ids)
+
+# Create a facet plot of individual trajectories
+ggplot(sample_data, aes(x = Age, y = Weight, group = ChildID)) +
+  geom_line() +
+  geom_point(size = 2, alpha = 0.7) + 
+  facet_wrap(~ChildID, scales = "free_y") +
+  labs(title = "Individual Trajectories of Weight Use Over Time",
+       x = "Age (months)",
+       y = "Weight (grams)")
+```
+
+# Create a new variable Age_Centered and Age_Centered_Squared
+```{r}
+asian_data <- asian_data %>%
+  mutate(Age_Centered = Age - mean(Age),
+         Age_Centered_Squared = Age_Centered^2)
+```
+
+# Fit a random slope model with Age_centered and Age_Centered_Squared
+```{r}
+# Fit a random slope model with Age_centered and Age_Centered_Squared
+model <- lmer(Weight ~ Age_Centered + Age_Centered_Squared + (Age_Centered | ChildID), data = asian_data)
+summary(model)
+```
+
+# Inlcude Gender, BirthWeight and interactions with Age_centered and Age_Centered_Squared in the model
+```{r}
+# Fit a random slope model with gender, BirthWeight, and interactions with Age_centered and Age_Centered_Squared
+model <- lmer(Weight ~ (Age_Centered + Age_Centered_Squared)*(Gender) + (Age_Centered | ChildID), data = asian_data, control = lmerControl(optimizer = "bobyqa"))
+summary(model)
+
+model2 <- lmer(Weight ~ (Age_Centered + Age_Centered_Squared)*(Gender) + (Age_Centered | ChildID), data = asian_data, control = lmerControl(optimizer = "bobyqa"))
+summary(model2)
+
+plot(model2)
+qqnorm(ranef(model2)$ChildID[, "Age_Centered"])
+qqline(ranef(model2)$ChildID[, "Age_Centered"])
+
+```
+
+              

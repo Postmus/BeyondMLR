@@ -58,3 +58,29 @@ head(ilea_data)
 # Write the data to a CSV file
 write.csv(ilea_data[, c(2:4, 6:7, 10)], file = "ilea_data.csv", row.names = FALSE)
 
+### Asian data ###
+
+# Define the column widths based on the metadata
+column_widths <- c(4, 3, 5, 4, 1)
+
+# Import the data using read.fwf()
+asian_data <- read.fwf(
+  file = "ASIAN.DAT",   # Replace with the correct path to the .DAT file
+  widths = column_widths,       # Specify the column widths
+  header = FALSE,               # No header in the .DAT file
+  col.names = c("ChildID", "Age", "Weight", "BirthWeight", "Gender") # Column names
+)
+
+asian_data[asian_data==-1] <- NA
+asian_data$Gender <- ifelse(asian_data$Gender == 1, "Boy", "Girl")
+asian_data$Age <- asian_data$Age / 30.44 # Days to months
+
+asian_data <- subset(asian_data, select = -BirthWeight)
+
+# Display the first few rows of the dataset
+head(asian_data)
+
+# Write the data to a CSV file
+write.csv(asian_data, file = "asian_data.csv", row.names = FALSE)
+
+
