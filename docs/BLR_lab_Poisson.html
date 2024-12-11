@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Beyond MLR Lab 3: Randomized Block Designs – Beyond MLR</title>
+<title>Beyond MLR Lab 7: Poisson regression models – Beyond MLR</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -257,27 +257,22 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#example-testing-wound-healing-treatments-across-different-laboratory-facilities" id="toc-example-testing-wound-healing-treatments-across-different-laboratory-facilities" class="nav-link active" data-scroll-target="#example-testing-wound-healing-treatments-across-different-laboratory-facilities">Example: Testing Wound Healing Treatments Across Different Laboratory Facilities</a>
+  <li><a href="#case-study-asthma-exacerbations" id="toc-case-study-asthma-exacerbations" class="nav-link active" data-scroll-target="#case-study-asthma-exacerbations">Case study: Asthma exacerbations</a>
   <ul class="collapse">
+  <li><a href="#dataset" id="toc-dataset" class="nav-link" data-scroll-target="#dataset">Dataset</a></li>
   <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis">Exploratory Data Analysis</a></li>
-  <li><a href="#a-mixed-effects-model-for-the-randomized-block-design" id="toc-a-mixed-effects-model-for-the-randomized-block-design" class="nav-link" data-scroll-target="#a-mixed-effects-model-for-the-randomized-block-design">A Mixed Effects Model for the Randomized Block Design</a>
-  <ul class="collapse">
-  <li><a href="#model-specification" id="toc-model-specification" class="nav-link" data-scroll-target="#model-specification">Model Specification</a></li>
-  <li><a href="#model-estimation" id="toc-model-estimation" class="nav-link" data-scroll-target="#model-estimation">Model Estimation</a></li>
-  <li><a href="#assessing-the-variance-components" id="toc-assessing-the-variance-components" class="nav-link" data-scroll-target="#assessing-the-variance-components">Assessing the variance components</a></li>
-  <li><a href="#assessing-the-fixed-effects" id="toc-assessing-the-fixed-effects" class="nav-link" data-scroll-target="#assessing-the-fixed-effects">Assessing the fixed effects</a></li>
-  <li><a href="#model-diagnostics" id="toc-model-diagnostics" class="nav-link" data-scroll-target="#model-diagnostics">Model Diagnostics</a></li>
-  </ul></li>
+  <li><a href="#fitting-a-poisson-regression-model" id="toc-fitting-a-poisson-regression-model" class="nav-link" data-scroll-target="#fitting-a-poisson-regression-model">Fitting a Poisson Regression Model</a></li>
+  <li><a href="#evaluating-model-fit-pearson-residuals-and-goodness-of-fit" id="toc-evaluating-model-fit-pearson-residuals-and-goodness-of-fit" class="nav-link" data-scroll-target="#evaluating-model-fit-pearson-residuals-and-goodness-of-fit">Evaluating Model Fit: Pearson Residuals and Goodness-of-Fit</a></li>
   </ul></li>
   </ul>
-<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="BLR_lab_randomized_block.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="BLR_lab_Poisson.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Beyond MLR Lab 3: Randomized Block Designs</h1>
+<h1 class="title">Beyond MLR Lab 7: Poisson regression models</h1>
 </div>
 
 
@@ -294,77 +289,59 @@ window.Quarto = {
 </header>
 
 
-<section id="example-testing-wound-healing-treatments-across-different-laboratory-facilities" class="level1">
-<h1>Example: Testing Wound Healing Treatments Across Different Laboratory Facilities</h1>
-<p>Suppose we are conducting an experiment to compare the effectiveness of three different wound healing treatments (Treatment A, Treatment B, and Treatment C) on cell cultures. The experimental units are the cell culture plates. To account for potential variability in laboratory conditions (such as humidity and temperature), we use a <strong>randomized block design</strong>, with laboratory facility as the blocking factor. Within each laboratory (block), the three treatments are randomly assigned to one cell culture plate each, ensuring that every treatment is represented once within each block. This design helps control for variability between laboratory facilities, allowing us to more effectively isolate the treatment effects.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set seed for reproducibility</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">456</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Define blocks and treatments</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>blocks <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">paste0</span>(<span class="st">"Laboratory "</span>, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">each =</span> <span class="dv">3</span>)))  <span class="co"># Labs 1 to 5</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>treatments <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span>), <span class="at">times =</span> <span class="dv">5</span>))</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate data</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>block_effect <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">5</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">2</span>)  <span class="co"># Random effect for each block</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>treatment_effect <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">A =</span> <span class="dv">5</span>, <span class="at">B =</span> <span class="dv">7</span>, <span class="at">C =</span> <span class="dv">6</span>)  <span class="co"># Fixed effects for treatments</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Create data frame</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>data_block <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">Laboratory =</span> blocks,</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">Treatment =</span> treatments,</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">WoundHealing =</span> <span class="cn">NA</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Assign responses</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(data_block)) {</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(data_block<span class="sc">$</span>Laboratory[i])</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> data_block<span class="sc">$</span>Treatment[i]</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  data_block<span class="sc">$</span>WoundHealing[i] <span class="ot">&lt;-</span></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    <span class="dv">50</span> <span class="sc">+</span> block_effect[b] <span class="sc">+</span> treatment_effect[t] <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>The R code chunk above simulates wound healing observations (measured on a continuous scale, where higher values indicate better healing) for 15 cell culture plates, divided across five laboratory facilities. The results are stored in the data frame <code>data_block</code>, which consists of the following three variables:</p>
+<section id="case-study-asthma-exacerbations" class="level1">
+<h1>Case study: Asthma exacerbations</h1>
+<p>Asthma exacerbations represent sudden worsening of asthma symptoms, often requiring urgent medical attention. Understanding the factors that increase the frequency of exacerbations can aid in risk assessment and prevention strategies. This case study focuses on analyzing individual-level data to explore how demographic and lifestyle factors contribute to asthma exacerbation rates.</p>
+<section id="dataset" class="level3">
+<h3 class="anchored" data-anchor-id="dataset">Dataset</h3>
 <ul>
-<li><code>Laboratory</code>: A factor variable indicating the laboratory facility.</li>
-<li><code>Treatmment</code>: A factor variable indicating the applied treatment.</li>
-<li><code>WoundHealing</code>: A numeric variable representing the degree of wound healing on a continuous scale.</li>
+<li>The dataset <code>asthma_data.csv</code> contains information for 500 individuals.</li>
+<li>The columns in the dataset are:
+<ul>
+<li><code>ID</code>: Unique identifier for each individual.</li>
+<li><code>Age</code>: Age of the individual in years.</li>
+<li><code>Smoking_Status</code>: Smoking status (1 = smoker, 0 = non-smoker).</li>
+<li><code>Exacerbations</code>: Number of asthma exacerbations experienced in one year.</li>
+</ul></li>
+<li>The dataset is available for download from Brightspace.</li>
 </ul>
+</section>
 <section id="exploratory-data-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory Data Analysis</h2>
-<p>To explore the data and investigate the possible presence of a laboratory effect, we start by creating a scatter plot with the wound healing variable on the x-axis and the laboratory facility variable on the y-axis:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data_block, <span class="fu">aes</span>(<span class="at">x =</span> WoundHealing, <span class="at">y =</span> Laboratory, <span class="at">color =</span> Treatment)) <span class="sc">+</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Wound Healing by Treatment and Laboratory"</span>,</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Wound Healing Measure"</span>,</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Laboratory"</span>) <span class="sc">+</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load required packages</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>In addition to the scatter plot, we compute descriptive statistics to summarize the wound healing measures within treatments and within laboratories. This will help us assess variability both across treatments and across laboratory facilities.</p>
+<p>We begin by loading the dataset and examining its structure:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Summarizing data by Treatment</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>summary_stats_treatment <span class="ot">&lt;-</span> data_block <span class="sc">%&gt;%</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Treatment) <span class="sc">%&gt;%</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean_WoundHealing =</span> <span class="fu">mean</span>(WoundHealing),</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">SD_WoundHealing =</span> <span class="fu">sd</span>(WoundHealing)</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Summarizing data by Laboratory</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>summary_stats_laboratory <span class="ot">&lt;-</span> data_block <span class="sc">%&gt;%</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Laboratory) <span class="sc">%&gt;%</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean_WoundHealing =</span> <span class="fu">mean</span>(WoundHealing),</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">SD_WoundHealing =</span> <span class="fu">sd</span>(WoundHealing)</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Displaying the produced summary tables</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>summary_stats_treatment</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>summary_stats_laboratory</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>asthma_data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"asthma_data.csv"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert Smoking_Status to a factor</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>asthma_data<span class="sc">$</span>Smoking_Status <span class="ot">&lt;-</span> <span class="fu">factor</span>(asthma_data<span class="sc">$</span>Smoking_Status, <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Non-Smoker"</span>, <span class="st">"Smoker"</span>))</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect the structure of the dataset</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(asthma_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next, we calculate summary statistics and create a bar chart to visualize the distribution of asthma exacerbations in the population:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Summary statistics</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>asthma_data <span class="sc">%&gt;%</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean_Exacerbations =</span> <span class="fu">mean</span>(Exacerbations),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Variance_Exacerbations =</span> <span class="fu">var</span>(Exacerbations)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Bar chart of exacerbation counts</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(asthma_data, <span class="fu">aes</span>(<span class="at">x =</span> Exacerbations)) <span class="sc">+</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Distribution of Asthma Exacerbations"</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Number of Exacerbations"</span>,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Count of Individuals"</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
 <div class="callout-header d-flex align-content-center">
@@ -376,189 +353,166 @@ Question
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>What patterns do you observe regarding the effects of treatment and laboratory based on the plot and summary statistics?</p>
+<p>Based on the bar chart and the summary statistics, describe the distribution of asthma exacerbations in the population.</p>
 </div>
 </div>
-</section>
-<section id="a-mixed-effects-model-for-the-randomized-block-design" class="level2">
-<h2 class="anchored" data-anchor-id="a-mixed-effects-model-for-the-randomized-block-design">A Mixed Effects Model for the Randomized Block Design</h2>
-<p>In a mixed-effects model, both fixed effects and random effects are used to account for different sources of variation.</p>
-<p>In the wound healing example, it is essential to account for the <strong>laboratory facility</strong> because differences between laboratories (such as variations in environmental conditions) could influence the outcome. By including laboratory as a blocking variable, we can more efficiently estimate the treatment effects by controlling for this source of variability. This can be statistically achieved by modeling laboratory as either a fixed effect or a random effect.</p>
-<p>While we could model laboratory as a fixed effect, treating it as a <strong>random effect</strong> is preferred in this case for two reasons: first, it better reflects reality, as the laboratories are considered a random sample of possible laboratory conditions; second, it reduces the number of parameters we need to estimate, making the model more parsimonious. Modeling the lab as random allows us to account for variability between laboratories without estimating a separate effect for each one, which ultimately helps to isolate the treatment effects more effectively.</p>
-<p>On the other hand, <strong>treatment</strong> is modeled as a <strong>fixed effect</strong> because we are specifically interested in estimating and comparing the effectiveness of the three particular wound healing treatments (Treatment A, Treatment B, and Treatment C). These treatments are not considered random samples from a larger population of treatments; rather, they are the specific interventions under study. By modeling treatment as a fixed effect, we aim to draw conclusions about the differences between these particular treatments, and their impact on wound healing.</p>
-<section id="model-specification" class="level3">
-<h3 class="anchored" data-anchor-id="model-specification">Model Specification</h3>
-<p>The mixed-effects model for our randomized block design can be specified as:</p>
-<p><span class="math display">\[
-Y_{ij} = \mu + \tau_i + b_j + \epsilon_{ij}
-\]</span></p>
-<p>where:</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Exercise">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Create facetted bar charts showing the distribution of asthma exacerbations, stratified by:</p>
 <ul>
-<li><span class="math inline">\(Y_{ij}\)</span>: The observed wound healing response for treatment <span class="math inline">\(i\)</span> in laboratory <span class="math inline">\(j\)</span>.</li>
-<li><span class="math inline">\(\mu\)</span>: The overall mean response across all treatments and laboratories.</li>
-<li><span class="math inline">\(\tau_i\)</span>: The fixed effect of treatment <span class="math inline">\(i\)</span>, representing the deviation of treatment <span class="math inline">\(i\)</span> from the overall mean <span class="math inline">\(\mu\)</span>.</li>
-<li><span class="math inline">\(b_j\)</span>: The random effect of laboratory <span class="math inline">\(j\)</span>, assumed to be normally distributed with mean zero and variance <span class="math inline">\(\sigma_b^2\)</span>).</li>
-<li><span class="math inline">\(\epsilon_{ij}\)</span>: The error term, assumed to be normally distributed with mean zero and variance <span class="math inline">\(\sigma^2\)</span>.</li>
+<li><strong>Smoking Status</strong> (facet by smoking group: Non-Smoker vs.&nbsp;Smoker).</li>
+<li><strong>Age Groups</strong>.</li>
 </ul>
-</section>
-<section id="model-estimation" class="level3">
-<h3 class="anchored" data-anchor-id="model-estimation">Model Estimation</h3>
-<p>We previously mentioned that the <code>lme4</code> package does not provide p-values for the fixed effect estimates. One way around this is to fit the mixed effects model using the <code>lmer()</code> function from the <code>lmeTest</code> package, which extends to original <code>lmer()</code> function from the <code>lme4</code> to include p-values for the fixed effect estimates. The <code>lmerTest</code> package achieves this by applying <strong>Satterthwaite’s approximation</strong> to calculate degrees of freedom, which are then used to derive the p-values.</p>
+<p><strong>Hint</strong>: Use the <code>cut()</code> function to create age categories. For example:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmerTest)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">contrasts =</span> <span class="fu">c</span>(<span class="st">"contr.sum"</span>, <span class="st">"contr.poly"</span>))  <span class="co"># Effects coding</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>model_block <span class="ot">&lt;-</span> <span class="fu">lmer</span>(WoundHealing <span class="sc">~</span> Treatment <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> Laboratory), <span class="at">data =</span> data_block)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_block)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>asthma_data <span class="ot">&lt;-</span> asthma_data <span class="sc">%&gt;%</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Age_Group =</span> <span class="fu">cut</span>(Age, <span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="cn">Inf</span>, <span class="dv">40</span>, <span class="dv">60</span>, <span class="cn">Inf</span>), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"&lt;40"</span>, <span class="st">"40-60"</span>, <span class="st">"&gt;60"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="syntax-overview" class="level4">
-<h4 class="anchored" data-anchor-id="syntax-overview">Syntax overview</h4>
-<p>Let’s break down the model formula <code>WoundHealing ~ Treatment + (1 | Laboratory)</code></p>
-<ul>
-<li><p><code>WoundHealing ~ Treatment</code>: This specifies that <code>WoundHealing</code> is the outcome variable and that <code>Treatment</code> is included as a fixed effect to estimate differences between the three treatments. Note that the intercept is included by default in the model, so <code>WoundHealing ~ Treatment</code> is essentially a shortcut for <code>WoundHealing ~ 1 + Treatment</code>. Also remember that with effects coding, the intercept represents the overall mean across all levels of the treatment variable, and the treatment coefficients represent deviations from this mean.</p></li>
-<li><p><code>(1 | Laboratory)</code>: This specifies the random effect for <code>Laboratory</code>, representing laboratory-specific deviations from the overall mean.</p></li>
-</ul>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Exercise">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Calculate the mean and variance of the number of exacerbations stratified by smoking status and age groups.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>What do the facetted bar charts reveal about differences in the distribution of exacerbations across smoking and age groups?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Are the mean and variance of exacerbations consistent across subgroups? What might this imply about the data or the Poisson model’s assumptions?</p>
+</div>
+</div>
 </section>
-<section id="summary-overview" class="level4">
-<h4 class="anchored" data-anchor-id="summary-overview">Summary overview</h4>
-<p>When you run <code>summary(model_block)</code>, the output will display:</p>
+<section id="fitting-a-poisson-regression-model" class="level2">
+<h2 class="anchored" data-anchor-id="fitting-a-poisson-regression-model">Fitting a Poisson Regression Model</h2>
+<p>The syntax in the code chunk below fits a Poisson regression model to investigate the relationship between asthma exacerbations and age and smoking status:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the Poisson regression model</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>poisson_model <span class="ot">&lt;-</span> <span class="fu">glm</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  Exacerbations <span class="sc">~</span> Age <span class="sc">+</span> Smoking_Status,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> asthma_data</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># View the model summary</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(poisson_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Explanation of the code</strong>:</p>
 <ul>
-<li><strong>Fixed Effects:</strong> Estimates of the fixed effects
+<li><code>glm()</code> function: Fits a generalized linear model (GLM) to the data.</li>
+<li><code>Exacerbations ~ Age + Smoking_Status</code>: Specifies the outcome (<code>Exacerbations</code>) and predictors (<code>Age</code> and <code>Smoking_Status</code>).</li>
+<li><code>family = poisson(link = "log")</code>: Indicates that the model uses the Poisson distribution with a log link function.</li>
+</ul>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>What does the intercept of the model represent in this context?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Interpret the coefficient for Smoking_Status. How does smoking affect the expected number of asthma exacerbations?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Interpret the coefficient for Age. How does an increase in age affect the expected number of asthma exacerbations?</p>
+</div>
+</div>
+</section>
+<section id="evaluating-model-fit-pearson-residuals-and-goodness-of-fit" class="level2">
+<h2 class="anchored" data-anchor-id="evaluating-model-fit-pearson-residuals-and-goodness-of-fit">Evaluating Model Fit: Pearson Residuals and Goodness-of-Fit</h2>
+<p>To evaluate the model fit, we calculate the <strong>Pearson residuals</strong>. These residuals measure the standardized difference between observed and predicted counts:</p>
 <ul>
-<li><strong>Intercept:</strong> The overall mean wound healing score averaged across all treatments and laboratories.</li>
-<li><strong>Treatment:</strong> The differences in wound healing associated with each treatment relative to the overall mean.</li>
+<li>Formula: <span class="math inline">\(r_i = \frac{Y_i - \hat{\lambda}_i}{\sqrt{\hat{\lambda}_i}}\)</span>, where:
+<ul>
+<li><span class="math inline">\(Y_i\)</span>: Observed counts</li>
+<li><span class="math inline">\(\hat{\lambda}_i\)</span>: Predicted counts</li>
 </ul></li>
-<li><strong>Random Effects:</strong> Estimates of the variance components
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate Pearson residuals</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>asthma_data<span class="sc">$</span>Pearson_Residuals <span class="ot">&lt;-</span> <span class="fu">residuals</span>(poisson_model, <span class="at">type =</span> <span class="st">"pearson"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next, we assess the goodness-of-fit using the <strong>chi-square test</strong>:</p>
 <ul>
-<li><strong>Laboratory - Intercept:</strong> Between-laboratory variability (<span class="math inline">\(\sigma^2_{b}\)</span>).</li>
-<li><strong>Residual:</strong> Residual variance (<span class="math inline">\(\sigma^2\)</span>).</li>
+<li>Test statistic: <span class="math inline">\(\chi^2 = \sum r_i^2 = \sum \frac{(Y_i - \hat{\lambda}_i)^2}{\hat{\lambda}_i}\)</span></li>
+<li>Degrees of freedom: <span class="math inline">\(\text{df} = n - p\)</span>, where:
+<ul>
+<li><span class="math inline">\(n\)</span>: Number of observations.</li>
+<li><span class="math inline">\(p\)</span>: Number of model parameters (including intercept).</li>
 </ul></li>
 </ul>
-<div class="callout callout-style-default callout-warning callout-titled" title="Caution: Interpreting p-values in Mixed Effects Models">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Caution: Interpreting p-values in Mixed Effects Models
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>While the <code>lmerTest</code> package provides p-values for fixed effects, it is important to use them with caution, primarily because methods for calculating degrees of freedom, such as Satterthwaite, are approximations that may not always be reliable, particularly in complex models fitted to imbalanced data. Generally, this sensitivity is not a concern for the randomized block design considered in this lab.</p>
-</div>
-</div>
-</section>
-</section>
-<section id="assessing-the-variance-components" class="level3">
-<h3 class="anchored" data-anchor-id="assessing-the-variance-components">Assessing the variance components</h3>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Question
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Based on the estimated variance components, what can you conclude about the relative contributions of laboratory variability and residual error to the total variability in wound healing?</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Question
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Considering these results, do you think that blocking by laboratory was necessary for this experiment?</p>
-</div>
-</div>
-</section>
-<section id="assessing-the-fixed-effects" class="level3">
-<h3 class="anchored" data-anchor-id="assessing-the-fixed-effects">Assessing the fixed effects</h3>
-<p>In addition to providing p-values for the fixed effects estimates, the <code>lmerTest</code> package also implements the <code>anova()</code> function to test the overall significance of fixed effects in the model. Additionally, the <code>ls_means()</code> function can be used to calculate the estimated marginal means for the factors (i.e., variables that are defined as factors in the data frame or the model formula) included in the fixed effects structure of the model. Alternatively, these estimated marginal means can be calculated using the <code>emmeans()</code> function from the <code>emmeans</code> package, which provides more options and greater flexibility for advanced users.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Obtain ANOVA table for the fixed effects</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model_block)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate estimated marginal means for the Treatment variable</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ls_means</span>(model_block)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Question
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>What does the F-test tell us about the treatment effect?</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Question
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>How to the estimated marginal means compare to the observed group means from the exploratory data analysis?</p>
-</div>
-</div>
-<section id="pairwise-comparisons" class="level4">
-<h4 class="anchored" data-anchor-id="pairwise-comparisons">Pairwise comparisons</h4>
-<p>Since we found a significant treatment effect, we proceed with computing pairwise differences of the estimated marginal means. This can be achieved by adding the argument <code>pairwise=TRUE</code> to the call to the <code>ls_means()</code> function. Unlike the <code>emmmeans</code> package, there is no multiplicity correction for pairwise comparisons in the <code>lmerTest</code> package. We therefore use the <code>p.adjust()</code> function from the base R <code>stats</code> package to compute the Bonferroni corrected p-values (i.e., the original p-values multiplied by the number of comparisons).</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute pairwise differences of the estimated marginal means </span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>emms <span class="ot">&lt;-</span> <span class="fu">ls_means</span>(model_block, <span class="at">pairwise=</span><span class="cn">TRUE</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>emms</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Retrieve the p-values from the emms object and adjust them </span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># for multiple testing using the Bonferroni correction</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">p.adjust</span>(emms<span class="sc">$</span><span class="st">`</span><span class="at">Pr(&gt;|t|)</span><span class="st">`</span>, <span class="at">method=</span><span class="st">"bonferroni"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Question
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Based on the results of the pairwise comparisons, which treatment groups differ significantly?</p>
-</div>
-</div>
-</section>
-</section>
-<section id="model-diagnostics" class="level3">
-<h3 class="anchored" data-anchor-id="model-diagnostics">Model Diagnostics</h3>
-<p>Similar as in the previous lab, we will inspect the conditional residuals to check the model assumptions regarding the error term:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract conditional residuals</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>residuals_cond <span class="ot">&lt;-</span> <span class="fu">resid</span>(model_block)</span>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate chi-square test statistic</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>chisq_test <span class="ot">&lt;-</span> <span class="fu">sum</span>(asthma_data<span class="sc">$</span>Pearson_Residuals<span class="sc">^</span><span class="dv">2</span>)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Residuals vs Fitted</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">fitted</span>(model_block), residuals_cond,</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Residuals vs Fitted"</span>,</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Fitted values"</span>,</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"Residuals"</span>)</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">col =</span> <span class="st">"red"</span>)</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Normal Q-Q Plot</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(residuals_cond)</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(residuals_cond, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Degrees of freedom</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">nrow</span>(asthma_data) <span class="sc">-</span> <span class="fu">length</span>(<span class="fu">coef</span>(poisson_model))</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># p-value</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>p_value <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">pchisq</span>(chisq_test, df)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Display results</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="fu">list</span>(<span class="at">Chi_Square_Statistic =</span> chisq_test, <span class="at">Degrees_of_Freedom =</span> df, <span class="at">P_Value =</span> p_value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
 <div class="callout-header d-flex align-content-center">
@@ -570,12 +524,11 @@ Question
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Do the diagnostic plots suggest any violations of the model assumptions regarding the error term?</p>
+<p>What does the chi-square test tell us about the goodness-of-fit of the Poisson regression model?</p>
 </div>
 </div>
 
 
-</section>
 </section>
 </section>
 
