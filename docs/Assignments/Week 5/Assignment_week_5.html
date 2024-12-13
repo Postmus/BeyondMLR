@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Assignment Week 3: Multilevel Analysis of School Effectiveness – Beyond MLR</title>
+<title>Assignment Week 5 – Beyond MLR</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -199,16 +199,9 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
-  <li><a href="#dataset-description" id="toc-dataset-description" class="nav-link" data-scroll-target="#dataset-description">Dataset Description</a></li>
-  <li><a href="#objective" id="toc-objective" class="nav-link" data-scroll-target="#objective">Objective</a></li>
-  <li><a href="#steps-to-complete-the-analysis" id="toc-steps-to-complete-the-analysis" class="nav-link" data-scroll-target="#steps-to-complete-the-analysis">Steps to Complete the Analysis</a>
-  <ul class="collapse">
-  <li><a href="#load-the-dataset" id="toc-load-the-dataset" class="nav-link" data-scroll-target="#load-the-dataset">Load the Dataset</a></li>
-  <li><a href="#exploratory-data-analysis-eda" id="toc-exploratory-data-analysis-eda" class="nav-link" data-scroll-target="#exploratory-data-analysis-eda">Exploratory Data Analysis (EDA):</a></li>
-  <li><a href="#multi-level-modeling" id="toc-multi-level-modeling" class="nav-link" data-scroll-target="#multi-level-modeling">Multi-Level Modeling</a></li>
-  <li><a href="#interpret-the-results" id="toc-interpret-the-results" class="nav-link" data-scroll-target="#interpret-the-results">Interpret the Results</a></li>
-  </ul></li>
-  <li><a href="#requirements-for-the-report" id="toc-requirements-for-the-report" class="nav-link" data-scroll-target="#requirements-for-the-report">Requirements for the Report</a></li>
+  <li><a href="#dataset-description" id="toc-dataset-description" class="nav-link" data-scroll-target="#dataset-description">Dataset description</a></li>
+  <li><a href="#objectives" id="toc-objectives" class="nav-link" data-scroll-target="#objectives">Objectives</a></li>
+  <li><a href="#requirements-for-the-report" id="toc-requirements-for-the-report" class="nav-link" data-scroll-target="#requirements-for-the-report">Requirements for the report</a></li>
   <li><a href="#downloads" id="toc-downloads" class="nav-link" data-scroll-target="#downloads">Downloads</a></li>
   </ul>
 </nav>
@@ -218,8 +211,8 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Assignment Week 3: Multilevel Analysis of School Effectiveness</h1>
-<p class="subtitle lead">Examining Student and School-Level Factors in Inner London</p>
+<h1 class="title">Assignment Week 5</h1>
+<p class="subtitle lead">Multilevel data from the Junior School Project</p>
 </div>
 
 
@@ -238,67 +231,79 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>In this assignment, you will analyze a dataset collected by the Inner London Education Authority (ILEA) to examine the effectiveness of schools. The dataset consists of examination records of 15,362 students from 140 secondary schools over the years 1985, 1986, and 1987. This dataset was sourced from the data library of the Centre for Multilevel Modelling at the University of Bristol.</p>
+<p>In this assignment, you will analyze multilevel data to describe the development of students’ English and Mathematics test scores over time. The data come from the Junior School Project (Mortimore et al.), which examines factors influencing academic progress in junior schools. There are over 1000 students measured over three school years with 3236 records included in this dataset.</p>
+<p>This dataset was sourced from the data library of the centre for Multilevel Modelling, University of Bristol.</p>
 </section>
 <section id="dataset-description" class="level2">
-<h2 class="anchored" data-anchor-id="dataset-description">Dataset Description</h2>
+<h2 class="anchored" data-anchor-id="dataset-description">Dataset description</h2>
 <p>The dataset consists of the following variables:</p>
 <ul>
-<li><code>School</code>: A numeric variable representing the school identifier (codes 1 to 139)</li>
-<li><code>ExamScore</code>: A numeric variable representing the exam score of each student</li>
-<li><code>PercentFSM</code>: The percentage of students in the school eligible for free school meals (an indicator of socioeconomic status)</li>
+<li><code>School</code>: School ID.</li>
+<li><code>Student.ID</code>: Student ID.</li>
 <li><code>Gender</code>: A categorical variable representing the gender of the student</li>
-<li><code>VRBand</code>: The verbal reasoning band of the student (VR1, VR2, or VR3). VR band is an indicator of the student’s assessed ability level, with VR1 typically representing the highest ability group, VR2 representing intermediate ability, and VR3 representing lower ability.</li>
-<li><code>SchoolDenomination</code>: The denomination of the school (Maintained, Church of England, Roman Catholic)</li>
+<li><code>Junior.school.year</code>: Year of the study (0, 1, or 2).</li>
+<li><code>English.test</code>: English test score in year 1.</li>
+<li><code>Mathematics.test</code>: Mathematics test score in year 1.</li>
 </ul>
+<p>The dataset can be downloaded from the link provided in the Downloads section below. When reading the dataset into R, ensure that the <code>Gender</code> variable is correctly encoded as a factor.</p>
 </section>
-<section id="objective" class="level2">
-<h2 class="anchored" data-anchor-id="objective">Objective</h2>
-<p>Your goals are to determine:</p>
+<section id="objectives" class="level2">
+<h2 class="anchored" data-anchor-id="objectives">Objectives</h2>
+<p>Your objectives are to:</p>
 <ol type="1">
-<li>How much of the variability in exam scores can be attributed to:
+<li>Develop an appropriate model to describe the development of students’ English test scores over time
 <ul>
-<li>Differences between students</li>
-<li>Differences between schools</li>
+<li>Include random intercepts to account for the nesting of longitudinal measurements within students and the subsequent nesting of students within schools</li>
+<li>Explore systematic differences in the mean “growth curves” of English test scores over time between boys and girls</li>
+<li>Consider interaction terms such as <code>Gender * Junior.school.year</code> to explore gender-specific trends</li>
 </ul></li>
-<li>Whether individual-level factors (e.g., <code>Gender</code>, <code>VRBand</code>) significantly influence student exam scores</li>
-<li>Whether school-level factors (e.g., <code>PercentFSM</code>) significantly influence student exam scores</li>
+<li>Develop an appropriate model to describe the development of students’ Mathematics test scores over time
+<ul>
+<li>Include random intercepts to account for the nesting of longitudinal measurements within students and the subsequent nesting of students within schools</li>
+<li>Explore systematic differences in the mean “growth curves” of Mathematics test scores over time between boys and girls</li>
+<li>Consider interaction terms such as <code>Gender * Junior.school.year</code> to explore gender-specific trends</li>
+</ul></li>
 </ol>
 </section>
-<section id="steps-to-complete-the-analysis" class="level2">
-<h2 class="anchored" data-anchor-id="steps-to-complete-the-analysis">Steps to Complete the Analysis</h2>
-<section id="load-the-dataset" class="level3">
-<h3 class="anchored" data-anchor-id="load-the-dataset">Load the Dataset</h3>
-<p>Download the dataset (see link in the Downloads section below) and read it into R. Make sure all character variables are correctly encoded as factors.</p>
-</section>
-<section id="exploratory-data-analysis-eda" class="level3">
-<h3 class="anchored" data-anchor-id="exploratory-data-analysis-eda">Exploratory Data Analysis (EDA):</h3>
-<ul>
-<li>Visualize the nesting structure of the data (i.e., number of students per school)</li>
-<li>Explore the distribution of the outcome variable (<code>ExamScore</code>)</li>
-</ul>
-</section>
-<section id="multi-level-modeling" class="level3">
-<h3 class="anchored" data-anchor-id="multi-level-modeling">Multi-Level Modeling</h3>
-<ul>
-<li>Start by fitting a <strong>null model</strong> (i.e., a random intercept model without any predictors) to partition the variance in exam scores between students and schools. Assess how much of the variability in exam scores is due to differences between students and schools.</li>
-<li>Next, add <strong>individual-level variables</strong> (<code>Gender</code>, <code>VRBand</code>) to the model to explore how these factors influence exam scores.</li>
-<li>After that, add <strong>context-level variables</strong> (e.g., <code>PercentFSM</code>) to your model to understand how factors at the school level contribute to differences in exam scores.</li>
-<li>Finally, explore potential <strong>cross-level interactions</strong> between individual-level and context-level variables.</li>
-</ul>
-</section>
-<section id="interpret-the-results" class="level3">
-<h3 class="anchored" data-anchor-id="interpret-the-results">Interpret the Results</h3>
-<p>Interpret the findings from your analysis, focusing on the variance components and the effects of individual-level and context-level variables.</p>
-</section>
-</section>
 <section id="requirements-for-the-report" class="level2">
-<h2 class="anchored" data-anchor-id="requirements-for-the-report">Requirements for the Report</h2>
-<p>Submit both the <strong>Quarto source file (<code>.qmd</code>)</strong> and the <strong>rendered HTML file</strong>. The HTML file should be rendered with code visibility enabled (<code>echo = TRUE</code>).</p>
+<h2 class="anchored" data-anchor-id="requirements-for-the-report">Requirements for the report</h2>
+<p>Your report should clearly explain:</p>
+<ol type="1">
+<li>The reasoning behind your choice of model structure, supported by the results of the exploratory data analysis</li>
+<li>The interpretation of key model parameters in the context of the research questions</li>
+<li>Any limitations or assumptions affecting your analysis</li>
+</ol>
+<p>Submit both the <strong>Quarto source file (<code>.qmd</code>)</strong> and the <strong>rendered HTML file</strong>.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The time variable <code>Junior.school.year</code> is represented as a continuous variable in the dataset. However, you may transform it into a categorical variable in your analysis if you find it more appropriate. For example, you could treat it as a factor with three levels (0, 1, and 2) to represent the three years of the study. This transformation may help you interpret the results more easily.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>While conceptually it is possible to also include a random slope for the time variable in your models, you are not required to do so for this assignment (depending on the coding of the time variable, there are either not sufficient degrees of freedom to fit this model or you may run into convergence/boundary fit issues. You may therefore focus on random intercepts to keep the analysis manageable.</p>
+</div>
+</div>
 </section>
 <section id="downloads" class="level2">
 <h2 class="anchored" data-anchor-id="downloads">Downloads</h2>
-<p><a href="downloads/ilea_data.csv">Download dataset</a></p>
+<p><a href="downloads/jsp_data.csv">Download dataset</a></p>
 
 
 </section>

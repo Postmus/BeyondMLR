@@ -98,53 +98,130 @@
     "text": "Model building principles for longitudinal data analysis\nModel building for longitudinal data analysis follows a systematic approach to ensure that the final model is both parsimonious and adequately represents the data. The process typically involves the following steps:\n\nStart with a saturated fixed-effects structure and a complex random-effects structure\n\nA saturated fixed-effects structure includes all plausible predictors and their interactions based on theoretical considerations and prior knowledge. This ensures that no potentially important effect is excluded at the outset.\nA complex random-effects structure allows for a flexible representation of variability in the data. For example, random intercepts and random slopes are included to account for between-subject variability and other grouping factors.\n\nThis initial specification provides a robust starting point for model refinement, ensuring the inclusion of all meaningful variability in the model.\nDetermine the appropriate random-effects structure\n\nSimplify the random-effects structure by comparing models with different random-effects terms using likelihood ratio tests (LRTs).\nImportantly, these comparisons are made without refitting the models using maximum likelihood (ML). Restricted maximum likelihood (REML) is retained during this step to ensure accurate estimation of variance components.\nRemove unnecessary random-effects terms to avoid overfitting while retaining terms that account for substantial variability in the data.\n\nSimplify the fixed-effects structure\n\nStarting from the saturated fixed-effects structure combined with the final reduced random-effects structure, iteratively remove non-significant fixed effects.\nFor fixed-effects structure refinement, models must be refitted using ML rather than REML. This ensures correct inference for hypothesis testing and comparison of nested models.\nOnce the final fixed-effects structure is determined, the model can be refitted using REML for final parameter estimation.\n\n\n\nAdditional considerations for model comparison\nThe model building principles described above apply specifically to the comparison of nested models, where one model is a special case of another (e.g., a simpler model can be obtained by constraining parameters in the more complex model). In such cases, likelihood ratio tests (LRTs) provide a robust framework for selecting between models.\nHowever, when comparing non-nested models, where one model cannot be derived from the other by parameter constraints, LRTs are not appropriate. Instead, model selection criteria such as Akaike Information Criterion (AIC) or Bayesian Information Criterion (BIC) should be used. These criteria provide a balance between model fit and complexity, aiding in the selection of the most parsimonious model that adequately represents the data."
   },
   {
-    "objectID": "Assignments/Week 4/Assignment_week_4.html",
-    "href": "Assignments/Week 4/Assignment_week_4.html",
-    "title": "Assignment Week 4: Longitudinal Data Analysis",
+    "objectID": "Assignments/Week 5/Assignment_week_5.html",
+    "href": "Assignments/Week 5/Assignment_week_5.html",
+    "title": "Assignment Week 5",
     "section": "",
-    "text": "You will work with longitudinal data from a growth curve study. The dataset captures weight measurements of 568 Asian children, recorded during clinic visits on up to five occasions. Ages range from approximately 6 weeks to 27 months. Your task is to model the children’s growth trajectories over time.\nThis dataset was sourced from the data library of the centre for Multilevel Modelling, University of Bristol."
+    "text": "In this assignment, you will analyze multilevel data to describe the development of students’ English and Mathematics test scores over time. The data come from the Junior School Project (Mortimore et al.), which examines factors influencing academic progress in junior schools. There are over 1000 students measured over three school years with 3236 records included in this dataset.\nThis dataset was sourced from the data library of the centre for Multilevel Modelling, University of Bristol."
   },
   {
-    "objectID": "Assignments/Week 4/Assignment_week_4.html#introduction",
-    "href": "Assignments/Week 4/Assignment_week_4.html#introduction",
-    "title": "Assignment Week 4: Longitudinal Data Analysis",
+    "objectID": "Assignments/Week 5/Assignment_week_5.html#introduction",
+    "href": "Assignments/Week 5/Assignment_week_5.html#introduction",
+    "title": "Assignment Week 5",
     "section": "",
-    "text": "You will work with longitudinal data from a growth curve study. The dataset captures weight measurements of 568 Asian children, recorded during clinic visits on up to five occasions. Ages range from approximately 6 weeks to 27 months. Your task is to model the children’s growth trajectories over time.\nThis dataset was sourced from the data library of the centre for Multilevel Modelling, University of Bristol."
+    "text": "In this assignment, you will analyze multilevel data to describe the development of students’ English and Mathematics test scores over time. The data come from the Junior School Project (Mortimore et al.), which examines factors influencing academic progress in junior schools. There are over 1000 students measured over three school years with 3236 records included in this dataset.\nThis dataset was sourced from the data library of the centre for Multilevel Modelling, University of Bristol."
   },
   {
-    "objectID": "Assignments/Week 4/Assignment_week_4.html#dataset-description",
-    "href": "Assignments/Week 4/Assignment_week_4.html#dataset-description",
-    "title": "Assignment Week 4: Longitudinal Data Analysis",
+    "objectID": "Assignments/Week 5/Assignment_week_5.html#dataset-description",
+    "href": "Assignments/Week 5/Assignment_week_5.html#dataset-description",
+    "title": "Assignment Week 5",
     "section": "Dataset description",
-    "text": "Dataset description\nThe dataset consists of the following variables:\n\nChildID: Unique identifier for each child\nAge: Child’s age at the time of measurement (months)\nWeight: Child’s weight at the time of measurement (grams)\nGender: Child’s gender (Boy or Girl)"
+    "text": "Dataset description\nThe dataset consists of the following variables:\n\nSchool: School ID.\nStudent.ID: Student ID.\nGender: A categorical variable representing the gender of the student\nJunior.school.year: Year of the study (0, 1, or 2).\nEnglish.test: English test score in year 1.\nMathematics.test: Mathematics test score in year 1.\n\nThe dataset can be downloaded from the link provided in the Downloads section below. When reading the dataset into R, ensure that the Gender variable is correctly encoded as a factor."
   },
   {
-    "objectID": "Assignments/Week 4/Assignment_week_4.html#objectives",
-    "href": "Assignments/Week 4/Assignment_week_4.html#objectives",
-    "title": "Assignment Week 4: Longitudinal Data Analysis",
+    "objectID": "Assignments/Week 5/Assignment_week_5.html#objectives",
+    "href": "Assignments/Week 5/Assignment_week_5.html#objectives",
+    "title": "Assignment Week 5",
     "section": "Objectives",
-    "text": "Objectives\nYour objectives are to:\n\nDevelop an appropriate model to describe the growth curve of children’s weight over time, considering fixed and random effects.\nUse the model to answer the following research questions:\n\nHow does the weight of children change over time (e.g., constant, linear, quadratic)?\nHow does gender influence the mean growth curve of children’s weight?"
+    "text": "Objectives\nYour objectives are to:\n\nDevelop an appropriate model to describe the development of students’ English test scores over time\n\nInclude random intercepts to account for the nesting of longitudinal measurements within students and the subsequent nesting of students within schools\nExplore systematic differences in the mean “growth curves” of English test scores over time between boys and girls\nConsider interaction terms such as Gender * Junior.school.year to explore gender-specific trends\n\nDevelop an appropriate model to describe the development of students’ Mathematics test scores over time\n\nInclude random intercepts to account for the nesting of longitudinal measurements within students and the subsequent nesting of students within schools\nExplore systematic differences in the mean “growth curves” of Mathematics test scores over time between boys and girls\nConsider interaction terms such as Gender * Junior.school.year to explore gender-specific trends"
   },
   {
-    "objectID": "Assignments/Week 4/Assignment_week_4.html#steps-to-complete-the-analysis",
-    "href": "Assignments/Week 4/Assignment_week_4.html#steps-to-complete-the-analysis",
-    "title": "Assignment Week 4: Longitudinal Data Analysis",
-    "section": "Steps to complete the analysis",
-    "text": "Steps to complete the analysis\n\nLoad the dataset\nDownload the dataset (see link in the Downloads section below) and read it into R. Ensure that the Gender variable is correctly encoded as a factor.\n\n\nExploratory data analysis\n\nExplore the individual and mean trajectories of weight gain over time.\n\n\n\nModel building\n\nBegin with a comprehensive (saturated) model and iteratively simplify it to determine the best fixed and random effects structure.\nUse likelihood ratio tests to refine random effects (models not refitted with ML).\nUse likelihood ratio tests with models refitted using ML to refine fixed effects.\n\n\n\nInterpret the results\nInterpret the findings from your analysis, focusing on answering the research questions outlined in the Objectives section."
-  },
-  {
-    "objectID": "Assignments/Week 4/Assignment_week_4.html#requirements-for-the-report",
-    "href": "Assignments/Week 4/Assignment_week_4.html#requirements-for-the-report",
-    "title": "Assignment Week 4: Longitudinal Data Analysis",
+    "objectID": "Assignments/Week 5/Assignment_week_5.html#requirements-for-the-report",
+    "href": "Assignments/Week 5/Assignment_week_5.html#requirements-for-the-report",
+    "title": "Assignment Week 5",
     "section": "Requirements for the report",
-    "text": "Requirements for the report\nYour report should clearly explain:\n\nThe reasoning behind your choice of model structure.\nThe interpretation of key model parameters in the context of the research questions.\nAny limitations or assumptions affecting your analysis.\n\nSubmit both the Quarto source file (.qmd) and the rendered HTML file. Ensure that the HTML file includes visible code (echo = TRUE) for reproducibility."
+    "text": "Requirements for the report\nYour report should clearly explain:\n\nThe reasoning behind your choice of model structure, supported by the results of the exploratory data analysis\nThe interpretation of key model parameters in the context of the research questions\nAny limitations or assumptions affecting your analysis\n\nSubmit both the Quarto source file (.qmd) and the rendered HTML file.\n\n\n\n\n\n\nTip\n\n\n\nThe time variable Junior.school.year is represented as a continuous variable in the dataset. However, you may transform it into a categorical variable in your analysis if you find it more appropriate. For example, you could treat it as a factor with three levels (0, 1, and 2) to represent the three years of the study. This transformation may help you interpret the results more easily.\n\n\n\n\n\n\n\n\nTip\n\n\n\nWhile conceptually it is possible to also include a random slope for the time variable in your models, you are not required to do so for this assignment (depending on the coding of the time variable, there are either not sufficient degrees of freedom to fit this model or you may run into convergence/boundary fit issues. You may therefore focus on random intercepts to keep the analysis manageable."
   },
   {
-    "objectID": "Assignments/Week 4/Assignment_week_4.html#downloads",
-    "href": "Assignments/Week 4/Assignment_week_4.html#downloads",
-    "title": "Assignment Week 4: Longitudinal Data Analysis",
+    "objectID": "Assignments/Week 5/Assignment_week_5.html#downloads",
+    "href": "Assignments/Week 5/Assignment_week_5.html#downloads",
+    "title": "Assignment Week 5",
     "section": "Downloads",
     "text": "Downloads\nDownload dataset"
+  },
+  {
+    "objectID": "Assignments/Week 3/Assignment_week_3.html",
+    "href": "Assignments/Week 3/Assignment_week_3.html",
+    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "section": "",
+    "text": "In this assignment, you will analyze a dataset collected by the Inner London Education Authority (ILEA) to examine the effectiveness of schools. The dataset consists of examination records of 15,362 students from 140 secondary schools over the years 1985, 1986, and 1987. This dataset was sourced from the data library of the Centre for Multilevel Modelling at the University of Bristol."
+  },
+  {
+    "objectID": "Assignments/Week 3/Assignment_week_3.html#introduction",
+    "href": "Assignments/Week 3/Assignment_week_3.html#introduction",
+    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "section": "",
+    "text": "In this assignment, you will analyze a dataset collected by the Inner London Education Authority (ILEA) to examine the effectiveness of schools. The dataset consists of examination records of 15,362 students from 140 secondary schools over the years 1985, 1986, and 1987. This dataset was sourced from the data library of the Centre for Multilevel Modelling at the University of Bristol."
+  },
+  {
+    "objectID": "Assignments/Week 3/Assignment_week_3.html#dataset-description",
+    "href": "Assignments/Week 3/Assignment_week_3.html#dataset-description",
+    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "section": "Dataset Description",
+    "text": "Dataset Description\nThe dataset consists of the following variables:\n\nSchool: A numeric variable representing the school identifier (codes 1 to 139)\nExamScore: A numeric variable representing the exam score of each student\nPercentFSM: The percentage of students in the school eligible for free school meals (an indicator of socioeconomic status)\nGender: A categorical variable representing the gender of the student\nVRBand: The verbal reasoning band of the student (VR1, VR2, or VR3). VR band is an indicator of the student’s assessed ability level, with VR1 typically representing the highest ability group, VR2 representing intermediate ability, and VR3 representing lower ability.\nSchoolDenomination: The denomination of the school (Maintained, Church of England, Roman Catholic)"
+  },
+  {
+    "objectID": "Assignments/Week 3/Assignment_week_3.html#objective",
+    "href": "Assignments/Week 3/Assignment_week_3.html#objective",
+    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "section": "Objective",
+    "text": "Objective\nYour goals are to determine:\n\nHow much of the variability in exam scores can be attributed to:\n\nDifferences between students\nDifferences between schools\n\nWhether individual-level factors (e.g., Gender, VRBand) significantly influence student exam scores\nWhether school-level factors (e.g., PercentFSM) significantly influence student exam scores"
+  },
+  {
+    "objectID": "Assignments/Week 3/Assignment_week_3.html#steps-to-complete-the-analysis",
+    "href": "Assignments/Week 3/Assignment_week_3.html#steps-to-complete-the-analysis",
+    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "section": "Steps to Complete the Analysis",
+    "text": "Steps to Complete the Analysis\n\nLoad the Dataset\nDownload the dataset (see link in the Downloads section below) and read it into R. Make sure all character variables are correctly encoded as factors.\n\n\nExploratory Data Analysis (EDA):\n\nVisualize the nesting structure of the data (i.e., number of students per school)\nExplore the distribution of the outcome variable (ExamScore)\n\n\n\nMulti-Level Modeling\n\nStart by fitting a null model (i.e., a random intercept model without any predictors) to partition the variance in exam scores between students and schools. Assess how much of the variability in exam scores is due to differences between students and schools.\nNext, add individual-level variables (Gender, VRBand) to the model to explore how these factors influence exam scores.\nAfter that, add context-level variables (e.g., PercentFSM) to your model to understand how factors at the school level contribute to differences in exam scores.\nFinally, explore potential cross-level interactions between individual-level and context-level variables.\n\n\n\nInterpret the Results\nInterpret the findings from your analysis, focusing on the variance components and the effects of individual-level and context-level variables."
+  },
+  {
+    "objectID": "Assignments/Week 3/Assignment_week_3.html#requirements-for-the-report",
+    "href": "Assignments/Week 3/Assignment_week_3.html#requirements-for-the-report",
+    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "section": "Requirements for the Report",
+    "text": "Requirements for the Report\nSubmit both the Quarto source file (.qmd) and the rendered HTML file. The HTML file should be rendered with code visibility enabled (echo = TRUE)."
+  },
+  {
+    "objectID": "Assignments/Week 3/Assignment_week_3.html#downloads",
+    "href": "Assignments/Week 3/Assignment_week_3.html#downloads",
+    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "section": "Downloads",
+    "text": "Downloads\nDownload dataset"
+  },
+  {
+    "objectID": "Assignments/Week 1/Assignment_week_1.html",
+    "href": "Assignments/Week 1/Assignment_week_1.html",
+    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
+    "section": "",
+    "text": "In this assignment, you will analyze a dataset that examines the effect of different rehabilitation programs on the mobility of stroke patients. The dataset includes mobility improvement measurements taken using the 6-Minute Walk Test (6MWT), a standard assessment to evaluate physical mobility and endurance.\nPatients in the study were randomly assigned to one of three rehabilitation programs:\n\nControl: Standard physical therapy.\nRobotic-Assisted Therapy: Rehabilitation involving robotic devices designed to support movement.\nAquatic Therapy: Water-based exercises aimed at improving mobility with reduced joint stress."
+  },
+  {
+    "objectID": "Assignments/Week 1/Assignment_week_1.html#introduction",
+    "href": "Assignments/Week 1/Assignment_week_1.html#introduction",
+    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
+    "section": "",
+    "text": "In this assignment, you will analyze a dataset that examines the effect of different rehabilitation programs on the mobility of stroke patients. The dataset includes mobility improvement measurements taken using the 6-Minute Walk Test (6MWT), a standard assessment to evaluate physical mobility and endurance.\nPatients in the study were randomly assigned to one of three rehabilitation programs:\n\nControl: Standard physical therapy.\nRobotic-Assisted Therapy: Rehabilitation involving robotic devices designed to support movement.\nAquatic Therapy: Water-based exercises aimed at improving mobility with reduced joint stress."
+  },
+  {
+    "objectID": "Assignments/Week 1/Assignment_week_1.html#objective",
+    "href": "Assignments/Week 1/Assignment_week_1.html#objective",
+    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
+    "section": "Objective",
+    "text": "Objective\nYour objective is to determine whether there is a statistically significant difference in mobility improvement among the three rehabilitation groups. To complete this analysis, follow these steps:\n\nExplore the Data: Perform an exploratory data analysis (EDA) to understand the distribution of mobility improvements across treatment groups.\nFit a One-Way ANOVA Model: Fit a one-way ANOVA model to test for overall group differences.\nPost-Hoc Comparisons: If you identify significant group differences, calculate estimated marginal means and conduct post-hoc comparisons to determine which groups differ.\nModel Diagnostics: Conduct diagnostic tests and visualizations to evaluate model assumptions, including homoscedasticity and normality of residuals."
+  },
+  {
+    "objectID": "Assignments/Week 1/Assignment_week_1.html#requirements-for-the-report",
+    "href": "Assignments/Week 1/Assignment_week_1.html#requirements-for-the-report",
+    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
+    "section": "Requirements for the Report",
+    "text": "Requirements for the Report\nSubmit both the Quarto source file (.qmd) and the rendered HTML file. The quarto source file should include all R code and annotations, and the html file should be rendered with code visibility enabled (echo = TRUE, which is the default option). The Quarto file in the downloads section below provides a starter template that you can use for this assignment."
+  },
+  {
+    "objectID": "Assignments/Week 1/Assignment_week_1.html#downloads",
+    "href": "Assignments/Week 1/Assignment_week_1.html#downloads",
+    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
+    "section": "Downloads",
+    "text": "Downloads\n\nDownload dataset\nDownload Quarto Template"
   },
   {
     "objectID": "Assignments/Week 2/Assignment_week_2.html",
@@ -196,86 +273,51 @@
     "text": "Downloads\nDownload dataset"
   },
   {
-    "objectID": "Assignments/Week 1/Assignment_week_1.html",
-    "href": "Assignments/Week 1/Assignment_week_1.html",
-    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
+    "objectID": "Assignments/Week 4/Assignment_week_4.html",
+    "href": "Assignments/Week 4/Assignment_week_4.html",
+    "title": "Assignment Week 4: Longitudinal Data Analysis",
     "section": "",
-    "text": "In this assignment, you will analyze a dataset that examines the effect of different rehabilitation programs on the mobility of stroke patients. The dataset includes mobility improvement measurements taken using the 6-Minute Walk Test (6MWT), a standard assessment to evaluate physical mobility and endurance.\nPatients in the study were randomly assigned to one of three rehabilitation programs:\n\nControl: Standard physical therapy.\nRobotic-Assisted Therapy: Rehabilitation involving robotic devices designed to support movement.\nAquatic Therapy: Water-based exercises aimed at improving mobility with reduced joint stress."
+    "text": "You will work with longitudinal data from a growth curve study. The dataset captures weight measurements of 568 Asian children, recorded during clinic visits on up to five occasions. Ages range from approximately 6 weeks to 27 months. Your task is to model the children’s growth trajectories over time.\nThis dataset was sourced from the data library of the centre for Multilevel Modelling, University of Bristol."
   },
   {
-    "objectID": "Assignments/Week 1/Assignment_week_1.html#introduction",
-    "href": "Assignments/Week 1/Assignment_week_1.html#introduction",
-    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
+    "objectID": "Assignments/Week 4/Assignment_week_4.html#introduction",
+    "href": "Assignments/Week 4/Assignment_week_4.html#introduction",
+    "title": "Assignment Week 4: Longitudinal Data Analysis",
     "section": "",
-    "text": "In this assignment, you will analyze a dataset that examines the effect of different rehabilitation programs on the mobility of stroke patients. The dataset includes mobility improvement measurements taken using the 6-Minute Walk Test (6MWT), a standard assessment to evaluate physical mobility and endurance.\nPatients in the study were randomly assigned to one of three rehabilitation programs:\n\nControl: Standard physical therapy.\nRobotic-Assisted Therapy: Rehabilitation involving robotic devices designed to support movement.\nAquatic Therapy: Water-based exercises aimed at improving mobility with reduced joint stress."
+    "text": "You will work with longitudinal data from a growth curve study. The dataset captures weight measurements of 568 Asian children, recorded during clinic visits on up to five occasions. Ages range from approximately 6 weeks to 27 months. Your task is to model the children’s growth trajectories over time.\nThis dataset was sourced from the data library of the centre for Multilevel Modelling, University of Bristol."
   },
   {
-    "objectID": "Assignments/Week 1/Assignment_week_1.html#objective",
-    "href": "Assignments/Week 1/Assignment_week_1.html#objective",
-    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
-    "section": "Objective",
-    "text": "Objective\nYour objective is to determine whether there is a statistically significant difference in mobility improvement among the three rehabilitation groups. To complete this analysis, follow these steps:\n\nExplore the Data: Perform an exploratory data analysis (EDA) to understand the distribution of mobility improvements across treatment groups.\nFit a One-Way ANOVA Model: Fit a one-way ANOVA model to test for overall group differences.\nPost-Hoc Comparisons: If you identify significant group differences, calculate estimated marginal means and conduct post-hoc comparisons to determine which groups differ.\nModel Diagnostics: Conduct diagnostic tests and visualizations to evaluate model assumptions, including homoscedasticity and normality of residuals."
+    "objectID": "Assignments/Week 4/Assignment_week_4.html#dataset-description",
+    "href": "Assignments/Week 4/Assignment_week_4.html#dataset-description",
+    "title": "Assignment Week 4: Longitudinal Data Analysis",
+    "section": "Dataset description",
+    "text": "Dataset description\nThe dataset consists of the following variables:\n\nChildID: Unique identifier for each child\nAge: Child’s age at the time of measurement (months)\nWeight: Child’s weight at the time of measurement (grams)\nGender: Child’s gender (Boy or Girl)"
   },
   {
-    "objectID": "Assignments/Week 1/Assignment_week_1.html#requirements-for-the-report",
-    "href": "Assignments/Week 1/Assignment_week_1.html#requirements-for-the-report",
-    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
-    "section": "Requirements for the Report",
-    "text": "Requirements for the Report\nSubmit both the Quarto source file (.qmd) and the rendered HTML file. The quarto source file should include all R code and annotations, and the html file should be rendered with code visibility enabled (echo = TRUE, which is the default option). The Quarto file in the downloads section below provides a starter template that you can use for this assignment."
+    "objectID": "Assignments/Week 4/Assignment_week_4.html#objectives",
+    "href": "Assignments/Week 4/Assignment_week_4.html#objectives",
+    "title": "Assignment Week 4: Longitudinal Data Analysis",
+    "section": "Objectives",
+    "text": "Objectives\nYour objectives are to:\n\nDevelop an appropriate model to describe the growth curve of children’s weight over time, considering fixed and random effects.\nUse the model to answer the following research questions:\n\nHow does the weight of children change over time (e.g., constant, linear, quadratic)?\nHow does gender influence the mean growth curve of children’s weight?"
   },
   {
-    "objectID": "Assignments/Week 1/Assignment_week_1.html#downloads",
-    "href": "Assignments/Week 1/Assignment_week_1.html#downloads",
-    "title": "Assignment week 1: Effect of Rehabilitation Programs on Mobility in Stroke Patients",
-    "section": "Downloads",
-    "text": "Downloads\n\nDownload dataset\nDownload Quarto Template"
+    "objectID": "Assignments/Week 4/Assignment_week_4.html#steps-to-complete-the-analysis",
+    "href": "Assignments/Week 4/Assignment_week_4.html#steps-to-complete-the-analysis",
+    "title": "Assignment Week 4: Longitudinal Data Analysis",
+    "section": "Steps to complete the analysis",
+    "text": "Steps to complete the analysis\n\nLoad the dataset\nDownload the dataset (see link in the Downloads section below) and read it into R. Ensure that the Gender variable is correctly encoded as a factor.\n\n\nExploratory data analysis\n\nExplore the individual and mean trajectories of weight gain over time.\n\n\n\nModel building\n\nBegin with a comprehensive (saturated) model and iteratively simplify it to determine the best fixed and random effects structure.\nUse likelihood ratio tests to refine random effects (models not refitted with ML).\nUse likelihood ratio tests with models refitted using ML to refine fixed effects.\n\n\n\nInterpret the results\nInterpret the findings from your analysis, focusing on answering the research questions outlined in the Objectives section."
   },
   {
-    "objectID": "Assignments/Week 3/Assignment_week_3.html",
-    "href": "Assignments/Week 3/Assignment_week_3.html",
-    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
-    "section": "",
-    "text": "In this assignment, you will analyze a dataset collected by the Inner London Education Authority (ILEA) to examine the effectiveness of schools. The dataset consists of examination records of 15,362 students from 140 secondary schools over the years 1985, 1986, and 1987. This dataset was sourced from the data library of the Centre for Multilevel Modelling at the University of Bristol."
+    "objectID": "Assignments/Week 4/Assignment_week_4.html#requirements-for-the-report",
+    "href": "Assignments/Week 4/Assignment_week_4.html#requirements-for-the-report",
+    "title": "Assignment Week 4: Longitudinal Data Analysis",
+    "section": "Requirements for the report",
+    "text": "Requirements for the report\nYour report should clearly explain:\n\nThe reasoning behind your choice of model structure.\nThe interpretation of key model parameters in the context of the research questions.\nAny limitations or assumptions affecting your analysis.\n\nSubmit both the Quarto source file (.qmd) and the rendered HTML file. Ensure that the HTML file includes visible code (echo = TRUE) for reproducibility."
   },
   {
-    "objectID": "Assignments/Week 3/Assignment_week_3.html#introduction",
-    "href": "Assignments/Week 3/Assignment_week_3.html#introduction",
-    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
-    "section": "",
-    "text": "In this assignment, you will analyze a dataset collected by the Inner London Education Authority (ILEA) to examine the effectiveness of schools. The dataset consists of examination records of 15,362 students from 140 secondary schools over the years 1985, 1986, and 1987. This dataset was sourced from the data library of the Centre for Multilevel Modelling at the University of Bristol."
-  },
-  {
-    "objectID": "Assignments/Week 3/Assignment_week_3.html#dataset-description",
-    "href": "Assignments/Week 3/Assignment_week_3.html#dataset-description",
-    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
-    "section": "Dataset Description",
-    "text": "Dataset Description\nThe dataset consists of the following variables:\n\nSchool: A numeric variable representing the school identifier (codes 1 to 139)\nExamScore: A numeric variable representing the exam score of each student\nPercentFSM: The percentage of students in the school eligible for free school meals (an indicator of socioeconomic status)\nGender: A categorical variable representing the gender of the student\nVRBand: The verbal reasoning band of the student (VR1, VR2, or VR3). VR band is an indicator of the student’s assessed ability level, with VR1 typically representing the highest ability group, VR2 representing intermediate ability, and VR3 representing lower ability.\nSchoolDenomination: The denomination of the school (Maintained, Church of England, Roman Catholic)"
-  },
-  {
-    "objectID": "Assignments/Week 3/Assignment_week_3.html#objective",
-    "href": "Assignments/Week 3/Assignment_week_3.html#objective",
-    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
-    "section": "Objective",
-    "text": "Objective\nYour goals are to determine:\n\nHow much of the variability in exam scores can be attributed to:\n\nDifferences between students\nDifferences between schools\n\nWhether individual-level factors (e.g., Gender, VRBand) significantly influence student exam scores\nWhether school-level factors (e.g., PercentFSM) significantly influence student exam scores"
-  },
-  {
-    "objectID": "Assignments/Week 3/Assignment_week_3.html#steps-to-complete-the-analysis",
-    "href": "Assignments/Week 3/Assignment_week_3.html#steps-to-complete-the-analysis",
-    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
-    "section": "Steps to Complete the Analysis",
-    "text": "Steps to Complete the Analysis\n\nLoad the Dataset\nDownload the dataset (see link in the Downloads section below) and read it into R. Make sure all character variables are correctly encoded as factors.\n\n\nExploratory Data Analysis (EDA):\n\nVisualize the nesting structure of the data (i.e., number of students per school)\nExplore the distribution of the outcome variable (ExamScore)\n\n\n\nMulti-Level Modeling\n\nStart by fitting a null model (i.e., a random intercept model without any predictors) to partition the variance in exam scores between students and schools. Assess how much of the variability in exam scores is due to differences between students and schools.\nNext, add individual-level variables (Gender, VRBand) to the model to explore how these factors influence exam scores.\nAfter that, add context-level variables (e.g., PercentFSM) to your model to understand how factors at the school level contribute to differences in exam scores.\nFinally, explore potential cross-level interactions between individual-level and context-level variables.\n\n\n\nInterpret the Results\nInterpret the findings from your analysis, focusing on the variance components and the effects of individual-level and context-level variables."
-  },
-  {
-    "objectID": "Assignments/Week 3/Assignment_week_3.html#requirements-for-the-report",
-    "href": "Assignments/Week 3/Assignment_week_3.html#requirements-for-the-report",
-    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
-    "section": "Requirements for the Report",
-    "text": "Requirements for the Report\nSubmit both the Quarto source file (.qmd) and the rendered HTML file. The HTML file should be rendered with code visibility enabled (echo = TRUE)."
-  },
-  {
-    "objectID": "Assignments/Week 3/Assignment_week_3.html#downloads",
-    "href": "Assignments/Week 3/Assignment_week_3.html#downloads",
-    "title": "Assignment Week 3: Multilevel Analysis of School Effectiveness",
+    "objectID": "Assignments/Week 4/Assignment_week_4.html#downloads",
+    "href": "Assignments/Week 4/Assignment_week_4.html#downloads",
+    "title": "Assignment Week 4: Longitudinal Data Analysis",
     "section": "Downloads",
     "text": "Downloads\nDownload dataset"
   },

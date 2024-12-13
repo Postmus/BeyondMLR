@@ -1,0 +1,66 @@
+---
+title: "Assignment Week 5"
+subtitle: "Multilevel data from the Junior School Project"
+format: html
+execute:
+  warning: false
+  error: false
+  message: false
+  eval: false
+---
+
+## Introduction
+
+In this assignment, you will analyze multilevel data to describe the development of students' English and Mathematics test scores over time. The data come from the Junior School Project (Mortimore et al.), which examines factors influencing academic progress in junior schools. There are over 1000 students measured over three school years with 3236 records included in this dataset.
+
+This dataset was sourced from the data library of the centre for Multilevel Modelling, University of Bristol.
+
+## Dataset description
+
+The dataset consists of the following variables:
+
+- `School`: School ID.
+- `Student.ID`: Student ID.
+- `Gender`: A categorical variable representing the gender of the student
+- `Junior.school.year`: Year of the study (0, 1, or 2).
+- `English.test`: English test score in year 1.
+- `Mathematics.test`: Mathematics test score in year 1.
+
+The dataset can be downloaded from the link provided in the Downloads section below. When reading the dataset into R, ensure that the `Gender` variable is correctly encoded as a factor.
+
+## Objectives
+
+Your objectives are to:
+
+1. Develop an appropriate model to describe the development of students' English test scores over time
+   - Include random intercepts to account for the nesting of longitudinal measurements within students and the subsequent nesting of students within schools
+   - Explore systematic differences in the mean "growth curves" of English test scores over time between boys and girls
+   - Consider interaction terms such as `Gender * Junior.school.year` to explore gender-specific trends
+
+2. Develop an appropriate model to describe the development of students' Mathematics test scores over time
+    - Include random intercepts to account for the nesting of longitudinal measurements within students and the subsequent nesting of students within schools
+    - Explore systematic differences in the mean "growth curves" of Mathematics test scores over time between boys and girls
+    - Consider interaction terms such as `Gender * Junior.school.year` to explore gender-specific trends
+
+## Requirements for the report
+
+Your report should clearly explain:
+
+1. The reasoning behind your choice of model structure, supported by the results of the exploratory data analysis
+2. The interpretation of key model parameters in the context of the research questions
+3. Any limitations or assumptions affecting your analysis
+
+
+Submit both the **Quarto source file (`.qmd`)** and the **rendered HTML file**.
+
+::: {.callout-tip}
+The time variable `Junior.school.year` is represented as a continuous variable in the dataset. However, you may transform it into a categorical variable in your analysis if you find it more appropriate. For example, you could treat it as a factor with three levels (0, 1, and 2) to represent the three years of the study. This transformation may help you interpret the results more easily.
+:::
+
+::: {.callout-tip}
+While conceptually it is possible to also include a random slope for the time variable in your models, you are not required to do so for this assignment (depending on the coding of the time variable, there are either not sufficient degrees of freedom to fit this model or you may run into convergence/boundary fit issues. You may therefore focus on random intercepts to keep the analysis manageable.
+:::
+
+## Downloads
+
+[Download dataset](downloads/jsp_data.csv)
