@@ -3,6 +3,11 @@ project:
   output-dir: "docs"
   resources:
     - "Assignments/Week 1/downloads"
+  render:
+    - index.qmd
+    - BLR_lab_*.qmd
+    - Assignments/**.qmd
+    - "!lectures_2526/**"
     
 website:
   title: "Beyond MLR"

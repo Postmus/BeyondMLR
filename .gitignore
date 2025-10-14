@@ -40,7 +40,6 @@ lectures_2526/**/*.webp
 # Explicitly ignore rendered slide presentations and slide stylesheet
 lectures_2526/_slides/
 lectures_2526/_slides/**
-lectures_2526/slides.css
 
 # Editor / OS
 .Rproj.user/

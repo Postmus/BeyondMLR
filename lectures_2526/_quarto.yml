@@ -1,0 +1,13 @@
+project:
+  type: default
+  output-dir: _slides
+
+format:
+  revealjs:
+    self-contained: true
+    slide-number: true
+    width: 1280
+    height: 720
+    margin: 0.06
+    scrollable: true
+    smaller: true

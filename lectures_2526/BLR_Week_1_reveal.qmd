@@ -1,0 +1,168 @@
+﻿---
+title: "Beyond MLR - Week 1: Experimental Design I"
+subtitle: "One-way FE/RE, ANOVA, coding, ICC"
+author: "Dr. Douwe Postmus"
+format:
+  revealjs:
+    theme: simple
+    slide-number: true
+    toc: false
+    toc-depth: 2
+    slide-level: 2
+    incremental: false
+    code-overflow: wrap
+    scrollable: true
+    smaller: true
+    width: 1280
+    height: 720
+    margin: 0.06
+    max-scale: 2
+    css: slides.css
+execute:
+  warning: false
+  message: false
+  eval: true
+  echo: false
+---
+
+## Introduction
+
+- Welcome slide (to be completed later)
+
+## Experimental research
+
+- Experiment: study in which one or more factors are deliberately varied by assigning specific factor levels to experimental units in order to observe the effect on a response under controlled conditions
+
+- Terminology:
+  - Factor: variable the researcher controls or manipulates (e.g., drug, dose)
+  - Levels (treatments): different values or categories of a factor (e.g., A, B, C; 10 mg, 20 mg)
+  - Experimental unit: smallest unit that can be independently assigned a treatment
+  - Response: outcome measured for each unit (e.g., blood pressure change)
+  - Effect: difference in outcome caused by a change in the factor
+
+## What do we mean by "effect"?
+
+- An effect describes how the response changes when the level of a factor changes
+- Effects can be expressed as differences (e.g., mean or risk difference) or ratios (e.g., risk or odds ratio)
+- In an experiment, factors are deliberately varied to study their influence on the response
+- The goal of experimental design is to ensure that:
+
+  - the observed effects reflect the true influence of the factors rather than other sources of variation
+  - these effects can be estimated precisely and efficiently, by minimizing unexplained variation through proper design choices
+
+## Sources of unwanted variation
+
+- Nuisance variables: influence the response but are not of primary interest (e.g., age, litter)
+- They can:
+
+  - increase random variation → more noise, less precision
+  - cause systematic bias → distorted estimates of effects
+- Types of bias if not controlled
+
+  - Selection bias (confounding): systematic baseline differences between groups
+  - Performance bias: different care or handling across treatments
+  - Detection bias: outcome assessment influenced by knowledge of treatment
+
+## Principles of experimental design
+
+- Control: keep conditions as similar as possible except for the factors of interest
+- Randomization: assign units to factor levels by chance → balances known and unknown nuisance variables
+- Replication: include multiple experimental units per treatment — enables estimation of variability and statistical testing
+- Blocking: group units by nuisance variables (e.g., litter, cage) and randomize within blocks — isolates treatment effects from nuisance effects
+
+### Update slides from this point ###
+
+## Case Study — Antihypertensive Treatments
+
+- Research question: Do two experimental drugs (Drug A, Drug B) reduce systolic blood pressure more than Control over 12 weeks?
+- Design narrative: 120 patients with hypertension are randomly assigned to one of three groups (n = 40 each): Control, Drug A, or Drug B. The study is conducted under comparable conditions; outcome assessors are blinded to allocation.
+- Outcome (response): change in systolic BP (mmHg) from baseline to week 12 (positive values indicate reduction)
+- Factor (one-way): Treatment with three levels (Control, Drug A, Drug B)
+- Experimental units: individual patients; one outcome per patient
+
+```{r}
+#| echo: false
+# Prepare example data once for subsequent slides (hidden)
+set.seed(123)
+control <- rnorm(40, mean = 2,  sd = 10)
+drugA   <- rnorm(40, mean = 20, sd = 10)
+drugB   <- rnorm(40, mean = 5,  sd = 10)
+df_bp <- data.frame(
+  Treatment = factor(rep(c("Control","DrugA","DrugB"), each = 40),
+                     levels = c("Control","DrugA","DrugB")),
+  BP_Reduction = c(control, drugA, drugB)
+)
+```
+
+## Case Study — Exploratory Data Analysis
+
+```{r}
+#| echo: false
+boxplot(BP_Reduction ~ Treatment, data = df_bp,
+        col = c("gray85","skyblue","lightgreen"),
+        ylab = "BP reduction (mmHg)", main = "BP reduction by treatment")
+```
+
+```{r}
+#| echo: false
+aggregate(BP_Reduction ~ Treatment, data = df_bp,
+          FUN = function(x) c(Mean = round(mean(x),2), SD = round(sd(x),2)))
+```
+
+## Case Study — Statistical Model Specification
+
+To compare average BP reduction across the three treatment groups (a single categorical factor), we use the one-way ANOVA model:
+
+$$
+\text{BP_Reduction}_{ij} = \mu + \tau_i + \varepsilon_{ij}
+$$
+
+Brief technical + intuitive notes:
+
+- Model components:
+  - $\mu$ (grand mean): overall mean BP reduction across all patients.
+  - $\tau_i$ (treatment effect): systematic deviation for treatment $i$; typically constrained so $\sum_i \tau_i = 0$.
+  - $\varepsilon_{ij}$ (error): residual for patient $j$ in group $i$.
+- Statistical assumptions (concise):
+  - $\varepsilon_{ij}$ are independent with $\varepsilon_{ij}\sim\mathcal{N}(0,\sigma^2)$ (approximate normality), and common variance $\sigma^2$ across groups (homoscedasticity).
+  - Independence of residuals (no clustering beyond the treatment grouping).
+- Estimation and interpretation:
+  - Parameters are estimated by ordinary least squares (equivalently from the ANOVA sums of squares).
+  - Under effects (sum-to-zero) coding, the intercept equals the grand mean and $\tau_i$ are group deviations; under reference coding the intercept is the reference group mean.
+
+## Case Study - Global Hypothesis Test
+
+- Plain statement of the question:
+  - Are the average BP reductions the same for Control, Drug A and Drug B, or does at least one treatment differ?
+- Formal hypotheses:
+  - $H_0: \tau_1 = \tau_2 = \dots = \tau_k = 0$  (all group means equal)
+  - $H_1: \exists\,i\ \text{such that }\tau_i \neq 0$
+- What ANOVA tests (technical intuition):
+  - ANOVA partitions total variance into between-group and within-group components and computes the F statistic
+    $$
+    F \;=\; \frac{SS_{\mathrm{Tr}}/(k-1)}{SS_{\mathrm{E}}/(N-k)},
+    $$
+    which under $H_0$ follows $F_{k-1,\,N-k}$.
+  - A large $F$ (small $p$) indicates that between-group variation is large relative to within-group noise.
+- Practical follow-up when ANOVA is significant:
+  - Perform pairwise comparisons (e.g., Tukey HSD) or pre-specified contrasts to identify which groups differ.
+  - Report estimated mean differences with 95% confidence intervals and consider effect sizes (mean differences, Cohen's $d$) for clinical interpretation.
+
+## Intermezzo - Connection To Linear Regression
+
+- Short technical note:
+  - One-way ANOVA is a special case of the linear model $y = X\beta + \varepsilon$ where $X$ is the design matrix encoding group membership.
+  - Fitting \texttt{lm(y ~ factor(Treatment))} in R yields the same fitted values and residuals as ANOVA; sums-of-squares relate to projection geometry of $X$.
+- Practical point:
+  - Using regression notation makes it straightforward to add covariates (adjusted means) and to specify contrasts.
+
+## Intermezzo - Dummy Coding Versus Effects Coding
+
+- Concise technical comparison:
+  - Dummy (reference) coding (R: contr.treatment): choose a reference group. β0 = mean(reference); other β's = group mean − reference mean. Good for direct comparisons to a control.
+  - Effects (sum-to-zero) coding (R: contr.sum): coefficients are deviations from the grand mean; intercept = grand mean and coefficients sum to zero. Useful for symmetric contrasts and certain hypothesis tests.
+- Quick R hints (one-liners):
+  - Set reference coding: contrasts(df$Treatment) <- contr.treatment(levels(df$Treatment))
+  - Set effects coding: contrasts(df$Treatment) <- contr.sum(levels(df$Treatment))
+- Interpretation reminder:
+  - Which coding to use depends on the estimands you need (pairwise differences vs deviations from grand mean); both are algebraically equivalent for estimating group means and testing overall effects.

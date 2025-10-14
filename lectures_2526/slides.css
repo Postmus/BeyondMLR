@@ -1,0 +1,17 @@
+/* Tighter, more readable defaults */
+section.slide h1 { font-size: 1.8rem; }
+section.slide h2 { font-size: 1.4rem; }
+section.slide h3 { font-size: 1.15rem; }
+
+section.slide ul { margin-top: 0.2rem; margin-bottom: 0.4rem; }
+section.slide li { margin: 0.15rem 0; }
+
+/* Make code a bit smaller and wrap nicely */
+section.slide pre code { font-size: 0.9em; }
+
+/* Optional tighter layout utility */
+.tight ul li { margin: 0.05rem 0; }
+
+/* Columns: ensure reasonable gap */
+.columns { column-gap: 2rem; }
+
