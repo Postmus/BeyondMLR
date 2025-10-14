@@ -26,6 +26,17 @@ lectures_2526/*_reveal*/
 lectures_2526/*.reveal.html
 lectures_2526/*.html
 
+# Quarto freeze / figure outputs and generated images in lectures
+lectures_2526/.quarto/
+lectures_2526/.quarto/**
+lectures_2526/**/figure-*/
+lectures_2526/**/figure-*/**
+lectures_2526/**/*.png
+lectures_2526/**/*.jpg
+lectures_2526/**/*.jpeg
+lectures_2526/**/*.svg
+lectures_2526/**/*.webp
+
 # Editor / OS
 .Rproj.user/
 .vscode/
