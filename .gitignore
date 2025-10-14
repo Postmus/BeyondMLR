@@ -3,4 +3,31 @@
 .RData
 .Ruserdata
 
+# Quarto project cache (do not commit)
 /.quarto/
+project-cache/
+preview/
+
+# Keep website output `docs/` for GitHub Pages tracked.
+# But site libraries can be rebuilt and don't need to be tracked.
+site_libs/
+**/site_libs/
+
+# Quarto notebooks
+**/*.quarto_ipynb
+
+# Old lectures folder (not a generated file)
+/Lectures_2425
+
+# Lecture slides (revealjs) build artifacts — ignore per-slide generated folders and local HTML not intended for repo
+lectures_2526/*_files/
+lectures_2526/*_cache/
+lectures_2526/*_reveal*/
+lectures_2526/*.reveal.html
+lectures_2526/*.html
+
+# Editor / OS
+.Rproj.user/
+.vscode/
+.DS_Store
+Thumbs.db
