@@ -70,8 +70,6 @@ execute:
 - Replication: include multiple experimental units per treatment — enables estimation of variability and statistical testing
 - Blocking: group units by nuisance variables (e.g., litter, cage) and randomize within blocks — isolates treatment effects from nuisance effects
 
-### Update slides from this point ###
-
 ## Case Study — Antihypertensive Treatments
 
 - Research question: Do two experimental drugs (Drug A, Drug B) reduce systolic blood pressure more than Control over 12 weeks?
@@ -117,18 +115,33 @@ $$
 \text{BP_Reduction}_{ij} = \mu + \tau_i + \varepsilon_{ij}
 $$
 
-Brief technical + intuitive notes:
-
 - Model components:
+  - $\text{BP_Reduction}_{ij}$: blood pressure reduction for the $j$-th patient in the $i$-th treatment group.
   - $\mu$ (grand mean): overall mean BP reduction across all patients.
   - $\tau_i$ (treatment effect): systematic deviation for treatment $i$; typically constrained so $\sum_i \tau_i = 0$.
   - $\varepsilon_{ij}$ (error): residual for patient $j$ in group $i$.
-- Statistical assumptions (concise):
-  - $\varepsilon_{ij}$ are independent with $\varepsilon_{ij}\sim\mathcal{N}(0,\sigma^2)$ (approximate normality), and common variance $\sigma^2$ across groups (homoscedasticity).
-  - Independence of residuals (no clustering beyond the treatment grouping).
-- Estimation and interpretation:
-  - Parameters are estimated by ordinary least squares (equivalently from the ANOVA sums of squares).
-  - Under effects (sum-to-zero) coding, the intercept equals the grand mean and $\tau_i$ are group deviations; under reference coding the intercept is the reference group mean.
+- Statistical assumptions:
+  - $\varepsilon_{ij}\sim\mathcal{N}(0,\sigma^2)$: the errors $\varepsilon_{ij}$ are independent normally distributed with common variance $\sigma^2$ across groups (homoscedasticity).
+
+::: {.callout-note title="Index notation: groups (i) and observations (j)"}
+In models like
+$$
+Y_{ij} = \mu + \tau_i + \varepsilon_{ij}
+$$
+the subscript convention helps indicate which unit each symbol refers to:
+
+- i indexes the group or treatment (e.g., treatment 1, 2, ..., k).
+- j indexes the observational unit within group i (e.g., the j-th patient in group i).
+
+So Y_{ij} is the response of the j-th subject in group i. The error term \varepsilon_{ij}
+is the residual for that specific subject; assumptions like \varepsilon_{ij}\sim N(0,\sigma^2)
+apply at the observation level. Using i and j keeps formulas compact and makes it clear
+how sums and variances are taken (e.g., sum over j within each i, or sum over i and j).
+
+Example (one-way ANOVA): the group means are often written as
+$$\bar{Y}_{i\cdot} = \frac{1}{n_i}\sum_{j=1}^{n_i} Y_{ij},$$
+where n_i is the number of observations in group i.
+:::
 
 ## Case Study - Global Hypothesis Test
 
