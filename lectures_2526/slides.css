@@ -15,3 +15,75 @@ section.slide pre code { font-size: 0.9em; }
 /* Columns: ensure reasonable gap */
 .columns { column-gap: 2rem; }
 
+
+/* --- Adjust printed output / model summaries for slides --- */
+/* Slightly increase output font so printed tables and summaries match slide text */
+.reveal .quarto-output,
+.reveal .cell-output,
+.reveal pre,
+.reveal code,
+.reveal .sourceCode,
+.reveal .quarto-code,
+.reveal .quarto-output pre,
+.reveal .cell-output pre {
+	font-size: 1.5em;    /* tweak this to 1.00 - 1.15 to taste */
+	line-height: 1.28;
+}
+
+/* Make output tables a bit larger too */
+.reveal .cell-output table,
+.reveal .quarto-output table {
+	font-size: 1.03em;
+}
+
+/* Add padding inside pre blocks so long lines are more readable */
+.reveal pre {
+	padding: 0.45em 2em;
+	border-radius: 4px;
+}
+
+/* Add extra vertical spacing around output blocks for readability */
+.reveal .quarto-output,
+.reveal .cell-output,
+.reveal pre,
+.reveal .quarto-output pre,
+.reveal .cell-output pre {
+	margin-top: 0.7rem;   /* space above outputs */
+	margin-bottom: 0.7rem;/* space below outputs */
+}
+
+/* Add a little internal padding for output tables and cells */
+.reveal .cell-output table td,
+.reveal .cell-output table th,
+.reveal .quarto-output table td,
+.reveal .quarto-output table th {
+	padding: 0.35rem 0.5rem;
+}
+
+/* Stronger override: match the exact wrappers Quarto generates and force styles */
+.reveal .cell > .cell-output,
+.reveal .cell-output,
+.reveal .cell-output pre,
+.reveal .cell-output code,
+.reveal .quarto-output,
+.reveal .quarto-output pre,
+.reveal .quarto-output code,
+.reveal .cell-output .cell-output-stdout,
+.reveal .cell-output .cell-output-display {
+	font-size: 1.05em !important;
+	line-height: 1.35 !important;
+	margin-top: 0.85rem !important;
+	margin-bottom: 0.85rem !important;
+	padding: 0.55em 0.75em !important;
+}
+
+/* Make table cells inside outputs more airy */
+.reveal .cell-output table td,
+.reveal .cell-output table th,
+.reveal .quarto-output table td,
+.reveal .quarto-output table th {
+	padding: 0.45rem 0.7rem !important;
+}
+
+/* Ensure pre/code font-size is consistent */
+.reveal pre, .reveal code, .reveal pre code { font-size: 1.02em !important; }

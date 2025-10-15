@@ -2,27 +2,6 @@
 title: "Beyond MLR - Week 1: Experimental Design I"
 subtitle: "One-way FE/RE, ANOVA, coding, ICC"
 author: "Dr. Douwe Postmus"
-format:
-  revealjs:
-    theme: simple
-    slide-number: true
-    toc: false
-    toc-depth: 2
-    slide-level: 2
-    incremental: false
-    code-overflow: wrap
-    scrollable: true
-    smaller: true
-    width: 1280
-    height: 720
-    margin: 0.06
-    max-scale: 2
-    css: slides.css
-execute:
-  warning: false
-  message: false
-  eval: true
-  echo: false
 ---
 
 ## Introduction
@@ -109,20 +88,21 @@ aggregate(BP_Reduction ~ Treatment, data = df_bp,
 
 ## Statistical model specification
 
-To compare average BP reduction across the three treatment groups (a single categorical factor), we use the one-way ANOVA model:
+To compare average blood pressure reduction across the three treatment groups (a single categorical factor), we use the one-way ANOVA model:
 
 $$
 \text{BP_Reduction}_{ij} = \mu + \tau_i + \varepsilon_{ij}
 $$
 
 - Model components:
-  - $\text{BP_Reduction}_{ij}$: blood pressure reduction for the $j$-th patient in the $i$-th treatment group.
-  - $\mu$ (grand mean): the mean of the group-level means.
+  - $\text{BP_Reduction}_{ij}$: blood pressure reduction for the $j$-th patient in the $i$-th treatment group
+  - $\mu$ (grand mean): the mean of the group-level means
   - $\tau_i$ (treatment deviations): systematic deviation for treatment $i$; constrained so $\sum_i \tau_i = 0$.
-  - $\varepsilon_{ij}$ (error): residual for patient $j$ in group $i$.
+  - $\varepsilon_{ij}$ (error): residual for patient $j$ in group $i$
 - Statistical assumptions:
-  - $\varepsilon_{ij}\sim\mathcal{N}(0,\sigma^2)$: the errors $\varepsilon_{ij}$ are normally distributed with common variance $\sigma^2$ across groups (homoscedasticity).
+  - $\varepsilon_{ij}\sim\mathcal{N}(0,\sigma^2)$: the errors $\varepsilon_{ij}$ are normally distributed with common variance $\sigma^2$ across groups (homoscedasticity)
   - The errors are independent
+R output is a bit smaller compared to the ont size for the text. Is there a way to control that
 
 ::: {.callout-tip title="Index nesting: groups (i) > members (j)"}
 Notational convention: statisticians typically use earlier letters (e.g. $i, k, g$) for factors/levels and later letters (e.g. $j, t, n$) for observational indices — this reflects nesting (i outer, j inner) and makes summation limits natural (sum over $j$ for fixed $i$). For example:
@@ -134,9 +114,10 @@ $Y_{ij}$ is the $j$-th subject in group $i$, and group averages are
 $\bar{Y}_{i\cdot} = \frac{1}{n_i}\sum_{j=1}^{n_i} Y_{ij}$.
 :::
 
-## Estimating group effects via linear regression
+## Estimation using linear regression
 
-A one-way ANOVA can be written as a linear regression with a categorical predictor, which lets us apply regression tools to estimate and test effects. Using dummy coding with the control group as reference, the statistically equivalent regression model is:
+- A one-way ANOVA can be written as a linear regression with a categorical predictor, which lets us apply regression toolbox to estimate and test effects
+- Using dummy coding with the control group as reference, the statistically equivalent regression model is:
 
 $$
 Y_{ij} = \beta_0 + \beta_1 D_{1,ij} + \beta_2 D_{2,ij} + \varepsilon_{ij}
@@ -155,23 +136,7 @@ where $D_1, D_2$ are the dummy indicators for DrugA and DrugB (see table below).
   - $\beta_1$: estimated difference mean(DrugA) − mean(Control)
   - $\beta_2$: estimated difference mean(DrugB) − mean(Control)
 
-- Mapping to the ANOVA model parameters
-  - Intercept and betas → group means:
-    - mean(Control) = $\beta_0$
-    - mean(DrugA)   = $\beta_0 + \beta_1$
-    - mean(DrugB)   = $\beta_0 + \beta_2$
-
-  - Grand mean (ANOVA intercept):
-    $\mu = \frac{\text{mean(Control)} + \text{mean(DrugA)} + \text{mean(DrugB)}}{3} = \beta_0 + \frac{\beta_1 + \beta_2}{3}$
-
-  - Treatment deviations (ANOVA $\tau_i$) written in terms of the regression coefficients:
-    - $\tau_{\text{Control}} = \text{mean(Control)} - \mu = -\frac{\beta_1 + \beta_2}{3}$
-    - $\tau_{\text{DrugA}}   = \text{mean(DrugA)} - \mu = \beta_1 - \frac{\beta_1 + \beta_2}{3}$
-    - $\tau_{\text{DrugB}}   = \text{mean(DrugB)} - \mu = \beta_2 - \frac{\beta_1 + \beta_2}{3}$
-
-  - In short: the dummy-coded regression coefficients give easy expressions for the group means, and the ANOVA deviations (the $\tau_i$) are simple transforms of the $\beta$s shown above.
-
-## Estimated regression coefficients - dummy coding
+## Estimated regression coefficients (dummy coded model)
 
 ```{r}
 #| echo: false
@@ -181,9 +146,27 @@ fit <- lm(BP_Reduction ~ Treatment, data = df_bp)
 summary(fit)
 ```
 
-## Effects coding and mapping to ANOVA parameters
+## Mapping to the ANOVA model parameters
 
-Another common choice is effects (sum-to-zero) coding. With this coding the regression coefficients map directly to the ANOVA parameters:
+- Intercept and betas → group means:
+  - mean(Control) = $\beta_0$
+  - mean(DrugA)   = $\beta_0 + \beta_1$
+  - mean(DrugB)   = $\beta_0 + \beta_2$
+
+- Grand mean (ANOVA intercept):
+  $\mu = \frac{\text{mean(Control)} + \text{mean(DrugA)} + \text{mean(DrugB)}}{3} = \beta_0 + \frac{\beta_1 + \beta_2}{3}$
+
+- Treatment deviations (ANOVA $\tau_i$) written in terms of the regression coefficients:
+  - $\tau_{\text{Control}} = \text{mean(Control)} - \mu = -\frac{\beta_1 + \beta_2}{3}$
+  - $\tau_{\text{DrugA}}   = \text{mean(DrugA)} - \mu = \beta_1 - \frac{\beta_1 + \beta_2}{3}$
+  - $\tau_{\text{DrugB}}   = \text{mean(DrugB)} - \mu = \beta_2 - \frac{\beta_1 + \beta_2}{3}$
+
+- In short: the dummy-coded regression coefficients give easy expressions for the group means, and the ANOVA deviations (the $\tau_i$) are simple transforms of the $\beta$s shown above
+
+## Linear regression with effects coding
+
+- Another common choice is effects (sum-to-zero) coding
+- With this coding the regression coefficients map directly to the ANOVA parameters:
 
 $$
 Y_{ij} = \beta_0 + \beta_1 E_{1,ij} + \beta_2 E_{2,ij} + \varepsilon_{ij}
@@ -203,7 +186,7 @@ where $E_1, E_2$ are the effect indicators for Control and DrugA (see table belo
   - $\beta_2$ = $\tau_{\text{DrugA}}$ (deviation of DrugA from grand mean)
   - The remaining group's deviation follows from the sum-to-zero constraint: $\tau_{\text{DrugB}} = -\beta_1 - \beta_2$
 
-## Estimated regression coefficients - effects coding
+## Estimated regression coefficients (effects coded model)
 
 ```{r}
 #| echo: false
@@ -213,19 +196,72 @@ fit2 <- lm(BP_Reduction ~ Treatment, data = df_bp)
 summary(fit2)
 ```
 
-## Global hypothesis testing
+## Estimated Marginal Means
+- Estimated marginal means (EMMs) are the model-based estimates of the group means obtained from the fitted model
+- In a one-way ANOVA they coincide with the observed group means; in more complex models they are the model-predicted means averaged over other factors
 
-- Purpose: test whether any treatment systematically changes the expected response — i.e., whether the factor explains variability beyond random error.
+```{r}
+#| echo: false
+# Obtain estimated marginal means from the fitted lm object
+library(emmeans)
+emms <- emmeans(fit, ~ Treatment)
+emms
+```
+
+## Global hypothesis testing
 
 - Hypotheses:
   - Null: $H_0:\ \tau_1=\tau_2=\dots=\tau_k=0$ (all treatment deviations are zero)
   - Alternative: $H_1:$ at least one $\tau_i\ne0$ (some treatment differs)
 
- - We test this using the F-test shown in the ANOVA table (below).
+ - We test this using the F-test shown in the ANOVA table:
 
 ```{r}
 #| echo: false
 anova(fit)
 ```
 
-- If the F is large (p small): reject $H_0$, then follow up with contrasts or pairwise tests to locate differences.
+- The p-value is $\leq 0.05$, so we reject $H_0$ and conclude that treatment has a significant effect on blood pressure reduction
+
+## Post-hoc comparisons
+
+- Since we found a significant treatment effect, we will conduct pairwise comparisons to identify which specific treatment groups differ significantly from one another
+- To account for the increased Type I error risk due to multiple comparisons, we apply the Bonferroni correction to adjust the p-values, ensuring that the overall significance level remains controlled
+
+```{r}
+# Performing post-hoc analysis with emmeans
+library(emmeans)
+emms <- emmeans(fit, ~ Treatment)
+contrast(emms, method="pairwise", adjust="Bonferroni")
+```
+
+::: {.callout-note icon=true title="What are contrasts"}
+- A contrast is a pre-specified linear combination of group means used to test a focused hypothesis:
+
+  $$L=\sum_{i=1}^k c_i\mu_i, \qquad \sum_{i=1}^k c_i = 0.$$
+
+- Examples:
+  - Compare A vs B: $c=(1,-1,0)$ so $L=\mu_A-\mu_B$.
+  - A vs average of B and C: $c=(1,-\tfrac{1}{2},-\tfrac{1}{2})$ so $L=\mu_A-\tfrac{1}{2}(\mu_B+\mu_C)$.
+
+- Testing: estimate $\hat L$ from the fitted model and compute $t = \hat L / \mathrm{SE}(\hat L)$; test whether $L = 0$
+- Note: contrasts can also be written as linear functions of regression coefficients. Since the vector of group means can be written as $\mu = M\beta$ for a suitable matrix $M$, any contrast $L = c'\mu$ can be rewritten as $L = (M'c)'\beta$ and tested directly on $\beta$.
+:::
+
+## Model Diagnostics
+
+- To assess the adequacy of the fitted model, we create two diagnostic plots:
+  - **Residuals vs Fitted Plot**: Used to assess homoscedasticity (constant variance) for the errors. A random scatter of residuals around zero indicates equal variance
+  - **Normal Q-Q Plot**: Used to assess normality of the errors. Residuals following the reference line suggest normally distributed errors
+
+```{r}
+# Residuals vs Fitted
+plot(fit, which = 1, main = "Residuals vs Fitted")
+
+# Normal Q-Q
+plot(fit, which = 2, main = "Normal Q-Q")
+```
+
+## Reporting
+
+> A one-way ANOVA was conducted to compare the effect of three treatments on blood pressure reduction. There was a statistically significant effect of treatment on blood pressure reduction [F(2, 117) = 43.71, p < 0.001]. Estimated marginal means indicated that Drug A (M = 19.93 mm Hg, 95% CI = [17.11 mm Hg, 22.76 mm Hg]) resulted in significantly greater blood pressure reduction than both the Control group (M = 2.45 mm Hg, 95% CI = [-0.37 mm Hg, 5.28 mm Hg], p < 0.001) and Drug B (M = 5.08 mm Hg, 95% CI = [2.26 mm Hg, 7.90 mm Hg], p < 0.001). There was no significant difference between the Control group and Drug B (p = 0.586). P-values were adjusted for multiple testing using the Bonferroni correction.

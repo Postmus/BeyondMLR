@@ -1,0 +1,39 @@
+/*-- scss:defaults --*/
+// Presentation sizing and typography
+$presentation-line-height: 1.25 !default;
+$presentation-font-smaller: 0.7 !default;
+
+// Code / output sizing
+$code-block-font-size: 0.85em !default;
+
+/*-- scss:rules --*/
+/* Target Quarto output wrappers inside slides */
+.reveal .slide .cell-output,
+.reveal .slide .quarto-output,
+.reveal .slide .cell-output pre,
+.reveal .slide .cell-output code,
+.reveal .slide .cell-output .cell-output-stdout,
+.reveal .slide .cell-output .cell-output-display {
+  font-size: 0.92em;
+  line-height: 1.28;
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
+  padding: 0.35em 0.35em;
+}
+
+.reveal .slide .cell-output table,
+.reveal .slide .quarto-output table {
+  font-size: 0.95em;
+}
+
+.reveal .slide .cell-output table td,
+.reveal .slide .cell-output table th,
+.reveal .slide .quarto-output table td,
+.reveal .slide .quarto-output table th {
+  padding: 0.35rem 0.35rem;
+}
+
+/* Small visual niceties */
+.reveal .slide pre {
+  border-radius: 4px;
+}

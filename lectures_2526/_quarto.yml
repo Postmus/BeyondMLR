@@ -4,10 +4,20 @@ project:
 
 format:
   revealjs:
-    self-contained: true
+    theme: [default, custom-reveal.scss]
     slide-number: true
+    toc: false
+    slide-level: 2
+    incremental: false
+    code-overflow: wrap
+    scrollable: true
+    smaller: true
     width: 1280
     height: 720
     margin: 0.06
-    scrollable: true
-    smaller: true
+    max-scale: 2
+execute:
+  warning: false
+  message: false
+  eval: true
+  echo: false
