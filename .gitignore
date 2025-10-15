@@ -9,9 +9,7 @@ project-cache/
 preview/
 
 # Keep website output `docs/` for GitHub Pages tracked.
-# But site libraries can be rebuilt and don't need to be tracked.
-site_libs/
-**/site_libs/
+# Site libraries will be tracked under docs/site_libs/ for Pages deployment.
 
 # Quarto notebooks
 **/*.quarto_ipynb
