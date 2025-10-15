@@ -92,7 +92,7 @@ df_bp <- data.frame(
 )
 ```
 
-## Case Study — Exploratory Data Analysis
+## Exploratory Data Analysis
 
 ```{r}
 #| echo: false
@@ -107,7 +107,7 @@ aggregate(BP_Reduction ~ Treatment, data = df_bp,
           FUN = function(x) c(Mean = round(mean(x),2), SD = round(sd(x),2)))
 ```
 
-## Case Study — Statistical Model Specification
+## Statistical model specification
 
 To compare average BP reduction across the three treatment groups (a single categorical factor), we use the one-way ANOVA model:
 
@@ -117,65 +117,115 @@ $$
 
 - Model components:
   - $\text{BP_Reduction}_{ij}$: blood pressure reduction for the $j$-th patient in the $i$-th treatment group.
-  - $\mu$ (grand mean): overall mean BP reduction across all patients.
-  - $\tau_i$ (treatment effect): systematic deviation for treatment $i$; typically constrained so $\sum_i \tau_i = 0$.
+  - $\mu$ (grand mean): the mean of the group-level means.
+  - $\tau_i$ (treatment deviations): systematic deviation for treatment $i$; constrained so $\sum_i \tau_i = 0$.
   - $\varepsilon_{ij}$ (error): residual for patient $j$ in group $i$.
 - Statistical assumptions:
-  - $\varepsilon_{ij}\sim\mathcal{N}(0,\sigma^2)$: the errors $\varepsilon_{ij}$ are independent normally distributed with common variance $\sigma^2$ across groups (homoscedasticity).
+  - $\varepsilon_{ij}\sim\mathcal{N}(0,\sigma^2)$: the errors $\varepsilon_{ij}$ are normally distributed with common variance $\sigma^2$ across groups (homoscedasticity).
+  - The errors are independent
 
-::: {.callout-note title="Index notation: groups (i) and observations (j)"}
-In models like
-$$
-Y_{ij} = \mu + \tau_i + \varepsilon_{ij}
-$$
-the subscript convention helps indicate which unit each symbol refers to:
+::: {.callout-tip title="Index nesting: groups (i) > members (j)"}
+Notational convention: statisticians typically use earlier letters (e.g. $i, k, g$) for factors/levels and later letters (e.g. $j, t, n$) for observational indices — this reflects nesting (i outer, j inner) and makes summation limits natural (sum over $j$ for fixed $i$). For example:
 
-- i indexes the group or treatment (e.g., treatment 1, 2, ..., k).
-- j indexes the observational unit within group i (e.g., the j-th patient in group i).
+$$Y_{ij} = \mu + \tau_i + \varepsilon_{ij}$$
 
-So Y_{ij} is the response of the j-th subject in group i. The error term \varepsilon_{ij}
-is the residual for that specific subject; assumptions like \varepsilon_{ij}\sim N(0,\sigma^2)
-apply at the observation level. Using i and j keeps formulas compact and makes it clear
-how sums and variances are taken (e.g., sum over j within each i, or sum over i and j).
-
-Example (one-way ANOVA): the group means are often written as
-$$\bar{Y}_{i\cdot} = \frac{1}{n_i}\sum_{j=1}^{n_i} Y_{ij},$$
-where n_i is the number of observations in group i.
+Here $i$ indexes the group (treatment) and $j$ the individual inside that group. So
+$Y_{ij}$ is the $j$-th subject in group $i$, and group averages are
+$\bar{Y}_{i\cdot} = \frac{1}{n_i}\sum_{j=1}^{n_i} Y_{ij}$.
 :::
 
-## Case Study - Global Hypothesis Test
+## Estimating group effects via linear regression
 
-- Plain statement of the question:
-  - Are the average BP reductions the same for Control, Drug A and Drug B, or does at least one treatment differ?
-- Formal hypotheses:
-  - $H_0: \tau_1 = \tau_2 = \dots = \tau_k = 0$  (all group means equal)
-  - $H_1: \exists\,i\ \text{such that }\tau_i \neq 0$
-- What ANOVA tests (technical intuition):
-  - ANOVA partitions total variance into between-group and within-group components and computes the F statistic
-    $$
-    F \;=\; \frac{SS_{\mathrm{Tr}}/(k-1)}{SS_{\mathrm{E}}/(N-k)},
-    $$
-    which under $H_0$ follows $F_{k-1,\,N-k}$.
-  - A large $F$ (small $p$) indicates that between-group variation is large relative to within-group noise.
-- Practical follow-up when ANOVA is significant:
-  - Perform pairwise comparisons (e.g., Tukey HSD) or pre-specified contrasts to identify which groups differ.
-  - Report estimated mean differences with 95% confidence intervals and consider effect sizes (mean differences, Cohen's $d$) for clinical interpretation.
+A one-way ANOVA can be written as a linear regression with a categorical predictor, which lets us apply regression tools to estimate and test effects. Using dummy coding with the control group as reference, the statistically equivalent regression model is:
 
-## Intermezzo - Connection To Linear Regression
+$$
+Y_{ij} = \beta_0 + \beta_1 D_{1,ij} + \beta_2 D_{2,ij} + \varepsilon_{ij}
+$$
 
-- Short technical note:
-  - One-way ANOVA is a special case of the linear model $y = X\beta + \varepsilon$ where $X$ is the design matrix encoding group membership.
-  - Fitting \texttt{lm(y ~ factor(Treatment))} in R yields the same fitted values and residuals as ANOVA; sums-of-squares relate to projection geometry of $X$.
-- Practical point:
-  - Using regression notation makes it straightforward to add covariates (adjusted means) and to specify contrasts.
+where $D_1, D_2$ are the dummy indicators for DrugA and DrugB (see table below).
 
-## Intermezzo - Dummy Coding Versus Effects Coding
+| Treatment | Intercept | D1 (DrugA) | D2 (DrugB) |
+|---|---:|:---:|:---:|
+| Control | 1 | 0 | 0 |
+| DrugA   | 1 | 1 | 0 |
+| DrugB   | 1 | 0 | 1 |
 
-- Concise technical comparison:
-  - Dummy (reference) coding (R: contr.treatment): choose a reference group. β0 = mean(reference); other β's = group mean − reference mean. Good for direct comparisons to a control.
-  - Effects (sum-to-zero) coding (R: contr.sum): coefficients are deviations from the grand mean; intercept = grand mean and coefficients sum to zero. Useful for symmetric contrasts and certain hypothesis tests.
-- Quick R hints (one-liners):
-  - Set reference coding: contrasts(df$Treatment) <- contr.treatment(levels(df$Treatment))
-  - Set effects coding: contrasts(df$Treatment) <- contr.sum(levels(df$Treatment))
-- Interpretation reminder:
-  - Which coding to use depends on the estimands you need (pairwise differences vs deviations from grand mean); both are algebraically equivalent for estimating group means and testing overall effects.
+- Interpretation:
+  - Intercept ($\beta_0$): estimated mean for Control
+  - $\beta_1$: estimated difference mean(DrugA) − mean(Control)
+  - $\beta_2$: estimated difference mean(DrugB) − mean(Control)
+
+- Mapping to the ANOVA model parameters
+  - Intercept and betas → group means:
+    - mean(Control) = $\beta_0$
+    - mean(DrugA)   = $\beta_0 + \beta_1$
+    - mean(DrugB)   = $\beta_0 + \beta_2$
+
+  - Grand mean (ANOVA intercept):
+    $\mu = \frac{\text{mean(Control)} + \text{mean(DrugA)} + \text{mean(DrugB)}}{3} = \beta_0 + \frac{\beta_1 + \beta_2}{3}$
+
+  - Treatment deviations (ANOVA $\tau_i$) written in terms of the regression coefficients:
+    - $\tau_{\text{Control}} = \text{mean(Control)} - \mu = -\frac{\beta_1 + \beta_2}{3}$
+    - $\tau_{\text{DrugA}}   = \text{mean(DrugA)} - \mu = \beta_1 - \frac{\beta_1 + \beta_2}{3}$
+    - $\tau_{\text{DrugB}}   = \text{mean(DrugB)} - \mu = \beta_2 - \frac{\beta_1 + \beta_2}{3}$
+
+  - In short: the dummy-coded regression coefficients give easy expressions for the group means, and the ANOVA deviations (the $\tau_i$) are simple transforms of the $\beta$s shown above.
+
+## Estimated regression coefficients - dummy coding
+
+```{r}
+#| echo: false
+# R (refresher): reference coding with Control as baseline
+contrasts(df_bp$Treatment) <- contr.treatment(levels(df_bp$Treatment))
+fit <- lm(BP_Reduction ~ Treatment, data = df_bp)
+summary(fit)
+```
+
+## Effects coding and mapping to ANOVA parameters
+
+Another common choice is effects (sum-to-zero) coding. With this coding the regression coefficients map directly to the ANOVA parameters:
+
+$$
+Y_{ij} = \beta_0 + \beta_1 E_{1,ij} + \beta_2 E_{2,ij} + \varepsilon_{ij}
+$$
+
+where $E_1, E_2$ are the effect indicators for Control and DrugA (see table below).
+
+| Treatment | Intercept | E1 | E2 |
+|---|---:|:---:|:---:|
+| Control | 1 | 1 | 0 |
+| DrugA   | 1 | 0 | 1 |
+| DrugB   | 1 | -1 | -1 |
+
+- Interpretation:
+  - Intercept ($\beta_0$): grand mean ($\mu$)
+  - $\beta_1$ = $\tau_{\text{Control}}$ (deviation of Control from grand mean)
+  - $\beta_2$ = $\tau_{\text{DrugA}}$ (deviation of DrugA from grand mean)
+  - The remaining group's deviation follows from the sum-to-zero constraint: $\tau_{\text{DrugB}} = -\beta_1 - \beta_2$
+
+## Estimated regression coefficients - effects coding
+
+```{r}
+#| echo: false
+## R: effects (sum-to-zero) coding
+contrasts(df_bp$Treatment) <- contr.sum(levels(df_bp$Treatment))
+fit2 <- lm(BP_Reduction ~ Treatment, data = df_bp)
+summary(fit2)
+```
+
+## Global hypothesis testing
+
+- Purpose: test whether any treatment systematically changes the expected response — i.e., whether the factor explains variability beyond random error.
+
+- Hypotheses:
+  - Null: $H_0:\ \tau_1=\tau_2=\dots=\tau_k=0$ (all treatment deviations are zero)
+  - Alternative: $H_1:$ at least one $\tau_i\ne0$ (some treatment differs)
+
+ - We test this using the F-test shown in the ANOVA table (below).
+
+```{r}
+#| echo: false
+anova(fit)
+```
+
+- If the F is large (p small): reject $H_0$, then follow up with contrasts or pairwise tests to locate differences.
