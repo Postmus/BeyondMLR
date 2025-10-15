@@ -6,9 +6,9 @@ project:
   render:
     - index.qmd
     - BLR_lab_*.qmd
-    - Assignments/**.qmd
+  - Assignments/**/*.qmd
     - "!lectures_2526/**"
-    
+
 website:
   title: "Beyond MLR"
   navbar:
@@ -51,12 +51,9 @@ website:
             href: Assignments/Week 4/Assignment_week_4.qmd
           - text: "Week 5"
             href: Assignments/Week 5/Assignment_week_5.qmd
-            
+
 format:
   html:
     theme: cosmo
     css: styles.css
     toc: true
-
-
-
