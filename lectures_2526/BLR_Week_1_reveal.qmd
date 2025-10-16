@@ -2,7 +2,36 @@
 title: "Beyond MLR - Week 1: Experimental Design I"
 subtitle: "One-way FE/RE, ANOVA, coding, ICC"
 author: "Dr. Douwe Postmus"
+format:
+  revealjs:
+    theme: [default, custom-reveal.scss]
+    slide-number: true
+    toc: false
+    slide-level: 2
+    incremental: false
+    code-overflow: wrap
+    scrollable: true
+    smaller: true
+    width: 1280
+    height: 720
+    margin: 0.06
+    max-scale: 2
+    footer: "Beyond linear regression - week 1"
+execute:
+  warning: false
+  message: false
+  eval: true
+  echo: false
 ---
+
+```{r}
+#| include: false
+#| message: false
+#| warning: false
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans)
+```
 
 ## Introduction
 
@@ -25,7 +54,6 @@ author: "Dr. Douwe Postmus"
 - Effects can be expressed as differences (e.g., mean or risk difference) or ratios (e.g., risk or odds ratio)
 - In an experiment, factors are deliberately varied to study their influence on the response
 - The goal of experimental design is to ensure that:
-
   - the observed effects reflect the true influence of the factors rather than other sources of variation
   - these effects can be estimated precisely and efficiently, by minimizing unexplained variation through proper design choices
 
@@ -33,11 +61,9 @@ author: "Dr. Douwe Postmus"
 
 - Nuisance variables: influence the response but are not of primary interest (e.g., age, litter)
 - They can:
-
   - increase random variation → more noise, less precision
   - cause systematic bias → distorted estimates of effects
 - Types of bias if not controlled
-
   - Selection bias (confounding): systematic baseline differences between groups
   - Performance bias: different care or handling across treatments
   - Detection bias: outcome assessment influenced by knowledge of treatment
@@ -95,28 +121,25 @@ $$
 $$
 
 - Model components:
-  - $\text{BP_Reduction}_{ij}$: blood pressure reduction for the $j$-th patient in the $i$-th treatment group
-  - $\mu$ (grand mean): the mean of the group-level means
-  - $\tau_i$ (treatment deviations): systematic deviation for treatment $i$; constrained so $\sum_i \tau_i = 0$.
-  - $\varepsilon_{ij}$ (error): residual for patient $j$ in group $i$
+  - $\text{BP_Reduction}_{ij}$: the blood-pressure reduction observed for the $j$-th subject in the $i$-th treatment group
+  - $\mu$ (grand mean): the overall mean across groups (the average of the group means)
+  - $\tau_i$ (treatment deviations): the systematic deviation of treatment $i$ from the grand mean; constrained so $\sum_i \tau_i = 0$
+  - $\varepsilon_{ij}$ (residual error): the random deviation for subject $j$ in group $i$ that captures unexplained variation
 - Statistical assumptions:
-  - $\varepsilon_{ij}\sim\mathcal{N}(0,\sigma^2)$: the errors $\varepsilon_{ij}$ are normally distributed with common variance $\sigma^2$ across groups (homoscedasticity)
-  - The errors are independent
-R output is a bit smaller compared to the ont size for the text. Is there a way to control that
+  - $\varepsilon_{ij}\sim\mathcal{N}(0,\sigma^2)$: errors are independent and identically normally distributed with mean zero and common variance $\sigma^2$ (homoscedasticity)
+
 
 ::: {.callout-tip title="Index nesting: groups (i) > members (j)"}
-Notational convention: statisticians typically use earlier letters (e.g. $i, k, g$) for factors/levels and later letters (e.g. $j, t, n$) for observational indices — this reflects nesting (i outer, j inner) and makes summation limits natural (sum over $j$ for fixed $i$). For example:
+It is common practice to use earlier letters (e.g., $i$) for group- or factor-level indices and later letters (e.g., $j$) for observations within those groups. This reflects the nesting ($i$ outer, $j$ inner) and makes summation notation natural (e.g., summing over $j$ for a fixed $i$):
 
 $$Y_{ij} = \mu + \tau_i + \varepsilon_{ij}$$
 
-Here $i$ indexes the group (treatment) and $j$ the individual inside that group. So
-$Y_{ij}$ is the $j$-th subject in group $i$, and group averages are
-$\bar{Y}_{i\cdot} = \frac{1}{n_i}\sum_{j=1}^{n_i} Y_{ij}$.
+Here $i$ indexes the group (treatment) and $j$ the individual inside that group, so $Y_{ij}$ is the $j$-th subject in group $i$.
 :::
 
 ## Estimation using linear regression
 
-- A one-way ANOVA can be written as a linear regression with a categorical predictor, which lets us apply regression toolbox to estimate and test effects
+- A one-way ANOVA model can be expressed as a linear regression with a categorical predictor, allowing us to use the regression framework for estimation and hypothesis testing
 - Using dummy coding with the control group as reference, the statistically equivalent regression model is:
 
 $$
@@ -161,7 +184,77 @@ summary(fit)
   - $\tau_{\text{DrugA}}   = \text{mean(DrugA)} - \mu = \beta_1 - \frac{\beta_1 + \beta_2}{3}$
   - $\tau_{\text{DrugB}}   = \text{mean(DrugB)} - \mu = \beta_2 - \frac{\beta_1 + \beta_2}{3}$
 
-- In short: the dummy-coded regression coefficients give easy expressions for the group means, and the ANOVA deviations (the $\tau_i$) are simple transforms of the $\beta$s shown above
+## Estimated marginal means (EMMs)
+
+- Regression coefficients describe differences relative to a reference group
+- Estimated marginal means (EMMs) express the same model in terms of predicted group means
+- EMMs provide a direct and interpretable summary of group outcomes implied by the model
+- In a one-way ANOVA model, the EMMs equal the observed group means
+  - This follows directly from least-squares estimation in that design
+- In more complex models, EMMs give adjusted or conditional means that make comparisons fairer
+  - With covariates (ANCOVA): EMMs adjust group means to a common covariate value, such as the overall mean
+  - With interactions: EMMs provide conditional means for specific combinations of factors, allowing group comparisons at chosen settings
+
+```{r}
+#| echo: false
+# Compute and display estimated marginal means
+emms <- emmeans(fit, ~ Treatment)
+summary(emms)
+```
+
+## Global hypothesis testing
+
+- Hypotheses:
+  - Null ($H_0$): all group means are equal ($\tau_1 = \tau_2 = \tau_3 = 0$)
+  - Alternative ($H_1$): at least one group mean differs (at least one $\tau_i \ne 0$)
+
+ - Tested using the F-test from the ANOVA table:
+
+```{r}
+#| echo: false
+anova(fit)
+```
+
+- The p-value is $\leq 0.05$, so we reject $H_0$ and conclude that the treatment has a significant effect on blood pressure reduction
+
+## Post-hoc comparisons
+
+- Since we found a significant effect of treatment, we will conduct pairwise comparisons of the estimated marginal means to identify which specific treatment groups differ significantly from one another
+- To account for the increased Type I error risk due to multiple comparisons, we apply the Bonferroni correction to adjust the p-values, ensuring that the overall significance level remains controlled
+
+```{r}
+# Performing post-hoc analysis with emmeans
+emms <- emmeans(fit, ~ Treatment)
+contrast(emms, method="pairwise", adjust="Bonferroni")
+```
+
+## Model Diagnostics
+
+- To assess the adequacy of the fitted model, we create two diagnostic plots:
+  - **Normal Q-Q Plot**: Used to assess normality of the errors
+  - **Residuals vs Fitted Plot**: Used to assess homoscedasticity (constant variance) for the errors
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{r}
+# Normal Q-Q
+plot(fit, which = 2, main = "Normal Q-Q")
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+# Residuals vs Fitted
+plot(fit, which = 1, main = "Residuals vs Fitted")
+```
+:::
+
+::::
+
+## Reporting
+
+> A one-way ANOVA was conducted to compare the effect of three treatments on blood pressure reduction. There was a statistically significant effect of treatment on blood pressure reduction [F(2, 117) = 43.71, p < 0.001]. Estimated marginal means indicated that Drug A (M = 19.93 mm Hg, 95% CI = [17.11 mm Hg, 22.76 mm Hg]) resulted in significantly greater blood pressure reduction than both the Control group (M = 2.45 mm Hg, 95% CI = [-0.37 mm Hg, 5.28 mm Hg], p < 0.001) and Drug B (M = 5.08 mm Hg, 95% CI = [2.26 mm Hg, 7.90 mm Hg], p < 0.001). There was no significant difference between the Control group and Drug B (p = 0.586). P-values were adjusted for multiple testing using the Bonferroni correction.
 
 ## Linear regression with effects coding
 
@@ -195,73 +288,3 @@ contrasts(df_bp$Treatment) <- contr.sum(levels(df_bp$Treatment))
 fit2 <- lm(BP_Reduction ~ Treatment, data = df_bp)
 summary(fit2)
 ```
-
-## Estimated Marginal Means
-- Estimated marginal means (EMMs) are the model-based estimates of the group means obtained from the fitted model
-- In a one-way ANOVA they coincide with the observed group means; in more complex models they are the model-predicted means averaged over other factors
-
-```{r}
-#| echo: false
-# Obtain estimated marginal means from the fitted lm object
-library(emmeans)
-emms <- emmeans(fit, ~ Treatment)
-emms
-```
-
-## Global hypothesis testing
-
-- Hypotheses:
-  - Null: $H_0:\ \tau_1=\tau_2=\dots=\tau_k=0$ (all treatment deviations are zero)
-  - Alternative: $H_1:$ at least one $\tau_i\ne0$ (some treatment differs)
-
- - We test this using the F-test shown in the ANOVA table:
-
-```{r}
-#| echo: false
-anova(fit)
-```
-
-- The p-value is $\leq 0.05$, so we reject $H_0$ and conclude that treatment has a significant effect on blood pressure reduction
-
-## Post-hoc comparisons
-
-- Since we found a significant treatment effect, we will conduct pairwise comparisons to identify which specific treatment groups differ significantly from one another
-- To account for the increased Type I error risk due to multiple comparisons, we apply the Bonferroni correction to adjust the p-values, ensuring that the overall significance level remains controlled
-
-```{r}
-# Performing post-hoc analysis with emmeans
-library(emmeans)
-emms <- emmeans(fit, ~ Treatment)
-contrast(emms, method="pairwise", adjust="Bonferroni")
-```
-
-::: {.callout-note icon=true title="What are contrasts"}
-- A contrast is a pre-specified linear combination of group means used to test a focused hypothesis:
-
-  $$L=\sum_{i=1}^k c_i\mu_i, \qquad \sum_{i=1}^k c_i = 0.$$
-
-- Examples:
-  - Compare A vs B: $c=(1,-1,0)$ so $L=\mu_A-\mu_B$.
-  - A vs average of B and C: $c=(1,-\tfrac{1}{2},-\tfrac{1}{2})$ so $L=\mu_A-\tfrac{1}{2}(\mu_B+\mu_C)$.
-
-- Testing: estimate $\hat L$ from the fitted model and compute $t = \hat L / \mathrm{SE}(\hat L)$; test whether $L = 0$
-- Note: contrasts can also be written as linear functions of regression coefficients. Since the vector of group means can be written as $\mu = M\beta$ for a suitable matrix $M$, any contrast $L = c'\mu$ can be rewritten as $L = (M'c)'\beta$ and tested directly on $\beta$.
-:::
-
-## Model Diagnostics
-
-- To assess the adequacy of the fitted model, we create two diagnostic plots:
-  - **Residuals vs Fitted Plot**: Used to assess homoscedasticity (constant variance) for the errors. A random scatter of residuals around zero indicates equal variance
-  - **Normal Q-Q Plot**: Used to assess normality of the errors. Residuals following the reference line suggest normally distributed errors
-
-```{r}
-# Residuals vs Fitted
-plot(fit, which = 1, main = "Residuals vs Fitted")
-
-# Normal Q-Q
-plot(fit, which = 2, main = "Normal Q-Q")
-```
-
-## Reporting
-
-> A one-way ANOVA was conducted to compare the effect of three treatments on blood pressure reduction. There was a statistically significant effect of treatment on blood pressure reduction [F(2, 117) = 43.71, p < 0.001]. Estimated marginal means indicated that Drug A (M = 19.93 mm Hg, 95% CI = [17.11 mm Hg, 22.76 mm Hg]) resulted in significantly greater blood pressure reduction than both the Control group (M = 2.45 mm Hg, 95% CI = [-0.37 mm Hg, 5.28 mm Hg], p < 0.001) and Drug B (M = 5.08 mm Hg, 95% CI = [2.26 mm Hg, 7.90 mm Hg], p < 0.001). There was no significant difference between the Control group and Drug B (p = 0.586). P-values were adjusted for multiple testing using the Bonferroni correction.
