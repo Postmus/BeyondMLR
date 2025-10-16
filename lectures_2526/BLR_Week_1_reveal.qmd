@@ -100,18 +100,26 @@ df_bp <- data.frame(
 
 ## Exploratory Data Analysis
 
+:::: {.columns}
+
+::: {.column width="50%"}
 ```{r}
 #| echo: false
 boxplot(BP_Reduction ~ Treatment, data = df_bp,
         col = c("gray85","skyblue","lightgreen"),
         ylab = "BP reduction (mmHg)", main = "BP reduction by treatment")
 ```
+:::
 
+::: {.column width="50%"}
 ```{r}
 #| echo: false
 aggregate(BP_Reduction ~ Treatment, data = df_bp,
           FUN = function(x) c(Mean = round(mean(x),2), SD = round(sd(x),2)))
 ```
+:::
+
+::::
 
 ## Statistical model specification
 

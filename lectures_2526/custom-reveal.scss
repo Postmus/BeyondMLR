@@ -37,3 +37,26 @@ $code-block-font-size: 0.85em !default;
 .reveal .slide pre {
   border-radius: 4px;
 }
+
+/* Kill horizontal scroll on R output boxes in Reveal decks */
+.reveal .cell-output,
+.reveal .cell-output-stdout,
+.reveal .cell-output-display {
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+}
+
+/* Make the <pre> inside those outputs wrap lines and only scroll vertically */
+.reveal .cell-output pre,
+.reveal .cell-output-stdout pre,
+.reveal .cell-output-display pre,
+.reveal pre.text-output {
+  white-space: pre-wrap !important;      /* keep newlines, allow wrapping */
+  overflow-wrap: anywhere !important;    /* break long tokens if needed */
+  word-break: break-word !important;
+  overflow-x: hidden !important;         /* ← no horizontal scrollbar */
+  overflow-y: auto !important;           /* ← vertical only if needed */
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
