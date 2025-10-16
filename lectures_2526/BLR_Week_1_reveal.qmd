@@ -1,4 +1,4 @@
-﻿---
+---
 title: "Beyond MLR - Week 1: Experimental Design I"
 subtitle: "One-way FE/RE, ANOVA, coding, ICC"
 author: "Dr. Douwe Postmus"
@@ -17,6 +17,7 @@ format:
     margin: 0.06
     max-scale: 2
     footer: "Beyond linear regression - week 1"
+    logo: UMCG-logo.png
 execute:
   warning: false
   message: false
