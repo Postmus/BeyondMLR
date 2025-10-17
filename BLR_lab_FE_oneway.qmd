@@ -51,14 +51,14 @@ drugB <- rnorm(40, mean = 5, sd = 10)
 data_oneway <- data.frame(
   Treatment = factor(rep(c("Control", "DrugA", "DrugB"), each = 40),
                      levels = c("Control", "DrugA", "DrugB")),
-  BP_Reduction = c(control, drugA, drugB)
+  BP_change = c(control, drugA, drugB)
 )
 ```
 
 The above R chunk simulates hypothetical results for 120 patients (40 per treatment group) and stores the results in the data frame `data_oneway` that consists of the following two columns:
 
 * `Treatment`: Factor variable indicating the treatment group.
-* `BP_Reduction`: Numeric variable representing blood pressure reduction (in mm Hg).
+* `BP_change`: Numeric variable representing blood pressure reduction (in mm Hg).
 
 ## Exploratory Data Analysis
 
@@ -67,7 +67,7 @@ To understand the distribution of blood pressure reduction across treatment grou
 ```{r}
 # Visualizing the results
 library(ggplot2)
-ggplot(data_oneway, aes(x = Treatment, y = BP_Reduction, fill = Treatment)) +
+ggplot(data_oneway, aes(x = Treatment, y = BP_change, fill = Treatment)) +
   geom_boxplot() +
   labs(title = "Blood Pressure Reduction by Treatment",
        x = "Treatment", y = "Blood Pressure Reduction (mm Hg)") +
@@ -83,8 +83,8 @@ library(dplyr)
 summary_stats <- data_oneway %>%
   group_by(Treatment) %>%
   summarise(
-    Mean_BP_Reduction = mean(BP_Reduction),
-    SD_BP_Reduction = sd(BP_Reduction)
+    Mean_BP_change = mean(BP_change),
+    SD_BP_change = sd(BP_change)
   )
 
 summary_stats
@@ -142,7 +142,7 @@ We can fit the one-way ANOVA model using the `lm()` function:
 options(contrasts = c("contr.sum", "contr.poly"))  # Effects coding
 
 # Fitting the model with effects coding
-model_oneway <- lm(BP_Reduction ~ Treatment, data = data_oneway)
+model_oneway <- lm(BP_change ~ Treatment, data = data_oneway)
 summary(model_oneway)
 ```
 

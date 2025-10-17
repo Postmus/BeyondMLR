@@ -76,45 +76,43 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans)
 - Replication: include multiple experimental units per treatment — enables estimation of variability and statistical testing
 - Blocking: group units by nuisance variables (e.g., litter, cage) and randomize within blocks — isolates treatment effects from nuisance effects
 
-## Case Study — Antihypertensive Treatments
+## Case study — antihypertensive treatments
 
-- Research question: Do two experimental drugs (Drug A, Drug B) reduce systolic blood pressure more than Control over 12 weeks?
-- Design narrative: 120 patients with hypertension are randomly assigned to one of three groups (n = 40 each): Control, Drug A, or Drug B. The study is conducted under comparable conditions; outcome assessors are blinded to allocation.
-- Outcome (response): change in systolic BP (mmHg) from baseline to week 12 (positive values indicate reduction)
-- Factor (one-way): Treatment with three levels (Control, Drug A, Drug B)
-- Experimental units: individual patients; one outcome per patient
+- Research question: do two experimental drugs (Drug A, Drug B) reduce systolic blood pressure (SBP) more than Control over 12 weeks?
+- Design: 120 patients with hypertension are randomly assigned to one of three groups (n = 40 each): Control, Drug A, or Drug B
+- Response (outcome): change in SBP (mmHg) from baseline to week 12
 
 ```{r}
 #| echo: false
 # Prepare example data once for subsequent slides (hidden)
 set.seed(123)
-control <- rnorm(40, mean = 2,  sd = 10)
-drugA   <- rnorm(40, mean = 20, sd = 10)
-drugB   <- rnorm(40, mean = 5,  sd = 10)
+control <- rnorm(40, mean = -2,  sd = 10)
+drugA   <- rnorm(40, mean = -20, sd = 10)
+drugB   <- rnorm(40, mean = -5,  sd = 10)
 df_bp <- data.frame(
   Treatment = factor(rep(c("Control","DrugA","DrugB"), each = 40),
                      levels = c("Control","DrugA","DrugB")),
-  BP_Reduction = c(control, drugA, drugB)
+  SBP_change = c(control, drugA, drugB)
 )
 ```
 
-## Exploratory Data Analysis
+## Exploratory data analysis
 
 :::: {.columns}
 
 ::: {.column width="50%"}
 ```{r}
 #| echo: false
-boxplot(BP_Reduction ~ Treatment, data = df_bp,
+boxplot(SBP_change ~ Treatment, data = df_bp,
         col = c("gray85","skyblue","lightgreen"),
-        ylab = "BP reduction (mmHg)", main = "BP reduction by treatment")
+        ylab = "Change in SBP (mmHg)", main = NULL)
 ```
 :::
 
 ::: {.column width="50%"}
 ```{r}
 #| echo: false
-aggregate(BP_Reduction ~ Treatment, data = df_bp,
+aggregate(SBP_change ~ Treatment, data = df_bp,
           FUN = function(x) c(Mean = round(mean(x),2), SD = round(sd(x),2)))
 ```
 :::
@@ -123,58 +121,56 @@ aggregate(BP_Reduction ~ Treatment, data = df_bp,
 
 ## Statistical model specification
 
-To compare average blood pressure reduction across the three treatment groups (a single categorical factor), we use the one-way ANOVA model:
+To compare the average change in SBP across the three treatment groups, we use the one-way ANOVA model:
 
 $$
-\text{BP_Reduction}_{ij} = \mu + \tau_i + \varepsilon_{ij}
+Y_{ij} = \mu + \tau_i + \varepsilon_{ij}
 $$
 
 - Model components:
-  - $\text{BP_Reduction}_{ij}$: the blood-pressure reduction observed for the $j$-th subject in the $i$-th treatment group
+  - $Y_{ij}$: change in SBP observed for the $j$-th subject in the $i$-th treatment group
   - $\mu$ (grand mean): the overall mean across groups (the average of the group means)
-  - $\tau_i$ (treatment deviations): the systematic deviation of treatment $i$ from the grand mean; constrained so $\sum_i \tau_i = 0$
-  - $\varepsilon_{ij}$ (residual error): the random deviation for subject $j$ in group $i$ that captures unexplained variation
+  - $\tau_i$ (treatment deviations): the deviation of the mean of group $i$ from the grand mean; constrained so $\sum_i \tau_i = 0$
+  - $\varepsilon_{ij}$ (residual error): the deviation for subject $j$ from the mean of group $i$
 - Statistical assumptions:
   - $\varepsilon_{ij}\sim\mathcal{N}(0,\sigma^2)$: errors are independent and identically normally distributed with mean zero and common variance $\sigma^2$ (homoscedasticity)
-
-
-::: {.callout-tip title="Index nesting: groups (i) > members (j)"}
-It is common practice to use earlier letters (e.g., $i$) for group- or factor-level indices and later letters (e.g., $j$) for observations within those groups. This reflects the nesting ($i$ outer, $j$ inner) and makes summation notation natural (e.g., summing over $j$ for a fixed $i$):
-
-$$Y_{ij} = \mu + \tau_i + \varepsilon_{ij}$$
-
-Here $i$ indexes the group (treatment) and $j$ the individual inside that group, so $Y_{ij}$ is the $j$-th subject in group $i$.
-:::
 
 ## Estimation using linear regression
 
 - A one-way ANOVA model can be expressed as a linear regression with a categorical predictor, allowing us to use the regression framework for estimation and hypothesis testing
 - Using dummy coding with the control group as reference, the statistically equivalent regression model is:
 
+:::: {.columns}
+
+::: {.column width="50%"}
 $$
 Y_{ij} = \beta_0 + \beta_1 D_{1,ij} + \beta_2 D_{2,ij} + \varepsilon_{ij}
 $$
+:::
 
-where $D_1, D_2$ are the dummy indicators for DrugA and DrugB (see table below).
-
+::: {.column width="50%"}
 | Treatment | Intercept | D1 (DrugA) | D2 (DrugB) |
 |---|---:|:---:|:---:|
 | Control | 1 | 0 | 0 |
 | DrugA   | 1 | 1 | 0 |
 | DrugB   | 1 | 0 | 1 |
 
+:::
+
+::::
+
 - Interpretation:
   - Intercept ($\beta_0$): estimated mean for Control
   - $\beta_1$: estimated difference mean(DrugA) − mean(Control)
   - $\beta_2$: estimated difference mean(DrugB) − mean(Control)
 
-## Estimated regression coefficients (dummy coded model)
+## Estimated regression coefficients
 
 ```{r}
 #| echo: false
 # R (refresher): reference coding with Control as baseline
 contrasts(df_bp$Treatment) <- contr.treatment(levels(df_bp$Treatment))
-fit <- lm(BP_Reduction ~ Treatment, data = df_bp)
+fit <- lm(SBP_change ~ Treatment, data = df_bp)
 summary(fit)
 ```
 
@@ -199,7 +195,6 @@ summary(fit)
 - Estimated marginal means (EMMs) express the same model in terms of predicted group means
 - EMMs provide a direct and interpretable summary of group outcomes implied by the model
 - In a one-way ANOVA model, the EMMs equal the observed group means
-  - This follows directly from least-squares estimation in that design
 - In more complex models, EMMs give adjusted or conditional means that make comparisons fairer
   - With covariates (ANCOVA): EMMs adjust group means to a common covariate value, such as the overall mean
   - With interactions: EMMs provide conditional means for specific combinations of factors, allowing group comparisons at chosen settings
@@ -214,7 +209,7 @@ summary(emms)
 ## Global hypothesis testing
 
 - Hypotheses:
-  - Null ($H_0$): all group means are equal ($\tau_1 = \tau_2 = \tau_3 = 0$)
+  - Null ($H_0$): all group means are equal ($\tau_{\text{Control}} = \tau_{\text{DrugA}} = \tau_{\text{DrugB}} = 0$)
   - Alternative ($H_1$): at least one group mean differs (at least one $\tau_i \ne 0$)
 
  - Tested using the F-test from the ANOVA table:
@@ -224,7 +219,7 @@ summary(emms)
 anova(fit)
 ```
 
-- The p-value is $\leq 0.05$, so we reject $H_0$ and conclude that the treatment has a significant effect on blood pressure reduction
+- The p-value is $\leq 0.05$, so we reject $H_0$ and conclude that the treatment has a significant effect on the change in SBP
 
 ## Post-hoc comparisons
 
@@ -237,7 +232,7 @@ emms <- emmeans(fit, ~ Treatment)
 contrast(emms, method="pairwise", adjust="Bonferroni")
 ```
 
-## Model Diagnostics
+## Model diagnostics
 
 - To assess the adequacy of the fitted model, we create two diagnostic plots:
   - **Normal Q-Q Plot**: Used to assess normality of the errors
@@ -261,9 +256,7 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 ::::
 
-## Reporting
-
-> A one-way ANOVA was conducted to compare the effect of three treatments on blood pressure reduction. There was a statistically significant effect of treatment on blood pressure reduction [F(2, 117) = 43.71, p < 0.001]. Estimated marginal means indicated that Drug A (M = 19.93 mm Hg, 95% CI = [17.11 mm Hg, 22.76 mm Hg]) resulted in significantly greater blood pressure reduction than both the Control group (M = 2.45 mm Hg, 95% CI = [-0.37 mm Hg, 5.28 mm Hg], p < 0.001) and Drug B (M = 5.08 mm Hg, 95% CI = [2.26 mm Hg, 7.90 mm Hg], p < 0.001). There was no significant difference between the Control group and Drug B (p = 0.586). P-values were adjusted for multiple testing using the Bonferroni correction.
+# Backup slides
 
 ## Linear regression with effects coding
 
@@ -294,6 +287,6 @@ where $E_1, E_2$ are the effect indicators for Control and DrugA (see table belo
 #| echo: false
 ## R: effects (sum-to-zero) coding
 contrasts(df_bp$Treatment) <- contr.sum(levels(df_bp$Treatment))
-fit2 <- lm(BP_Reduction ~ Treatment, data = df_bp)
+fit2 <- lm(SBP_change ~ Treatment, data = df_bp)
 summary(fit2)
 ```
