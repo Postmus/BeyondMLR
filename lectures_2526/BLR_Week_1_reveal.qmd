@@ -40,9 +40,9 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans)
 
 ## Case study — antihypertensive treatments
 
-- Research question: do two experimental drugs (Drug A, Drug B) reduce systolic blood pressure (SBP) more than Control over 12 weeks?
+- Research question: do two experimental drugs (Drug A, Drug B) reduce systolic blood pressure (SBP) more than Control over 52 weeks?
 - Design: 120 patients with hypertension are randomly assigned to one of three groups (n = 40 each): Control, Drug A, or Drug B
-- Response (outcome): change in SBP (mmHg) from baseline to week 12
+- Response (outcome): change in SBP (mmHg) from baseline to week 52
 
 ```{r}
 #| echo: false
@@ -60,26 +60,12 @@ df_bp <- data.frame(
 
 ## Exploratory data analysis
 
-:::: {.columns}
-
-::: {.column width="50%"}
 ```{r}
 #| echo: false
 boxplot(SBP_change ~ Treatment, data = df_bp,
         col = c("gray85","skyblue","lightgreen"),
         ylab = "Change in SBP (mmHg)", main = NULL)
 ```
-:::
-
-::: {.column width="50%"}
-```{r}
-#| echo: false
-aggregate(SBP_change ~ Treatment, data = df_bp,
-          FUN = function(x) c(Mean = round(mean(x),2), SD = round(sd(x),2)))
-```
-:::
-
-::::
 
 ## Statistical model specification
 
@@ -170,7 +156,7 @@ summary(emms)
 
 ## F-test and explained variation
 
-- Hypotheses  
+- Hypotheses (global) 
   - $H_0$: all group means are equal ($\tau_{Control} = \tau_{DrugA} = \tau_{DrugB} = 0$)  
   - $H_1$: at least one group mean differs ($\exists\, \tau_i \ne 0$)
 
@@ -196,7 +182,6 @@ anova(fit)
 ```
 
 - The p-value is $\leq 0.05$, so we reject $H_0$ and conclude that the treatment has a significant effect on the change in SBP
-
 
 ## Post-hoc comparisons
 
@@ -252,29 +237,137 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
   - Randomize treatments within each block to ensure balance across levels of the nuisance variable  (this is known as an orthogonal design) 
   
 - Analysis stage
-  - Include the block term in the statistical model  
+  - Include the block term in the statistical model (two-way ANOVA) 
 
   $$Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}$$  
 
-  - This adjustment separates block effects from the residual error and allows treatment effects to be estimated with increased precision  
+  - This analysis separates block effects from the residual error and therefore allows treatment effects to be estimated with increased precision  
   
 ## Example: stratified randomization
 
-- Instead of adjusting afterward, we could randomize **within gender strata**  
-- Ensures equal numbers of males and females per treatment  
-- Prevents imbalance and reduces unexplained variation *by design*  
-- Stratified randomization is conceptually similar to **blocking** with two blocks (Male, Female)  
+- Research question: do two new antihypertensive drugs reduce systolic blood pressure (SBP) more than control after 52 weeks?  
+- Study population: 135 patients with baseline SBP ≥140 mmHg, classified into three hypertension grades  
+  - Grade 1: 140–159 mmHg  
+  - Grade 2: 160–179 mmHg  
+  - Grade 3: ≥180 mmHg  
+- Randomization: performed separately within each grade to ensure that all treatments are represented equally across hypertension categories (stratified randomization)  
+- Treatments: Control, Drug A, Drug B (n = 45 per group; 15 per grade)  
+- Outcome: change in SBP (mmHg) from baseline to week 52  
 
-## From stratification to blocking
+```{r}
+set.seed(431)
 
-- Stratified randomization on gender is a simple case of **blocking**  
-- In general:  
-  - **Blocking** controls for known sources of variation by grouping similar units  
-  - The analysis must include the block term:  
-    $$Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}$$  
-- Ignoring the block inflates residual variance and reduces power  
-- Next lecture: we formalize this as the **randomized block design**,  
-  and later treat the block as a **random effect** to estimate the ICC
+# design
+trt_levels  <- c("Control","DrugA","DrugB")
+grades      <- c("Grade1","Grade2","Grade3")              # SBP-only grading
+n_per_trt   <- 45                                          # divisible by 3 grades 
+n_per_cell  <- n_per_trt / length(grades)                  
+sd_eps      <- 8
+
+# treatment means (overall), mmHg change over 12 weeks (plausible magnitudes)
+trt_mean <- c(Control = -4, DrugA = -11, DrugB = -8)
+
+# strong baseline grade effect on change (higher baseline → larger drop)
+grade_effect <- c(Grade1 = 0, Grade2 = -6, Grade3 = -12)
+
+# helper to simulate baseline SBP within each grade
+r_sbp <- function(grade, n) {
+  if (grade == "Grade1") rnorm(n, mean = 148, sd = 6)     # 140–159
+  else if (grade == "Grade2") rnorm(n, mean = 168, sd = 6) # 160–179
+  else rnorm(n, mean = 185, sd = 7)                        # ≥180
+}
+
+# build stratified dataset: equal n per grade × treatment
+df_bp_strat <- do.call(
+  rbind,
+  lapply(grades, function(g) {
+    do.call(
+      rbind,
+      lapply(trt_levels, function(t) {
+        mu <- trt_mean[[t]] + grade_effect[[g]]
+        n  <- n_per_cell
+        data.frame(
+          HypertensionGrade = g,
+          Treatment = t,
+          Baseline_SBP = r_sbp(g, n),
+          SBP_change  = rnorm(n, mean = mu, sd = sd_eps)
+        )
+      })
+    )
+  })
+)
+
+df_bp_strat$HypertensionGrade <- factor(df_bp_strat$HypertensionGrade, levels = grades)
+df_bp_strat$Treatment <- factor(df_bp_strat$Treatment, levels = trt_levels)
+```
+
+## Exploratory data analysis 
+
+```{r}
+eda_sum <- df_bp_strat %>%
+  group_by(Treatment, HypertensionGrade) %>%
+  summarise(
+    n    = n(),
+    mean = mean(SBP_change),
+    sd   = sd(SBP_change),
+    se   = sd / sqrt(n),
+    tcrt = qt(0.975, df = n - 1),
+    ci   = tcrt * se,
+    .groups = "drop"
+  )
+
+ggplot(eda_sum, aes(x = Treatment, y = mean,
+                    group = HypertensionGrade,
+                    color = HypertensionGrade, shape = HypertensionGrade)) +
+  geom_line() +
+  geom_point(size = 3) +
+  #geom_errorbar(aes(ymin = mean - ci, ymax = mean + ci), width = 0.12) +
+  labs(
+    x = "Treatment",
+    y = "Mean change in SBP (mmHg)",
+    title = "Interaction plot: Treatment by hypertension grade"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom")
+```
+
+## Results
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+**One-way ANOVA (ignoring hypertension grade)**
+
+```{r}
+fit_oneway <- lm(SBP_change ~ Treatment, data = df_bp_strat)
+anova(fit_oneway)
+```
+:::
+
+::: {.column width="50%"}
+
+**Two-way ANOVA (additive model)**
+
+```{r}
+# Residuals vs Fitted
+fit_adj <- lm(SBP_change ~ Treatment + HypertensionGrade, data = df_bp_strat)
+anova(fit_adj)
+```
+:::
+
+::::
+
+## Interpreting the ANOVA results
+
+- The F statistic compares the variation explained by treatment with the unexplained residual variation  
+  $$
+  F = \frac{MS_{Treatment}}{MS_{Residual}}
+  $$
+- When hypertension grade is ignored, all between-grade differences are absorbed into the residual variance ($MS_{Residual}$)  
+- Including hypertension grade in the model (two-way ANOVA) separates this systematic variation from the residual error  
+- This lowers $MS_{Residual}$ and increases the F statistic for treatment — the treatment effect becomes easier to detect  
+- The gain in precision arises because stratified randomization creates an orthogonal design in which treatment and grade effects can be estimated independently
 
 # Backup slides
 
@@ -310,19 +403,6 @@ contrasts(df_bp$Treatment) <- contr.sum(levels(df_bp$Treatment))
 fit2 <- lm(SBP_change ~ Treatment, data = df_bp)
 summary(fit2)
 ```
-
-## Interpreting the residual error
-
-- The residual error represents variation among individuals that remains after accounting for treatment  
-- It captures both measurement noise and natural differences between subjects within the same group  
-- In the ANOVA F statistic  
-  $$
-  F = \frac{MS_{Treatment}}{MS_{Residual}},
-  $$  
-  the denominator $MS_{Residual}$ estimates the variance of the error term $\varepsilon_{ij}$  
-- A large residual variance implies that individual outcomes vary widely within treatments, which reduces the ability to detect treatment differences  
-- Reducing this unexplained variation, either by design (blocking, stratification) or by analysis (covariate adjustment), increases the precision and power of the test
-
 ## Fixed vs random center effects – conceptual view
 
 - In multi-center or blocked studies, center can be modeled as either fixed or random  
