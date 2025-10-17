@@ -38,44 +38,6 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans)
 
 - Welcome slide (to be completed later)
 
-## Experimental research
-
-- Experiment: study in which one or more factors are deliberately varied by assigning specific factor levels to experimental units in order to observe the effect on a response under controlled conditions
-
-- Terminology:
-  - Factor: variable the researcher controls or manipulates (e.g., drug, dose)
-  - Levels (treatments): different values or categories of a factor (e.g., A, B, C; 10 mg, 20 mg)
-  - Experimental unit: smallest unit that can be independently assigned a treatment
-  - Response: outcome measured for each unit (e.g., blood pressure change)
-  - Effect: difference in outcome caused by a change in the factor
-
-## What do we mean by "effect"?
-
-- An effect describes how the response changes when the level of a factor changes
-- Effects can be expressed as differences (e.g., mean or risk difference) or ratios (e.g., risk or odds ratio)
-- In an experiment, factors are deliberately varied to study their influence on the response
-- The goal of experimental design is to ensure that:
-  - the observed effects reflect the true influence of the factors rather than other sources of variation
-  - these effects can be estimated precisely and efficiently, by minimizing unexplained variation through proper design choices
-
-## Sources of unwanted variation
-
-- Nuisance variables: influence the response but are not of primary interest (e.g., age, litter)
-- They can:
-  - increase random variation → more noise, less precision
-  - cause systematic bias → distorted estimates of effects
-- Types of bias if not controlled
-  - Selection bias (confounding): systematic baseline differences between groups
-  - Performance bias: different care or handling across treatments
-  - Detection bias: outcome assessment influenced by knowledge of treatment
-
-## Principles of experimental design
-
-- Control: keep conditions as similar as possible except for the factors of interest
-- Randomization: assign units to factor levels by chance → balances known and unknown nuisance variables
-- Replication: include multiple experimental units per treatment — enables estimation of variability and statistical testing
-- Blocking: group units by nuisance variables (e.g., litter, cage) and randomize within blocks — isolates treatment effects from nuisance effects
-
 ## Case study — antihypertensive treatments
 
 - Research question: do two experimental drugs (Drug A, Drug B) reduce systolic blood pressure (SBP) more than Control over 12 weeks?
@@ -86,9 +48,9 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans)
 #| echo: false
 # Prepare example data once for subsequent slides (hidden)
 set.seed(123)
-control <- rnorm(40, mean = -2,  sd = 10)
-drugA   <- rnorm(40, mean = -20, sd = 10)
-drugB   <- rnorm(40, mean = -5,  sd = 10)
+control <- rnorm(40, mean = -3,  sd = 15)
+drugA   <- rnorm(40, mean = -10, sd = 15)
+drugB   <- rnorm(40, mean = -5,  sd = 15)
 df_bp <- data.frame(
   Treatment = factor(rep(c("Control","DrugA","DrugB"), each = 40),
                      levels = c("Control","DrugA","DrugB")),
@@ -206,13 +168,27 @@ emms <- emmeans(fit, ~ Treatment)
 summary(emms)
 ```
 
-## Global hypothesis testing
+## F-test and explained variation
 
-- Hypotheses:
-  - Null ($H_0$): all group means are equal ($\tau_{\text{Control}} = \tau_{\text{DrugA}} = \tau_{\text{DrugB}} = 0$)
-  - Alternative ($H_1$): at least one group mean differs (at least one $\tau_i \ne 0$)
+- Hypotheses  
+  - $H_0$: all group means are equal ($\tau_{Control} = \tau_{DrugA} = \tau_{DrugB} = 0$)  
+  - $H_1$: at least one group mean differs ($\exists\, \tau_i \ne 0$)
 
- - Tested using the F-test from the ANOVA table:
+- The total variation in the response can be decomposed as 
+  
+  $$SS_{Total} = SS_{Treatment} + SS_{Residual}$$  
+
+  - $SS_{Treatment}$ represents variation explained by differences between treatment means  
+  - $SS_{Residual}$ represents unexplained variation within treatments
+
+- The F statistic compares the variance explained by treatment to the residual variance  
+  $$
+  F = \frac{MS_{Treatment}}{MS_{Residual}} = \frac{SS_{Treatment}/df_{Treatment}}{SS_{Residual}/df_{Residual}}
+  $$
+
+- A large F value indicates that the treatment explains a substantial part of the total variation relative to the residual variation
+
+## Global hypothesis testing - results
 
 ```{r}
 #| echo: false
@@ -220,6 +196,7 @@ anova(fit)
 ```
 
 - The p-value is $\leq 0.05$, so we reject $H_0$ and conclude that the treatment has a significant effect on the change in SBP
+
 
 ## Post-hoc comparisons
 
@@ -256,6 +233,49 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 ::::
 
+# Part II
+
+## Nuisance variables
+
+- Nuisance variables are factors that influence the response but are not of primary interest  
+- Examples include age, baseline blood pressure, comorbidity, or study center  
+- If not controlled, they can  
+  - increase random variation → more noise, less precision  
+  - introduce systematic differences between treatment groups → biased estimates of treatment effects  
+- Randomization helps balance nuisance variables across treatments on average  
+- Additional control can be achieved through blocking or covariate adjustment to separate their influence from the treatment effect
+
+## Reducing residual variation: blocking
+
+- Design stage
+  - Group experimental units that are similar on a known nuisance factor (e.g., study center, sex, baseline severity)  
+  - Randomize treatments within each block to ensure balance across levels of the nuisance variable  (this is known as an orthogonal design) 
+  
+- Analysis stage
+  - Include the block term in the statistical model  
+
+  $$Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}$$  
+
+  - This adjustment separates block effects from the residual error and allows treatment effects to be estimated with increased precision  
+  
+## Example: stratified randomization
+
+- Instead of adjusting afterward, we could randomize **within gender strata**  
+- Ensures equal numbers of males and females per treatment  
+- Prevents imbalance and reduces unexplained variation *by design*  
+- Stratified randomization is conceptually similar to **blocking** with two blocks (Male, Female)  
+
+## From stratification to blocking
+
+- Stratified randomization on gender is a simple case of **blocking**  
+- In general:  
+  - **Blocking** controls for known sources of variation by grouping similar units  
+  - The analysis must include the block term:  
+    $$Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}$$  
+- Ignoring the block inflates residual variance and reduces power  
+- Next lecture: we formalize this as the **randomized block design**,  
+  and later treat the block as a **random effect** to estimate the ICC
+
 # Backup slides
 
 ## Linear regression with effects coding
@@ -290,3 +310,58 @@ contrasts(df_bp$Treatment) <- contr.sum(levels(df_bp$Treatment))
 fit2 <- lm(SBP_change ~ Treatment, data = df_bp)
 summary(fit2)
 ```
+
+## Interpreting the residual error
+
+- The residual error represents variation among individuals that remains after accounting for treatment  
+- It captures both measurement noise and natural differences between subjects within the same group  
+- In the ANOVA F statistic  
+  $$
+  F = \frac{MS_{Treatment}}{MS_{Residual}},
+  $$  
+  the denominator $MS_{Residual}$ estimates the variance of the error term $\varepsilon_{ij}$  
+- A large residual variance implies that individual outcomes vary widely within treatments, which reduces the ability to detect treatment differences  
+- Reducing this unexplained variation, either by design (blocking, stratification) or by analysis (covariate adjustment), increases the precision and power of the test
+
+## Fixed vs random center effects – conceptual view
+
+- In multi-center or blocked studies, center can be modeled as either fixed or random  
+- **Fixed effect**: centers are specific and of intrinsic interest  
+  $$
+  Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}
+  $$
+  - One parameter per center (minus constraint)
+  - Inference conditional on included centers
+  - No assumption about distribution of $\beta_j$
+- **Random effect**: centers are a random sample from a larger population  
+  $$
+  Y_{ijk} = \mu + \tau_i + b_j + \varepsilon_{ijk}, \quad b_j \sim N(0,\sigma_b^2)
+  $$
+  - One additional variance component ($\sigma_b^2$)
+  - Inference averaged over the population of centers
+- The choice determines the target of inference:  
+  conditional (fixed) vs population-averaged (random)
+
+## Fixed vs random center effects – statistical implications
+
+- In balanced designs with orthogonality between treatment and center  
+  → estimated treatment effects are identical under both models  
+- In unbalanced designs  
+  - Fixed effects give each center equal weight  
+  - Random effects weight centers by precision (more efficient)
+- Random effects provide partial pooling across centers  
+  → smaller standard errors for treatment estimates on average  
+- Fixed effects require estimating many parameters  
+  → less efficient when many centers or small per-center sample sizes  
+- Random effects introduce one additional assumption  
+  → center effects follow a normal distribution with variance $\sigma_b^2$  
+- Summary  
+
+  | Aspect | Fixed | Random |
+  |:--|:--|:--|
+  | Inference scope | specific centers | population of centers |
+  | Parameters | many ($\beta_j$) | one variance ($\sigma_b^2$) |
+  | Weighting | equal across centers | precision-weighted |
+  | Efficiency | lower if many small centers | higher via pooling |
+  | Interpretation | conditional | marginal (population-averaged) |
+
