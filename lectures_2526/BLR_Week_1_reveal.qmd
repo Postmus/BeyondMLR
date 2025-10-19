@@ -40,7 +40,7 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans)
 
 ## Case study — antihypertensive treatments
 
-- Research question: do two experimental drugs (Drug A, Drug B) reduce systolic blood pressure (SBP) more than Control over 52 weeks?
+- Research question: do two experimental drugs (Drug A, Drug B) reduce systolic blood pressure (SBP) more than Control?
 - Design: 120 patients with hypertension are randomly assigned to one of three groups (n = 40 each): Control, Drug A, or Drug B
 - Response (outcome): change in SBP (mmHg) from baseline to week 52
 
@@ -156,23 +156,21 @@ summary(emms)
 
 ## F-test and explained variation
 
-- Hypotheses (global) 
-  - $H_0$: all group means are equal ($\tau_{Control} = \tau_{DrugA} = \tau_{DrugB} = 0$)  
+- Hypotheses (global)
+  - $H_0$: all group means are equal ($\tau_{Control} = \tau_{DrugA} = \tau_{DrugB} = 0$)
   - $H_1$: at least one group mean differs ($\exists\, \tau_i \ne 0$)
 
-- The total variation in the response can be decomposed as 
-  
-  $$SS_{Total} = SS_{Treatment} + SS_{Residual}$$  
+- The total variation in the response can be decomposed as
 
-  - $SS_{Treatment}$ represents variation explained by differences between treatment means  
+  $$SS_{Total} = SS_{Treatment} + SS_{Residual}$$
+
+  - $SS_{Treatment}$ represents variation explained by differences between treatment means
   - $SS_{Residual}$ represents unexplained variation within treatments
 
-- The F statistic compares the variance explained by treatment to the residual variance  
+- The F statistic compares the variance explained by treatment to the residual variance
   $$
   F = \frac{MS_{Treatment}}{MS_{Residual}} = \frac{SS_{Treatment}/df_{Treatment}}{SS_{Residual}/df_{Residual}}
   $$
-
-- A large F value indicates that the treatment explains a substantial part of the total variation relative to the residual variation
 
 ## Global hypothesis testing - results
 
@@ -222,37 +220,37 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 ## Nuisance variables
 
-- Nuisance variables are factors that influence the response but are not of primary interest  
-- Examples include age, baseline blood pressure, comorbidity, or study center  
-- If not controlled, they can  
-  - increase random variation → more noise, less precision  
-  - introduce systematic differences between treatment groups → biased estimates of treatment effects  
-- Randomization helps balance nuisance variables across treatments on average  
+- Nuisance variables are factors that influence the response but are not of primary interest
+- Examples include age, baseline blood pressure, comorbidity, or study center
+- If not controlled, they can
+  - increase random variation → more noise, less precision
+  - introduce systematic differences between treatment groups → biased estimates of treatment effects
+- Randomization helps balance nuisance variables across treatments on average
 - Additional control can be achieved through blocking or covariate adjustment to separate their influence from the treatment effect
 
 ## Reducing residual variation: blocking
 
 - Design stage
-  - Group experimental units that are similar on a known nuisance factor (e.g., study center, sex, baseline severity)  
-  - Randomize treatments within each block to ensure balance across levels of the nuisance variable  (this is known as an orthogonal design) 
-  
+  - Group experimental units that are similar on a known nuisance factor (e.g., study center, sex, baseline severity)
+  - Randomize treatments within each block to ensure balance across levels of the nuisance variable  (this is known as an orthogonal design)
+
 - Analysis stage
-  - Include the block term in the statistical model (two-way ANOVA) 
+  - Include the block term in the statistical model (two-way ANOVA)
 
-  $$Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}$$  
+  $$Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}$$
 
-  - This analysis separates block effects from the residual error and therefore allows treatment effects to be estimated with increased precision  
-  
+  - This analysis separates block effects from the residual error and therefore allows treatment effects to be estimated with increased precision
+
 ## Example: stratified randomization
 
-- Research question: do two new antihypertensive drugs reduce systolic blood pressure (SBP) more than control after 52 weeks?  
-- Study population: 135 patients with baseline SBP ≥140 mmHg, classified into three hypertension grades  
-  - Grade 1: 140–159 mmHg  
-  - Grade 2: 160–179 mmHg  
-  - Grade 3: ≥180 mmHg  
-- Randomization: performed separately within each grade to ensure that all treatments are represented equally across hypertension categories (stratified randomization)  
-- Treatments: Control, Drug A, Drug B (n = 45 per group; 15 per grade)  
-- Outcome: change in SBP (mmHg) from baseline to week 52  
+- Research question: do two new antihypertensive drugs reduce systolic blood pressure (SBP) more than control?
+- Study population: 135 patients with baseline SBP ≥140 mmHg, classified into three hypertension grades
+  - Grade 1: 140–159 mmHg
+  - Grade 2: 160–179 mmHg
+  - Grade 3: ≥180 mmHg
+- Randomization: performed separately within each grade to ensure that all treatments are represented equally across hypertension categories (stratified randomization)
+- Treatments: Control, Drug A, Drug B (n = 45 per group; 15 per grade)
+- Outcome: change in SBP (mmHg) from baseline to week 52
 
 ```{r}
 set.seed(431)
@@ -260,8 +258,8 @@ set.seed(431)
 # design
 trt_levels  <- c("Control","DrugA","DrugB")
 grades      <- c("Grade1","Grade2","Grade3")              # SBP-only grading
-n_per_trt   <- 45                                          # divisible by 3 grades 
-n_per_cell  <- n_per_trt / length(grades)                  
+n_per_trt   <- 45                                          # divisible by 3 grades
+n_per_cell  <- n_per_trt / length(grades)
 sd_eps      <- 8
 
 # treatment means (overall), mmHg change over 12 weeks (plausible magnitudes)
@@ -301,7 +299,7 @@ df_bp_strat$HypertensionGrade <- factor(df_bp_strat$HypertensionGrade, levels = 
 df_bp_strat$Treatment <- factor(df_bp_strat$Treatment, levels = trt_levels)
 ```
 
-## Exploratory data analysis 
+## Exploratory data analysis
 
 ```{r}
 eda_sum <- df_bp_strat %>%
@@ -360,13 +358,13 @@ anova(fit_adj)
 
 ## Interpreting the ANOVA results
 
-- The F statistic compares the variation explained by treatment with the unexplained residual variation  
+- The F statistic compares the variation explained by treatment with the unexplained residual variation
   $$
   F = \frac{MS_{Treatment}}{MS_{Residual}}
   $$
-- When hypertension grade is ignored, all between-grade differences are absorbed into the residual variance ($MS_{Residual}$)  
-- Including hypertension grade in the model (two-way ANOVA) separates this systematic variation from the residual error  
-- This lowers $MS_{Residual}$ and increases the F statistic for treatment — the treatment effect becomes easier to detect  
+- When hypertension grade is ignored, all between-grade differences are absorbed into the residual variance ($MS_{Residual}$)
+- Including hypertension grade in the model (two-way ANOVA) separates this systematic variation from the residual error
+- This lowers $MS_{Residual}$ and increases the F statistic for treatment — the treatment effect becomes easier to detect
 - The gain in precision arises because stratified randomization creates an orthogonal design in which treatment and grade effects can be estimated independently
 
 # Backup slides
@@ -405,37 +403,37 @@ summary(fit2)
 ```
 ## Fixed vs random center effects – conceptual view
 
-- In multi-center or blocked studies, center can be modeled as either fixed or random  
-- **Fixed effect**: centers are specific and of intrinsic interest  
+- In multi-center or blocked studies, center can be modeled as either fixed or random
+- **Fixed effect**: centers are specific and of intrinsic interest
   $$
   Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}
   $$
   - One parameter per center (minus constraint)
   - Inference conditional on included centers
   - No assumption about distribution of $\beta_j$
-- **Random effect**: centers are a random sample from a larger population  
+- **Random effect**: centers are a random sample from a larger population
   $$
   Y_{ijk} = \mu + \tau_i + b_j + \varepsilon_{ijk}, \quad b_j \sim N(0,\sigma_b^2)
   $$
   - One additional variance component ($\sigma_b^2$)
   - Inference averaged over the population of centers
-- The choice determines the target of inference:  
+- The choice determines the target of inference:
   conditional (fixed) vs population-averaged (random)
 
 ## Fixed vs random center effects – statistical implications
 
-- In balanced designs with orthogonality between treatment and center  
-  → estimated treatment effects are identical under both models  
-- In unbalanced designs  
-  - Fixed effects give each center equal weight  
+- In balanced designs with orthogonality between treatment and center
+  → estimated treatment effects are identical under both models
+- In unbalanced designs
+  - Fixed effects give each center equal weight
   - Random effects weight centers by precision (more efficient)
-- Random effects provide partial pooling across centers  
-  → smaller standard errors for treatment estimates on average  
-- Fixed effects require estimating many parameters  
-  → less efficient when many centers or small per-center sample sizes  
-- Random effects introduce one additional assumption  
-  → center effects follow a normal distribution with variance $\sigma_b^2$  
-- Summary  
+- Random effects provide partial pooling across centers
+  → smaller standard errors for treatment estimates on average
+- Fixed effects require estimating many parameters
+  → less efficient when many centers or small per-center sample sizes
+- Random effects introduce one additional assumption
+  → center effects follow a normal distribution with variance $\sigma_b^2$
+- Summary
 
   | Aspect | Fixed | Random |
   |:--|:--|:--|
