@@ -31,7 +31,7 @@ execute:
 #| warning: false
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
-pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans)
+pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, mixed, broom.mixed)
 ```
 
 ## Introduction
@@ -252,7 +252,7 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
   - This analysis separates block effects from the residual error and therefore allows treatment effects to be estimated with increased precision
 
-## Example: stratified randomization
+## First example: stratified randomization
 
 - Study population: 135 patients with baseline SBP ≥140 mmHg, classified into three hypertension grades
   - Grade 1: 140–159 mmHg
@@ -348,14 +348,8 @@ ggplot(eda_sum, aes(x = Treatment, y = mean,
 **One-way ANOVA (ignoring hypertension grade)**
 
 ```{r}
-#| echo: false
-#| results: asis
 fit_oneway <- lm(SBP_change ~ Treatment, data = df_bp_strat)
-anova_df1 <- as.data.frame(anova(fit_oneway))
-num_cols1 <- sapply(anova_df1, is.numeric)
-anova_df1[num_cols1] <- lapply(anova_df1[num_cols1], function(x) round(x, 3))
-html1 <- knitr::kable(anova_df1, format = "html", table.attr = 'class="small-anova"')
-cat(html1)
+kable(tidy(anova(fit_oneway)), digits = 3, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
 ```
 :::
 
@@ -364,15 +358,8 @@ cat(html1)
 **Two-way ANOVA (additive model)**
 
 ```{r}
-#| echo: false
-#| results: asis
-# Residuals vs Fitted
 fit_adj <- lm(SBP_change ~ Treatment + HypertensionGrade, data = df_bp_strat)
-anova_df2 <- as.data.frame(anova(fit_adj))
-num_cols2 <- sapply(anova_df2, is.numeric)
-anova_df2[num_cols2] <- lapply(anova_df2[num_cols2], function(x) round(x, 3))
-html2 <- knitr::kable(anova_df2, format = "html", table.attr = 'class="small-anova"')
-cat(html2)
+kable(tidy(anova(fit_adj)), digits = 3, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
 ```
 :::
 
@@ -383,6 +370,283 @@ cat(html2)
   - Including the grade as an additional factor (two-way ANOVA) partitions out that systematic variation into a separate term
   - This typically reduces $MS_{Residual}$ while leaving $MS_{Treatment}$ approximately the same in balanced/orthogonal designs
   - Because the denominator is reduced, the F statistic for treatment tends to increase and the test gains power to detect treatment differences
+
+## Second example: randomized block design
+
+```{r}
+set.seed(329)  # For reproducibility
+
+# Increase between-cage variability
+between_cage_sd <- 2  # Standard deviation for the cage effect
+
+# Cage effect (one random effect per cage)
+cage_effect <- rnorm(8, mean = 0, sd = between_cage_sd)
+
+# Simulate data with larger cage effect
+data <- data.frame(
+  Cage = rep(1:8, times = 3),
+  Treatment = rep(c("Placebo", "20 mg", "50 mg"), each = 8),
+  Weight_Change = c(rnorm(8, mean = 14 + cage_effect, sd = 2),
+                    rnorm(8, mean = 13 + cage_effect, sd = 2),
+                    rnorm(8, mean = 11 + cage_effect, sd = 2))
+)
+
+data$Treatment <- factor(data$Treatment, levels=c("Placebo", "20 mg", "50 mg"))
+```
+
+- Objective: test the potential toxic effects of an experimental drug X by assessing changes in body weight in rats
+- Study design:
+  - Animals: 24 Sprague-Dawley rats
+  - Groups:
+    - Control Group: 8 rats receive a placebo
+    - Drug X Group 1: 8 rats receive Drug X at 20 mg/kg/day
+    - Drug X Group 2: 8 rats receive Drug X at 50 mg/kg/day
+- Blocking by cage placement: randomization of treatments within each cage to control for variability due to environmental factors (e.g., light, temperature)
+
+## Exploratory data analysis
+
+```{r}
+data$Treatment <- factor(data$Treatment, levels=c("Placebo", "20 mg", "50 mg"))
+
+# Create the scatter plot
+ggplot(data, aes(x = Weight_Change, y = factor(Cage), color = Treatment)) +
+  geom_point(size = 4) +
+  labs(title = NULL,
+       x = "Weight Change (grams)", 
+       y = "Cage",
+       color = "Treatment") +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom")
+```
+
+## One-way ANOVA ignoring cage
+
+```{r}
+m1 <- lm(Weight_Change ~ Treatment, data = data)
+```
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+**Estimated regression coefficients**
+
+```{r}
+kable(tidy(m1)[, c("term","estimate","std.error","p.value")], digits = 3, caption = NULL, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
+```
+:::
+
+::: {.column width="50%"}
+
+**ANOVA table**
+
+```{r}
+kable(tidy(anova(m1)), digits = 3, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
+```
+:::
+
+::::
+
+```{=html}
+<div style="margin-top:1.5em;"></div>
+```
+
+- Ignoring cage differences pushes cage-to-cage variability into the residual
+- This inflates standard errors and reduces power compared with models that adjust for cages
+
+## Incorporating the effect of cage
+
+- Some cages show consistently higher or lower weights, suggesting an extra source of variation due to the cage environment
+- Two options to include cage in the model
+  - Treat cage as a fixed effect: adjust for these eight cages
+    - Each level gets its own estimate  
+    - Inference applies only to these specific levels  
+    - Example: “How do rats in cage 1 compare to those in cage 2?”
+  - Treat cage as a random effect: account for cage to cage variability
+    - We are not interested in individual cages, but in their variability  
+    - Inference generalizes to the population of possible cages  
+    - Example: “How much do rat weights differ between cages on average?”
+
+
+## Statistical model specification
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+**Fixed-effects specification**
+
+$$
+Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}
+$$
+
+- Adds one separate parameter for each cage  
+- The model becomes more complex as more cages are added 
+- No estimate of how much cages differ on average
+
+:::
+
+::: {.column width="50%"}
+
+**Random-effects specification**
+
+$$
+Y_{ijk} = \mu + \tau_i + b_j + \varepsilon_{ijk}, \quad b_j \sim N(0, \sigma_b^2)
+$$
+
+- $b_j$: random intercept describing how cage $j$ differs from the overall mean  
+- Estimates the average variability between cages ($\sigma_b^2$)  
+- Inference focuses on overall treatment effects while accounting for cage-to-cage variability
+
+:::
+
+::::
+
+## Two-way ANOVA: cage as fixed effect
+
+```{r}
+m2 <- lm(Weight_Change ~ Treatment + factor(Cage), data = data)
+```
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+**Estimated regression coefficients**
+
+```{r}
+kable(tidy(m2)[, c("term","estimate","std.error","p.value")], digits = 3, caption = NULL, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
+```
+:::
+
+::: {.column width="50%"}
+
+**ANOVA table**
+
+```{r}
+kable(tidy(anova(m2)), digits = 3, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
+```
+:::
+
+::::
+
+```{=html}
+<div style="margin-top:1.5em;"></div>
+```
+
+- Adjusts for the eight cages as specific environments
+- Inference applies only to these cages
+
+## Two-way ANOVA: cage as random effect
+
+```{r}
+m3 <- lmer(Weight_Change ~ Treatment + (1 | Cage), data = data)
+```
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+**Estimated fixed effects**
+
+```{r}
+library(broom.mixed)
+fe <- tidy(m3, effects = "fixed")[, c("term","estimate","std.error","p.value")]
+
+knitr::kable(
+  fe,
+  digits = 3,
+  caption = NULL,
+  format = "html",
+  table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"'
+)
+```
+
+```{=html}
+<div style="margin-top: 0.75em;"></div>
+```
+
+**Random-effects variance components**
+
+```{r}
+vc <- as.data.frame(VarCorr(m3))[, c("grp","vcov","sdcor")]
+names(vc) <- c("component","variance","sd")
+
+knitr::kable(
+  vc,
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"'
+)
+```
+:::
+
+::: {.column width="50%"}
+
+**ANOVA table**
+
+```{r}
+a_tbl <- broom::tidy(anova(m3))
+
+knitr::kable(
+  a_tbl,
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"'
+)
+```
+
+::: 
+
+::::
+
+```{=html}
+<div style="margin-top:1.5em;"></div>
+```
+
+- Treats cage as a random effect sampled from a population of possible cages
+- Estimates treatment effects and between cage variance and generalizes beyond these cages
+
+## Understanding variance components
+
+- In the one-way ANOVA that ignored cage, all unexplained variation was captured by a single residual error term → this error combined both *between-cage* and *within-cage* differences
+
+- In the two-way ANOVA with cage as a random effect, that residual variability is *partitioned* into two parts:
+  1. Between-cage variance: how much average weight change differs between cages  
+  2. Within-cage (residual) variance: how much rats differ within the same cage after accounting for both treatment and cage effects
+
+| component | variance | sd |
+|------------|-----------|----|
+| Cage | 3.507 | 1.873 |
+| Residual | 3.124 | 1.768 |
+
+- Together, these are the **variance components**: they describe how the total unexplained variability from the simpler model is partitioned into variation **between** and **within** cage
+
+## Intra-class correlation (ICC)
+
+- The intra-class correlation (ICC) quantifies the proportion of the total unexplained variability that is due to between-cage differences:
+
+$$
+ICC = \frac{\sigma^2_{\text{cage}}}{\sigma^2_{\text{cage}} + \sigma^2_{\text{residual}}}
+     = \frac{3.507}{3.507 + 3.124} = 0.529
+$$
+
+- Here, ICC ≈ 0.53, meaning that about 53% of the remaining variation (after accounting for treatment) arises from differences between cages
+- Interpretation:
+  - High ICC: rats in the same cage tend to have more similar outcomes  
+  - Low ICC: cage membership adds little information beyond treatment
+
+## Fixed or random effects for nuisance variables
+
+- **Stratified randomization example:**  
+  - The stratification factor (hypertension grade) divides subjects into predefined categories used consistently across studies  
+  - The specific levels (grade 1, grade 2, grade 3) are fixed and always the same 
+  - The factor is modeled as a **fixed effect**, adjusting for systematic differences between these known categories
+
+- **Randomized block design example:**  
+  - The blocking factor (cage) represents a random source of environmental variation  
+  - The cages themselves are not of intrinsic interest and could have been any comparable set   
+  - Modeling cage as a **random effect** captures this variability naturally and allows generalization beyond the observed cages
 
 # Backup slides
 
@@ -418,45 +682,5 @@ contrasts(df_bp$Treatment) <- contr.sum(levels(df_bp$Treatment))
 fit2 <- lm(SBP_change ~ Treatment, data = df_bp)
 summary(fit2)
 ```
-## Fixed vs random center effects – conceptual view
 
-- In multi-center or blocked studies, center can be modeled as either fixed or random
-- **Fixed effect**: centers are specific and of intrinsic interest
-  $$
-  Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}
-  $$
-  - One parameter per center (minus constraint)
-  - Inference conditional on included centers
-  - No assumption about distribution of $\beta_j$
-- **Random effect**: centers are a random sample from a larger population
-  $$
-  Y_{ijk} = \mu + \tau_i + b_j + \varepsilon_{ijk}, \quad b_j \sim N(0,\sigma_b^2)
-  $$
-  - One additional variance component ($\sigma_b^2$)
-  - Inference averaged over the population of centers
-- The choice determines the target of inference:
-  conditional (fixed) vs population-averaged (random)
-
-## Fixed vs random center effects – statistical implications
-
-- In balanced designs with orthogonality between treatment and center
-  → estimated treatment effects are identical under both models
-- In unbalanced designs
-  - Fixed effects give each center equal weight
-  - Random effects weight centers by precision (more efficient)
-- Random effects provide partial pooling across centers
-  → smaller standard errors for treatment estimates on average
-- Fixed effects require estimating many parameters
-  → less efficient when many centers or small per-center sample sizes
-- Random effects introduce one additional assumption
-  → center effects follow a normal distribution with variance $\sigma_b^2$
-- Summary
-
-  | Aspect | Fixed | Random |
-  |:--|:--|:--|
-  | Inference scope | specific centers | population of centers |
-  | Parameters | many ($\beta_j$) | one variance ($\sigma_b^2$) |
-  | Weighting | equal across centers | precision-weighted |
-  | Efficiency | lower if many small centers | higher via pooling |
-  | Interpretation | conditional | marginal (population-averaged) |
 
