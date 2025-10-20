@@ -40,7 +40,6 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans)
 
 ## Case study — antihypertensive treatments
 
-- Research question: do two experimental drugs (Drug A, Drug B) reduce systolic blood pressure (SBP) more than Control?
 - Design: 120 patients with hypertension are randomly assigned to one of three groups (n = 40 each): Control, Drug A, or Drug B
 - Response (outcome): change in SBP (mmHg) from baseline to week 52
 
@@ -58,8 +57,6 @@ df_bp <- data.frame(
 )
 ```
 
-## Exploratory data analysis
-
 ```{r}
 #| echo: false
 boxplot(SBP_change ~ Treatment, data = df_bp,
@@ -69,7 +66,7 @@ boxplot(SBP_change ~ Treatment, data = df_bp,
 
 ## Statistical model specification
 
-To compare the average change in SBP across the three treatment groups, we use the one-way ANOVA model:
+To compare the mean change in SBP across the three treatment groups, we use the one-way ANOVA model:
 
 $$
 Y_{ij} = \mu + \tau_i + \varepsilon_{ij}
@@ -141,7 +138,6 @@ summary(fit)
 
 - Regression coefficients describe differences relative to a reference group
 - Estimated marginal means (EMMs) express the same model in terms of predicted group means
-- EMMs provide a direct and interpretable summary of group outcomes implied by the model
 - In a one-way ANOVA model, the EMMs equal the observed group means
 - In more complex models, EMMs give adjusted or conditional means that make comparisons fairer
   - With covariates (ANCOVA): EMMs adjust group means to a common covariate value, such as the overall mean
@@ -154,29 +150,44 @@ emms <- emmeans(fit, ~ Treatment)
 summary(emms)
 ```
 
-## F-test and explained variation
-
-- Hypotheses (global)
-  - $H_0$: all group means are equal ($\tau_{Control} = \tau_{DrugA} = \tau_{DrugB} = 0$)
-  - $H_1$: at least one group mean differs ($\exists\, \tau_i \ne 0$)
+## Sum of squares decomposition
 
 - The total variation in the response can be decomposed as
 
   $$SS_{Total} = SS_{Treatment} + SS_{Residual}$$
 
-  - $SS_{Treatment}$ represents variation explained by differences between treatment means
-  - $SS_{Residual}$ represents unexplained variation within treatments
+  - $SS_{Treatment}$: variation explained by differences between treatment group means (between-group variation)
+  - $SS_{Residual}$: unexplained variation within treatment groups (within-group variation)
+  
+- A commonly used effect-size for ANOVA is eta-squared, which measures the proportion of total variability explained by the treatment:
 
-- The F statistic compares the variance explained by treatment to the residual variance
+  $$\eta^2 = \frac{SS_{Treatment}}{SS_{Total}}$$
+
+  - Interpretation: the fraction of total variability attributable to treatment differences; larger values indicate a stronger effect
+  - Note: in a one-way ANOVA this equals the percentage of variance explained (multiply by 100)
+
+## Global hypothesis test (F-test)
+
+- Hypotheses
+  - $H_0$: all group means are equal ($\tau_{Control} = \tau_{DrugA} = \tau_{DrugB} = 0$)
+  - $H_1$: at least one group mean differs ($\exists\, \tau_i \ne 0$)
+
+- The F statistic compares the variance explained by treatment to the residual variance:
+
   $$
   F = \frac{MS_{Treatment}}{MS_{Residual}} = \frac{SS_{Treatment}/df_{Treatment}}{SS_{Residual}/df_{Residual}}
   $$
 
-## Global hypothesis testing - results
+  - Under $H_0$, $F$ follows an $F$-distribution with $df_{1}=k-1$ and $df_{2}=N-k$, where $k$ is the number of treatment groups and $N$ is the total sample size
+
 
 ```{r}
 #| echo: false
-anova(fit)
+#| results: asis
+anova_df <- as.data.frame(anova(fit))
+num_cols <- sapply(anova_df, is.numeric)
+anova_df[num_cols] <- lapply(anova_df[num_cols], function(x) round(x, 3))
+cat(knitr::kable(anova_df, format = "html", table.attr = 'class="small-anova"'))
 ```
 
 - The p-value is $\leq 0.05$, so we reject $H_0$ and conclude that the treatment has a significant effect on the change in SBP
@@ -220,7 +231,7 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 ## Nuisance variables
 
-- Nuisance variables are factors that influence the response but are not of primary interest
+- Nuisance variables are variables that influence the response but are not of primary interest
 - Examples include age, baseline blood pressure, comorbidity, or study center
 - If not controlled, they can
   - increase random variation → more noise, less precision
@@ -231,7 +242,7 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 ## Reducing residual variation: blocking
 
 - Design stage
-  - Group experimental units that are similar on a known nuisance factor (e.g., study center, sex, baseline severity)
+  - Group experimental units that are similar on a known nuisance variable (e.g., study center, sex, baseline severity)
   - Randomize treatments within each block to ensure balance across levels of the nuisance variable  (this is known as an orthogonal design)
 
 - Analysis stage
@@ -243,7 +254,6 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 ## Example: stratified randomization
 
-- Research question: do two new antihypertensive drugs reduce systolic blood pressure (SBP) more than control?
 - Study population: 135 patients with baseline SBP ≥140 mmHg, classified into three hypertension grades
   - Grade 1: 140–159 mmHg
   - Grade 2: 160–179 mmHg
@@ -323,7 +333,7 @@ ggplot(eda_sum, aes(x = Treatment, y = mean,
   labs(
     x = "Treatment",
     y = "Mean change in SBP (mmHg)",
-    title = "Interaction plot: Treatment by hypertension grade"
+    title = NULL
   ) +
   theme_minimal(base_size = 12) +
   theme(legend.position = "bottom")
@@ -338,8 +348,14 @@ ggplot(eda_sum, aes(x = Treatment, y = mean,
 **One-way ANOVA (ignoring hypertension grade)**
 
 ```{r}
+#| echo: false
+#| results: asis
 fit_oneway <- lm(SBP_change ~ Treatment, data = df_bp_strat)
-anova(fit_oneway)
+anova_df1 <- as.data.frame(anova(fit_oneway))
+num_cols1 <- sapply(anova_df1, is.numeric)
+anova_df1[num_cols1] <- lapply(anova_df1[num_cols1], function(x) round(x, 3))
+html1 <- knitr::kable(anova_df1, format = "html", table.attr = 'class="small-anova"')
+cat(html1)
 ```
 :::
 
@@ -348,24 +364,25 @@ anova(fit_oneway)
 **Two-way ANOVA (additive model)**
 
 ```{r}
+#| echo: false
+#| results: asis
 # Residuals vs Fitted
 fit_adj <- lm(SBP_change ~ Treatment + HypertensionGrade, data = df_bp_strat)
-anova(fit_adj)
+anova_df2 <- as.data.frame(anova(fit_adj))
+num_cols2 <- sapply(anova_df2, is.numeric)
+anova_df2[num_cols2] <- lapply(anova_df2[num_cols2], function(x) round(x, 3))
+html2 <- knitr::kable(anova_df2, format = "html", table.attr = 'class="small-anova"')
+cat(html2)
 ```
 :::
 
 ::::
 
-## Interpreting the ANOVA results
-
-- The F statistic compares the variation explained by treatment with the unexplained residual variation
-  $$
-  F = \frac{MS_{Treatment}}{MS_{Residual}}
-  $$
-- When hypertension grade is ignored, all between-grade differences are absorbed into the residual variance ($MS_{Residual}$)
-- Including hypertension grade in the model (two-way ANOVA) separates this systematic variation from the residual error
-- This lowers $MS_{Residual}$ and increases the F statistic for treatment — the treatment effect becomes easier to detect
-- The gain in precision arises because stratified randomization creates an orthogonal design in which treatment and grade effects can be estimated independently
+- Effect of blocking / stratification:
+  - When a nuisance factor (here: hypertension grade) is ignored, its between-group variation is absorbed into $MS_{Residual}$, increasing the denominator of the F ratio
+  - Including the grade as an additional factor (two-way ANOVA) partitions out that systematic variation into a separate term
+  - This typically reduces $MS_{Residual}$ while leaving $MS_{Treatment}$ approximately the same in balanced/orthogonal designs
+  - Because the denominator is reduced, the F statistic for treatment tends to increase and the test gains power to detect treatment differences
 
 # Backup slides
 
