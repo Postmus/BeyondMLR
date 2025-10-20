@@ -94,30 +94,53 @@ $$
 :::
 
 ::: {.column width="50%"}
+
+<div style="font-size: 75%;">
+
 | Treatment | Intercept | D1 (DrugA) | D2 (DrugB) |
 |---|---:|:---:|:---:|
 | Control | 1 | 0 | 0 |
 | DrugA   | 1 | 1 | 0 |
 | DrugB   | 1 | 0 | 1 |
 
+</div>
+
 :::
 
 ::::
 
-- Interpretation:
-  - Intercept ($\beta_0$): estimated mean for Control
-  - $\beta_1$: estimated difference mean(DrugA) − mean(Control)
-  - $\beta_2$: estimated difference mean(DrugB) − mean(Control)
+```{=html}
+<div style="margin-top:1.5em;"></div>
+```
 
-## Estimated regression coefficients
+:::: {.columns}
 
+::: {.column width="50%"}
+
+**Estimated regression coefficients:**
 ```{r}
 #| echo: false
 # R (refresher): reference coding with Control as baseline
 contrasts(df_bp$Treatment) <- contr.treatment(levels(df_bp$Treatment))
 fit <- lm(SBP_change ~ Treatment, data = df_bp)
-summary(fit)
+kable(tidy(fit)[, c("term","estimate","std.error","p.value")], digits = 3, format = "html", table.attr = 'style="font-size: 90%; margin-left: 0; margin-right: auto"')
 ```
+
+:::
+
+::: {.column width="50%"}
+
+**Estimated group means:**
+```{r}
+#| echo: false
+# Compute and display estimated marginal means
+emms <- emmeans(fit, ~ Treatment)
+summary(emms)
+```
+:::
+
+::::
+
 
 ## Mapping to the ANOVA model parameters
 
@@ -134,67 +157,48 @@ summary(fit)
   - $\tau_{\text{DrugA}}   = \text{mean(DrugA)} - \mu = \beta_1 - \frac{\beta_1 + \beta_2}{3}$
   - $\tau_{\text{DrugB}}   = \text{mean(DrugB)} - \mu = \beta_2 - \frac{\beta_1 + \beta_2}{3}$
 
-## Estimated marginal means (EMMs)
-
-- Regression coefficients describe differences relative to a reference group
-- Estimated marginal means (EMMs) express the same model in terms of predicted group means
-- In a one-way ANOVA model, the EMMs equal the observed group means
-- In more complex models, EMMs give adjusted or conditional means that make comparisons fairer
-  - With covariates (ANCOVA): EMMs adjust group means to a common covariate value, such as the overall mean
-  - With interactions: EMMs provide conditional means for specific combinations of factors, allowing group comparisons at chosen settings
+## ANOVA table
 
 ```{r}
-#| echo: false
-# Compute and display estimated marginal means
-emms <- emmeans(fit, ~ Treatment)
-summary(emms)
+kable(
+  tidy(anova(fit)),
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
+)
 ```
 
-## Sum of squares decomposition
-
-- The total variation in the response can be decomposed as
-
-  $$SS_{Total} = SS_{Treatment} + SS_{Residual}$$
-
-  - $SS_{Treatment}$: variation explained by differences between treatment group means (between-group variation)
-  - $SS_{Residual}$: unexplained variation within treatment groups (within-group variation)
-  
-- A commonly used effect-size for ANOVA is eta-squared, which measures the proportion of total variability explained by the treatment:
-
-  $$\eta^2 = \frac{SS_{Treatment}}{SS_{Total}}$$
-
-  - Interpretation: the fraction of total variability attributable to treatment differences; larger values indicate a stronger effect
-  - Note: in a one-way ANOVA this equals the percentage of variance explained (multiply by 100)
-
-## Global hypothesis test (F-test)
-
-- Hypotheses
-  - $H_0$: all group means are equal ($\tau_{Control} = \tau_{DrugA} = \tau_{DrugB} = 0$)
-  - $H_1$: at least one group mean differs ($\exists\, \tau_i \ne 0$)
-
-- The F statistic compares the variance explained by treatment to the residual variance:
-
-  $$
-  F = \frac{MS_{Treatment}}{MS_{Residual}} = \frac{SS_{Treatment}/df_{Treatment}}{SS_{Residual}/df_{Residual}}
-  $$
-
-  - Under $H_0$, $F$ follows an $F$-distribution with $df_{1}=k-1$ and $df_{2}=N-k$, where $k$ is the number of treatment groups and $N$ is the total sample size
-
-
-```{r}
-#| echo: false
-#| results: asis
-anova_df <- as.data.frame(anova(fit))
-num_cols <- sapply(anova_df, is.numeric)
-anova_df[num_cols] <- lapply(anova_df[num_cols], function(x) round(x, 3))
-cat(knitr::kable(anova_df, format = "html", table.attr = 'class="small-anova"'))
+```{=html}
+<div style="margin-top:1.5em;"></div>
 ```
 
-- The p-value is $\leq 0.05$, so we reject $H_0$ and conclude that the treatment has a significant effect on the change in SBP
+:::: {.columns}
+
+::: {.column width="50%"}
+
+**Sum of squares decomposition**
+
+- Total variability splits into $SS_{Total} = SS_{Treatment} + SS_{Residual}$  
+  - $SS_{Treatment}$: variation explained by treatment  
+  - $SS_{Residual}$: unexplained (within-group) variation  
+:::
+
+::: {.column width="50%"}
+
+**Global hypothesis test (F-test)**
+
+- Global test of equal means  
+  - $H_0: \tau_{Control} = \tau_{DrugA} = \tau_{DrugB} = 0$  
+  - $F = \frac{MS_{Treatment}}{MS_{Residual}}$  
+- Here, the p-value is $\leq 0.05$, so we reject $H_0$ and conclude that the treatment has a significant effect on the change in SBP
+
+:::
+
+::::
 
 ## Post-hoc comparisons
 
-- Since we found a significant effect of treatment, we will conduct pairwise comparisons of the estimated marginal means to identify which specific treatment groups differ significantly from one another
+- Since we found a significant effect of treatment, we will conduct pairwise comparisons of the estimated group means to identify which specific treatment groups differ significantly from one another
 - To account for the increased Type I error risk due to multiple comparisons, we apply the Bonferroni correction to adjust the p-values, ensuring that the overall significance level remains controlled
 
 ```{r}
@@ -683,4 +687,19 @@ fit2 <- lm(SBP_change ~ Treatment, data = df_bp)
 summary(fit2)
 ```
 
+## Estimated marginal means (EMMs)
+
+- Regression coefficients describe differences relative to a reference group
+- Estimated marginal means (EMMs) express the same model in terms of predicted group means
+- In a one-way ANOVA model, the EMMs equal the observed group means
+- In more complex models, EMMs give adjusted or conditional means that make comparisons fairer
+  - With covariates (ANCOVA): EMMs adjust group means to a common covariate value, such as the overall mean
+  - With interactions: EMMs provide conditional means for specific combinations of factors, allowing group comparisons at chosen settings
+
+```{r}
+#| echo: false
+# Compute and display estimated marginal means
+emms <- emmeans(fit, ~ Treatment)
+summary(emms)
+```
 
