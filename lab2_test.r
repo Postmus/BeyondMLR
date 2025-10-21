@@ -83,3 +83,20 @@ contrast(emms2, method="pairwise", adjust="Bonferroni")
 
 # Perform pairwise comparisons with Bonferroni adjustment
 pairs(emms2, adjust = "bonferroni")
+
+summary(lm(WoundHealing ~ Treatment, data = data_block))
+anova(lm(WoundHealing ~ Treatment, data = data_block))
+
+# Extract conditional residuals
+residuals_cond <- resid(model_block)
+
+# Residuals vs Fitted
+plot(fitted(model_block), residuals_cond,
+     main = "Residuals vs Fitted",
+     xlab = "Fitted values",
+     ylab = "Residuals")
+abline(h = 0, col = "red")
+
+# Normal Q-Q Plot
+qqnorm(residuals_cond)
+qqline(residuals_cond, col = "red")

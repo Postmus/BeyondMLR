@@ -403,7 +403,7 @@ Note&nbsp;1: Coding schemes for categorical variables
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Obtain estimated marginal means</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>emms <span class="ot">&lt;-</span> <span class="fu">emmeans</span>(model_oneway, <span class="sc">~</span> Treatment)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>emms</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>emms  <span class="co"># displays EMMs with standard errors and 95% confidence intervals</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
 <div class="callout-header d-flex align-content-center">
@@ -421,10 +421,10 @@ Note&nbsp;1: Coding schemes for categorical variables
 </section>
 <section id="pairwise-comparisons" class="level3">
 <h3 class="anchored" data-anchor-id="pairwise-comparisons">Pairwise comparisons</h3>
-<p>Since we found a significant treatment effect, we will conduct pairwise comparisons of the estimated marginal means to identify which specific treatment groups differ significantly from one another. We perform these pairwise comparisons using the <code>contrast()</code> function from the <code>emmeans</code> package. To account for the increased risk of Type I error due to multiple comparisons, we apply the Bonferroni correction to adjust the p-values, ensuring that the overall significance level remains controlled.</p>
+<p>Since we found a significant treatment effect, we will conduct pairwise comparisons of the estimated marginal means to identify which specific treatment groups differ significantly from one another. We perform these pairwise comparisons using the <code>pairs()</code> function from the <code>emmeans</code> package. To account for the increased risk of Type I error due to multiple comparisons, we apply the Bonferroni correction to adjust the p-values, ensuring that the overall significance level remains controlled.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Performing post-hoc analysis with emmeans</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">contrast</span>(emms, <span class="at">method=</span><span class="st">"pairwise"</span>, <span class="at">adjust=</span><span class="st">"Bonferroni"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pairs</span>(emms, <span class="at">adjust=</span><span class="st">"Bonferroni"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
 <div class="callout-header d-flex align-content-center">

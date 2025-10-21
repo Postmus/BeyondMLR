@@ -173,7 +173,7 @@ Since we found a significant treatment effect, we will conduct pairwise comparis
 
 ```{r}
 # Performing post-hoc analysis with emmeans
-pairs(emms, method="pairwise", adjust="Bonferroni")
+pairs(emms, adjust="Bonferroni")
 ```
 
 ::: {.callout-important icon=false title="Question"}

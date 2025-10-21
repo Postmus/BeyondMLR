@@ -209,8 +209,8 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#model-specification" id="toc-model-specification" class="nav-link" data-scroll-target="#model-specification">Model Specification</a></li>
   <li><a href="#model-estimation" id="toc-model-estimation" class="nav-link" data-scroll-target="#model-estimation">Model Estimation</a></li>
-  <li><a href="#assessing-the-variance-components" id="toc-assessing-the-variance-components" class="nav-link" data-scroll-target="#assessing-the-variance-components">Assessing the variance components</a></li>
   <li><a href="#assessing-the-fixed-effects" id="toc-assessing-the-fixed-effects" class="nav-link" data-scroll-target="#assessing-the-fixed-effects">Assessing the fixed effects</a></li>
+  <li><a href="#assessing-the-variance-components" id="toc-assessing-the-variance-components" class="nav-link" data-scroll-target="#assessing-the-variance-components">Assessing the variance components</a></li>
   <li><a href="#model-diagnostics" id="toc-model-diagnostics" class="nav-link" data-scroll-target="#model-diagnostics">Model Diagnostics</a></li>
   </ul></li>
   </ul></li>
@@ -297,16 +297,16 @@ window.Quarto = {
 <p>In addition to the scatter plot, we compute descriptive statistics to summarize the wound healing measures within treatments and within laboratories. This will help us assess variability both across treatments and across laboratory facilities.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Summarizing data by Treatment</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>summary_stats_treatment <span class="ot">&lt;-</span> data_block <span class="sc">%&gt;%</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Treatment) <span class="sc">%&gt;%</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>summary_stats_treatment <span class="ot">&lt;-</span> data_block <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Treatment) <span class="sc">|&gt;</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean_WoundHealing =</span> <span class="fu">mean</span>(WoundHealing),</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">SD_WoundHealing =</span> <span class="fu">sd</span>(WoundHealing)</span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Summarizing data by Laboratory</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>summary_stats_laboratory <span class="ot">&lt;-</span> data_block <span class="sc">%&gt;%</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Laboratory) <span class="sc">%&gt;%</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>summary_stats_laboratory <span class="ot">&lt;-</span> data_block <span class="sc">|&gt;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Laboratory) <span class="sc">|&gt;</span></span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean_WoundHealing =</span> <span class="fu">mean</span>(WoundHealing),</span>
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">SD_WoundHealing =</span> <span class="fu">sd</span>(WoundHealing)</span>
@@ -369,9 +369,10 @@ Y_{ij} = \mu + \tau_i + b_j + \epsilon_{ij}
 <p>To fit the previously specified mixed effects model, we use the <code>lmer()</code> function from the <code>lmeTest</code> package:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">contrasts =</span> <span class="fu">c</span>(<span class="st">"contr.sum"</span>, <span class="st">"contr.poly"</span>))  <span class="co"># Effects coding</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>model_block <span class="ot">&lt;-</span> <span class="fu">lmer</span>(WoundHealing <span class="sc">~</span> Treatment <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> Laboratory), <span class="at">data =</span> data_block)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_block)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">contrasts</span>(data_block<span class="sc">$</span>Treatment) <span class="co"># Inspect contrasts for Treatment</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>model_block <span class="ot">&lt;-</span> <span class="fu">lmer</span>(WoundHealing <span class="sc">~</span> Treatment <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> Laboratory), <span class="at">data =</span> data_block)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_block)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="syntax-overview" class="level4">
 <h4 class="anchored" data-anchor-id="syntax-overview">Syntax overview</h4>
@@ -406,49 +407,22 @@ Y_{ij} = \mu + \tau_i + b_j + \epsilon_{ij}
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>While the <code>lmerTest</code> package provides p-values for fixed effects, it is important to use them with caution, primarily because methods for calculating degrees of freedom, such as Satterthwaite, are approximations that may not always be reliable, particularly in complex models fitted to imbalanced data. Generally, this sensitivity is not a concern for the randomized block design considered in this lab.</p>
+<p>While the <code>lmerTest</code> package provides p-values for fixed effects, it is important to use them with caution, primarily because methods for calculating degrees of freedom, such as Satterthwaite, are approximations that may not always be reliable, particularly in complex models fitted to imbalanced data. Hypothesis testing based on likelihood ratio tests may be preferred in those settings.</p>
 </div>
 </div>
 </section>
-</section>
-<section id="assessing-the-variance-components" class="level3">
-<h3 class="anchored" data-anchor-id="assessing-the-variance-components">Assessing the variance components</h3>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Based on the estimated variance components, what can you conclude about the relative contributions of laboratory variability and residual error to the total variability in wound healing?</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Considering these results, do you think that blocking by laboratory was necessary for this experiment?</p>
-</div>
-</div>
 </section>
 <section id="assessing-the-fixed-effects" class="level3">
 <h3 class="anchored" data-anchor-id="assessing-the-fixed-effects">Assessing the fixed effects</h3>
-<p>In addition to providing p-values for the fixed effects estimates, the <code>lmerTest</code> package also implements the <code>anova()</code> function to test the overall significance of fixed effects in the model. Additionally, the <code>ls_means()</code> function can be used to calculate the estimated marginal means for the factors (i.e., variables that are defined as factors in the data frame or the model formula) included in the fixed effects structure of the model. Alternatively, these estimated marginal means can be calculated using the <code>emmeans()</code> function from the <code>emmeans</code> package, which provides more options and greater flexibility for advanced users.</p>
+<p>In addition to providing p-values for fixed effects estimates, the <code>lmerTest</code> package allows us to assess the overall significance of fixed effects using the <code>anova()</code> function. To further explore the nature of these effects, we can obtain the <strong>estimated marginal means</strong> for the factor levels in the model. Rather than using the package’s build in <code>ls_means()</code> function, we will use <code>emmeans()</code> function from the <code>emmeans</code> package, which provides more options and greater flexibility.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Obtain ANOVA table for the fixed effects</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model_block)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate estimated marginal means for the Treatment variable</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ls_means</span>(model_block)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model_block)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute estimated marginal means for the Treatment variable</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>emms <span class="ot">&lt;-</span> <span class="fu">emmeans</span>(model_block, <span class="sc">~</span> Treatment)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>emms <span class="co"># displays EMMs with standard errors and 95% confidence intervals</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
 <div class="callout-header d-flex align-content-center">
@@ -463,30 +437,12 @@ Y_{ij} = \mu + \tau_i + b_j + \epsilon_{ij}
 <p>What does the F-test tell us about the treatment effect?</p>
 </div>
 </div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>How to the estimated marginal means compare to the observed group means from the exploratory data analysis?</p>
-</div>
-</div>
 <section id="pairwise-comparisons" class="level4">
 <h4 class="anchored" data-anchor-id="pairwise-comparisons">Pairwise comparisons</h4>
-<p>Since we found a significant treatment effect, we proceed with computing pairwise differences of the estimated marginal means. This can be achieved by adding the argument <code>pairwise=TRUE</code> to the call to the <code>ls_means()</code> function. Unlike the <code>emmmeans</code> package, there is no multiplicity correction for pairwise comparisons in the <code>lmerTest</code> package. We therefore use the <code>p.adjust()</code> function from the base R <code>stats</code> package to compute the Bonferroni corrected p-values (i.e., the original p-values multiplied by the number of comparisons).</p>
+<p>Since we found a significant treatment effect, we proceed with computing pairwise differences of the estimated marginal means:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute pairwise differences of the estimated marginal means</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>emms <span class="ot">&lt;-</span> <span class="fu">ls_means</span>(model_block, <span class="at">pairwise=</span><span class="cn">TRUE</span>)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>emms</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Retrieve the p-values from the emms object and adjust them</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># for multiple testing using the Bonferroni correction</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">p.adjust</span>(emms<span class="sc">$</span><span class="st">`</span><span class="at">Pr(&gt;|t|)</span><span class="st">`</span>, <span class="at">method=</span><span class="st">"bonferroni"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform pairwise comparisons with Bonferroni adjustment</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pairs</span>(emms, <span class="at">adjust =</span> <span class="st">"bonferroni"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
 <div class="callout-header d-flex align-content-center">
@@ -503,6 +459,35 @@ Y_{ij} = \mu + \tau_i + b_j + \epsilon_{ij}
 </div>
 </section>
 </section>
+<section id="assessing-the-variance-components" class="level3">
+<h3 class="anchored" data-anchor-id="assessing-the-variance-components">Assessing the variance components</h3>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Based on the estimated variance components from <code>summary(model_block)</code>, calculate the intra-class correlation (ICC) and interpret its meaning.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Considering these results, do you think that blocking by laboratory was necessary for this experiment?</p>
+</div>
+</div>
+</section>
 <section id="model-diagnostics" class="level3">
 <h3 class="anchored" data-anchor-id="model-diagnostics">Model Diagnostics</h3>
 <p>In mixed-effects models, model diagnostics involve analyzing different types of residuals to evaluate how well the model fits the data and to assess whether key assumptions are satisfied.</p>
@@ -513,19 +498,19 @@ Y_{ij} = \mu + \tau_i + b_j + \epsilon_{ij}
 <li>Normal Q-Q Plot: This plot assesses whether the residuals follow a normal distribution.</li>
 </ul>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract conditional residuals</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>residuals_cond <span class="ot">&lt;-</span> <span class="fu">resid</span>(model_block)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Residuals vs Fitted</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">fitted</span>(model_block), residuals_cond,</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Residuals vs Fitted"</span>,</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Fitted values"</span>,</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"Residuals"</span>)</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">col =</span> <span class="st">"red"</span>)</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Normal Q-Q Plot</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(residuals_cond)</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(residuals_cond, <span class="at">col =</span> <span class="st">"red"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract conditional residuals</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>residuals_cond <span class="ot">&lt;-</span> <span class="fu">resid</span>(model_block)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Residuals vs Fitted</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">fitted</span>(model_block), residuals_cond,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Residuals vs Fitted"</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Fitted values"</span>,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"Residuals"</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">col =</span> <span class="st">"red"</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Normal Q-Q Plot</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(residuals_cond)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(residuals_cond, <span class="at">col =</span> <span class="st">"red"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
 <div class="callout-header d-flex align-content-center">

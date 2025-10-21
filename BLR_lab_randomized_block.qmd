@@ -165,17 +165,7 @@ When you run `summary(model_block)`, the output will display:
   - **Residual:** Residual variance ($\sigma^2$).
 
 ::: {.callout-warning title="Caution: Interpreting p-values in Mixed Effects Models"}
-While the `lmerTest` package provides p-values for fixed effects, it is important to use them with caution, primarily because methods for calculating degrees of freedom, such as Satterthwaite, are approximations that may not always be reliable, particularly in complex models fitted to imbalanced data. Generally, this sensitivity is not a concern for the randomized block design considered in this lab.
-:::
-
-### Assessing the variance components
-
-::: {.callout-important icon=false title="Question"}
-Based on the estimated variance components, what can you conclude about the relative contributions of laboratory variability and residual error to the total variability in wound healing?
-:::
-
-::: {.callout-important icon=false title="Question"}
-Considering these results, do you think that blocking by laboratory was necessary for this experiment?
+While the `lmerTest` package provides p-values for fixed effects, it is important to use them with caution, primarily because methods for calculating degrees of freedom, such as Satterthwaite, are approximations that may not always be reliable, particularly in complex models fitted to imbalanced data. Hypothesis testing based on likelihood ratio tests may be preferred in those settings.
 :::
 
 ### Assessing the fixed effects
@@ -208,6 +198,16 @@ pairs(emms, adjust = "bonferroni")
 
 ::: {.callout-important icon=false title="Question"}
 Based on the results of the pairwise comparisons, which treatment groups differ significantly?
+:::
+
+### Assessing the variance components
+
+::: {.callout-important icon=false title="Question"}
+Based on the estimated variance components from `summary(model_block)`, calculate the intra-class correlation (ICC) and interpret its meaning.
+:::
+
+::: {.callout-important icon=false title="Question"}
+Considering these results, do you think that blocking by laboratory was necessary for this experiment?
 :::
 
 ### Model Diagnostics
