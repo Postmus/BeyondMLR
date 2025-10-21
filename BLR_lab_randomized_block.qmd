@@ -1,25 +1,26 @@
 ---
-title: "Beyond MLR Lab 3: Randomized Block Designs"
-format: 
+title: "Beyond MLR Lab 2: Randomized Block Designs"
+format:
   html:
-    toc: true       # Enable the table of contents
-    toc-depth: 3    # Set the depth of headers included in the ToC (e.g., H1, H2, H3)
-    toc-location: right   # Optional: Can be left, right, or floating    
+    toc: true
+    toc-depth: 3
+    toc-location: right
   pdf:
     toc: false
+execute:
+  warning: false
+  message: false
+  eval: false
 ---
 
+Welcome to lab 2 of the Beyond MLR course. In this lab, we will use the R packages `ggplot2`, `dplyr`, `emmeans`, and `lmerTest`. You can use the script below to automatically install and load them using the `pacman` package.
+
 ```{r}
-#| label: setup
-#| include: false
+# Install pacman if not already available
+if (!require("pacman")) install.packages("pacman")
 
-# configure global options for R code chunks:
-# warning = F to suppress the display of warning messages generated during the execution of code chunks
-# message = F to suppress the display of messages produced during the execution of code chunks
-knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
-
-# This qmd file requires the following packages to be installed:
-#c("dplyr", "ggplot2", "emmeans", "lme4", "lmerTest")
+# Use pacman to install (if needed) and load the required packages
+pacman::p_load(dplyr, ggplot2, emmeans, lmerTest)
 ```
 
 # Example: Testing Wound Healing Treatments Across Different Laboratory Facilities
@@ -57,7 +58,7 @@ for (i in 1:nrow(data_block)) {
 The R code chunk above simulates wound healing observations (measured on a continuous scale, where higher values indicate better healing) for 15 cell culture plates, divided across five laboratory facilities. The results are stored in the data frame `data_block`, which consists of the following three variables:
 
 - `Laboratory`: A factor variable indicating the laboratory facility.
-- `Treatmment`: A factor variable indicating the applied treatment. 
+- `Treatmment`: A factor variable indicating the applied treatment.
 - `WoundHealing`: A numeric variable representing the degree of wound healing on a continuous scale.
 
 ## Exploratory Data Analysis
@@ -65,7 +66,6 @@ The R code chunk above simulates wound healing observations (measured on a conti
 To explore the data and investigate the possible presence of a laboratory effect, we start by creating a scatter plot with the wound healing variable on the x-axis and the laboratory facility variable on the y-axis:
 
 ```{r}
-library(ggplot2)
 ggplot(data_block, aes(x = WoundHealing, y = Laboratory, color = Treatment)) +
   geom_point(size = 4) +
   labs(title = "Wound Healing by Treatment and Laboratory",
@@ -77,19 +77,17 @@ ggplot(data_block, aes(x = WoundHealing, y = Laboratory, color = Treatment)) +
 In addition to the scatter plot, we compute descriptive statistics to summarize the wound healing measures within treatments and within laboratories. This will help us assess variability both across treatments and across laboratory facilities.
 
 ```{r}
-library(dplyr)
-
 # Summarizing data by Treatment
-summary_stats_treatment <- data_block %>%
-  group_by(Treatment) %>%
+summary_stats_treatment <- data_block |>
+  group_by(Treatment) |>
   summarise(
     Mean_WoundHealing = mean(WoundHealing),
     SD_WoundHealing = sd(WoundHealing)
   )
 
 # Summarizing data by Laboratory
-summary_stats_laboratory <- data_block %>%
-  group_by(Laboratory) %>%
+summary_stats_laboratory <- data_block |>
+  group_by(Laboratory) |>
   summarise(
     Mean_WoundHealing = mean(WoundHealing),
     SD_WoundHealing = sd(WoundHealing)
@@ -130,14 +128,17 @@ where:
 - $b_j$: The random effect of laboratory $j$, assumed to be normally distributed with mean zero and variance $\sigma_b^2$).
 - $\epsilon_{ij}$: The error term, assumed to be normally distributed with mean zero and variance $\sigma^2$.
 
+::: {.callout-note title="Notation convention"}
+In mixed-effects models, fixed effects are typically represented by **Greek letters**, while random effects are represented by **Roman letters**. This helps differentiate between the two types of effects in model specification.
+:::
+
 ### Model Estimation
 
-We previously mentioned that the `lme4` package does not provide p-values for the fixed effect estimates. One way around this is to fit the mixed effects model using the `lmer()` function from the `lmeTest` package, which extends to original `lmer()` function from the `lme4` to include p-values for the fixed effect estimates. The `lmerTest` package achieves this by applying **Satterthwaite’s approximation** to calculate degrees of freedom, which are then used to derive the p-values.
+To fit the previously specified mixed effects model, we use the `lmer()` function from the `lmeTest` package:
 
 ```{r}
-library(lmerTest)
-
 options(contrasts = c("contr.sum", "contr.poly"))  # Effects coding
+contrasts(data_block$Treatment) # Inspect contrasts for Treatment
 
 model_block <- lmer(WoundHealing ~ Treatment + (1 | Laboratory), data = data_block)
 summary(model_block)
@@ -158,11 +159,11 @@ When you run `summary(model_block)`, the output will display:
 - **Fixed Effects:** Estimates of the fixed effects
   - **Intercept:** The overall mean wound healing score averaged across all treatments and laboratories.
   - **Treatment:** The differences in wound healing associated with each treatment relative to the overall mean.
-  
+
 - **Random Effects:** Estimates of the variance components
   - **Laboratory - Intercept:** Between-laboratory variability ($\sigma^2_{b}$).
   - **Residual:** Residual variance ($\sigma^2$).
-  
+
 ::: {.callout-warning title="Caution: Interpreting p-values in Mixed Effects Models"}
 While the `lmerTest` package provides p-values for fixed effects, it is important to use them with caution, primarily because methods for calculating degrees of freedom, such as Satterthwaite, are approximations that may not always be reliable, particularly in complex models fitted to imbalanced data. Generally, this sensitivity is not a concern for the randomized block design considered in this lab.
 :::
@@ -179,36 +180,30 @@ Considering these results, do you think that blocking by laboratory was necessar
 
 ### Assessing the fixed effects
 
-In addition to providing p-values for the fixed effects estimates, the `lmerTest` package also implements the `anova()` function to test the overall significance of fixed effects in the model. Additionally, the `ls_means()` function can be used to calculate the estimated marginal means for the factors (i.e., variables that are defined as factors in the data frame or the model formula) included in the fixed effects structure of the model. Alternatively, these estimated marginal means can be calculated using the `emmeans()` function from the `emmeans` package, which provides more options and greater flexibility for advanced users.
+In addition to providing p-values for fixed effects estimates, the `lmerTest` package allows us to assess the overall significance of fixed effects using the `anova()` function. To further explore the nature of these effects, we can obtain the **estimated marginal means** for the factor levels in the model. Rather than using the package's build in `ls_means()` function, we will use `emmeans()` function from the `emmeans` package, which provides more options and greater flexibility.
 
-```{r echo=TRUE}
+```{r}
 # Obtain ANOVA table for the fixed effects
 anova(model_block)
+```
 
-# Calculate estimated marginal means for the Treatment variable
-ls_means(model_block)
+```{r}
+# Compute estimated marginal means for the Treatment variable
+emms <- emmeans(model_block, ~ Treatment)
+emms # displays EMMs with standard errors and 95% confidence intervals
 ```
 
 ::: {.callout-important icon=false title="Question"}
 What does the F-test tell us about the treatment effect?
 :::
 
-::: {.callout-important icon=false title="Question"}
-How to the estimated marginal means compare to the observed group means from the exploratory data analysis?
-:::
-
 #### Pairwise comparisons
 
-Since we found a significant treatment effect, we proceed with computing pairwise differences of the estimated marginal means. This can be achieved by adding the argument `pairwise=TRUE` to the call to the `ls_means()` function. Unlike the `emmmeans` package, there is no multiplicity correction for pairwise comparisons in the `lmerTest` package. We therefore use the `p.adjust()` function from the base R `stats` package to compute the Bonferroni corrected p-values (i.e., the original p-values multiplied by the number of comparisons). 
+Since we found a significant treatment effect, we proceed with computing pairwise differences of the estimated marginal means:
 
 ```{r echo=TRUE}
-# Compute pairwise differences of the estimated marginal means 
-emms <- ls_means(model_block, pairwise=TRUE)
-emms
-
-# Retrieve the p-values from the emms object and adjust them 
-# for multiple testing using the Bonferroni correction
-p.adjust(emms$`Pr(>|t|)`, method="bonferroni")
+# Perform pairwise comparisons with Bonferroni adjustment
+pairs(emms, adjust = "bonferroni")
 ```
 
 ::: {.callout-important icon=false title="Question"}
@@ -217,7 +212,14 @@ Based on the results of the pairwise comparisons, which treatment groups differ 
 
 ### Model Diagnostics
 
-Similar as in the previous lab, we will inspect the conditional residuals to check the model assumptions regarding the error term:
+In mixed-effects models, model diagnostics involve analyzing different types of residuals to evaluate how well the model fits the data and to assess whether key assumptions are satisfied.
+
+The default type of residuals used in these models are the **conditional residuals**, which are calculated based on predicted values that incorporate both fixed effects and estimated random effects. Conditional residuals represent the deviation of the observed data from the model’s predictions, accounting for variability from both sources: fixed effects and random effects. They can be considered estimates of the errors $\epsilon_{ij}$, which are assumed to be normally distributed with a mean of zero and constant variance.
+
+To check these assumptions, we can generate diagnostic plots similar to those used in linear regression models:
+
+- Residuals vs. Fitted Plot: This plot helps check for homoscedasticity (constant variance).
+- Normal Q-Q Plot: This plot assesses whether the residuals follow a normal distribution.
 
 ```{r}
 # Extract conditional residuals

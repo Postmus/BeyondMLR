@@ -18,37 +18,11 @@ website:
           - text: "Lab 1"
             href: BLR_lab_FE_oneway.qmd
           - text: "Lab 2"
-            href: BLR_lab_RE_oneway.qmd
-      - text: "Labs week 2"
-        menu:
-          - text: "Lab 3"
             href: BLR_lab_randomized_block.qmd
-          - text: "Lab 4"
-            href: BLR_lab_replicated_randomized_block.qmd
-      - text: "Lab week 3"
-        menu:
-          - text: "Lab 5"
-            href: BLR_lab_MLA.qmd
-      - text: "Lab week 4"
-        menu:
-          - text: "Lab 6"
-            href: BLR_lab_longitudinal.qmd
-      - text: "Lab week 5"
-        menu:
-          - text: "Lab 7"
-            href: BLR_lab_Poisson.qmd
       - text: "Assignments"
         menu:
           - text: "Week 1"
             href: Assignments/Week 1/Assignment_week_1.qmd
-          - text: "Week 2"
-            href: Assignments/Week 2/Assignment_week_2.qmd
-          - text: "Week 3"
-            href: Assignments/Week 3/Assignment_week_3.qmd
-          - text: "Week 4"
-            href: Assignments/Week 4/Assignment_week_4.qmd
-          - text: "Week 5"
-            href: Assignments/Week 5/Assignment_week_5.qmd
 
 format:
   html:

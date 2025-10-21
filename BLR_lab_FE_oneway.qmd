@@ -1,51 +1,38 @@
 ---
-title: "Beyond MLR Lab 1: Fixed Effects Model for the One-Way Layout"
+title: "Beyond MLR Lab 1: One-way ANOVA"
 format:
   html:
     toc: true
     toc-depth: 3
-    toc-location: right   # Optional: Can be left, right, or floating
+    toc-location: right
   pdf:
     toc: false
-editor_options:
-  chunk_output_type: console
+execute:
+  warning: false
+  message: false
+  eval: false
 ---
 
-```{r}
-#| label: setup
-#| include: false
-
-# configure global options for R code chunks:
-# warning = F to suppress the display of warning messages generated during the execution of code chunks
-# message = F to suppress the display of messages produced during the execution of code chunks
-knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
-```
-
-Welcome to lab 1 of the Beyond MLR course. In this lab, we make use of the following R packages: `gglot2`, `dplyr`, and `emmeans`. You can use the script below to check if these packages are installed. Any missing packages can be installed using `install.packages("package_name")`.
+Welcome to lab 1 of the Beyond MLR course. In this lab, we will use the R packages `ggplot2`, `dplyr`, and `emmeans`. You can use the script below to automatically install and load them using the `pacman` package.
 
 ```{r}
-#| eval: false
-packages <- c("dplyr", "ggplot2", "emmeans")
+# Install pacman if not already available
+if (!require("pacman")) install.packages("pacman")
 
-installed <- sapply(packages, requireNamespace, quietly = TRUE)
-if (all(installed)) {
-  message("All packages are installed.")
-} else {
-  missing <- names(installed)[!installed]
-  message("The following packages are not installed: ", paste(missing, collapse = ", "))
-}
+# Use pacman to install (if needed) and load the required packages
+pacman::p_load(dplyr, ggplot2, emmeans)
 ```
 
 # Example: Effect of Three Different Drug Treatments on Blood Pressure Reduction
 
-In this lab, we will examine the effect of three different drug treatments (Control, Drug A, and Drug B) on blood pressure reduction in patients. The data for this example are hypothetical and will be created through simulation:
+In this lab, we will examine the effect of three different drug treatments (Control, Drug A, and Drug B) on the change in systolic blood pressure (SBP) from baseline to week 52 in patients with hypertension. The data for this example are hypothetical and will be created through simulation:
 
 ```{r}
 # Generating data for the single-factor experimental design
 set.seed(123)
-control <- rnorm(40, mean = 2, sd = 10)
-drugA <- rnorm(40, mean = 20, sd = 10)
-drugB <- rnorm(40, mean = 5, sd = 10)
+control <- rnorm(40, mean = -2, sd = 10)
+drugA <- rnorm(40, mean = -20, sd = 10)
+drugB <- rnorm(40, mean = -5, sd = 10)
 
 # Combining data into a data frame
 data_oneway <- data.frame(
@@ -58,7 +45,7 @@ data_oneway <- data.frame(
 The above R chunk simulates hypothetical results for 120 patients (40 per treatment group) and stores the results in the data frame `data_oneway` that consists of the following two columns:
 
 * `Treatment`: Factor variable indicating the treatment group.
-* `BP_change`: Numeric variable representing blood pressure reduction (in mm Hg).
+* `BP_change`: Numeric variable representing the change in SBP (in mm Hg).
 
 ## Exploratory Data Analysis
 
@@ -66,11 +53,10 @@ To understand the distribution of blood pressure reduction across treatment grou
 
 ```{r}
 # Visualizing the results
-library(ggplot2)
 ggplot(data_oneway, aes(x = Treatment, y = BP_change, fill = Treatment)) +
   geom_boxplot() +
-  labs(title = "Blood Pressure Reduction by Treatment",
-       x = "Treatment", y = "Blood Pressure Reduction (mm Hg)") +
+  labs(title = NULL,
+       x = "Treatment", y = "Change in SBP (mm Hg)") +
   theme_minimal() +
   theme(legend.position = "none")
 ```
@@ -78,20 +64,18 @@ ggplot(data_oneway, aes(x = Treatment, y = BP_change, fill = Treatment)) +
 We also calculate some summary statistics:
 
 ```{r}
-# Summarizing data
-library(dplyr)
-summary_stats <- data_oneway %>%
-  group_by(Treatment) %>%
+# Generating summary statistics
+summary_stats <- data_oneway |>
+  group_by(Treatment) |>
   summarise(
     Mean_BP_change = mean(BP_change),
     SD_BP_change = sd(BP_change)
   )
-
 summary_stats
 ```
 
 ::: {.callout-important icon=false title="Question"}
-How do the mean blood pressure reductions compare among the treatment groups?
+How do the mean changes in SBP compare among the treatment groups?
 :::
 
 ## Performing a One-Way ANOVA
@@ -107,8 +91,8 @@ $$
 
 where:
 
-- $Y_{ij}$: The blood pressure reduction for the $j$-th patient in the $i$-th treatment group.
-- $\mu$: The overall mean blood pressure reduction.
+- $Y_{ij}$: The change in SBP for the $j$-th patient in the $i$-th treatment group.
+- $\mu$: The mean change in SBP across all treatment groups.
 - $\tau_i$: The effect of the $i$-th treatment (deviation from the overall mean).
 - $\epsilon_{ij}$: The error term, assumed to be independently and normally distributed with mean zero and constant variance.
 
@@ -140,6 +124,7 @@ We can fit the one-way ANOVA model using the `lm()` function:
 
 ```{r}
 options(contrasts = c("contr.sum", "contr.poly"))  # Effects coding
+contrasts(data_oneway$Treatment) # Inspect contrasts for Treatment
 
 # Fitting the model with effects coding
 model_oneway <- lm(BP_change ~ Treatment, data = data_oneway)
@@ -174,9 +159,8 @@ We can calculate the estimated marginal means using the `emmeans()` function fro
 
 ```{r}
 # Obtain estimated marginal means
-library(emmeans)
 emms <- emmeans(model_oneway, ~ Treatment)
-emms
+emms  # displays EMMs with standard errors and 95% confidence intervals
 ```
 
 ::: {.callout-important icon=false title="Question"}
@@ -185,12 +169,11 @@ How do the estimated marginal means compare to the observed group means calculat
 
 ### Pairwise comparisons
 
-Since we found a significant treatment effect, we will conduct pairwise comparisons of the estimated marginal means to identify which specific treatment groups differ significantly from one another. We perform these pairwise comparisons using the `contrast()` function from the `emmeans` package. To account for the increased risk of Type I error due to multiple comparisons, we apply the Bonferroni correction to adjust the p-values, ensuring that the overall significance level remains controlled.
+Since we found a significant treatment effect, we will conduct pairwise comparisons of the estimated marginal means to identify which specific treatment groups differ significantly from one another. We perform these pairwise comparisons using the `pairs()` function from the `emmeans` package. To account for the increased risk of Type I error due to multiple comparisons, we apply the Bonferroni correction to adjust the p-values, ensuring that the overall significance level remains controlled.
 
 ```{r}
 # Performing post-hoc analysis with emmeans
-contrast(emms, method="pairwise", adjust="Bonferroni")
-
+pairs(emms, method="pairwise", adjust="Bonferroni")
 ```
 
 ::: {.callout-important icon=false title="Question"}
@@ -218,8 +201,7 @@ plot(model_oneway, which = 2, main = "Normal Q-Q")
 Do the diagnostic plots suggest any violations of the model assumptions?
 :::
 
-<!--
 ### Reporting
-A one-way ANOVA showed a statistically significant effect of treatment on blood pressure reduction, F(2, 117) = 43.71, p < 0.001. Estimated marginal means (95% CI) were 19.9 (17.1, 22.8) mm Hg for Drug A, 5.1 (2.3, 7.9) mm Hg for Drug B, and 2.5 (−0.4 – 5.3) mm Hg for the Control group. Pairwise comparisons (Bonferroni-adjusted) indicated statistically significant differences between Drug A and both Drug B (p < 0.001) and the Control group (p < 0.001), but not between Drug B and the Control group (p = 0.586).
--->
+A one-way ANOVA showed a statistically significant effect of treatment on the change in systolic blood pressure, F(2, 117) = 43.86, p < 0.001. Estimated marginal means (95% CI) were -20.1 (-22.9, -17.2) mm Hg for Drug A, -4.9 (-7.8, -2.1) mm Hg for Drug B, and -1.6 (-4.4, 1.3) mm Hg for the Control group. Pairwise comparisons (Bonferroni-adjusted) indicated statistically significant differences between Drug A and both Drug B (p < 0.001) and the Control group (p < 0.001), but not between Drug B and the Control group (p = 0.291).
+
 

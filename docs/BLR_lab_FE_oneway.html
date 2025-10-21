@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.24">
+<meta name="generator" content="quarto-1.8.25">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Beyond MLR Lab 1: Fixed Effects Model for the One-Way Layout – Beyond MLR</title>
+<title>Beyond MLR Lab 1: One-way ANOVA – Beyond MLR</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -72,10 +72,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-e31584831b205ffbb2d98406f31c2a5b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-e28534083635e9d585c433950aea14cb.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -170,56 +170,8 @@ window.Quarto = {
  <span class="dropdown-text">Lab 1</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./BLR_lab_RE_oneway.html">
- <span class="dropdown-text">Lab 2</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-labs-week-2" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Labs week 2</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-labs-week-2">    
-        <li>
     <a class="dropdown-item" href="./BLR_lab_randomized_block.html">
- <span class="dropdown-text">Lab 3</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./BLR_lab_replicated_randomized_block.html">
- <span class="dropdown-text">Lab 4</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-lab-week-3" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Lab week 3</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-lab-week-3">    
-        <li>
-    <a class="dropdown-item" href="./BLR_lab_MLA.html">
- <span class="dropdown-text">Lab 5</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-lab-week-4" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Lab week 4</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-lab-week-4">    
-        <li>
-    <a class="dropdown-item" href="./BLR_lab_longitudinal.html">
- <span class="dropdown-text">Lab 6</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-lab-week-5" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Lab week 5</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-lab-week-5">    
-        <li>
-    <a class="dropdown-item" href="./BLR_lab_Poisson.html">
- <span class="dropdown-text">Lab 7</span></a>
+ <span class="dropdown-text">Lab 2</span></a>
   </li>  
     </ul>
   </li>
@@ -231,22 +183,6 @@ window.Quarto = {
         <li>
     <a class="dropdown-item" href="./Assignments/Week 1/Assignment_week_1.html">
  <span class="dropdown-text">Week 1</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./Assignments/Week 2/Assignment_week_2.html">
- <span class="dropdown-text">Week 2</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./Assignments/Week 3/Assignment_week_3.html">
- <span class="dropdown-text">Week 3</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./Assignments/Week 4/Assignment_week_4.html">
- <span class="dropdown-text">Week 4</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./Assignments/Week 5/Assignment_week_5.html">
- <span class="dropdown-text">Week 5</span></a>
   </li>  
     </ul>
   </li>
@@ -277,6 +213,7 @@ window.Quarto = {
   <li><a href="#estimated-marginal-means" id="toc-estimated-marginal-means" class="nav-link" data-scroll-target="#estimated-marginal-means">Estimated Marginal Means</a></li>
   <li><a href="#pairwise-comparisons" id="toc-pairwise-comparisons" class="nav-link" data-scroll-target="#pairwise-comparisons">Pairwise comparisons</a></li>
   <li><a href="#model-diagnostics" id="toc-model-diagnostics" class="nav-link" data-scroll-target="#model-diagnostics">Model Diagnostics</a></li>
+  <li><a href="#reporting" id="toc-reporting" class="nav-link" data-scroll-target="#reporting">Reporting</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -287,7 +224,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Beyond MLR Lab 1: Fixed Effects Model for the One-Way Layout</h1>
+<h1 class="title">Beyond MLR Lab 1: One-way ANOVA</h1>
 </div>
 
 
@@ -304,65 +241,58 @@ window.Quarto = {
 </header>
 
 
-<p>Welcome to lab 1 of the Beyond MLR course. In this lab, we make use of the following R packages: <code>gglot2</code>, <code>dplyr</code>, and <code>emmeans</code>. You can use the script below to check if these packages are installed. Any missing packages can be installed using <code>install.packages("package_name")</code>.</p>
+<p>Welcome to lab 1 of the Beyond MLR course. In this lab, we will use the R packages <code>ggplot2</code>, <code>dplyr</code>, and <code>emmeans</code>. You can use the script below to automatically install and load them using the <code>pacman</code> package.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"dplyr"</span>, <span class="st">"ggplot2"</span>, <span class="st">"emmeans"</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>installed <span class="ot">&lt;-</span> <span class="fu">sapply</span>(packages, requireNamespace, <span class="at">quietly =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">all</span>(installed)) {</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">"All packages are installed."</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  missing <span class="ot">&lt;-</span> <span class="fu">names</span>(installed)[<span class="sc">!</span>installed]</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">"The following packages are not installed: "</span>, <span class="fu">paste</span>(missing, <span class="at">collapse =</span> <span class="st">", "</span>))</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install pacman if not already available</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">require</span>(<span class="st">"pacman"</span>)) <span class="fu">install.packages</span>(<span class="st">"pacman"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Use pacman to install (if needed) and load the required packages</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(dplyr, ggplot2, emmeans)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="example-effect-of-three-different-drug-treatments-on-blood-pressure-reduction" class="level1">
 <h1>Example: Effect of Three Different Drug Treatments on Blood Pressure Reduction</h1>
-<p>In this lab, we will examine the effect of three different drug treatments (Control, Drug A, and Drug B) on blood pressure reduction in patients. The data for this example are hypothetical and will be created through simulation:</p>
+<p>In this lab, we will examine the effect of three different drug treatments (Control, Drug A, and Drug B) on the change in systolic blood pressure (SBP) from baseline to week 52 in patients with hypertension. The data for this example are hypothetical and will be created through simulation:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generating data for the single-factor experimental design</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>control <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">40</span>, <span class="at">mean =</span> <span class="dv">2</span>, <span class="at">sd =</span> <span class="dv">10</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>drugA <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">40</span>, <span class="at">mean =</span> <span class="dv">20</span>, <span class="at">sd =</span> <span class="dv">10</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>drugB <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">40</span>, <span class="at">mean =</span> <span class="dv">5</span>, <span class="at">sd =</span> <span class="dv">10</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>control <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">40</span>, <span class="at">mean =</span> <span class="sc">-</span><span class="dv">2</span>, <span class="at">sd =</span> <span class="dv">10</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>drugA <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">40</span>, <span class="at">mean =</span> <span class="sc">-</span><span class="dv">20</span>, <span class="at">sd =</span> <span class="dv">10</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>drugB <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">40</span>, <span class="at">mean =</span> <span class="sc">-</span><span class="dv">5</span>, <span class="at">sd =</span> <span class="dv">10</span>)</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Combining data into a data frame</span></span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>data_oneway <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">Treatment =</span> <span class="fu">factor</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Control"</span>, <span class="st">"DrugA"</span>, <span class="st">"DrugB"</span>), <span class="at">each =</span> <span class="dv">40</span>),</span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                     <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Control"</span>, <span class="st">"DrugA"</span>, <span class="st">"DrugB"</span>)),</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">BP_Reduction =</span> <span class="fu">c</span>(control, drugA, drugB)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">BP_change =</span> <span class="fu">c</span>(control, drugA, drugB)</span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The above R chunk simulates hypothetical results for 120 patients (40 per treatment group) and stores the results in the data frame <code>data_oneway</code> that consists of the following two columns:</p>
 <ul>
 <li><code>Treatment</code>: Factor variable indicating the treatment group.</li>
-<li><code>BP_Reduction</code>: Numeric variable representing blood pressure reduction (in mm Hg).</li>
+<li><code>BP_change</code>: Numeric variable representing the change in SBP (in mm Hg).</li>
 </ul>
 <section id="exploratory-data-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory Data Analysis</h2>
 <p>To understand the distribution of blood pressure reduction across treatment groups, we start by creating a boxplot:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualizing the results</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data_oneway, <span class="fu">aes</span>(<span class="at">x =</span> Treatment, <span class="at">y =</span> BP_Reduction, <span class="at">fill =</span> Treatment)) <span class="sc">+</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Blood Pressure Reduction by Treatment"</span>,</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Treatment"</span>, <span class="at">y =</span> <span class="st">"Blood Pressure Reduction (mm Hg)"</span>) <span class="sc">+</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data_oneway, <span class="fu">aes</span>(<span class="at">x =</span> Treatment, <span class="at">y =</span> BP_change, <span class="at">fill =</span> Treatment)) <span class="sc">+</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="cn">NULL</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Treatment"</span>, <span class="at">y =</span> <span class="st">"Change in SBP (mm Hg)"</span>) <span class="sc">+</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We also calculate some summary statistics:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Summarizing data</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>summary_stats <span class="ot">&lt;-</span> data_oneway <span class="sc">%&gt;%</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Treatment) <span class="sc">%&gt;%</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean_BP_Reduction =</span> <span class="fu">mean</span>(BP_Reduction),</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">SD_BP_Reduction =</span> <span class="fu">sd</span>(BP_Reduction)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>summary_stats</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generating summary statistics</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>summary_stats <span class="ot">&lt;-</span> data_oneway <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Treatment) <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean_BP_change =</span> <span class="fu">mean</span>(BP_change),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">SD_BP_change =</span> <span class="fu">sd</span>(BP_change)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>summary_stats</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
 <div class="callout-header d-flex align-content-center">
@@ -374,7 +304,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>How do the mean blood pressure reductions compare among the treatment groups?</p>
+<p>How do the mean changes in SBP compare among the treatment groups?</p>
 </div>
 </div>
 </section>
@@ -388,8 +318,8 @@ Y_{ij} = \mu + \tau_i + \epsilon_{ij}
 \]</span></p>
 <p>where:</p>
 <ul>
-<li><span class="math inline">\(Y_{ij}\)</span>: The blood pressure reduction for the <span class="math inline">\(j\)</span>-th patient in the <span class="math inline">\(i\)</span>-th treatment group.</li>
-<li><span class="math inline">\(\mu\)</span>: The overall mean blood pressure reduction.</li>
+<li><span class="math inline">\(Y_{ij}\)</span>: The change in SBP for the <span class="math inline">\(j\)</span>-th patient in the <span class="math inline">\(i\)</span>-th treatment group.</li>
+<li><span class="math inline">\(\mu\)</span>: The mean change in SBP across all treatment groups.</li>
 <li><span class="math inline">\(\tau_i\)</span>: The effect of the <span class="math inline">\(i\)</span>-th treatment (deviation from the overall mean).</li>
 <li><span class="math inline">\(\epsilon_{ij}\)</span>: The error term, assumed to be independently and normally distributed with mean zero and constant variance.</li>
 </ul>
@@ -404,7 +334,7 @@ Note&nbsp;1: Coding schemes for categorical variables
 </div>
 <div class="callout-body-container callout-body">
 <p>In regression models, categorical variables are represented using coding schemes that allow their inclusion as explanatory variables. In R, dummy coding is the default coding scheme for nominal variables, where each level is compared to a reference category. For ordinal variables (i.e., ordered factors), R uses orthogonal polynomials as the default coding scheme, which can capture linear or nonlinear trends across ordered levels.</p>
-<p>While dummy coding is widely used in multiple linear regression models, effects coding is more common in ANOVA models, as it enables interpretation of group differences relative to the grand mean rather than a single reference category. This interpretative difference makes effects coding particularly useful for examining group-level effects in experimental designs.</p>
+<p>While dummy coding is widely used in multiple linear regression models, effects coding is more common in ANOVA models as it enables interpretation of group differences relative to the grand mean rather than a single reference category. This interpretative difference makes effects coding particularly useful for examining group-level effects in experimental designs.</p>
 <p>To change the coding scheme globally to effects coding:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set contrasts to effects coding globally</span></span>
@@ -423,10 +353,11 @@ Note&nbsp;1: Coding schemes for categorical variables
 <p>We can fit the one-way ANOVA model using the <code>lm()</code> function:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">contrasts =</span> <span class="fu">c</span>(<span class="st">"contr.sum"</span>, <span class="st">"contr.poly"</span>))  <span class="co"># Effects coding</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Fitting the model with effects coding</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>model_oneway <span class="ot">&lt;-</span> <span class="fu">lm</span>(BP_Reduction <span class="sc">~</span> Treatment, <span class="at">data =</span> data_oneway)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_oneway)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">contrasts</span>(data_oneway<span class="sc">$</span>Treatment) <span class="co"># Inspect contrasts for Treatment</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Fitting the model with effects coding</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>model_oneway <span class="ot">&lt;-</span> <span class="fu">lm</span>(BP_change <span class="sc">~</span> Treatment, <span class="at">data =</span> data_oneway)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_oneway)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
 <div class="callout-header d-flex align-content-center">
@@ -471,9 +402,8 @@ Note&nbsp;1: Coding schemes for categorical variables
 <p>We can calculate the estimated marginal means using the <code>emmeans()</code> function from the <code>emmeans</code> package:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Obtain estimated marginal means</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(emmeans)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>emms <span class="ot">&lt;-</span> <span class="fu">emmeans</span>(model_oneway, <span class="sc">~</span> Treatment)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>emms</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>emms <span class="ot">&lt;-</span> <span class="fu">emmeans</span>(model_oneway, <span class="sc">~</span> Treatment)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>emms</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
 <div class="callout-header d-flex align-content-center">
@@ -537,10 +467,10 @@ Note&nbsp;1: Coding schemes for categorical variables
 <p>Do the diagnostic plots suggest any violations of the model assumptions?</p>
 </div>
 </div>
-<!-- 
-### Reporting
-> A one-way ANOVA was conducted to compare the effect of three treatments on blood pressure reduction. There was a statistically significant effect of treatment on blood pressure reduction [F(2, 117) = 43.71, p < 0.001]. Estimated marginal means indicated that Drug A (M = 19.93 mm Hg, 95% CI = [17.11 mm Hg, 22.76 mm Hg]) resulted in significantly greater blood pressure reduction than both the Control group (M = 2.45 mm Hg, 95% CI = [-0.37 mm Hg, 5.28 mm Hg], p < 0.001) and Drug B (M = 5.08 mm Hg, 95% CI = [2.26 mm Hg, 7.90 mm Hg], p < 0.001). There was no significant difference between the Control group and Drug B (p = 0.586). P-values were adjusted for multiple testing using the Bonferroni correction.
--->
+</section>
+<section id="reporting" class="level3">
+<h3 class="anchored" data-anchor-id="reporting">Reporting</h3>
+<p>A one-way ANOVA showed a statistically significant effect of treatment on the change in systolic blood pressure, F(2, 117) = 43.86, p &lt; 0.001. Estimated marginal means (95% CI) were -20.1 (-22.9, -17.2) mm Hg for Drug A, -4.9 (-7.8, -2.1) mm Hg for Drug B, and -1.6 (-4.4, 1.3) mm Hg for the Control group. Pairwise comparisons (Bonferroni-adjusted) indicated statistically significant differences between Drug A and both Drug B (p &lt; 0.001) and the Control group (p &lt; 0.001), but not between Drug B and the Control group (p = 0.291).</p>
 
 
 </section>
