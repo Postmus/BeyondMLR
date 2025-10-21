@@ -1,12 +1,12 @@
 ---
 title: "Beyond MLR Lab 1: Fixed Effects Model for the One-Way Layout"
-format: 
+format:
   html:
-    toc: true       
-    toc-depth: 3    
-    toc-location: right   # Optional: Can be left, right, or floating    
+    toc: true
+    toc-depth: 3
+    toc-location: right   # Optional: Can be left, right, or floating
   pdf:
-    toc: false      
+    toc: false
 editor_options:
   chunk_output_type: console
 ---
@@ -21,7 +21,7 @@ editor_options:
 knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
 ```
 
-Welcome to lab 1 of the Beyond MLR course. In this lab, we make use of the following R packages: `gglot2`, `dplyr`, and `emmeans`. You can use the script below to check if these packages are installed. Any missing packages can be installed using `install.packages("package_name")`. 
+Welcome to lab 1 of the Beyond MLR course. In this lab, we make use of the following R packages: `gglot2`, `dplyr`, and `emmeans`. You can use the script below to check if these packages are installed. Any missing packages can be installed using `install.packages("package_name")`.
 
 ```{r}
 #| eval: false
@@ -115,7 +115,7 @@ where:
 ::: {#nte-codings .callout-note title="Coding schemes for categorical variables"}
 In regression models, categorical variables are represented using coding schemes that allow their inclusion as explanatory variables. In R, dummy coding is the default coding scheme for nominal variables, where each level is compared to a reference category. For ordinal variables (i.e., ordered factors), R uses orthogonal polynomials as the default coding scheme, which can capture linear or nonlinear trends across ordered levels.
 
-While dummy coding is widely used in multiple linear regression models, effects coding is more common in ANOVA models, as it enables interpretation of group differences relative to the grand mean rather than a single reference category. This interpretative difference makes effects coding particularly useful for examining group-level effects in experimental designs. 
+While dummy coding is widely used in multiple linear regression models, effects coding is more common in ANOVA models as it enables interpretation of group differences relative to the grand mean rather than a single reference category. This interpretative difference makes effects coding particularly useful for examining group-level effects in experimental designs.
 
 To change the coding scheme globally to effects coding:
 ```{r}
@@ -218,8 +218,8 @@ plot(model_oneway, which = 2, main = "Normal Q-Q")
 Do the diagnostic plots suggest any violations of the model assumptions?
 :::
 
-<!-- 
+<!--
 ### Reporting
-> A one-way ANOVA was conducted to compare the effect of three treatments on blood pressure reduction. There was a statistically significant effect of treatment on blood pressure reduction [F(2, 117) = 43.71, p < 0.001]. Estimated marginal means indicated that Drug A (M = 19.93 mm Hg, 95% CI = [17.11 mm Hg, 22.76 mm Hg]) resulted in significantly greater blood pressure reduction than both the Control group (M = 2.45 mm Hg, 95% CI = [-0.37 mm Hg, 5.28 mm Hg], p < 0.001) and Drug B (M = 5.08 mm Hg, 95% CI = [2.26 mm Hg, 7.90 mm Hg], p < 0.001). There was no significant difference between the Control group and Drug B (p = 0.586). P-values were adjusted for multiple testing using the Bonferroni correction.
---> 
+A one-way ANOVA showed a statistically significant effect of treatment on blood pressure reduction, F(2, 117) = 43.71, p < 0.001. Estimated marginal means (95% CI) were 19.9 (17.1, 22.8) mm Hg for Drug A, 5.1 (2.3, 7.9) mm Hg for Drug B, and 2.5 (−0.4 – 5.3) mm Hg for the Control group. Pairwise comparisons (Bonferroni-adjusted) indicated statistically significant differences between Drug A and both Drug B (p < 0.001) and the Control group (p < 0.001), but not between Drug B and the Control group (p = 0.586).
+-->
 

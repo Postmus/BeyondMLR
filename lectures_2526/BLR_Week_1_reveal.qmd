@@ -38,42 +38,48 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, mixed,
 
 - Welcome slide (to be completed later)
 
-## Case study — antihypertensive treatments
+## Case study — weight loss interventions
 
-- Design: 120 patients with hypertension are randomly assigned to one of three groups (n = 40 each): Control, Drug A, or Drug B
-- Response (outcome): change in SBP (mmHg) from baseline to week 52
+- Design: 120 adults with obesity are randomly assigned to one of three intervention groups (n = 40 each): control (no treatment), lifestyle modification, or pharmacological treatment
+- Response (outcome): change in body weight (kg) from baseline to week 12 (negative values indicate weight loss)
 
 ```{r}
 #| echo: false
 set.seed(123)
-control <- rnorm(40, mean = -3,  sd = 15)
-drugA   <- rnorm(40, mean = -10, sd = 15)
-drugB   <- rnorm(40, mean = -5,  sd = 15)
-df_bp <- data.frame(
-  Treatment = factor(rep(c("Control","DrugA","DrugB"), each = 40),
-                     levels = c("Control","DrugA","DrugB")),
-  SBP_change = c(control, drugA, drugB)
+control  <- rnorm(40, mean = -0.5, sd = 3)
+lifestyle<- rnorm(40, mean = -2.5, sd = 3)
+drug     <- rnorm(40, mean = -4.0, sd = 3)
+
+df_weight <- data.frame(
+  Treatment = factor(rep(c("Control","Lifestyle","Pharmacological"), each = 40),
+                     levels = c("Control","Lifestyle","Pharmacological")),
+  Weight_change = c(control, lifestyle, drug)
 )
-contrasts(df_bp$Treatment) <- contr.sum(3) # Change coding to effects coding
+
+# Apply effects coding
+contrasts(df_weight$Treatment) <- contr.sum(3)
 ```
 
 ```{r}
 #| echo: false
-boxplot(SBP_change ~ Treatment, data = df_bp,
+boxplot(Weight_change ~ Treatment, data = df_weight,
         col = c("gray85","skyblue","lightgreen"),
-        ylab = "Change in SBP (mmHg)", main = NULL)
+        ylab = "Change in body weight (kg)",
+        main = NULL)
+abline(h = 0, lty = 2, col = "darkgray")
 ```
+
 
 ## Statistical model specification
 
-To compare the mean change in SBP across the three treatment groups, we use the one-way ANOVA model:
+To compare the mean change in body weight across the three treatment groups, we use the one-way ANOVA model:
 
 $$
 Y_{ij} = \mu + \tau_i + \varepsilon_{ij}
 $$
 
 - Model components:
-  - $Y_{ij}$: change in SBP for the $j$-th subject in the $i$-th treatment group
+  - $Y_{ij}$: change in body weight for the $j$-th subject in the $i$-th treatment group
   - $\mu$ (grand mean): the overall mean across groups (the average of the group means)
   - $\tau_i$ (treatment deviations): the deviation of the mean of group $i$ from the grand mean; constrained so $\sum_i \tau_i = 0$
   - $\varepsilon_{ij}$ (residual error): the deviation for subject $j$ from the mean of group $i$
@@ -83,7 +89,7 @@ $$
 ## Estimation using linear regression
 
 - A one-way ANOVA model can be expressed as a linear regression with a categorical predictor, allowing us to use the regression framework for estimation and hypothesis testing
-- Using *effects coding* with Drug B as the implied category under the sum-to-zero constraint, the statistically equivalent regression model is:
+- Using *effects coding* with Pharmacological as the implied category under the sum-to-zero constraint, the statistically equivalent regression model is:
 
 :::: {.columns}
 
@@ -100,8 +106,8 @@ $$
 | Treatment | Intercept | Treatment1 | Treatment2 |
 |---|---:|:---:|:---:|
 | Control | 1 | 1 | 0 |
-| DrugA   | 1 | 0 | 1 |
-| DrugB   | 1 | -1 | -1 |
+| Lifestyle   | 1 | 0 | 1 |
+| Pharmacological | 1 | -1 | -1 |
 
 </div>
 
@@ -120,7 +126,7 @@ $$
 **Estimated regression coefficients:**
 ```{r}
 #| echo: false
-fit <- lm(SBP_change ~ Treatment, data = df_bp)
+fit <- lm(Weight_change ~ Treatment, data = df_weight)
 kable(tidy(fit)[, c("term","estimate","std.error","p.value")], digits = 3, format = "html", table.attr = 'style="font-size: 90%; margin-left: 0; margin-right: auto"')
 ```
 
@@ -135,8 +141,8 @@ kable(tidy(fit)[, c("term","estimate","std.error","p.value")], digits = 3, forma
 
 - Treatment deviations:
   - $\tau_{\text{Control}} = \beta_1$
-  - $\tau_{\text{DrugA}}   = \beta_2$
-  - $\tau_{\text{DrugB}}   = -(\tau_{\text{Control}} + \tau_{\text{DrugA}}) = -(\beta_1 + \beta_2)$
+  - $\tau_{\text{Lifestyle}}   = \beta_2$
+  - $\tau_{\text{Pharmacological}}   = -(\tau_{\text{Control}} + \tau_{\text{Lifestyle}}) = -(\beta_1 + \beta_2)$
 
 :::
 
@@ -147,9 +153,7 @@ kable(tidy(fit)[, c("term","estimate","std.error","p.value")], digits = 3, forma
 - ANOVA parameters describe group deviations from the grand mean
 - Estimated marginal means (EMMs) express the same model in terms of predicted group means
 - In a one-way ANOVA model, the EMMs equal the observed group means
-- In more complex models, EMMs give adjusted or conditional means that make comparisons fairer
-  - With covariates (ANCOVA): EMMs adjust group means to a common covariate value, such as the overall mean
-  - With interactions: EMMs provide conditional means for specific combinations of factors, allowing group comparisons at chosen settings
+- In more complex models with multiple factors, EMMs provide predicted group means that are averaged over the levels of these additional factors
 
 ```{r}
 #| echo: false
@@ -219,7 +223,7 @@ kable(
 ```
 
 - Hypotheses
-  - $H_0$: all group means or equal ($\tau_{Control} = \tau_{DrugA} = \tau_{DrugB} = 0$)
+  - $H_0$: all group means or equal ($\tau_{Control} = \tau_{Lifestyle} = \tau_{Pharmacological} = 0$)
   - $H_1$: at least one group mean is different
 - Test statistic:
   $F = \frac{MS_{Treatment}}{MS_{Residual}}$
