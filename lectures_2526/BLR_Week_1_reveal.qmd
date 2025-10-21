@@ -1,6 +1,6 @@
 ---
 title: "Beyond MLR - Week 1: Experimental Design I"
-subtitle: "One-way FE/RE, ANOVA, coding, ICC"
+subtitle: "One-way ANOVA, stratified randomization, and randomized block designs"
 author: "Dr. Douwe Postmus"
 format:
   revealjs:
@@ -45,7 +45,6 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, mixed,
 
 ```{r}
 #| echo: false
-# Prepare example data once for subsequent slides (hidden)
 set.seed(123)
 control <- rnorm(40, mean = -3,  sd = 15)
 drugA   <- rnorm(40, mean = -10, sd = 15)
@@ -55,6 +54,7 @@ df_bp <- data.frame(
                      levels = c("Control","DrugA","DrugB")),
   SBP_change = c(control, drugA, drugB)
 )
+contrasts(df_bp$Treatment) <- contr.sum(3) # Change coding to effects coding
 ```
 
 ```{r}
@@ -73,7 +73,7 @@ Y_{ij} = \mu + \tau_i + \varepsilon_{ij}
 $$
 
 - Model components:
-  - $Y_{ij}$: change in SBP observed for the $j$-th subject in the $i$-th treatment group
+  - $Y_{ij}$: change in SBP for the $j$-th subject in the $i$-th treatment group
   - $\mu$ (grand mean): the overall mean across groups (the average of the group means)
   - $\tau_i$ (treatment deviations): the deviation of the mean of group $i$ from the grand mean; constrained so $\sum_i \tau_i = 0$
   - $\varepsilon_{ij}$ (residual error): the deviation for subject $j$ from the mean of group $i$
@@ -83,13 +83,13 @@ $$
 ## Estimation using linear regression
 
 - A one-way ANOVA model can be expressed as a linear regression with a categorical predictor, allowing us to use the regression framework for estimation and hypothesis testing
-- Using dummy coding with the control group as reference, the statistically equivalent regression model is:
+- Using *effects coding* with Drug B as the implied category under the sum-to-zero constraint, the statistically equivalent regression model is:
 
 :::: {.columns}
 
 ::: {.column width="50%"}
 $$
-Y_{ij} = \beta_0 + \beta_1 D_{1,ij} + \beta_2 D_{2,ij} + \varepsilon_{ij}
+Y_{ij} = \beta_0 + \beta_1 \text{Treatment1}_{ij} + \beta_2 \text{Treatment2}_{ij} + \varepsilon_{ij}
 $$
 :::
 
@@ -97,11 +97,11 @@ $$
 
 <div style="font-size: 75%;">
 
-| Treatment | Intercept | D1 (DrugA) | D2 (DrugB) |
+| Treatment | Intercept | Treatment1 | Treatment2 |
 |---|---:|:---:|:---:|
-| Control | 1 | 0 | 0 |
-| DrugA   | 1 | 1 | 0 |
-| DrugB   | 1 | 0 | 1 |
+| Control | 1 | 1 | 0 |
+| DrugA   | 1 | 0 | 1 |
+| DrugB   | 1 | -1 | -1 |
 
 </div>
 
@@ -113,15 +113,13 @@ $$
 <div style="margin-top:1.5em;"></div>
 ```
 
-:::: {.columns}
+:::: {.columns  style="font-size:70%"}
 
 ::: {.column width="50%"}
 
 **Estimated regression coefficients:**
 ```{r}
 #| echo: false
-# R (refresher): reference coding with Control as baseline
-contrasts(df_bp$Treatment) <- contr.treatment(levels(df_bp$Treatment))
 fit <- lm(SBP_change ~ Treatment, data = df_bp)
 kable(tidy(fit)[, c("term","estimate","std.error","p.value")], digits = 3, format = "html", table.attr = 'style="font-size: 90%; margin-left: 0; margin-right: auto"')
 ```
@@ -130,71 +128,104 @@ kable(tidy(fit)[, c("term","estimate","std.error","p.value")], digits = 3, forma
 
 ::: {.column width="50%"}
 
-**Estimated group means:**
+**Mapping to the ANOVA model parameters:**
+
+- Grand mean:
+  $\mu = \beta_0$
+
+- Treatment deviations:
+  - $\tau_{\text{Control}} = \beta_1$
+  - $\tau_{\text{DrugA}}   = \beta_2$
+  - $\tau_{\text{DrugB}}   = -(\tau_{\text{Control}} + \tau_{\text{DrugA}}) = -(\beta_1 + \beta_2)$
+
+:::
+
+::::
+
+## Estimated marginal means (EMMs)
+
+- ANOVA parameters describe group deviations from the grand mean
+- Estimated marginal means (EMMs) express the same model in terms of predicted group means
+- In a one-way ANOVA model, the EMMs equal the observed group means
+- In more complex models, EMMs give adjusted or conditional means that make comparisons fairer
+  - With covariates (ANCOVA): EMMs adjust group means to a common covariate value, such as the overall mean
+  - With interactions: EMMs provide conditional means for specific combinations of factors, allowing group comparisons at chosen settings
+
 ```{r}
 #| echo: false
 # Compute and display estimated marginal means
 emms <- emmeans(fit, ~ Treatment)
 summary(emms)
 ```
-:::
-
-::::
-
-
-## Mapping to the ANOVA model parameters
-
-- Intercept and betas → group means:
-  - mean(Control) = $\beta_0$
-  - mean(DrugA)   = $\beta_0 + \beta_1$
-  - mean(DrugB)   = $\beta_0 + \beta_2$
-
-- Grand mean (ANOVA intercept):
-  $\mu = \frac{\text{mean(Control)} + \text{mean(DrugA)} + \text{mean(DrugB)}}{3} = \beta_0 + \frac{\beta_1 + \beta_2}{3}$
-
-- Treatment deviations (ANOVA $\tau_i$) written in terms of the regression coefficients:
-  - $\tau_{\text{Control}} = \text{mean(Control)} - \mu = -\frac{\beta_1 + \beta_2}{3}$
-  - $\tau_{\text{DrugA}}   = \text{mean(DrugA)} - \mu = \beta_1 - \frac{\beta_1 + \beta_2}{3}$
-  - $\tau_{\text{DrugB}}   = \text{mean(DrugB)} - \mu = \beta_2 - \frac{\beta_1 + \beta_2}{3}$
 
 ## ANOVA table
+:::: {.columns}
+
+::: {.column width="50%" style="font-size:85%"}
+**Sum of squares decomposition**
+
+$SS_{Total} = SS_{Treatment} + SS_{Residual}$
+
+- $SS_{Total}$: total variation around the grand mean
+  $$SS_{Total} = \sum_{i=1}^g\sum_{j=1}^{n_i} (Y_{ij} - \bar{Y}_{..})^2$$
+
+- $SS_{Treatment}$: between-group variation
+  $$SS_{Treatment} = \sum_{i=1}^g n_i(\bar{Y}_{i.} - \bar{Y}_{..})^2$$
+
+- $SS_{Residual}$: within-group variation
+  $$SS_{Residual} = \sum_{i=1}^g\sum_{j=1}^{n_i} (Y_{ij} - \bar{Y}_{i.})^2$$
+:::
+
+::: {.column width="50%" style="font-size:85%"}
+
+**Degrees of freedom**
+
+- $df_{Treatment}=g-1$
+- $df_{Residual}=N-g$
+
+ **Mean squares**
+
+- $MS_{Treatment}=SS_{Treatment}/(g-1)$
+- $MS_{Residual}=SS_{Residual}/(N-g)$
+
+**ANOVA table**
 
 ```{r}
 kable(
   tidy(anova(fit)),
   digits = 3,
   format = "html",
-  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
+  table.attr = 'style="font-size: 100%; margin-left: 0; margin-right: auto"'
 )
 ```
-
-```{=html}
-<div style="margin-top:1.5em;"></div>
-```
-
-:::: {.columns}
-
-::: {.column width="50%"}
-
-**Sum of squares decomposition**
-
-- Total variability splits into $SS_{Total} = SS_{Treatment} + SS_{Residual}$  
-  - $SS_{Treatment}$: variation explained by treatment  
-  - $SS_{Residual}$: unexplained (within-group) variation  
-:::
-
-::: {.column width="50%"}
-
-**Global hypothesis test (F-test)**
-
-- Global test of equal means  
-  - $H_0: \tau_{Control} = \tau_{DrugA} = \tau_{DrugB} = 0$  
-  - $F = \frac{MS_{Treatment}}{MS_{Residual}}$  
-- Here, the p-value is $\leq 0.05$, so we reject $H_0$ and conclude that the treatment has a significant effect on the change in SBP
 
 :::
 
 ::::
+
+## Global hypothesis test (F-test)
+
+```{r}
+kable(
+  tidy(anova(fit)),
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 100%; margin-left: 0; margin-right: auto"'
+)
+```
+
+```{=html}
+<div style="margin-top:1em;"></div>
+```
+
+- Hypotheses
+  - $H_0$: all group means or equal ($\tau_{Control} = \tau_{DrugA} = \tau_{DrugB} = 0$)
+  - $H_1$: at least one group mean is different
+- Test statistic:
+  $F = \frac{MS_{Treatment}}{MS_{Residual}}$
+  - Under $H_0$, this follows an $F_{g-1,\,N-g}$ distribution (with $g$ groups and $N$ observations)
+  - A large $F$ indicates treatment explains appreciable between-group variation
+  - In our example, the p-value is $\leq 0.05$, so we reject $H_0$ and conclude that the treatment has a significant effect on the change in SBP
 
 ## Post-hoc comparisons
 
@@ -247,14 +278,14 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 - Design stage
   - Group experimental units that are similar on a known nuisance variable (e.g., study center, sex, baseline severity)
-  - Randomize treatments within each block to ensure balance across levels of the nuisance variable  (this is known as an orthogonal design)
+  - Randomize treatments within each block to avoid bias and ensure balance across levels of the nuisance variable  (this is known as an orthogonal design)
 
 - Analysis stage
   - Include the block term in the statistical model (two-way ANOVA)
 
   $$Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}$$
 
-  - This analysis separates block effects from the residual error and therefore allows treatment effects to be estimated with increased precision
+  - This analysis separates block effects ($\beta_j$) from the residual error and therefore allows treatment effects to be estimated with increased precision
 
 ## First example: stratified randomization
 
@@ -262,7 +293,7 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
   - Grade 1: 140–159 mmHg
   - Grade 2: 160–179 mmHg
   - Grade 3: ≥180 mmHg
-- Randomization: performed separately within each grade to ensure that all treatments are represented equally across hypertension categories (stratified randomization)
+- Randomization: performed separately within each grade to ensure that all treatments are represented equally across hypertension categories
 - Treatments: Control, Drug A, Drug B (n = 45 per group; 15 per grade)
 - Outcome: change in SBP (mmHg) from baseline to week 52
 
@@ -311,6 +342,8 @@ df_bp_strat <- do.call(
 
 df_bp_strat$HypertensionGrade <- factor(df_bp_strat$HypertensionGrade, levels = grades)
 df_bp_strat$Treatment <- factor(df_bp_strat$Treatment, levels = trt_levels)
+contrasts(df_bp_strat$Treatment) <- contr.sum(3)
+contrasts(df_bp_strat$HypertensionGrade) <- contr.sum(3)
 ```
 
 ## Exploratory data analysis
@@ -370,10 +403,10 @@ kable(tidy(anova(fit_adj)), digits = 3, format = "html", table.attr = 'style="fo
 ::::
 
 - Effect of blocking / stratification:
-  - When a nuisance factor (here: hypertension grade) is ignored, its between-group variation is absorbed into $MS_{Residual}$, increasing the denominator of the F ratio
-  - Including the grade as an additional factor (two-way ANOVA) partitions out that systematic variation into a separate term
-  - This typically reduces $MS_{Residual}$ while leaving $MS_{Treatment}$ approximately the same in balanced/orthogonal designs
-  - Because the denominator is reduced, the F statistic for treatment tends to increase and the test gains power to detect treatment differences
+  - When hypertension grade is ignored, its effect is absorbed into the residual error term
+  - Including hypertension grade as an additional factor partitions out that systematic variation into a separate term
+  - This typically reduces $MS_{Residual}$ while leaving $MS_{Treatment}$ approximately the same in balanced designs
+  - As a result, the F statistic for treatment tends to increase, meaning the test gains power to detect treatment differences
 
 ## Second example: randomized block design
 
@@ -396,6 +429,9 @@ data <- data.frame(
 )
 
 data$Treatment <- factor(data$Treatment, levels=c("Placebo", "20 mg", "50 mg"))
+data$Cage <- as.factor(data$Cage)
+contrasts(data$Treatment) <- contr.sum(3)
+contrasts(data$Cage) <- contr.sum(8)
 ```
 
 - Objective: test the potential toxic effects of an experimental drug X by assessing changes in body weight in rats
@@ -410,13 +446,11 @@ data$Treatment <- factor(data$Treatment, levels=c("Placebo", "20 mg", "50 mg"))
 ## Exploratory data analysis
 
 ```{r}
-data$Treatment <- factor(data$Treatment, levels=c("Placebo", "20 mg", "50 mg"))
-
 # Create the scatter plot
 ggplot(data, aes(x = Weight_Change, y = factor(Cage), color = Treatment)) +
   geom_point(size = 4) +
   labs(title = NULL,
-       x = "Weight Change (grams)", 
+       x = "Weight Change (grams)",
        y = "Cage",
        color = "Treatment") +
   theme_minimal(base_size = 12) +
@@ -455,7 +489,7 @@ kable(tidy(anova(m1)), digits = 3, format = "html", table.attr = 'style="font-si
 <div style="margin-top:1.5em;"></div>
 ```
 
-- Ignoring cage differences pushes cage-to-cage variability into the residual
+- Ignoring cage differences pushes cage-to-cage variability into the residual error term
 - This inflates standard errors and reduces power compared with models that adjust for cages
 
 ## Incorporating the effect of cage
@@ -463,12 +497,12 @@ kable(tidy(anova(m1)), digits = 3, format = "html", table.attr = 'style="font-si
 - Some cages show consistently higher or lower weights, suggesting an extra source of variation due to the cage environment
 - Two options to include cage in the model
   - Treat cage as a fixed effect: adjust for these eight cages
-    - Each level gets its own estimate  
-    - Inference applies only to these specific levels  
+    - Each level gets its own estimate
+    - Inference applies only to these specific levels
     - Example: “How do rats in cage 1 compare to those in cage 2?”
   - Treat cage as a random effect: account for cage to cage variability
-    - We are not interested in individual cages, but in their variability  
-    - Inference generalizes to the population of possible cages  
+    - We are not interested in individual cages, but in their variability
+    - Inference generalizes to the population of possible cages
     - Example: “How much do rat weights differ between cages on average?”
 
 
@@ -484,8 +518,8 @@ $$
 Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}
 $$
 
-- Adds one separate parameter for each cage  
-- The model becomes more complex as more cages are added 
+- Adds one separate parameter for each cage
+- The model becomes more complex as more cages are added
 - No estimate of how much cages differ on average
 
 :::
@@ -498,8 +532,8 @@ $$
 Y_{ijk} = \mu + \tau_i + b_j + \varepsilon_{ijk}, \quad b_j \sim N(0, \sigma_b^2)
 $$
 
-- $b_j$: random intercept describing how cage $j$ differs from the overall mean  
-- Estimates the average variability between cages ($\sigma_b^2$)  
+- $b_j$: random intercept describing how cage $j$ differs from the overall mean
+- Estimates the average variability between cages ($\sigma_b^2$)
 - Inference focuses on overall treatment effects while accounting for cage-to-cage variability
 
 :::
@@ -509,7 +543,7 @@ $$
 ## Two-way ANOVA: cage as fixed effect
 
 ```{r}
-m2 <- lm(Weight_Change ~ Treatment + factor(Cage), data = data)
+m2 <- lm(Weight_Change ~ Treatment + Cage, data = data)
 ```
 
 :::: {.columns}
@@ -600,7 +634,7 @@ knitr::kable(
 )
 ```
 
-::: 
+:::
 
 ::::
 
@@ -616,7 +650,7 @@ knitr::kable(
 - In the one-way ANOVA that ignored cage, all unexplained variation was captured by a single residual error term → this error combined both *between-cage* and *within-cage* differences
 
 - In the two-way ANOVA with cage as a random effect, that residual variability is *partitioned* into two parts:
-  1. Between-cage variance: how much average weight change differs between cages  
+  1. Between-cage variance: how much average weight change differs between cages
   2. Within-cage (residual) variance: how much rats differ within the same cage after accounting for both treatment and cage effects
 
 | component | variance | sd |
@@ -637,69 +671,17 @@ $$
 
 - Here, ICC ≈ 0.53, meaning that about 53% of the remaining variation (after accounting for treatment) arises from differences between cages
 - Interpretation:
-  - High ICC: rats in the same cage tend to have more similar outcomes  
+  - High ICC: rats in the same cage tend to have more similar outcomes
   - Low ICC: cage membership adds little information beyond treatment
 
 ## Fixed or random effects for nuisance variables
 
-- **Stratified randomization example:**  
-  - The stratification factor (hypertension grade) divides subjects into predefined categories used consistently across studies  
-  - The specific levels (grade 1, grade 2, grade 3) are fixed and always the same 
+- **Stratified randomization example:**
+  - The stratification factor (hypertension grade) divides subjects into predefined categories used consistently across studies
+  - The specific levels (grade 1, grade 2, grade 3) are fixed and always the same
   - The factor is modeled as a **fixed effect**, adjusting for systematic differences between these known categories
 
-- **Randomized block design example:**  
-  - The blocking factor (cage) represents a random source of environmental variation  
-  - The cages themselves are not of intrinsic interest and could have been any comparable set   
+- **Randomized block design example:**
+  - The blocking factor (cage) represents a random source of environmental variation
+  - The cages themselves are not of intrinsic interest and could have been any comparable set
   - Modeling cage as a **random effect** captures this variability naturally and allows generalization beyond the observed cages
-
-# Backup slides
-
-## Linear regression with effects coding
-
-- Another common choice is effects (sum-to-zero) coding
-- With this coding the regression coefficients map directly to the ANOVA parameters:
-
-$$
-Y_{ij} = \beta_0 + \beta_1 E_{1,ij} + \beta_2 E_{2,ij} + \varepsilon_{ij}
-$$
-
-where $E_1, E_2$ are the effect indicators for Control and DrugA (see table below).
-
-| Treatment | Intercept | E1 | E2 |
-|---|---:|:---:|:---:|
-| Control | 1 | 1 | 0 |
-| DrugA   | 1 | 0 | 1 |
-| DrugB   | 1 | -1 | -1 |
-
-- Interpretation:
-  - Intercept ($\beta_0$): grand mean ($\mu$)
-  - $\beta_1$ = $\tau_{\text{Control}}$ (deviation of Control from grand mean)
-  - $\beta_2$ = $\tau_{\text{DrugA}}$ (deviation of DrugA from grand mean)
-  - The remaining group's deviation follows from the sum-to-zero constraint: $\tau_{\text{DrugB}} = -\beta_1 - \beta_2$
-
-## Estimated regression coefficients (effects coded model)
-
-```{r}
-#| echo: false
-## R: effects (sum-to-zero) coding
-contrasts(df_bp$Treatment) <- contr.sum(levels(df_bp$Treatment))
-fit2 <- lm(SBP_change ~ Treatment, data = df_bp)
-summary(fit2)
-```
-
-## Estimated marginal means (EMMs)
-
-- Regression coefficients describe differences relative to a reference group
-- Estimated marginal means (EMMs) express the same model in terms of predicted group means
-- In a one-way ANOVA model, the EMMs equal the observed group means
-- In more complex models, EMMs give adjusted or conditional means that make comparisons fairer
-  - With covariates (ANCOVA): EMMs adjust group means to a common covariate value, such as the overall mean
-  - With interactions: EMMs provide conditional means for specific combinations of factors, allowing group comparisons at chosen settings
-
-```{r}
-#| echo: false
-# Compute and display estimated marginal means
-emms <- emmeans(fit, ~ Treatment)
-summary(emms)
-```
-
