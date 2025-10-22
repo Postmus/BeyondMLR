@@ -72,7 +72,7 @@ abline(h = 0, lty = 2, col = "darkgray")
 
 ## Statistical model specification
 
-To compare the mean change in body weight across the three treatment groups, we use the one-way ANOVA model:
+To compare the mean change in body weight across the three treatment groups, we use the one-way analysis of variance (ANOVA) model:
 
 $$
 Y_{ij} = \mu + \tau_i + \varepsilon_{ij}
@@ -88,115 +88,33 @@ $$
 
 ## Estimation using linear regression
 
-- A one-way ANOVA model can be expressed as a linear regression with a categorical predictor, allowing us to use the regression framework for estimation and hypothesis testing
-- Using *effects coding* with Pharmacological as the implied category under the sum-to-zero constraint, the statistically equivalent regression model is:
+- A one-way ANOVA can be performed using the linear regression framework  
+- To reproduce the ANOVA model specification, **effects coding** (sum-to-zero contrasts) is used, with *Pharmacological* as the implied category  
+- The table below shows how treatment levels are coded and the corresponding estimated regression coefficients
 
-:::: {.columns}
+:::: {.columns style="font-size:70%"}
 
 ::: {.column width="50%"}
-$$
-Y_{ij} = \beta_0 + \beta_1 \text{Treatment1}_{ij} + \beta_2 \text{Treatment2}_{ij} + \varepsilon_{ij}
-$$
+
+**Variable coding (effects coding)**
+
+| Treatment         | Intercept | Treatment1 | Treatment2 |
+|-------------------|:----------:|:--------:|:----------:|
+| Control           | 1 | 1 | 0 |
+| Lifestyle         | 1 | 0 | 1 |
+| Pharmacological   | 1 | −1 | −1 |
+
 :::
 
 ::: {.column width="50%"}
 
-<div style="font-size: 75%;">
+**Estimated coefficients**
 
-| Treatment | Intercept | Treatment1 | Treatment2 |
-|---|---:|:---:|:---:|
-| Control | 1 | 1 | 0 |
-| Lifestyle   | 1 | 0 | 1 |
-| Pharmacological | 1 | -1 | -1 |
-
-</div>
-
-:::
-
-::::
-
-```{=html}
-<div style="margin-top:1.5em;"></div>
-```
-
-:::: {.columns  style="font-size:70%"}
-
-::: {.column width="50%"}
-
-**Estimated regression coefficients:**
 ```{r}
 #| echo: false
 fit <- lm(Weight_change ~ Treatment, data = df_weight)
-kable(tidy(fit)[, c("term","estimate","std.error","p.value")], digits = 3, format = "html", table.attr = 'style="font-size: 90%; margin-left: 0; margin-right: auto"')
-```
-
-:::
-
-::: {.column width="50%"}
-
-**Mapping to the ANOVA model parameters:**
-
-- Grand mean:
-  $\mu = \beta_0$
-
-- Treatment deviations:
-  - $\tau_{\text{Control}} = \beta_1$
-  - $\tau_{\text{Lifestyle}}   = \beta_2$
-  - $\tau_{\text{Pharmacological}}   = -(\tau_{\text{Control}} + \tau_{\text{Lifestyle}}) = -(\beta_1 + \beta_2)$
-
-:::
-
-::::
-
-## Estimated marginal means (EMMs)
-
-- ANOVA parameters describe group deviations from the grand mean
-- Estimated marginal means (EMMs) express the same model in terms of predicted group means
-- In a one-way ANOVA model, the EMMs equal the observed group means
-- In more complex models with multiple factors, EMMs provide predicted group means that are averaged over the levels of these additional factors
-
-```{r}
-#| echo: false
-# Compute and display estimated marginal means
-emms <- emmeans(fit, ~ Treatment)
-summary(emms)
-```
-
-## ANOVA table
-:::: {.columns}
-
-::: {.column width="50%" style="font-size:85%"}
-**Sum of squares decomposition**
-
-$SS_{Total} = SS_{Treatment} + SS_{Residual}$
-
-- $SS_{Total}$: total variation around the grand mean
-  $$SS_{Total} = \sum_{i=1}^g\sum_{j=1}^{n_i} (Y_{ij} - \bar{Y}_{..})^2$$
-
-- $SS_{Treatment}$: between-group variation
-  $$SS_{Treatment} = \sum_{i=1}^g n_i(\bar{Y}_{i.} - \bar{Y}_{..})^2$$
-
-- $SS_{Residual}$: within-group variation
-  $$SS_{Residual} = \sum_{i=1}^g\sum_{j=1}^{n_i} (Y_{ij} - \bar{Y}_{i.})^2$$
-:::
-
-::: {.column width="50%" style="font-size:85%"}
-
-**Degrees of freedom**
-
-- $df_{Treatment}=g-1$
-- $df_{Residual}=N-g$
-
- **Mean squares**
-
-- $MS_{Treatment}=SS_{Treatment}/(g-1)$
-- $MS_{Residual}=SS_{Residual}/(N-g)$
-
-**ANOVA table**
-
-```{r}
 kable(
-  tidy(anova(fit)),
+  tidy(fit)[, c("term","estimate","std.error","p.value")],
   digits = 3,
   format = "html",
   table.attr = 'style="font-size: 100%; margin-left: 0; margin-right: auto"'
@@ -206,45 +124,111 @@ kable(
 :::
 
 ::::
-
-## Global hypothesis test (F-test)
-
-```{r}
-kable(
-  tidy(anova(fit)),
-  digits = 3,
-  format = "html",
-  table.attr = 'style="font-size: 100%; margin-left: 0; margin-right: auto"'
-)
-```
 
 ```{=html}
 <div style="margin-top:1em;"></div>
 ```
 
-- Hypotheses
-  - $H_0$: all group means or equal ($\tau_{Control} = \tau_{Lifestyle} = \tau_{Pharmacological} = 0$)
-  - $H_1$: at least one group mean is different
-- Test statistic:
-  $F = \frac{MS_{Treatment}}{MS_{Residual}}$
-  - Under $H_0$, this follows an $F_{g-1,\,N-g}$ distribution (with $g$ groups and $N$ observations)
-  - A large $F$ indicates treatment explains appreciable between-group variation
-  - In our example, the p-value is $\leq 0.05$, so we reject $H_0$ and conclude that the treatment has a significant effect on the change in SBP
+- With effects coding, the intercept corresponds to the **grand mean**, and the treatment coefficients represent **group deviations** from that mean
+- This differs from dummy coding, where the intercept equals the mean of the reference group, and each coefficient represents the difference between that group and the reference
+
+## Estimated marginal means (EMMs)
+
+- ANOVA parameters describe how each group mean deviates from the overall (grand) mean
+- Estimated marginal means (EMMs) re-express the same model in terms of the expected mean outcome for each group
+- In a one-way ANOVA, the EMMs are identical to the observed group means
+- In models with multiple factors, EMMs represent predicted group means that are averaged over the levels of the other factors in the model
+
+```{=html}
+<div style="margin-top:1.0em;"></div>
+```
+
+```{r}
+kable(
+  tidy(emmeans(fit, ~ Treatment)),
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
+)
+```
+
+## ANOVA table and global hypothesis test
+
+- The total variation in the outcome ($SS_{Total}$) can be split into two parts:
+  - **Between-group variation** ($SS_{Treatment}$): how much group means differ from the overall mean  
+  - **Within-group variation** ($SS_{Residual}$): how much individual outcomes vary around their group mean  
+
+- **Hypotheses**
+  - $H_0$: all group means are equal ($\tau_{Control} = \tau_{Lifestyle} = \tau_{Pharmacological} = 0$) 
+  - $H_1$: at least one group mean differs
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+**Test statistic**
+  $$
+  F = \frac{MS_{Treatment}}{MS_{Residual}}
+    = \frac{SS_{Treatment} / (g - 1)}{SS_{Residual} / (N - g)}
+  $$
+:::
+
+::: {.column width="50%"}
+
+**ANOVA table**
+
+```{r}
+#| echo: false
+kable(
+  tidy(anova(fit)),
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
+)
+```
+
+:::
+
+::::
+
+- Under $H_0$, this follows an $F_{g-1,\,N-g}$ distribution  
+- A large $F$ (>>1) means that treatment explains more variation between groups than expected by chance
 
 ## Post-hoc comparisons
 
-- Since we found a significant effect of treatment, we will conduct pairwise comparisons of the estimated group means to identify which specific treatment groups differ significantly from one another
-- To account for the increased Type I error risk due to multiple comparisons, we apply the Bonferroni correction to adjust the p-values, ensuring that the overall significance level remains controlled
+- When the overall treatment effect is significant, pairwise comparisons of the estimated marginal means can be performed to determine which specific treatment groups differ significantly from one another
+- To account for the increased risk of Type I error from multiple testing, the resulting p-values should be adjusted using an appropriate multiplicity correction (for example, the Bonferroni method) to keep the overall significance level controlled
+
+```{=html}
+<div style="margin-top:1.0em;"></div>
+```
 
 ```{r}
-# Performing post-hoc analysis with emmeans
+kable(
+  tidy(emmeans(fit, ~ Treatment)),
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
+)
+```
+
+```{=html}
+<div style="margin-top:1.5em;"></div>
+```
+
+```{r}
 emms <- emmeans(fit, ~ Treatment)
-contrast(emms, method="pairwise", adjust="Bonferroni")
+kable(
+  tidy(pairs(emms, adjust="Bonferroni")),
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
+)
 ```
 
 ## Model diagnostics
 
-- To assess the adequacy of the fitted model, we create two diagnostic plots:
+- To assess the adequacy of the fitted model, different diagnostic plots can be created:
   - **Normal Q-Q Plot**: Used to assess normality of the errors
   - **Residuals vs Fitted Plot**: Used to assess homoscedasticity (constant variance) for the errors
 
@@ -270,27 +254,28 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 ## Nuisance variables
 
-- Nuisance variables are variables that influence the response but are not of primary interest
-- Examples include age, baseline blood pressure, comorbidity, or study center
-- If not controlled, they can
-  - increase random variation → more noise, less precision
-  - introduce systematic differences between treatment groups → biased estimates of treatment effects
-- Randomization helps balance nuisance variables across treatments on average
-- Additional control can be achieved through blocking or covariate adjustment to separate their influence from the treatment effect
+- Nuisance variables are variables that affect the response but are not of primary interest
+- Common examples include age, baseline systolic blood pressure, comorbidity, or study center
+- If not controlled, these variables can:
+  - Increase random variation → more noise and lower precision
+  - Introduce systematic differences between treatment groups → biased estimates of treatment effects
+- Randomization helps to balance nuisance variables across treatments on average
+- Blocking accounts for nuisance variables by partitioning their variation out of the residual error, leading to more precise estimates of treatment effects
 
-## Reducing residual variation: blocking
+## Reducing residual variation through blocking
 
 - Design stage
-  - Group experimental units that are similar on a known nuisance variable (e.g., study center, sex, baseline severity)
-  - Randomize treatments within each block to avoid bias and ensure balance across levels of the nuisance variable  (this is known as an orthogonal design)
-
+  - Experimental units are assigned to blocks defined by levels of a known nuisance variable (e.g., study center, sex, baseline severity)  
+  - Treatments are randomized within each block to avoid bias and maintain balance across the levels of the nuisance variable (this creates an *orthogonal design*)
+  
 - Analysis stage
-  - Include the block term in the statistical model (two-way ANOVA)
-
+  - The block factor is included as second factor in the statistical model:  
+  
   $$Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}$$
 
-  - This analysis separates block effects ($\beta_j$) from the residual error and therefore allows treatment effects to be estimated with increased precision
-
+  - This additive model separates block effects ($\beta_j$) from residual error ($\varepsilon_{ijk}$), reducing unexplained variability and allowing treatment effects to be estimated with greater precision
+  - The resulting formulation is known as a **two-way (additive) ANOVA**
+ 
 ## First example: stratified randomization
 
 - Study population: 135 patients with baseline SBP ≥140 mmHg, classified into three hypertension grades
@@ -386,7 +371,7 @@ ggplot(eda_sum, aes(x = Treatment, y = mean,
 
 ::: {.column width="50%"}
 
-**One-way ANOVA (ignoring hypertension grade)**
+**One-way ANOVA ignoring hypertension grade**
 
 ```{r}
 fit_oneway <- lm(SBP_change ~ Treatment, data = df_bp_strat)
@@ -396,7 +381,7 @@ kable(tidy(anova(fit_oneway)), digits = 3, format = "html", table.attr = 'style=
 
 ::: {.column width="50%"}
 
-**Two-way ANOVA (additive model)**
+**Two-way additive ANOVA**
 
 ```{r}
 fit_adj <- lm(SBP_change ~ Treatment + HypertensionGrade, data = df_bp_strat)
@@ -409,8 +394,8 @@ kable(tidy(anova(fit_adj)), digits = 3, format = "html", table.attr = 'style="fo
 - Effect of blocking / stratification:
   - When hypertension grade is ignored, its effect is absorbed into the residual error term
   - Including hypertension grade as an additional factor partitions out that systematic variation into a separate term
-  - This typically reduces $MS_{Residual}$ while leaving $MS_{Treatment}$ approximately the same in balanced designs
-  - As a result, the F statistic for treatment tends to increase, meaning the test gains power to detect treatment differences
+  - This reduces $MS_{Residual}$ while keeping $MS_{Treatment}$ constant (in orthogonal designs)
+  - As a result, the F statistic for treatment increases, meaning the test gains power to detect treatment differences
 
 ## Second example: randomized block design
 
@@ -476,16 +461,30 @@ m1 <- lm(Weight_Change ~ Treatment, data = data)
 ```{r}
 kable(tidy(m1)[, c("term","estimate","std.error","p.value")], digits = 3, caption = NULL, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
 ```
+
 :::
 
 ::: {.column width="50%"}
+
+**Variable coding**
+
+```{r}
+coding <- contrasts(data$Treatment)
+colnames(coding) <- c("Treatment1", "Treatment2")
+kable(coding, digits = 3, caption = NULL, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
+```
+
+:::
+
+```{=html}
+<div style="margin-top:1.5em;"></div>
+```
 
 **ANOVA table**
 
 ```{r}
 kable(tidy(anova(m1)), digits = 3, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
 ```
-:::
 
 ::::
 
@@ -494,7 +493,7 @@ kable(tidy(anova(m1)), digits = 3, format = "html", table.attr = 'style="font-si
 ```
 
 - Ignoring cage differences pushes cage-to-cage variability into the residual error term
-- This inflates standard errors and reduces power compared with models that adjust for cages
+- This reduces power compared with models that adjust for cages
 
 ## Incorporating the effect of cage
 
@@ -678,10 +677,10 @@ $$
   - High ICC: rats in the same cage tend to have more similar outcomes
   - Low ICC: cage membership adds little information beyond treatment
 
-## Fixed or random effects for nuisance variables
+## Fixed or random effects for blocking factors
 
 - **Stratified randomization example:**
-  - The stratification factor (hypertension grade) divides subjects into predefined categories used consistently across studies
+  - The blocking factor (hypertension grade) divides subjects into predefined categories used consistently across studies
   - The specific levels (grade 1, grade 2, grade 3) are fixed and always the same
   - The factor is modeled as a **fixed effect**, adjusting for systematic differences between these known categories
 
@@ -689,3 +688,4 @@ $$
   - The blocking factor (cage) represents a random source of environmental variation
   - The cages themselves are not of intrinsic interest and could have been any comparable set
   - Modeling cage as a **random effect** captures this variability naturally and allows generalization beyond the observed cages
+
