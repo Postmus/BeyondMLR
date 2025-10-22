@@ -16,7 +16,7 @@ format:
     height: 720
     margin: 0.06
     max-scale: 2
-    footer: "Beyond linear regression - week 1"
+    footer: "Beyond multiple linear regression - week 1"
     logo: UMCG-logo.png
 execute:
   warning: false
@@ -56,7 +56,7 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, mixed,
 - Quarto uses Markdown for easy formatting of headings, text, and tables and supports LaTeX for typesetting mathematical equations and handling references and citations
 - It can be used to create a variety of outputs, including HTML, PDF, Word documents, slides, and even websites and blogs
 
-## Requirements to earn course cerfificate
+## Requirements to earn course certificate
 
 - To earn the course certificate, you must participate in at least 80% of the in-class meetings, and submit the weekly data analysis assignments
 - For students requiring a grade, such as research master students or PhD students seeking Epidemiologist B registration, grading will be based on the final data analysis assignment
@@ -316,7 +316,7 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
   
   $$Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}$$
 
-  - This additive model separates block effects ($\beta_j$) from residual error ($\varepsilon_{ijk}$), reducing unexplained variability and allowing treatment effects to be estimated with greater precision
+  - This additive model separates block effects ($\beta_j$) from residual error ($\varepsilon_{ijk}$), reducing unexplained variability and allowing treatment effects ($\tau_i$) to be estimated with greater precision
   - The resulting formulation is known as a **two-way (additive) ANOVA**
  
 ## First example: stratified randomization
@@ -536,11 +536,10 @@ kable(tidy(anova(m1)), digits = 3, format = "html", table.attr = 'style="font-si
 ```
 
 - Ignoring cage differences pushes cage-to-cage variability into the residual error term
-- This reduces power compared with models that adjust for cages
+- This reduces power compared with models that account for the cage effect
 
 ## Incorporating the effect of cage
 
-- Some cages show consistently higher or lower weights, suggesting an extra source of variation due to the cage environment
 - Two options to include cage in the model
   - Treat cage as a fixed effect: adjust for these eight cages
     - Each level gets its own estimate
