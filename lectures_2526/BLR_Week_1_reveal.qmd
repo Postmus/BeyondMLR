@@ -36,7 +36,44 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, mixed,
 
 ## Introduction
 
-- Welcome slide (to be completed later)
+- Multiple linear regression models are used to study how a numerical outcome changes with one or more explanatory variables
+- In many medical applications, the assumption of independent and identically distributed errors underlying linear regression is often violated
+- This happens when observations are grouped or clustered, but the grouping variable is not accounted for in the analysis
+  - For example, patients within hospitals, teeth within patients, or pupils within schools
+- In these situations, linear mixed effects models can be used to capture the average relationship (fixed effects) while allowing for group-specific deviations (random effects)
+- Throughout this course, we will build up from ordinary linear regression to mixed effects models for blocked, clustered, and longitudinal data
+
+## Course organization 
+
+- Before class: preparatory reading of selected book chapters  
+- During class: build understanding through interactive lectures and develop data analysis skills through guided application exercises in the R labs
+- After class: assignment to apply what you have learned from the readings and in-class activities to a new dataset
+
+## Quarto (assignments)
+
+- Quarto is an open-source publishing system that allows you to create dynamic, high-quality reports from a single source file containing both text and R code
+  - As such, it enables reproducible research by integrating code and text, ensuring that reports and analyses are always up-to-date
+- Quarto uses Markdown for easy formatting of headings, text, and tables and supports LaTeX for typesetting mathematical equations and handling references and citations
+- It can be used to create a variety of outputs, including HTML, PDF, Word documents, slides, and even websites and blogs
+
+## Requirements to earn course cerfificate
+
+- To earn the course certificate, you must participate in at least 80% of the in-class meetings, and submit the weekly data analysis assignments
+- For students requiring a grade, such as research master students or PhD students seeking Epidemiologist B registration, grading will be based on the final data analysis assignment
+
+## Today's lecture
+
+- Introduction to linear mixed effects models in the context of experimental design
+- Part 1: Experiments with a single experimental factor (one-way ANOVA)  
+  - Linear regression formulation using effects coding  
+  - Interpretation through estimated marginal means
+
+- Part 2: Experiments with an experimental and a blocking factor (two-way additive ANOVA)  
+  - Distinguishing fixed effects and random effects  
+  - Stratified randomization: treating the blocking factor as fixed  
+  - Randomized block design: treating the blocking factor as random
+
+# Part 1: Experiments with a single experimental factor
 
 ## Case study — weight loss interventions
 
@@ -250,7 +287,13 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 ::::
 
-# Part II
+## Lab 1: one-way ANOVA
+
+::: {.figure}
+![](/R-lab.png){width="60%" alt="Lab session"}
+:::
+
+# Part 2: Experiments with an experimental and a blocking factor
 
 ## Nuisance variables
 
@@ -689,3 +732,8 @@ $$
   - The cages themselves are not of intrinsic interest and could have been any comparable set
   - Modeling cage as a **random effect** captures this variability naturally and allows generalization beyond the observed cages
 
+## Lab 2: randomized block design
+
+::: {.figure}
+![](/R-lab.png){width="60%" alt="Lab session"}
+:::
