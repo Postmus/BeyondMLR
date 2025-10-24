@@ -1,6 +1,6 @@
 ---
 title: "Beyond MLR - Week 1: Experimental Design I"
-subtitle: "One-way ANOVA, stratified randomization, and randomized block designs"
+subtitle: "One-way ANOVA and randomized block designs"
 author: "Dr. Douwe Postmus"
 format:
   revealjs:
@@ -36,24 +36,24 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, mixed,
 
 ## Introduction
 
-- Multiple linear regression models are used to study how a numerical outcome changes with one or more explanatory variables
-- In many medical applications, the assumption of independent and identically distributed errors underlying linear regression is often violated
-- This happens when observations are grouped or clustered, but the grouping variable is not accounted for in the analysis
-  - For example, patients within hospitals, teeth within patients, or pupils within schools
-- In these situations, linear mixed effects models can be used to capture the average relationship (fixed effects) while allowing for group-specific deviations (random effects)
-- Throughout this course, we will build up from ordinary linear regression to mixed effects models for blocked, clustered, and longitudinal data
+- Multiple linear regression models are widely used to study how a numerical outcome changes with one or more explanatory variables
+- However, in many medical applications, the assumption of independent and identically distributed errors underlying linear regression is violated
+- This occurs when observations are grouped, but the grouping structure is ignored in the analysis
+  - For example: patients treated in the same hospital, teeth from the same patient, or pupils within the same school
+- In such cases, linear mixed-effects models can be used to estimate overall effects across all groups (fixed effects) while accounting for group-specific variation (random effects)
+- This course focuses on the application of linear mixed-effects models in a variety of settings, including blocked, hierarchical, and longitudinal data
 
 ## Course organization 
 
 - Before class: preparatory reading of selected book chapters  
-- During class: build understanding through interactive lectures and develop data analysis skills through guided application exercises in the R labs
+- During class: build understanding through introductory lectures and develop data analysis skills through guided application exercises in the R labs
 - After class: assignment to apply what you have learned from the readings and in-class activities to a new dataset
 
 ## Quarto (assignments)
 
 - Quarto is an open-source publishing system that allows you to create dynamic, high-quality reports from a single source file containing both text and R code
   - As such, it enables reproducible research by integrating code and text, ensuring that reports and analyses are always up-to-date
-- Quarto uses Markdown for easy formatting of headings, text, and tables and supports LaTeX for typesetting mathematical equations and handling references and citations
+- Quarto uses Markdown for formatting of headings, text, and tables and supports LaTeX for typesetting mathematical equations and handling references and citations
 - It can be used to create a variety of outputs, including HTML, PDF, Word documents, slides, and even websites and blogs
 
 ## Requirements to earn course certificate
@@ -64,14 +64,13 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, mixed,
 ## Today's lecture
 
 - Introduction to linear mixed effects models in the context of experimental design
-- Part 1: Experiments with a single experimental factor (one-way ANOVA)  
+- Part 1: Experiments with a single experimental factor
   - Linear regression formulation using effects coding  
   - Interpretation through estimated marginal means
 
-- Part 2: Experiments with an experimental and a blocking factor (two-way additive ANOVA)  
+- Part 2: Experiments with an experimental and a blocking factor  
   - Distinguishing fixed effects and random effects  
-  - Stratified randomization: treating the blocking factor as fixed  
-  - Randomized block design: treating the blocking factor as random
+  - Variance components and ICC
 
 # Part 1: Experiments with a single experimental factor
 
@@ -295,152 +294,28 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 # Part 2: Experiments with an experimental and a blocking factor
 
-## Nuisance variables
+## Context variables
 
-- Nuisance variables are variables that affect the response but are not of primary interest
-- Common examples include age, baseline systolic blood pressure, comorbidity, or study center
-- If not controlled, these variables can:
-  - Increase random variation → more noise and lower precision
-  - Introduce systematic differences between treatment groups → biased estimates of treatment effects
-- Randomization helps to balance nuisance variables across treatments on average
-- Blocking accounts for nuisance variables by partitioning their variation out of the residual error, leading to more precise estimates of treatment effects
+- Context variables are factors that define shared conditions under which observations are made but are not of primary interest
+  - Examples: study center, laboratory batch, or litter
+- If ignored, such factors can:
+  - Reduce power to detect the treatment effect of interest
+  - Obscure or bias treatment comparisons if unevenly distributed across groups
 
-## Reducing residual variation through blocking
+## Randomized block designs
 
 - Design stage
-  - Experimental units are assigned to blocks defined by levels of a known nuisance variable (e.g., study center, sex, baseline severity)  
-  - Treatments are randomized within each block to avoid bias and maintain balance across the levels of the nuisance variable (this creates an *orthogonal design*)
-  
+  - Experimental units are grouped into blocks defined by levels of a context variable
+  - Treatments are randomized within each block, ensuring that comparisons are made under similar conditions and bias is avoided
 - Analysis stage
-  - The block factor is included as second factor in the statistical model:  
+  - The context variable is included as second factor in the model:  
   
   $$Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}$$
 
-  - This additive model separates block effects ($\beta_j$) from residual error ($\varepsilon_{ijk}$), reducing unexplained variability and allowing treatment effects ($\tau_i$) to be estimated with greater precision
-  - The resulting formulation is known as a **two-way (additive) ANOVA**
+  - This additive model separates block effects ($\beta_j$) from residual error ($\varepsilon_{ijk}$), reducing unexplained variability and increasing the precision of treatment estimates
+  - The resulting statistical model is known as a **two-way additive ANOVA**
  
-## First example: stratified randomization
-
-- Study population: 135 patients with baseline SBP ≥140 mmHg, classified into three hypertension grades
-  - Grade 1: 140–159 mmHg
-  - Grade 2: 160–179 mmHg
-  - Grade 3: ≥180 mmHg
-- Randomization: performed separately within each grade to ensure that all treatments are represented equally across hypertension categories
-- Treatments: Control, Drug A, Drug B (n = 45 per group; 15 per grade)
-- Outcome: change in SBP (mmHg) from baseline to week 52
-
-```{r}
-set.seed(431)
-
-# design
-trt_levels  <- c("Control","DrugA","DrugB")
-grades      <- c("Grade1","Grade2","Grade3")              # SBP-only grading
-n_per_trt   <- 45                                          # divisible by 3 grades
-n_per_cell  <- n_per_trt / length(grades)
-sd_eps      <- 8
-
-# treatment means (overall), mmHg change over 12 weeks (plausible magnitudes)
-trt_mean <- c(Control = -4, DrugA = -11, DrugB = -8)
-
-# strong baseline grade effect on change (higher baseline → larger drop)
-grade_effect <- c(Grade1 = 0, Grade2 = -6, Grade3 = -12)
-
-# helper to simulate baseline SBP within each grade
-r_sbp <- function(grade, n) {
-  if (grade == "Grade1") rnorm(n, mean = 148, sd = 6)     # 140–159
-  else if (grade == "Grade2") rnorm(n, mean = 168, sd = 6) # 160–179
-  else rnorm(n, mean = 185, sd = 7)                        # ≥180
-}
-
-# build stratified dataset: equal n per grade × treatment
-df_bp_strat <- do.call(
-  rbind,
-  lapply(grades, function(g) {
-    do.call(
-      rbind,
-      lapply(trt_levels, function(t) {
-        mu <- trt_mean[[t]] + grade_effect[[g]]
-        n  <- n_per_cell
-        data.frame(
-          HypertensionGrade = g,
-          Treatment = t,
-          Baseline_SBP = r_sbp(g, n),
-          SBP_change  = rnorm(n, mean = mu, sd = sd_eps)
-        )
-      })
-    )
-  })
-)
-
-df_bp_strat$HypertensionGrade <- factor(df_bp_strat$HypertensionGrade, levels = grades)
-df_bp_strat$Treatment <- factor(df_bp_strat$Treatment, levels = trt_levels)
-contrasts(df_bp_strat$Treatment) <- contr.sum(3)
-contrasts(df_bp_strat$HypertensionGrade) <- contr.sum(3)
-```
-
-## Exploratory data analysis
-
-```{r}
-eda_sum <- df_bp_strat %>%
-  group_by(Treatment, HypertensionGrade) %>%
-  summarise(
-    n    = n(),
-    mean = mean(SBP_change),
-    sd   = sd(SBP_change),
-    se   = sd / sqrt(n),
-    tcrt = qt(0.975, df = n - 1),
-    ci   = tcrt * se,
-    .groups = "drop"
-  )
-
-ggplot(eda_sum, aes(x = Treatment, y = mean,
-                    group = HypertensionGrade,
-                    color = HypertensionGrade, shape = HypertensionGrade)) +
-  geom_line() +
-  geom_point(size = 3) +
-  #geom_errorbar(aes(ymin = mean - ci, ymax = mean + ci), width = 0.12) +
-  labs(
-    x = "Treatment",
-    y = "Mean change in SBP (mmHg)",
-    title = NULL
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(legend.position = "bottom")
-```
-
-## Results
-
-:::: {.columns}
-
-::: {.column width="50%"}
-
-**One-way ANOVA ignoring hypertension grade**
-
-```{r}
-fit_oneway <- lm(SBP_change ~ Treatment, data = df_bp_strat)
-kable(tidy(anova(fit_oneway)), digits = 3, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
-```
-:::
-
-::: {.column width="50%"}
-
-**Two-way additive ANOVA**
-
-```{r}
-fit_adj <- lm(SBP_change ~ Treatment + HypertensionGrade, data = df_bp_strat)
-kable(tidy(anova(fit_adj)), digits = 3, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
-```
-:::
-
-::::
-
-- Effect of blocking / stratification:
-  - When hypertension grade is ignored, its effect is absorbed into the residual error term
-  - Including hypertension grade as an additional factor partitions out that systematic variation into a separate term
-  - This reduces $MS_{Residual}$ while keeping $MS_{Treatment}$ constant (in orthogonal designs)
-  - As a result, the F statistic for treatment increases, meaning the test gains power to detect treatment differences
-
-## Second example: randomized block design
+## Example: lab animal experiment
 
 ```{r}
 set.seed(329)  # For reproducibility
@@ -585,7 +460,7 @@ $$
 
 ::::
 
-## Two-way ANOVA: cage as fixed effect
+## Modeling cage as fixed effect
 
 ```{r}
 m2 <- lm(Weight_Change ~ Treatment + Cage, data = data)
@@ -620,7 +495,7 @@ kable(tidy(anova(m2)), digits = 3, format = "html", table.attr = 'style="font-si
 - Adjusts for the eight cages as specific environments
 - Inference applies only to these cages
 
-## Two-way ANOVA: cage as random effect
+## Modeling cage as random effect
 
 ```{r}
 m3 <- lmer(Weight_Change ~ Treatment + (1 | Cage), data = data)
@@ -718,18 +593,6 @@ $$
 - Interpretation:
   - High ICC: rats in the same cage tend to have more similar outcomes
   - Low ICC: cage membership adds little information beyond treatment
-
-## Fixed or random effects for blocking factors
-
-- **Stratified randomization example:**
-  - The blocking factor (hypertension grade) divides subjects into predefined categories used consistently across studies
-  - The specific levels (grade 1, grade 2, grade 3) are fixed and always the same
-  - The factor is modeled as a **fixed effect**, adjusting for systematic differences between these known categories
-
-- **Randomized block design example:**
-  - The blocking factor (cage) represents a random source of environmental variation
-  - The cages themselves are not of intrinsic interest and could have been any comparable set
-  - Modeling cage as a **random effect** captures this variability naturally and allows generalization beyond the observed cages
 
 ## Lab 2: randomized block design
 
