@@ -5,19 +5,13 @@ format:
   html:
     toc: true
     toc-depth: 3
-editor_options:
-  chunk_output_type: console
+    embed-resources: true
+execute:
+  warning: false
+  message: false
+  eval: true
+  echo: true
 ---
-
-```{r}
-#| label: setup
-#| include: false
-
-# configure global options for R code chunks:
-# warning = F to suppress the display of warning messages generated during the execution of code chunks
-# message = F to suppress the display of messages produced during the execution of code chunks
-knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
-```
 
 # Introduction
 
@@ -29,7 +23,6 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
 
 ```{r}
 #| label: load dataset
-#| echo: true
 
 # Ensure your working directory is set correctly so that R can locate the data file.
 # You can set the working directory with setwd("path/to/your/directory") if needed,
@@ -39,7 +32,6 @@ data_mobility_2 <- read.csv("data_mobility.csv")
 
 ```{r}
 #| label: exploratory-analysis
-#| echo: true
 
 # Code for exploratory data analysis goes here
 ```
@@ -52,7 +44,6 @@ data_mobility_2 <- read.csv("data_mobility.csv")
 
 ```{r}
 #| label: anova-model
-#| echo: true
 
 # Code for fitting the ANOVA model goes here
 ```
@@ -63,7 +54,6 @@ data_mobility_2 <- read.csv("data_mobility.csv")
 
 ```{r}
 #| label: anova-table
-#| echo: true
 
 # Code to generate the ANOVA table
 ```
@@ -74,7 +64,6 @@ data_mobility_2 <- read.csv("data_mobility.csv")
 
 ```{r}
 #| label: post-hoc
-#| echo: true
 
 # Code for post-hoc analysis
 ```
@@ -85,7 +74,6 @@ data_mobility_2 <- read.csv("data_mobility.csv")
 
 ```{r}
 #| label: diagnostics
-#| echo: true
 
 # Code for diagnostics
 ```

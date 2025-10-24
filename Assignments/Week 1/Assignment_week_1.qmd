@@ -24,7 +24,7 @@ Your objective is to determine whether there is a statistically significant diff
 
 ## Requirements for the Report
 
-Submit both the **Quarto source file (`.qmd`)** and the **rendered HTML file**. The quarto source file should include all R code and annotations, and the html file should be rendered with code visibility enabled (`echo = TRUE`, which is the default option). The Quarto file in the downloads section below provides a starter template that you can use for this assignment.
+Submit both the **Quarto source file (`.qmd`)** and the **rendered HTML file**. The quarto source file should include all R code and annotations, and the html file should be rendered with code visibility enabled (`echo = TRUE`, which is the default setting). The Quarto file in the downloads section below provides a template that you can use for this assignment.
 
 ## Downloads 
 
