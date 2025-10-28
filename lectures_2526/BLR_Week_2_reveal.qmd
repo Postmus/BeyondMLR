@@ -32,9 +32,9 @@ if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom, broom.mixed)
 ```
 
-## Some tips working with Quarto
+## Some tips working with R and Quarto
 
-TODO: copy-paste some content from last year's lecrute
+TODO: copy-paste some content from last year's lecture
 
 ## Today's lecture
 
@@ -42,13 +42,30 @@ TODO: copy-paste some content from last year's lecrute
   - Additive versus full factorial models 
   - Simple effects analysis
 - Part 2: Replicated randomized block designs
-- Part 3: Crossed random effects  
+- Part 3: Models with crossed random effects  
   
-# Part 1: Experiments with a single experimental factor
+# Part 1: Experiments with two experimental factors
 
 # Part 2: Replicated randomized block designs
 
-# Part 3: Crossed random effects  
+## Interactions between fixed and random effects
+
+- Two-Way ANOVA example:
+  - Analyzed the interaction between two fixed effects (composite type and curing time)
+- Last week's randomized block design example:
+  - Included the main effect of treatment (fixed effect) and the main effect of cage (random effect) but did not include an interaction effect
+  - Interaction effects can only be estimated when there are at least two replications of each treatment within blocks
+- Replicated randomized block design: 
+  - Extends the randomized block design by adding replicates within each block
+  - This allows treatment–block interactions to be modeled explicitly, reducing residual error and improving precision 
+
+## Lab 3: replicated randomized block designs
+
+::: {.figure}
+![](/R-lab.png){width="60%" alt="Lab session"}
+:::
+
+# Part 3: Models with crossed random effects  
 
 ```{r}
 set.seed(123)
