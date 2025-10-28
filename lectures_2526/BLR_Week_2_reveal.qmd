@@ -1,0 +1,224 @@
+---
+title: "Beyond MLR - Week 2: Experimental Design II"
+subtitle: "Two way ANOVA with interactions"
+author: "Dr. Douwe Postmus"
+format:
+  revealjs:
+    theme: [default, custom-reveal.scss]
+    slide-number: true
+    toc: false
+    slide-level: 2
+    incremental: false
+    code-overflow: wrap
+    scrollable: true
+    smaller: true
+    width: 1280
+    height: 720
+    margin: 0.06
+    max-scale: 2
+    footer: "Beyond multiple linear regression - week 2"
+    logo: UMCG-logo.png
+execute:
+  warning: false
+  message: false
+  eval: true
+  echo: false
+---
+
+```{r}
+#| include: false
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom, broom.mixed)
+```
+
+## Some tips working with Quarto
+
+TODO: copy-paste some content from last year's lecrute
+
+## Today's lecture
+
+- Part 1: Experiments with two experimental factors
+  - Additive versus full factorial models 
+  - Simple effects analysis
+- Part 2: Replicated randomized block designs
+- Part 3: Crossed random effects  
+  
+# Part 1: Experiments with a single experimental factor
+
+# Part 2: Replicated randomized block designs
+
+# Part 3: Crossed random effects  
+
+```{r}
+set.seed(123)
+
+n_patients <- 10
+n_radiologists <- 5
+sigma_patient <- 3
+sigma_radiologist <- 2
+sigma_resid <- 1
+
+data.tomour <- expand.grid(patient = 1:n_patients, radiologist = 1:n_radiologists) |>
+  mutate(
+    patient_eff = rnorm(n_patients)[patient] * sigma_patient,
+    radiologist_eff = rnorm(n_radiologists)[radiologist] * sigma_radiologist,
+    measurement = 50 + patient_eff + radiologist_eff + rnorm(n(), 0, sigma_resid)
+  )
+
+data.tomour <- data.tomour |>
+  mutate(
+    patient = factor(patient),
+    radiologist = factor(radiologist)
+  )
+
+```
+
+## Example: radiologist measurements of tumor size
+
+- Research question: 
+  - To what extent do radiologists give the same results when measuring the same tumors?
+- Study design:
+  - CT scans from 10 patients were independently assessed by 5 radiologists
+  - Each radiologist measured the maximum tumor diameter (mm) on every scan
+
+## Exploratory data analysis
+
+```{r}
+# Interaction plot: measurement by radiologist for each patient
+ggplot(data.tomour, aes(x = radiologist, y = measurement, group = patient, colour = patient)) +
+  geom_line(alpha = 0.8) +
+  geom_point(size = 1.5, alpha = 0.9) +
+  stat_summary(aes(group = 1), fun = mean, geom = "point", shape = 21, fill = "black", colour = "white", size = 3, stroke = 1.2) +
+  stat_summary(aes(group = 1), fun = mean, geom = "line", colour = "black", size = 1, linetype = "dashed") +
+  labs(title = NULL,
+       x = "Radiologist",
+       y = "Measurement (mm)",
+       colour = "Patient") +
+  theme_minimal() +
+  theme(legend.position = "right")
+```
+
+## How to model these data
+
+- We want to assess to what extent radiologists give the same results when measuring the same tumors
+- Measurements vary for three main reasons:
+  - True differences between patients (biological variation in tumor size)
+  - Systematic differences between radiologists (some may measure consistently higher or lower)
+  - Unexplained measurement error
+- To separate these sources of variability, we use a **crossed random-effects model**
+  - Both patients and radiologists are treated as random samples from larger populations
+  - Random intercepts are included for each, as they are not hierarchically nested
+- This model decomposes total variability into patient, radiologist, and residual components, allowing us to quantify measurement reliability across radiologists
+
+
+## Statistical model specification
+
+$$Y_{ij} = \mu + u_i + v_j + \varepsilon_{ij}$$
+
+- $Y_{ij}$: measured tumor size for patient *i* assessed by radiologist *j*  
+- $\mu$: overall mean tumor size across all patients and radiologists  
+- $u_i \sim N(0, \sigma^2_{\text{patient}})$: random effect for patient, representing true biological differences in tumor size  
+- $v_j \sim N(0, \sigma^2_{\text{radiologist}})$: random effect for radiologist, representing systematic measurement differences between radiologists  
+- $\varepsilon_{ij} \sim N(0, \sigma^2)$: residual term capturing unexplained measurement error
+
+
+## Quantifying agreement and consistency
+
+:::: {.columns style="font-size:90%"}
+
+::: {.column width="50%"}
+
+**Agreement**
+
+- Measures the extent to which radiologists give the same numerical results when assessing the same patients  
+- Defined as the proportion of total variance explained by true patient differences  
+  $$
+  ICC_{\text{agreement}} =
+  \frac{\sigma^2_{\text{patient}}}
+       {\sigma^2_{\text{patient}} + \sigma^2_{\text{radiologist}} + \sigma^2}
+  $$
+
+- High values indicate that most of the variation reflects real biological differences rather than who performed the measurement
+
+:::
+
+::: {.column width="50%"}
+
+**Consistency**
+
+- Measures the extent to which radiologists give measurements that rank patients in the same order
+- Defined as the proportion of variance explained by true patient differences, excluding radiologist-level variability  
+  $$
+  ICC_{\text{consistency}} =
+  \frac{\sigma^2_{\text{patient}}}
+       {\sigma^2_{\text{patient}} + \sigma^2}
+  $$
+
+- High values indicate that radiologists are consistent in ranking patients, even if their absolute measurements are on different scales
+
+:::
+
+::::
+
+- In this context, agreement is the more logical measure because treatment planning depends on the absolute tumor size values, not just on how patients rank relative to one another  
+
+
+## Results and interpretation
+
+```{r}
+model_crossed <- lmer(measurement ~ (1 | radiologist) + (1 | patient), data = data.tomour)
+``` 
+
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+**Estimated fixed effects**
+
+```{r}
+fe <- tidy(model_crossed, effects = "fixed")[, c("term","estimate","std.error","p.value")]
+
+kable(
+  fe,
+  digits = 3,
+  caption = NULL,
+  format = "html",
+  table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"'
+)
+```
+
+:::
+
+::: {.column width="50%"}
+
+**Estimated variance components**
+
+```{r}
+re <- tidy(model_crossed, effects = "ran_pars")[, c("group", "term", "estimate")]
+
+kable(
+  re,
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"'
+)
+```
+
+:::
+
+::::
+
+- The overall mean tumor size is about 50.8 mm, averaged across all patients and radiologists 
+
+**Agreement**
+
+$ICC_{\text{agreement}} =
+\frac{\sigma^2_{\text{patient}}}
+     {\sigma^2_{\text{patient}} + \sigma^2_{\text{radiologist}} + \sigma^2} =
+\frac{2.73^2}{2.73^2 + 1.21^2 + 1.00^2} = 0.74$    
+
+- About 74% of the total variability in measured tumor size reflects true differences between patients
+- The remaining 26% is due to radiologist differences and measurement noise
+- This indicates fairly high agreement among radiologists: measurements largely reflect real biological variation rather than who performed them

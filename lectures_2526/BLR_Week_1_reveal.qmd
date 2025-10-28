@@ -29,7 +29,7 @@ execute:
 #| include: false
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
-pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, mixed, broom.mixed)
+pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom, broom.mixed)
 ```
 
 ## Introduction
@@ -506,7 +506,6 @@ m3 <- lmer(Weight_Change ~ Treatment + (1 | Cage), data = data)
 **Estimated fixed effects**
 
 ```{r}
-library(broom.mixed)
 fe <- tidy(m3, effects = "fixed")[, c("term","estimate","std.error","p.value")]
 
 knitr::kable(
@@ -522,14 +521,13 @@ knitr::kable(
 <div style="margin-top: 0.75em;"></div>
 ```
 
-**Random-effects variance components**
+**Estimated variance components**
 
 ```{r}
-vc <- as.data.frame(VarCorr(m3))[, c("grp","vcov","sdcor")]
-names(vc) <- c("component","variance","sd")
+re <- tidy(m3, effects = "ran_pars")[, c("group", "term", "estimate")]
 
-knitr::kable(
-  vc,
+kable(
+  re,
   digits = 3,
   format = "html",
   table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"'
@@ -542,9 +540,9 @@ knitr::kable(
 **ANOVA table**
 
 ```{r}
-a_tbl <- broom::tidy(anova(m3))
+a_tbl <- tidy(anova(m3))
 
-knitr::kable(
+kable(
   a_tbl,
   digits = 3,
   format = "html",
