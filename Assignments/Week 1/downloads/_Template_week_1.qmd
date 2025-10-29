@@ -7,11 +7,28 @@ format:
     toc-depth: 3
     embed-resources: true
 execute:
-  warning: false
-  message: false
   eval: true
   echo: true
+  warning: false
+  message: false
 ---
+
+
+```{r}
+#| label: inizialization 
+#| include: false
+
+# Use pacman to load the required R packages (feel free to add packages where needed)
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans)
+
+# Load the dataset
+# Ensure your working directory is set correctly so that R can locate the data file.
+# You can set the working directory with setwd("path/to/your/directory") if needed,
+# or use the RStudio Session > Set Working Directory > To Source File Location menu.
+data_mobility <- read.csv("data_mobility.csv", colClasses = c(Treatment = "factor"))
+```
 
 # Introduction
 
@@ -20,15 +37,6 @@ execute:
 # Exploratory Data Analysis
 
 *Perform an exploratory data analysis to understand the distribution of mobility improvement across treatment groups.*
-
-```{r}
-#| label: load dataset
-
-# Ensure your working directory is set correctly so that R can locate the data file.
-# You can set the working directory with setwd("path/to/your/directory") if needed,
-# or use the RStudio Session > Set Working Directory > To Source File Location menu.
-data_mobility_2 <- read.csv("data_mobility.csv")
-```
 
 ```{r}
 #| label: exploratory-analysis
@@ -65,7 +73,7 @@ data_mobility_2 <- read.csv("data_mobility.csv")
 ```{r}
 #| label: post-hoc
 
-# Code for post-hoc analysis
+# Code for post-hoc analysis (if needed)
 ```
 
 # Model Diagnostics
