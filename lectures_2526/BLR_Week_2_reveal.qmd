@@ -1,6 +1,6 @@
 ---
 title: "Beyond MLR - Week 2: Experimental Design II"
-subtitle: "Two way ANOVA with interactions"
+subtitle: "Two-way factorial ANOVA and crossed random effects"
 author: "Dr. Douwe Postmus"
 format:
   revealjs:
@@ -32,19 +32,217 @@ if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom, broom.mixed)
 ```
 
-## Some tips working with R and Quarto
-
-TODO: copy-paste some content from last year's lecture
-
 ## Today's lecture
 
-- Part 1: Experiments with two experimental factors
-  - Additive versus full factorial models 
-  - Simple effects analysis
-- Part 2: Replicated randomized block designs
-- Part 3: Models with crossed random effects  
+- Designs with two experimental factors
+- Replicated randomized block designs
+- Models with crossed random effects  
   
-# Part 1: Experiments with two experimental factors
+# Part 1: Designs with two experimental factors
+
+## Example: exercise intensity and diet type
+
+```{r}
+set.seed(451)
+Exercise <- factor(rep(c("Low", "Moderate", "High"), each = 20), levels=c("Low", "Moderate", "High"))
+Diet <- factor(rep(rep(c("Standard", "High-protein"), each = 10), 3), levels = c("Standard", "High-protein"))
+# Simulate additive (no interaction) pattern with negative means
+mu <- expand.grid(Exercise = levels(Exercise), Diet = levels(Diet))
+mu$mean <- rnorm(6, mean=2*c(-1.5, -2.0, -2.8, -3.3, -4.0, -4.5), sd=0.4)
+y <- rnorm(60, mean = rep(mu$mean, each = 10), sd = 1)
+df_weight <- data.frame(Exercise, Diet, DeltaWeight = y)
+```
+
+- Research question:
+  - Does the combination of exercise intensity and diet type influence weight loss after 24 weeks?
+- Study design:
+  - 60 participants randomized evenly across six treatment combinations  
+  - Factor A: exercise intensity (low, moderate, high)  
+  - Factor B: diet type (standard, high-protein)  
+  - Outcome: change in body weight from baseline to week 24 (kg)
+    - Negative values indicate a reduction in weight
+
+## Exploratory data analysis
+
+```{r}
+ggplot(df_weight, aes(x = Exercise, y = DeltaWeight, color = Diet, group = Diet)) +
+  stat_summary(fun = mean, geom = "point", size = 3) +
+  stat_summary(fun = mean, geom = "line") +
+  ylab("Mean change in body weight (kg)") +  
+  theme_minimal()
+```
+
+## Statistical model specification
+
+To compare the mean change in body weight across exercise intensity and diet type we use the two-way factorial ANOVA model:
+
+$$
+Y_{ijk} = \mu + \alpha_i + \beta_j + (\alpha\beta)_{ij} + \varepsilon_{ijk}
+$$
+
+- Model components
+  - $Y_{ijk}$: change in body weight for subject $k$ in exercise level $i$ and diet level $j$
+  - $\mu$: grand mean across all groups
+  - $\alpha_i$: deviation for exercise level $i$ with $\sum_i \alpha_i = 0$
+  - $\beta_j$: deviation for diet level $j$ with $\sum_j \beta_j = 0$
+  - $(\alpha\beta)_{ij}$: interaction between exercise and diet with $\sum_i (\alpha\beta)_{ij} = \sum_j (\alpha\beta)_{ij} = 0$
+  - $\varepsilon_{ijk}$: residual error
+- Statistical assumptions
+  - $\varepsilon_{ijk} \sim \mathcal{N}(0,\sigma^2)$: errors are independent and identically normally distributed
+  
+## Group means in a two-way factorial ANOVA
+
+- Each group mean can be expressed as a combination of the grand mean, main effects, and interaction effect:
+
+| Exercise × Diet | Standard diet | High-protein diet | Row mean |
+|------------------|----------------|------------------|-----------|
+| Low | $\mu + \alpha_1 + \beta_1 + (\alpha\beta)_{11}$ | $\mu + \alpha_1 + \beta_2 + (\alpha\beta)_{12}$ | $\mu + \alpha_1$ |
+| Moderate | $\mu + \alpha_2 + \beta_1 + (\alpha\beta)_{21}$ | $\mu + \alpha_2 + \beta_2 + (\alpha\beta)_{22}$ | $\mu + \alpha_2$ |
+| High | $\mu + \alpha_3 + \beta_1 + (\alpha\beta)_{31}$ | $\mu + \alpha_3 + \beta_2 + (\alpha\beta)_{32}$ | $\mu + \alpha_3$ |
+| Column mean | $\mu + \beta_1$ | $\mu + \beta_2$ | **Grand mean** = $\mu$ |
+
+```{=html}
+<div style="margin-top:1.0em;"></div>
+```
+
+- The sum-to-zero constraints $\sum_i \alpha_i = 0$, $\sum_j \beta_j = 0$, $\sum_i (\alpha\beta)_{ij} = \sum_j (\alpha\beta)_{ij} = 0$ ensure that
+  - $\mu$ equals the overall mean across all six cells  
+  - The row and column deviations average to zero  
+  - The interaction terms represent deviations from additivity
+
+## Decision recipe for two-way factorial ANOVA
+
+1. Fit the two-way factorial ANOVA using linear regression
+2. Test the interaction effect
+    - If the interaction effect is significant
+      - Estimate and test simple effects using conditional means for one factor within each level of the other factor
+      - Use Bonferroni adjustment for any pairwise contrasts within levels
+    - If the interaction effect is not significant
+      - Estimate and test main effects using marginal means for each factor averaged over the other
+      - For any factor with a significant main effect and more than two levels, perform Bonferroni-adjusted pairwise comparisons
+
+## ANOVA table and global hypothesis tests
+
+```{r}
+#| echo: false
+options(contrasts = c("contr.sum", "contr.poly"))  # Effects coding
+fit <- lm(DeltaWeight ~ Exercise * Diet, data = df_weight)
+```
+:::: {.columns}
+
+::: {.column width="50%"}
+
+**Global hypotheses**
+
+- No interaction $H_0\!:\,(\alpha\beta)_{ij}=0$ for all $i,j$
+- No main effect of exercise $H_0\!:\,\alpha_i=0$ for all $i$
+- No main effect of diet $H_0\!:\,\beta_j=0$ for all $j$
+
+:::
+
+::: {.column width="50%"}
+
+**ANOVA table**
+```{r}
+#| echo: false
+kable(
+  tidy(anova(fit)),
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
+)
+```
+:::
+
+::::
+
+```{=html}
+<div style="margin-top:1.0em;"></div>
+```
+
+- The interaction effect is not significant (p = 0.116), so we proceed with interpreting the main effects
+- The main effect of exercise is significant, indicating differences among the marginal means across low, moderate, and high exercise levels; pairwise comparisons identify which levels differ
+- The main effect of diet is also significant; this factor has two levels so pairwise comparisons are not needed
+
+## Analysis of the main effects
+
+**Estimated marginal means**
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+```{r}
+emm_ex  <- emmeans(fit, ~ Exercise)
+kable(data.frame(emm_ex),
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
+)
+```
+
+:::
+
+::: {.column width="50%"}
+
+```{r}
+emm_diet <- emmeans(fit, ~ Diet)
+kable(data.frame(emm_diet),
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
+)
+```
+
+:::
+
+::::
+
+```{=html}
+<div style="margin-top:2.0em;"></div>
+```
+
+**Pairwise comparisions (with Bonferroni adjusted p-values)**
+
+```{r}
+pairs_ex <- pairs(emm_ex, adjust = "bonferroni")
+kable(
+  broom::tidy(pairs_ex),
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
+)
+```
+
+## Reporting the results
+
+A two-way factorial ANOVA showed no significant interaction between exercise intensity and diet type, F(2, 54) = 2.21, p = 0. 116. There were significant main effects of both exercise intensity and diet type on the change in body weight. For exercise intensity, the estimated marginal means (95% CI) were −8.40 (−8.84, −7.96) kg for high intensity exercise, −5.51 (−5.95, −5.06) kg for moderate intensity exercise, and −3.35 (−3.79, −2.90) kg for low intensity exercise. Bonferroni-adjusted pairwise comparisons indicated that all exercise levels differed significantly from one another (p < 0.001 for all comparisons). For diet type, the estimated marginal means (95% CI) were −6.54 (−6.90, −6.17) kg for the high-protein diet and −4.97 (−5.33, −4.60) kg for the standard diet.  
+
+Together, these results indicate that greater exercise intensity and a high-protein diet are each associated with larger average reductions in body weight, and their effects appear additive rather than interactive.
+
+## Model diagnostics
+
+- To assess the adequacy of the fitted model, we create the following two diagnostic plots:
+  - **Normal Q-Q Plot**: to assess normality of the errors
+  - **Residuals vs Fitted Plot**: to assess homoscedasticity (constant variance) for the errors
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{r}
+# Normal Q-Q
+plot(fit, which = 2, main = "Normal Q-Q")
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+# Residuals vs Fitted
+plot(fit, which = 1, main = "Residuals vs Fitted")
+```
+:::
+
+::::
 
 # Part 2: Replicated randomized block designs
 
@@ -57,7 +255,7 @@ TODO: copy-paste some content from last year's lecture
   - Interaction effects can only be estimated when there are at least two replications of each treatment within blocks
 - Replicated randomized block design: 
   - Extends the randomized block design by adding replicates within each block
-  - This allows treatment–block interactions to be modeled explicitly, reducing residual error and improving precision 
+  - This allows treatment–block interactions to be modeled explicitly, improving precision by further reducing residual error
 
 ## Lab 3: replicated randomized block designs
 
