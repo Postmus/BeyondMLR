@@ -452,7 +452,8 @@ $$
 
 - Both models statistically adjust for the effect of cage, separating it from the residual variance ($\sigma^2_\varepsilon$) 
 - In balanced designs, both yield identical estimates and inference for the treatment effect
-- In unbalanced designs, the random-effects model gives more reliable treatment estimates because it shares information across cages and is less affected by small or uneven group sizes
+- In unbalanced designs or when interaction terms are included, the random-effects model provides more robust treatment estimates because it borrows strength across cages and is less sensitive to uneven group sizes
+- For these reasons, random effects are generally preferred when the context variable (e.g., cage, laboratory, center) represents a random sample from a larger population of possible contexts
 
 ## Results
 

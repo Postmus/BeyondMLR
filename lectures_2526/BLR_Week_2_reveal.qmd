@@ -110,16 +110,16 @@ $$
   - The row and column deviations average to zero  
   - The interaction terms represent deviations from additivity
 
-## Decision recipe for two-way factorial ANOVA
+## 'Recipe' for two-way factorial ANOVA
 
-1. Fit the two-way factorial ANOVA using linear regression
+1. Fit the two-way factorial ANOVA (using the `lm()` function in R)
 2. Test the interaction effect
     - If the interaction effect is significant
-      - Estimate and test simple effects using conditional means for one factor within each level of the other factor
-      - Use Bonferroni adjustment for any pairwise contrasts within levels
+      - Examine **simple effects**: the effect of one factor within each level of the other factor
+      - Estimate and test conditional means, applying a Bonferroni adjustment for pairwise contrasts within levels
     - If the interaction effect is not significant
-      - Estimate and test main effects using marginal means for each factor averaged over the other
-      - For any factor with a significant main effect and more than two levels, perform Bonferroni-adjusted pairwise comparisons
+      - Examine **main effects**: the average effect of each factor across all levels of the other factor
+      - Estimate and test marginal means, and for any significant factor with more than two levels, perform Bonferroni-adjusted pairwise comparisons
 
 ## ANOVA table and global hypothesis tests
 
@@ -161,10 +161,12 @@ kable(
 ```
 
 - The interaction effect is not significant (p = 0.116), so we proceed with interpreting the main effects
-- The main effect of exercise is significant, indicating differences among the marginal means across low, moderate, and high exercise levels; pairwise comparisons identify which levels differ
-- The main effect of diet is also significant; this factor has two levels so pairwise comparisons are not needed
+- The main effect of exercise is significant, indicating differences among the marginal means (row means) across low, moderate, and high exercise levels
+  - Pairwise comparisons identify which excercise levels differ
+- The main effect of diet is also significant, indicating a difference between the marginal means (column means) of standard and high-protein diet
+  - Because this factor has only two levels, pairwise comparisons are not needed
 
-## Analysis of the main effects
+## Analysis of the estimated marginal means
 
 **Estimated marginal means**
 
@@ -214,15 +216,14 @@ kable(
 )
 ```
 
-## Reporting the results
+## Results reporting example
 
 A two-way factorial ANOVA showed no significant interaction between exercise intensity and diet type, F(2, 54) = 2.21, p = 0. 116. There were significant main effects of both exercise intensity and diet type on the change in body weight. For exercise intensity, the estimated marginal means (95% CI) were −8.40 (−8.84, −7.96) kg for high intensity exercise, −5.51 (−5.95, −5.06) kg for moderate intensity exercise, and −3.35 (−3.79, −2.90) kg for low intensity exercise. Bonferroni-adjusted pairwise comparisons indicated that all exercise levels differed significantly from one another (p < 0.001 for all comparisons). For diet type, the estimated marginal means (95% CI) were −6.54 (−6.90, −6.17) kg for the high-protein diet and −4.97 (−5.33, −4.60) kg for the standard diet.  
 
-Together, these results indicate that greater exercise intensity and a high-protein diet are each associated with larger average reductions in body weight, and their effects appear additive rather than interactive.
 
 ## Model diagnostics
 
-- To assess the adequacy of the fitted model, we create the following two diagnostic plots:
+- To assess the adequacy of the fitted model, we again create the following two diagnostic plots:
   - **Normal Q-Q Plot**: to assess normality of the errors
   - **Residuals vs Fitted Plot**: to assess homoscedasticity (constant variance) for the errors
 
@@ -248,14 +249,15 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 ## Interactions between fixed and random effects
 
-- Two-Way ANOVA example:
-  - Analyzed the interaction between two fixed effects (composite type and curing time)
-- Last week's randomized block design example:
-  - Included the main effect of treatment (fixed effect) and the main effect of cage (random effect) but did not include an interaction effect
-  - Interaction effects can only be estimated when there are at least two replications of each treatment within blocks
+- Two-way factorial ANOVA (previous examples):
+  - Explored the interaction between two fixed effects
+  - The interaction itself was of substantive interest, testing whether the effect of one factor depends on the level of the other
+- Randomized block design (last week):
+  - Included a fixed treatment effect and a random cage effect
+  - The random effect accounts for block-to-block variability, which is not of substantive interest
 - Replicated randomized block design: 
-  - Extends the randomized block design by adding replicates within each block
-  - This allows treatment–block interactions to be modeled explicitly, improving precision by further reducing residual error
+  - Extends the basic design by adding replicates within each block, allowing estimation of a treatment–block (fixed–random) interaction
+  - Including it makes the model more robust by acknowledging block-level heterogeneity, though this typically leads to more conservative inference for the treatment effect
 
 ## Lab 3: replicated randomized block designs
 
