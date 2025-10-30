@@ -72,7 +72,7 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom,
 
 # Part 1: Experiments with a single experimental factor
 
-## Case study — weight loss interventions
+## Example: weight loss interventions
 
 - Design: 120 adults with obesity are randomly assigned to one of three intervention groups (n = 40 each): control (no treatment), lifestyle modification, or pharmacological treatment
 - Response (outcome): change in body weight (kg) from baseline to week 12 (negative values indicate weight loss)
@@ -292,26 +292,17 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 # Part 2: Experiments with an experimental and a blocking factor
 
-## Context variables
+## Randomized block designs
 
-- Context variables are factors that define shared conditions under which observations are made but are not of primary interest
+- Context variables are factors that define shared conditions under which observations are made but that are not of primary interest
   - Examples: study center, laboratory batch, or litter
 - If ignored, such factors can:
   - Reduce power to detect the treatment effect of interest
   - Obscure or bias treatment comparisons if unevenly distributed across groups
-
-## Randomized block designs
-
-- Design stage
+- In a randomized block design:
   - Experimental units are grouped into blocks defined by levels of a context variable
   - Treatments are randomized within each block, ensuring that comparisons are made under similar conditions and bias is avoided
-- Analysis stage
-  - The context variable is included as second factor in the model:  
-  
-  $$Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}$$
 
-  - This additive model separates block effects ($\beta_j$) from residual error ($\varepsilon_{ijk}$), reducing unexplained variability and increasing the precision of treatment estimates
-  - The resulting statistical model is known as a **two-way additive ANOVA**
  
 ## Example: lab animal experiment
 
@@ -339,7 +330,7 @@ contrasts(data$Treatment) <- contr.sum(3)
 contrasts(data$Cage) <- contr.sum(8)
 ```
 
-- Objective: test the potential toxic effects of an experimental drug X by assessing changes in body weight in rats
+- Objective: test the toxic effects of an experimental drug X by assessing changes in body weight in rats
 - Study design:
   - Animals: 24 Sprague-Dawley rats
   - Groups:
@@ -362,7 +353,7 @@ ggplot(data, aes(x = Weight_Change, y = factor(Cage), color = Treatment)) +
   theme(legend.position = "bottom")
 ```
 
-## One-way ANOVA ignoring cage
+## Model 1: one-way ANOVA ignoring cage
 
 ```{r}
 m1 <- lm(Weight_Change ~ Treatment, data = data)
@@ -423,65 +414,34 @@ kable(tidy(anova(m1)), digits = 3, format = "html", table.attr = 'style="font-si
     - Inference generalizes to the population of possible cages
     - Example: “How much do rat weights differ between cages on average?”
 
-
-## Statistical model specification
+## Model 2: two-way additive ANOVA
 
 :::: {.columns}
 
 ::: {.column width="50%"}
 
-**Fixed-effects specification**
+**Cage as fixed effect**
 
 $$
 Y_{ijk} = \mu + \tau_i + \beta_j + \varepsilon_{ijk}
 $$
 
-- Adds one separate parameter for each cage
-- The model becomes more complex as more cages are added
-- No estimate of how much cages differ on average
+- $\beta_j$: fixed parameter describing how cage $j$ differs from the overall mean
+- Adjusts for each cage separately; model complexity increases with the number of cages
 
 :::
 
 ::: {.column width="50%"}
 
-**Random-effects specification**
+**Cage as random effect**
 
 $$
 Y_{ijk} = \mu + \tau_i + b_j + \varepsilon_{ijk}, \quad b_j \sim N(0, \sigma_b^2)
 $$
 
-- $b_j$: random intercept describing how cage $j$ differs from the overall mean
-- Estimates the average variability between cages ($\sigma_b^2$)
-- Inference focuses on overall treatment effects while accounting for cage-to-cage variability
+- $b_j$: random intercept capturing cage-to-cage variation around the overall mean
+- Estimates the average variability between cages ($\sigma_b^2$), not each cage’s deviation from the overall mean separately
 
-:::
-
-::::
-
-## Modeling cage as fixed effect
-
-```{r}
-m2 <- lm(Weight_Change ~ Treatment + Cage, data = data)
-```
-
-:::: {.columns}
-
-::: {.column width="50%"}
-
-**Estimated regression coefficients**
-
-```{r}
-kable(tidy(m2)[, c("term","estimate","std.error","p.value")], digits = 3, caption = NULL, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
-```
-:::
-
-::: {.column width="50%"}
-
-**ANOVA table**
-
-```{r}
-kable(tidy(anova(m2)), digits = 3, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
-```
 :::
 
 ::::
@@ -490,18 +450,47 @@ kable(tidy(anova(m2)), digits = 3, format = "html", table.attr = 'style="font-si
 <div style="margin-top:1.5em;"></div>
 ```
 
-- Adjusts for the eight cages as specific environments
-- Inference applies only to these cages
+- Both models statistically adjust for the effect of cage, separating it from the residual variance ($\sigma^2_\varepsilon$) 
+- In balanced designs, both yield identical estimates and inference for the treatment effect
+- In unbalanced designs, the random-effects model gives more reliable treatment estimates because it shares information across cages and is less affected by small or uneven group sizes
 
-## Modeling cage as random effect
+## Results
+
+:::: {.columns style="font-size:90%"}
+
+::: {.column width="50%"}
+
+### Cage as fixed effect
+
+```{r}
+m2 <- lm(Weight_Change ~ Treatment + Cage, data = data)
+```
+
+**Estimated regression coefficients**
+
+```{r}
+kable(tidy(m2)[, c("term","estimate","std.error","p.value")], digits = 3, caption = NULL, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
+```
+
+```{=html}
+<div style="margin-top: 0.75em;"></div>
+```
+
+**ANOVA table**
+
+```{r}
+kable(tidy(anova(m2)), digits = 3, format = "html", table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"')
+```
+
+:::
+
+::: {.column width="50%"}
+
+### Cage as random effect
 
 ```{r}
 m3 <- lmer(Weight_Change ~ Treatment + (1 | Cage), data = data)
 ```
-
-:::: {.columns}
-
-::: {.column width="50%"}
 
 **Estimated fixed effects**
 
@@ -533,9 +522,10 @@ kable(
   table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"'
 )
 ```
-:::
 
-::: {.column width="50%"}
+```{=html}
+<div style="margin-top: 0.75em;"></div>
+```
 
 **ANOVA table**
 
@@ -554,27 +544,23 @@ kable(
 
 ::::
 
-```{=html}
-<div style="margin-top:1.5em;"></div>
-```
-
-- Treats cage as a random effect sampled from a population of possible cages
-- Estimates treatment effects and between cage variance and generalizes beyond these cages
-
 ## Understanding variance components
 
-- In the one-way ANOVA that ignored cage, all unexplained variation was captured by a single residual error term → this error combined both *between-cage* and *within-cage* differences
+- In the one-way ANOVA that ignored cage, all unexplained variation was captured by a single residual error term ($\sigma^2_{\text{total}}$)
+- In the two-way ANOVA with cage as a random effect, that unexplained variability is partitioned into:
+  1. Between-cage variance ($\sigma^2_{\text{cage}}$): differences in average weight change between cages
+  2. Within-cage (residual) variance ($\sigma^2_{\text{residual}}$): differences among rats within the same cage after accounting for treatment and cage effects
+- Together, these components satisfy: $\sigma^2_{\text{total}} = \sigma^2_{\text{cage}} + \sigma^2_{\text{residual}}$
 
-- In the two-way ANOVA with cage as a random effect, that residual variability is *partitioned* into two parts:
-  1. Between-cage variance: how much average weight change differs between cages
-  2. Within-cage (residual) variance: how much rats differ within the same cage after accounting for both treatment and cage effects
+<div style="position: relative; left: -10%; width: 60%; text-align: left; margin-top: 0; margin-bottom: 0;">
 
 | component | variance | sd |
 |------------|-----------|----|
 | Cage | 3.507 | 1.873 |
 | Residual | 3.124 | 1.768 |
+| Total | 6.632 | 2.575 |
 
-- Together, these are the **variance components**: they describe how the total unexplained variability from the simpler model is partitioned into variation **between** and **within** cage
+</div>
 
 ## Intra-class correlation (ICC)
 
