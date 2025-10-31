@@ -29,7 +29,7 @@ execute:
 #| include: false
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
-pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom, broom.mixed)
+pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.mixed)
 ```
 
 ## Today's lecture

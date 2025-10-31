@@ -1,5 +1,5 @@
 ---
-title: "Beyond MLR Lab 4: Replicated Randomized Block Designs"
+title: "Beyond MLR Lab 3: Replicated Randomized Block Designs"
 format: 
   html:
     toc: true       # Enable the table of contents
@@ -14,24 +14,24 @@ execute:
   eval: false    
 ---
 
-
-Welcome to lab 3 of the Beyond MLR course. In this lab, we will use the R packages `ggplot2`, `dplyr`, `emmeans`, `lmerTest`, and `broom.mixed` You can use the script below to automatically install and load them using the `pacman` package.
+::: {.callout-note icon=false title="Preliminary setup"}
+In this lab, we will use the R packages `ggplot2`, `dplyr`, `emmeans`, `lmerTest`, and `broom.mixed`. You can use the script below to automatically install and load them using the `pacman` package.
 
 ```{r}
-# Install pacman if not already available
-if (!require("pacman")) install.packages("pacman")
+# Check whether pacman is available and install if needed
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 
 # Use pacman to install (if needed) and load the required packages
 pacman::p_load(dplyr, ggplot2, emmeans, lmerTest, broom.mixed)
 ```
+:::
 
-In the previous lab, we considered a traditional randomized block design without replication, where each treatment was applied once within each block (laboratory). This design allowed us to control for variability between laboratories and efficiently estimate the **main effects** of the treatments. However, a key limitation of this approach is that it does not allow us to assess whether the treatment effects vary across blocks, a concept known as **interaction**.
-
-The lack of replication in the traditional design means we can only test for main effects of the treatments and laboratories, but not whether the effectiveness of a treatment depends on the specific laboratory conditions. For example, a treatment might work well in one laboratory but not in another due to environmental differences (e.g., humidity or temperature), indicating a **treatment-by-laboratory interaction**.
+In the previous lab, we considered a traditional randomized block design without replication, where each treatment was applied once within each block (laboratory). This design allowed us to control for variability between laboratories and efficiently estimate the effect of treatment. However, a key limitation of this approach is that it does not allow us to assess the extent to which the effect of treatment varies across blocks, a concept known as **interaction**.
 
 An interaction occurs when the effect of one factor (e.g., treatment) is not consistent across levels of another factor (e.g., laboratory). In other words, the effect of a treatment might vary depending on the laboratory conditions. Replicating the treatments within each block allows us to estimate these interaction effects and better understand the variability in treatment outcomes across different settings.
 
-In this lab, we introduce replication within blocks, allowing us to estimate the variability within treatment-block combinations and assess whether treatment effects are consistent across blocks.
+In this lab, we extend the randomized block design by adding replication within blocks, so we can estimate the variability within each block and assess the extent to which treatment effects vary across blocks.
 
 # Example: Testing Wound Healing Treatments with Replication and Treatment-by-Block Interactions
 
