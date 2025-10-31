@@ -11,17 +11,22 @@ execute:
   warning: false
   message: false
   eval: false
+  echo: true
 ---
 
-Welcome to lab 1 of the Beyond MLR course. In this lab, we will use the R packages `ggplot2`, `dplyr`, and `emmeans`. You can use the script below to automatically install and load them using the `pacman` package.
+
+::: {.callout-note icon=false title="Preliminary setup"}
+In this lab, we will use the R packages `ggplot2`, `dplyr`, and `emmeans`. You can use the script below to automatically install and load them using the `pacman` package.
 
 ```{r}
-# Install pacman if not already available
-if (!require("pacman")) install.packages("pacman")
+# Check whether pacman is available and install if needed
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 
 # Use pacman to install (if needed) and load the required packages
-pacman::p_load(dplyr, ggplot2, emmeans)
+pacman::p_load(dplyr, ggplot2, emmeans, lmerTest)
 ```
+:::
 
 # Example: Effect of Three Different Drug Treatments on Blood Pressure Reduction
 
@@ -94,12 +99,10 @@ where:
 - $Y_{ij}$: The change in SBP for the $j$-th patient in the $i$-th treatment group.
 - $\mu$: The mean change in SBP across all treatment groups.
 - $\tau_i$: The effect of the $i$-th treatment (deviation from the overall mean).
-- $\epsilon_{ij}$: The error term, assumed to be independently and normally distributed with mean zero and constant variance.
+- $\epsilon_{ij}$: The residual error term, assumed to be independent and normally distributed with mean zero and constant variance.
 
-::: {#nte-codings .callout-note title="Coding schemes for categorical variables"}
-In regression models, categorical variables are represented using coding schemes that allow their inclusion as explanatory variables. In R, dummy coding is the default coding scheme for nominal variables, where each level is compared to a reference category. For ordinal variables (i.e., ordered factors), R uses orthogonal polynomials as the default coding scheme, which can capture linear or nonlinear trends across ordered levels.
-
-While dummy coding is widely used in multiple linear regression models, effects coding is more common in ANOVA models as it enables interpretation of group differences relative to the grand mean rather than a single reference category. This interpretative difference makes effects coding particularly useful for examining group-level effects in experimental designs.
+::: {.callout-note title="Coding schemes for categorical variables"}
+In regression models, categorical variables are represented using coding schemes that allow their inclusion as explanatory variables. While dummy coding is widely used in multiple linear regression models, effects coding is more common in ANOVA models as it enables interpretation of group differences relative to the grand mean rather than a single reference category. This interpretative difference makes effects coding particularly useful for examining group-level effects in experimental designs.
 
 To change the coding scheme globally to effects coding:
 ```{r}

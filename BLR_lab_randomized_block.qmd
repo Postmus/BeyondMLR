@@ -11,19 +11,23 @@ execute:
   warning: false
   message: false
   eval: false
+  echo: true
 ---
 
-Welcome to lab 2 of the Beyond MLR course. In this lab, we will use the R packages `ggplot2`, `dplyr`, `emmeans`, and `lmerTest`. You can use the script below to automatically install and load them using the `pacman` package.
+::: {.callout-note icon=false title="Preliminary setup"}
+In this lab, we will use the R packages `ggplot2`, `dplyr`, `emmeans`, and `lmerTest`. You can use the script below to automatically install and load them using the `pacman` package.
 
 ```{r}
-# Install pacman if not already available
-if (!require("pacman")) install.packages("pacman")
+# Check whether pacman is available and install if needed
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 
 # Use pacman to install (if needed) and load the required packages
 pacman::p_load(dplyr, ggplot2, emmeans, lmerTest)
 ```
+:::
 
-# Example: Testing Wound Healing Treatments Across Different Laboratory Facilities
+# Example: Testing Wound Healing Treatments Across Different Laboratory Facilities - Part I
 
 Suppose we are conducting an experiment to compare the effectiveness of three different wound healing treatments (Treatment A, Treatment B, and Treatment C) on cell cultures. The experimental units are the cell culture plates. To account for potential variability in laboratory conditions (such as humidity and temperature), we use a **randomized block design**, with laboratory facility as the blocking factor. Within each laboratory (block), the three treatments are randomly assigned to one cell culture plate each, ensuring that every treatment is represented once within each block. This design helps control for variability between laboratory facilities, allowing us to more effectively isolate the treatment effects.
 
@@ -126,7 +130,7 @@ where:
 - $\mu$: The overall mean response across all treatments and laboratories.
 - $\tau_i$: The fixed effect of treatment $i$, representing the deviation of treatment $i$ from the overall mean $\mu$.
 - $b_j$: The random effect of laboratory $j$, assumed to be normally distributed with mean zero and variance $\sigma_b^2$).
-- $\epsilon_{ij}$: The error term, assumed to be normally distributed with mean zero and variance $\sigma^2$.
+- $\epsilon_{ij}$: The residual error term, assumed to be independent and normally distributed with mean zero and variance $\sigma^2$.
 
 ::: {.callout-note title="Notation convention"}
 In mixed-effects models, fixed effects are typically represented by **Greek letters**, while random effects are represented by **Roman letters**. This helps differentiate between the two types of effects in model specification.

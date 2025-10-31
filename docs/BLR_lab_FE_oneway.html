@@ -241,13 +241,26 @@ window.Quarto = {
 </header>
 
 
-<p>Welcome to lab 1 of the Beyond MLR course. In this lab, we will use the R packages <code>ggplot2</code>, <code>dplyr</code>, and <code>emmeans</code>. You can use the script below to automatically install and load them using the <code>pacman</code> package.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Preliminary setup">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Preliminary setup
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In this lab, we will use the R packages <code>ggplot2</code>, <code>dplyr</code>, and <code>emmeans</code>. You can use the script below to automatically install and load them using the <code>pacman</code> package.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install pacman if not already available</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">require</span>(<span class="st">"pacman"</span>)) <span class="fu">install.packages</span>(<span class="st">"pacman"</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Use pacman to install (if needed) and load the required packages</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(dplyr, ggplot2, emmeans)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check whether pacman is available and install if needed</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">repos =</span> <span class="fu">c</span>(<span class="at">CRAN =</span> <span class="st">"https://cloud.r-project.org"</span>))</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">"pacman"</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) <span class="fu">install.packages</span>(<span class="st">"pacman"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Use pacman to install (if needed) and load the required packages</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(dplyr, ggplot2, emmeans, lmerTest)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
 </div>
 <section id="example-effect-of-three-different-drug-treatments-on-blood-pressure-reduction" class="level1">
 <h1>Example: Effect of Three Different Drug Treatments on Blood Pressure Reduction</h1>
@@ -321,20 +334,19 @@ Y_{ij} = \mu + \tau_i + \epsilon_{ij}
 <li><span class="math inline">\(Y_{ij}\)</span>: The change in SBP for the <span class="math inline">\(j\)</span>-th patient in the <span class="math inline">\(i\)</span>-th treatment group.</li>
 <li><span class="math inline">\(\mu\)</span>: The mean change in SBP across all treatment groups.</li>
 <li><span class="math inline">\(\tau_i\)</span>: The effect of the <span class="math inline">\(i\)</span>-th treatment (deviation from the overall mean).</li>
-<li><span class="math inline">\(\epsilon_{ij}\)</span>: The error term, assumed to be independently and normally distributed with mean zero and constant variance.</li>
+<li><span class="math inline">\(\epsilon_{ij}\)</span>: The residual error term, assumed to be independent and normally distributed with mean zero and constant variance.</li>
 </ul>
-<div id="nte-codings" class="callout callout-style-default callout-note callout-titled" title="Coding schemes for categorical variables">
+<div class="callout callout-style-default callout-note callout-titled" title="Coding schemes for categorical variables">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Note&nbsp;1: Coding schemes for categorical variables
+<span class="screen-reader-only">Note</span>Coding schemes for categorical variables
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>In regression models, categorical variables are represented using coding schemes that allow their inclusion as explanatory variables. In R, dummy coding is the default coding scheme for nominal variables, where each level is compared to a reference category. For ordinal variables (i.e., ordered factors), R uses orthogonal polynomials as the default coding scheme, which can capture linear or nonlinear trends across ordered levels.</p>
-<p>While dummy coding is widely used in multiple linear regression models, effects coding is more common in ANOVA models as it enables interpretation of group differences relative to the grand mean rather than a single reference category. This interpretative difference makes effects coding particularly useful for examining group-level effects in experimental designs.</p>
+<p>In regression models, categorical variables are represented using coding schemes that allow their inclusion as explanatory variables. While dummy coding is widely used in multiple linear regression models, effects coding is more common in ANOVA models as it enables interpretation of group differences relative to the grand mean rather than a single reference category. This interpretative difference makes effects coding particularly useful for examining group-level effects in experimental designs.</p>
 <p>To change the coding scheme globally to effects coding:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set contrasts to effects coding globally</span></span>

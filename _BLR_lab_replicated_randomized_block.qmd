@@ -2,16 +2,17 @@
 title: "Beyond MLR Lab 3: Replicated Randomized Block Designs"
 format: 
   html:
-    toc: true       # Enable the table of contents
-    toc-depth: 3    # Set the depth of headers included in the ToC (e.g., H1, H2, H3)
-    toc-location: right   # Optional: Can be left, right, or floating    
+    toc: true
+    toc-depth: 3
+    toc-location: right    
     embed-resources: true
   pdf:
     toc: false
 execute:
   warning: false
   message: false
-  eval: false    
+  eval: false
+  echo: true    
 ---
 
 ::: {.callout-note icon=false title="Preliminary setup"}
@@ -33,7 +34,7 @@ An interaction occurs when the effect of one factor (e.g., treatment) is not con
 
 In this lab, we extend the randomized block design by adding replication within blocks, so we can estimate the variability within each block and assess the extent to which treatment effects vary across blocks.
 
-# Example: Testing Wound Healing Treatments with Replication and Treatment-by-Block Interactions
+# Example: Testing Wound Healing Treatments Across Different Laboratory Facilities - part II
 
 To allow for replication and potential interaction between treatments and laboratories, we update the simulation code from the previous lab and run it to create an updated dataset: 
 
@@ -81,8 +82,8 @@ To explore the data and investigate the presence of a potential interaction betw
 
 ```{r}
 # Calculate mean Wound Healing for each Treatment-Laboratory combination
-mean_data <- data_rep_block %>%
-  group_by(Laboratory, Treatment) %>%
+mean_data <- data_rep_block |>
+  group_by(Laboratory, Treatment) |>
   summarise(Mean_WoundHealing = mean(WoundHealing))
 
 # Display the produced summary table with the group means
@@ -135,7 +136,7 @@ where:
 - $\tau_{i}$: Fixed effect of Treatment $i$.
 - $b_{j}$:Random effect of Laboratory $j$, assumed to follow a normal distribution with mean zero and variance $\sigma^2_{b}$.
 - $(tb)_{ij}$: Random interaction effect between treatment $i$ and Laboratory $j$, assumed to follow a normal distribution with mean zero and variance $\sigma^2_{tb}$.
-- $\epsilon_{ijk}$: Random error term, assumed to follow a normal distribution with mean zero and variance $\sigma^2$.
+- $\epsilon_{ijk}$: Residual error term, assumed to follow a normal distribution with mean zero and variance $\sigma^2$.
 
 ### Model Estimation
 
@@ -144,7 +145,8 @@ Similar as in the previous lab, we fit the mixed effects model using the `lmer()
 ```{r}
 options(contrasts = c("contr.sum", "contr.poly"))  # Effects coding
 
-model_block <- lmer(WoundHealing ~ Treatment + (1 | Laboratory) + (1 | Treatment:Laboratory), data = data_rep_block)
+model_block <- lmer(WoundHealing ~ Treatment + (1 | Laboratory) + 
+  (1 | Treatment:Laboratory), data = data_rep_block)
 summary(model_block)
 ```
 
@@ -215,11 +217,11 @@ The fixed effect of wound healing treatment can be assessed by examining the ANO
 anova(model_block)
 ```
 
-::: {.callout-question icon=false title="Question"}
+::: {.callout-important icon=false title="Question"}
 Inspect the ANOVA table and report whether the overall treatment effect is statistically significant.
 :::
 
-::: {.callout-question icon=false title="Exercise"}
+::: {.callout-important icon=false title="Exercise"}
 Use the `emmeans` package to perform pairwise comparisons between treatments and explore which pairs differ.
 :::
 
@@ -242,7 +244,7 @@ summary(model_block)
 anova(model_block)
 ```
 
-::: {.callout-question icon=false title="Question"}
+::: {.callout-important icon=false title="Question"}
 Inspect the model summaries and ANOVA tables for both models. What do you obverve?
 :::
 
@@ -257,4 +259,4 @@ Inspect the model summaries and ANOVA tables for both models. What do you obverv
   - The model therefore recognizes treatment-by-lab heterogeneity and treats it as an additional source of uncertainty
   - As a result, the p-value for the overall treatment effect becomes slightly larger because part of the between-treatment variation is now explained by random treatment-by-lab differences rather than by the fixed treatment effect itself
 
-In short, the mean treatment effect reflects the average across all laboratories, but when an interaction is included and only few labs are available, that average is more uncertain because we have limited information about between-lab differences. In this example, the difference in p-values from both models is very minor because the interaction ICC is low (0.167), indicating that only a small proportion of the total variance is due to treatment-by-lab heterogeneity. In situations where the interaction ICC is larger, the treatment effects will appear less certain, with larger standard errors and higher p-values, because a greater share of the total variation is attributed to differences in treatment performance across laboratories.
+In short, the main effect of treatment reflects the average across all laboratories, but when an interaction is included and only few labs are available, that average is more uncertain because we have limited information about between-lab differences. In this example, the difference in p-values from both models is very minor because the interaction ICC is low (0.167), indicating that only a small proportion of the total variance is due to treatment-by-lab heterogeneity. In situations where the interaction ICC is larger, the treatment effects will appear less certain, with larger standard errors and higher p-values, because a greater share of the total variation is attributed to differences in treatment performance across laboratories.

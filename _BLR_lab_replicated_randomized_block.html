@@ -2346,7 +2346,7 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#example-testing-wound-healing-treatments-with-replication-and-treatment-by-block-interactions" id="toc-example-testing-wound-healing-treatments-with-replication-and-treatment-by-block-interactions" class="nav-link active" data-scroll-target="#example-testing-wound-healing-treatments-with-replication-and-treatment-by-block-interactions">Example: Testing Wound Healing Treatments with Replication and Treatment-by-Block Interactions</a>
+  <li><a href="#example-testing-wound-healing-treatments-across-different-laboratory-facilities---part-ii" id="toc-example-testing-wound-healing-treatments-across-different-laboratory-facilities---part-ii" class="nav-link active" data-scroll-target="#example-testing-wound-healing-treatments-across-different-laboratory-facilities---part-ii">Example: Testing Wound Healing Treatments Across Different Laboratory Facilities - part II</a>
   <ul class="collapse">
   <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis">Exploratory Data Analysis</a></li>
   <li><a href="#a-mixed-effects-model-for-the-randomized-block-design" id="toc-a-mixed-effects-model-for-the-randomized-block-design" class="nav-link" data-scroll-target="#a-mixed-effects-model-for-the-randomized-block-design">A Mixed Effects Model for the Randomized Block Design</a>
@@ -2407,8 +2407,8 @@ window.Quarto = {
 <p>In the previous lab, we considered a traditional randomized block design without replication, where each treatment was applied once within each block (laboratory). This design allowed us to control for variability between laboratories and efficiently estimate the effect of treatment. However, a key limitation of this approach is that it does not allow us to assess the extent to which the effect of treatment varies across blocks, a concept known as <strong>interaction</strong>.</p>
 <p>An interaction occurs when the effect of one factor (e.g., treatment) is not consistent across levels of another factor (e.g., laboratory). In other words, the effect of a treatment might vary depending on the laboratory conditions. Replicating the treatments within each block allows us to estimate these interaction effects and better understand the variability in treatment outcomes across different settings.</p>
 <p>In this lab, we extend the randomized block design by adding replication within blocks, so we can estimate the variability within each block and assess the extent to which treatment effects vary across blocks.</p>
-<section id="example-testing-wound-healing-treatments-with-replication-and-treatment-by-block-interactions" class="level1">
-<h1>Example: Testing Wound Healing Treatments with Replication and Treatment-by-Block Interactions</h1>
+<section id="example-testing-wound-healing-treatments-across-different-laboratory-facilities---part-ii" class="level1">
+<h1>Example: Testing Wound Healing Treatments Across Different Laboratory Facilities - part II</h1>
 <p>To allow for replication and potential interaction between treatments and laboratories, we update the simulation code from the previous lab and run it to create an updated dataset:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set seed for reproducibility</span></span>
@@ -2452,8 +2452,8 @@ window.Quarto = {
 <p>To explore the data and investigate the presence of a potential interaction between treatments and laboratories, we create an <strong>interaction plot</strong>. An interaction plot is a graphical tool that helps visualize whether the effect of one factor (in this case, treatment) depends on the levels of another factor (in this case, laboratory). Specifically, it shows how the mean response (wound healing) for each treatment varies across different laboratories. If the lines on the interaction plot are parallel, this suggests there is no interaction, meaning the treatment effect is consistent across laboratories. If the lines are not parallel, this indicates a potential interaction, meaning the effect of treatment differs depending on the laboratory.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate mean Wound Healing for each Treatment-Laboratory combination</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>mean_data <span class="ot">&lt;-</span> data_rep_block <span class="sc">%&gt;%</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Laboratory, Treatment) <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>mean_data <span class="ot">&lt;-</span> data_rep_block <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Laboratory, Treatment) <span class="sc">|&gt;</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Mean_WoundHealing =</span> <span class="fu">mean</span>(WoundHealing))</span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the produced summary table with the group means</span></span>
@@ -2536,8 +2536,9 @@ Y_{ijk} = \mu + \tau_i + b_j + (tb)_{ij} + \epsilon_{ijk}
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">contrasts =</span> <span class="fu">c</span>(<span class="st">&quot;contr.sum&quot;</span>, <span class="st">&quot;contr.poly&quot;</span>))  <span class="co"># Effects coding</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>model_block <span class="ot">&lt;-</span> <span class="fu">lmer</span>(WoundHealing <span class="sc">~</span> Treatment <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> Laboratory) <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> Treatment<span class="sc">:</span>Laboratory), <span class="at">data =</span> data_rep_block)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_block)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>model_block <span class="ot">&lt;-</span> <span class="fu">lmer</span>(WoundHealing <span class="sc">~</span> Treatment <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> Laboratory) <span class="sc">+</span> </span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span> <span class="sc">|</span> Treatment<span class="sc">:</span>Laboratory), <span class="at">data =</span> data_rep_block)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_block)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s break down the model formula <code>WoundHealing ~ Treatment + (1 | Laboratory) + (1 | Treatment:Laboratory)</code>:</p>
 <ul>
@@ -2606,11 +2607,31 @@ Y_{ijk} = \mu + \tau_i + b_j + (tb)_{ij} + \epsilon_{ijk}
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the ANOVA table</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model_block)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="callout-question" data-icon="false" title="Question">
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <p>Inspect the ANOVA table and report whether the overall treatment effect is statistically significant.</p>
 </div>
-<div class="callout-question" data-icon="false" title="Exercise">
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Exercise">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <p>Use the <code>emmeans</code> package to perform pairwise comparisons between treatments and explore which pairs differ.</p>
+</div>
 </div>
 </section>
 <section id="model-diagnostics" class="level3">
@@ -2631,8 +2652,18 @@ Y_{ijk} = \mu + \tau_i + b_j + (tb)_{ij} + \epsilon_{ijk}
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_block)</span>
 <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model_block)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="callout-question" data-icon="false" title="Question">
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <p>Inspect the model summaries and ANOVA tables for both models. What do you obverve?</p>
+</div>
 </div>
 <section id="explanation" class="level4">
 <h4 class="anchored" data-anchor-id="explanation">Explanation</h4>
@@ -2650,7 +2681,7 @@ Y_{ijk} = \mu + \tau_i + b_j + (tb)_{ij} + \epsilon_{ijk}
 <li>As a result, the p-value for the overall treatment effect becomes slightly larger because part of the between-treatment variation is now explained by random treatment-by-lab differences rather than by the fixed treatment effect itself</li>
 </ul></li>
 </ul>
-<p>In short, the mean treatment effect reflects the average across all laboratories, but when an interaction is included and only few labs are available, that average is more uncertain because we have limited information about between-lab differences. In this example, the difference in p-values from both models is very minor because the interaction ICC is low (0.167), indicating that only a small proportion of the total variance is due to treatment-by-lab heterogeneity. In situations where the interaction ICC is larger, the treatment effects will appear less certain, with larger standard errors and higher p-values, because a greater share of the total variation is attributed to differences in treatment performance across laboratories.</p>
+<p>In short, the main effect of treatment reflects the average across all laboratories, but when an interaction is included and only few labs are available, that average is more uncertain because we have limited information about between-lab differences. In this example, the difference in p-values from both models is very minor because the interaction ICC is low (0.167), indicating that only a small proportion of the total variance is due to treatment-by-lab heterogeneity. In situations where the interaction ICC is larger, the treatment effects will appear less certain, with larger standard errors and higher p-values, because a greater share of the total variation is attributed to differences in treatment performance across laboratories.</p>
 </section>
 </section>
 </section>
