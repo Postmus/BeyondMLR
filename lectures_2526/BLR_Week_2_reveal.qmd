@@ -267,6 +267,20 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 # Part 3: Models with crossed random effects  
 
+## Hierarchical versus crossed data structures
+
+- Grouped data arise when observational units share common conditions defined by one or more context variables
+- In a randomized block design, observational units are grouped into blocks defined by levels of a context variable, creating a two-level hierarchical structure 
+- A replicated randomized block design extends this to a three-level hierarchy, with individual observations nested within treatment–block combinations, which are nested within blocks
+- When observations are influenced by two (or more) context variables, different types of grouping structures may arise
+  - Hierarchical: one context variable is nested within the other
+    - Example: pupils nested in classes and classes nested in schools
+  - Crossed: lower-level units are simultaneously nested within two separate, non-nested hierarchies
+    - Example: grades cross-classified by student and evaluator
+- Crossed and hierarchical structures can be combined, for example when observations are nested within specific combinations of crossed factors such as student–evaluator pairs    
+
+## Example: radiologist measurements of tumor size
+
 ```{r}
 set.seed(123)
 
@@ -290,8 +304,6 @@ data.tomour <- data.tomour |>
   )
 
 ```
-
-## Example: radiologist measurements of tumor size
 
 - Research question: 
   - To what extent do radiologists give the same results when measuring the same tumors?
@@ -326,8 +338,6 @@ ggplot(data.tomour, aes(x = radiologist, y = measurement, group = patient, colou
 - To separate these sources of variability, we use a **crossed random-effects model**
   - Both patients and radiologists are treated as random samples from larger populations
   - Random intercepts are included for each, as they are not hierarchically nested
-- This model decomposes total variability into patient, radiologist, and residual components, allowing us to quantify measurement reliability across radiologists
-
 
 ## Statistical model specification
 
@@ -337,8 +347,16 @@ $$Y_{ij} = \mu + u_i + v_j + \varepsilon_{ij}$$
 - $\mu$: overall mean tumor size across all patients and radiologists  
 - $u_i \sim N(0, \sigma^2_{\text{patient}})$: random effect for patient, representing true biological differences in tumor size  
 - $v_j \sim N(0, \sigma^2_{\text{radiologist}})$: random effect for radiologist, representing systematic measurement differences between radiologists  
-- $\varepsilon_{ij} \sim N(0, \sigma^2)$: residual term capturing unexplained measurement error
+- $\varepsilon_{ij} \sim N(0, \sigma^2)$: residual error term capturing unexplained measurement error
 
+
+::: {.callout-note icon=false title="R code snippet"}
+```{r}
+#| echo: true
+#| eval: false
+model_crossed <- lmer(measurement ~ (1 | radiologist) + (1 | patient), data = data.tomour)
+```
+:::
 
 ## Quantifying agreement and consistency
 
