@@ -450,10 +450,8 @@ $$
 <div style="margin-top:1.5em;"></div>
 ```
 
-- Both models statistically adjust for the effect of cage, separating it from the residual variance ($\sigma^2_\varepsilon$) 
 - In balanced designs, both yield identical estimates and inference for the treatment effect
 - In unbalanced designs or when interaction terms are included, the random-effects model provides more robust treatment estimates because it borrows strength across cages and is less sensitive to uneven group sizes
-- For these reasons, random effects are generally preferred when the context variable (e.g., cage, laboratory, center) represents a random sample from a larger population of possible contexts
 
 ## Results
 
@@ -514,7 +512,8 @@ knitr::kable(
 **Estimated variance components**
 
 ```{r}
-re <- tidy(m3, effects = "ran_pars")[, c("group", "term", "estimate")]
+re <- tidy(m3, effects = "ran_pars")[, c("group", "term", "estimate")] |>
+  mutate(variance = estimate^2)
 
 kable(
   re,
@@ -548,7 +547,7 @@ kable(
 ## Understanding variance components
 
 - In the one-way ANOVA that ignored cage, all unexplained variation was captured by a single residual error term ($\sigma^2_{\text{total}}$)
-- In the two-way ANOVA with cage as a random effect, that unexplained variability is partitioned into:
+- In the two-way additive ANOVA with cage as a random effect, that unexplained variability is partitioned into:
   1. Between-cage variance ($\sigma^2_{\text{cage}}$): differences in average weight change between cages
   2. Within-cage (residual) variance ($\sigma^2_{\text{residual}}$): differences among rats within the same cage after accounting for treatment and cage effects
 - Together, these components satisfy: $\sigma^2_{\text{total}} = \sigma^2_{\text{cage}} + \sigma^2_{\text{residual}}$
