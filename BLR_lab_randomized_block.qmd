@@ -142,7 +142,7 @@ To fit the previously specified mixed effects model, we use the `lmer()` functio
 
 ```{r}
 options(contrasts = c("contr.sum", "contr.poly"))  # Effects coding
-contrasts(data_block$Treatment) # Inspect contrasts for Treatment
+contrasts(data_block$Treatment) # Print contrast matrix for Treatment
 
 model_block <- lmer(WoundHealing ~ Treatment + (1 | Laboratory), data = data_block)
 summary(model_block)
@@ -184,7 +184,7 @@ anova(model_block)
 ```{r}
 # Compute estimated marginal means for the Treatment variable
 emms <- emmeans(model_block, ~ Treatment)
-emms # displays EMMs with standard errors and 95% confidence intervals
+emms
 ```
 
 ::: {.callout-important icon=false title="Question"}

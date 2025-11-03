@@ -108,16 +108,17 @@ To change the coding scheme globally to effects coding:
 ```{r}
 #| eval: false
 
-# Set contrasts to effects coding globally
-options(contrasts = c("contr.sum", "contr.poly"))  # Effects coding
+# Set effects coding as the default coding scheme for unordered (nominal) factors
+# Keep the default polynomial coding for ordered (ordinal) factors
+options(contrasts = c("contr.sum", "contr.poly"))
 ```
 
 To reset the coding scheme to the default dummy coding:
 ```{r}
 #| eval: false
 
-# Reset contrasts to default dummy coding
-options(contrasts = c("contr.treatment", "contr.poly"))  # Dummy coding
+# Reset the coding scheme for unordered factors to dummy coding
+options(contrasts = c("contr.treatment", "contr.poly"))
 ```
 :::
 
@@ -126,10 +127,10 @@ options(contrasts = c("contr.treatment", "contr.poly"))  # Dummy coding
 We can fit the one-way ANOVA model using the `lm()` function:
 
 ```{r}
-options(contrasts = c("contr.sum", "contr.poly"))  # Effects coding
-contrasts(data_oneway$Treatment) # Inspect contrasts for Treatment
+options(contrasts = c("contr.sum", "contr.poly")) # Effects coding
+contrasts(data_oneway$Treatment) # Print contrast matrix for Treatment
 
-# Fitting the model with effects coding
+# Fit the one-way ANOVA model
 model_oneway <- lm(BP_change ~ Treatment, data = data_oneway)
 summary(model_oneway)
 ```
