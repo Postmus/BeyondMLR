@@ -421,17 +421,23 @@ A two-way factorial ANOVA revealed a significant interaction between composite t
   - Main effects: average effect of one factor across all levels of the other factor
   - Simple effects: effect of one factor within a specific level of the other factor
   - Interaction indicates that simple effects differ from main effects
-
 - Effects coding with sum-to-zero constraints enables natural interpretation:
   - Grand mean represents the overall average
   - Main effect coefficients represent deviations from the grand mean
   - Interaction coefficients represent deviations from additivity
 
+## Lab 3: Two-way factorial ANOVA with two experimental factors
+
+::: {.figure}
+![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
+:::
+
+
 # Part 2: Replicated randomized block designs
 
 ## Interactions between fixed and random effects
 
-- Two-way factorial ANOVA (previous examples):
+- Two-way factorial ANOVA with two experimental factors:
   - Explored the interaction between two fixed effects
   - The interaction itself was of substantive interest, testing whether the effect of one factor depends on the level of the other
 - Randomized block design (last week):
@@ -441,10 +447,10 @@ A two-way factorial ANOVA revealed a significant interaction between composite t
   - Extends the basic design by adding replicates within each block, allowing estimation of a treatment–block (fixed–random) interaction
   - Including it makes the model more robust by acknowledging block-level heterogeneity, though this typically leads to more conservative inference for the treatment effect
 
-## Lab 3: replicated randomized block designs
+## Lab 4: replicated randomized block designs
 
 ::: {.figure}
-![](/R-lab.png){width="60%" alt="Lab session"}
+![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
 :::
 
 # Part 3: Models with crossed random effects  

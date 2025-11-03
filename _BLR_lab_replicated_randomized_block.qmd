@@ -1,5 +1,5 @@
 ---
-title: "Beyond MLR Lab 3: Replicated Randomized Block Designs"
+title: "Beyond MLR Lab 4: Replicated Randomized Block Designs"
 format: 
   html:
     toc: true
@@ -28,7 +28,7 @@ pacman::p_load(dplyr, ggplot2, emmeans, lmerTest, broom.mixed)
 ```
 :::
 
-In the previous lab, we considered a traditional randomized block design without replication, where each treatment was applied once within each block (laboratory). This design allowed us to control for variability between laboratories and efficiently estimate the effect of treatment. However, a key limitation of this approach is that it does not allow us to assess the extent to which the effect of treatment varies across blocks, a concept known as **interaction**.
+In last week's lab, we considered a traditional randomized block design without replication, where each treatment was applied once within each block (laboratory). This design allowed us to control for variability between laboratories and efficiently estimate the effect of treatment. However, a key limitation of this approach is that it does not allow us to assess the extent to which the effect of treatment varies across blocks, a concept known as **interaction**.
 
 An interaction occurs when the effect of one factor (e.g., treatment) is not consistent across levels of another factor (e.g., laboratory). In other words, the effect of a treatment might vary depending on the laboratory conditions. Replicating the treatments within each block allows us to estimate these interaction effects and better understand the variability in treatment outcomes across different settings.
 
@@ -78,25 +78,45 @@ The R code chunk above simulates wound healing observations (measured on a conti
 
 ## Exploratory Data Analysis
 
-To explore the data and investigate the presence of a potential interaction between treatments and laboratories, we create an  **interaction plot**. An interaction plot is a graphical tool that helps visualize whether the effect of one factor (in this case, treatment) depends on the levels of another factor (in this case, laboratory). Specifically, it shows how the mean response (wound healing) for each treatment varies across different laboratories. If the lines on the interaction plot are parallel, this suggests there is no interaction, meaning the treatment effect is consistent across laboratories. If the lines are not parallel, this indicates a potential interaction, meaning the effect of treatment differs depending on the laboratory.
+To explore the data and investigate the presence of a potential interaction between treatments and laboratories, we create an interaction plot:
+```{r}
+# Create an interaction plot
+ggplot(data_rep_block, aes(x = Treatment, y = WoundHealing, 
+  group = Laboratory, color = Laboratory)) +
+    stat_summary(fun = mean, geom = "point", size = 3) +
+    stat_summary(fun = mean, geom = "line") +
+    labs(title = "Interaction Plot",
+         y = "Mean Wound Healing Measure",
+         x = "Treatment") +
+    theme_minimal()
+```
+
+In addition to the interaction plot, we compute descriptive statistics to summarize the wound healing measures within treatments and within laboratories. This will help us assess variability both across treatments and across laboratory facilities.
 
 ```{r}
-# Calculate mean Wound Healing for each Treatment-Laboratory combination
-mean_data <- data_rep_block |>
-  group_by(Laboratory, Treatment) |>
-  summarise(Mean_WoundHealing = mean(WoundHealing))
+# Summarizing data by Treatment
+summary_stats_treatment <- data_rep_block |>
+  group_by(Treatment) |>
+  summarise(
+    n = n(),
+    Mean_WoundHealing = mean(WoundHealing),
+    SD_WoundHealing = sd(WoundHealing),
+    .groups = "drop"
+  )
 
-# Display the produced summary table with the group means
-mean_data
+# Summarizing data by Laboratory
+summary_stats_laboratory <- data_rep_block |>
+  group_by(Laboratory) |>
+  summarise(
+    n = n(),
+    Mean_WoundHealing = mean(WoundHealing),
+    SD_WoundHealing = sd(WoundHealing),
+    .groups = "drop"
+  )
 
-# Create an interaction plot
-ggplot(mean_data, aes(x = Treatment, y = Mean_WoundHealing, group = Laboratory, color = Laboratory)) +
-  geom_point(size = 3) +
-  geom_line() +
-  labs(title = "Interaction Plot",
-       y = "Mean Wound Healing Measure",
-       x = "Treatment") +
-  theme_minimal()
+# Displaying the produced summary tables
+summary_stats_treatment
+summary_stats_laboratory
 ```
 
 ::: {.callout-important icon=false title="Question"}
@@ -176,7 +196,26 @@ The model includes two random terms that capture distinct sources of variability
 - The **treatment-by-laboratory interaction** (variance = 0.475) captures how treatment effects vary across laboratories  
 - The **residual variance** (0.909) represents unexplained variability within each treatment–laboratory combination  
 
-These components can be summarized and interpreted using the **intra-class correlation coefficient (ICC)**, which expresses how much of the total unexplained variance arises from each random effect:
+### Assessing the fixed effect of Wound healing treatment
+
+The fixed effect of wound healing treatment can be assessed by examining the ANOVA table from the mixed-effects model. This shows whether the average wound-healing differs significantly across treatments, after accounting for variability between laboratories and treatment–laboratory interactions.
+
+```{r}
+# Extract the ANOVA table
+anova(model_block)
+```
+
+::: {.callout-important icon=false title="Question"}
+Inspect the ANOVA table and report whether the overall treatment effect is statistically significant.
+:::
+
+::: {.callout-important icon=false title="Exercise"}
+Use the `emmeans` package to perform pairwise comparisons between treatments and explore which pairs differ.
+:::
+
+### Assessing the variance components
+
+The variance components can be assessed using the **intra-class correlation coefficient (ICC)**, which expresses how much of the total unexplained variance arises from each random effect:
 
 ```{r}
 # Extract variance components from the fitted model and
@@ -200,29 +239,12 @@ icc_int
 
 Together, these ICCs describe how hierarchical structure influences precision: the larger the ICCs, the more variability stems from between-lab and treatment–lab differences rather than residual error.
 
-::: {.callout-question icon=false title="Question"}
+::: {.callout-important icon=false title="Question"}
 How large is the ICC for the laboratory effect? What does this tell us about differences in baseline wound-healing across labs?
 :::
 
-::: {.callout-question icon=false title="Question"}
-How large is the ICC for the treatment-by-laboratory interaction? Does this suggest that treatment effects vary meaningfully across laboratories, or are they relatively consistent?
-:::
-
-### Assessing the fixed effect of Wound healing treatment
-
-The fixed effect of wound healing treatment can be assessed by examining the ANOVA table from the mixed-effects model. This shows whether the average wound-healing differs significantly across treatments, after accounting for variability between laboratories and treatment–laboratory interactions.
-
-```{r}
-# Extract the ANOVA table
-anova(model_block)
-```
-
 ::: {.callout-important icon=false title="Question"}
-Inspect the ANOVA table and report whether the overall treatment effect is statistically significant.
-:::
-
-::: {.callout-important icon=false title="Exercise"}
-Use the `emmeans` package to perform pairwise comparisons between treatments and explore which pairs differ.
+How large is the ICC for the treatment-by-laboratory interaction? Does this suggest that treatment effects vary meaningfully across laboratories, or are they relatively consistent?
 :::
 
 ### Model diagnostics
@@ -237,10 +259,12 @@ To explore how the inclusion of the random treatment-by-laboratory interaction i
 # Fit the model without random interaction term
 model_block_simple <- lmer(WoundHealing ~ Treatment + (1 | Laboratory), data = data_rep_block)
 summary(model_block_simple)
-anova(model_block_simple)
+```
 
-# Print the results of the model with random interction term
-summary(model_block)
+```{r}
+# Print the ANOVA tables for the models without (top) 
+# and with (bottom) random interaction terms
+anova(model_block_simple)
 anova(model_block)
 ```
 
@@ -250,13 +274,15 @@ Inspect the model summaries and ANOVA tables for both models. What do you obverv
 
 #### Explanation
 
-- The simpler model assumes that treatment effects are identical in every laboratory
+- The simpler model assumes identical treatment effects across laboratories
   - All differences between labs are captured by a single random intercept
   - This ignores any lab-to-lab variation in how the treatments perform
   - As a result, treatment effects appear more precise (smaller SEs and lower p-values)
-- The full model allows treatment effects to differ somewhat across laboratories by including a random `Treatment×Laboratory` term
-  - This means that not all laboratories show exactly the same treatment differences
-  - The model therefore recognizes treatment-by-lab heterogeneity and treats it as an additional source of uncertainty
-  - As a result, the p-value for the overall treatment effect becomes slightly larger because part of the between-treatment variation is now explained by random treatment-by-lab differences rather than by the fixed treatment effect itself
+- The full model allows treatment effects to vary across laboratories via a random `Treatment×Laboratory` term
+  - Encodes that laboratories may show different treatment contrasts
+  - Treats treatment-by-lab heterogeneity as additional uncertainty about the common effect
+  - Increases the SE and typically the p-value for the overall treatment effect because lab-specific deviations reduce the information for estimating a single average effect
 
-In short, the main effect of treatment reflects the average across all laboratories, but when an interaction is included and only few labs are available, that average is more uncertain because we have limited information about between-lab differences. In this example, the difference in p-values from both models is very minor because the interaction ICC is low (0.167), indicating that only a small proportion of the total variance is due to treatment-by-lab heterogeneity. In situations where the interaction ICC is larger, the treatment effects will appear less certain, with larger standard errors and higher p-values, because a greater share of the total variation is attributed to differences in treatment performance across laboratories.
+In short, the main treatment effect represents the average across all laboratories. When only a few labs are available, allowing for random treatment-by-lab heterogeneity makes that average more uncertain. In this example, the difference is minor because the interaction ICC is low (0.167), meaning that little variability arises from treatment-by-lab heterogeneity. When the interaction ICC is larger, treatment effects become less certain (reflected in larger standard errors and higher p-values) because more of the total variability is due to differences in treatment performance across laboratories.
+
+By contrast, if laboratory were treated as a fixed factor, the main effect of treatment would represent the average treatment difference over these five specific laboratories, meaning there is no additional uncertainty associated with lab-to-lab variation. In that case, adding a treatment-by-lab interaction would typically reduce the residual variance, leading to smaller standard errors and lower p-values. However, inference would then be limited to these five laboratories only; we would not generalize to other settings. The increase in p-values observed under the random-effects approach therefore reflects the added uncertainty that comes from generalizing beyond the observed laboratories.
