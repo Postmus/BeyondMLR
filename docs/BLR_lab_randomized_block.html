@@ -382,7 +382,7 @@ Y_{ij} = \mu + \tau_i + b_j + \epsilon_{ij}
 <p>To fit the previously specified mixed effects model, we use the <code>lmer()</code> function from the <code>lmeTest</code> package:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">contrasts =</span> <span class="fu">c</span>(<span class="st">"contr.sum"</span>, <span class="st">"contr.poly"</span>))  <span class="co"># Effects coding</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">contrasts</span>(data_block<span class="sc">$</span>Treatment) <span class="co"># Inspect contrasts for Treatment</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">contrasts</span>(data_block<span class="sc">$</span>Treatment) <span class="co"># Print contrast matrix for Treatment</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>model_block <span class="ot">&lt;-</span> <span class="fu">lmer</span>(WoundHealing <span class="sc">~</span> Treatment <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> Laboratory), <span class="at">data =</span> data_block)</span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_block)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -435,7 +435,7 @@ Y_{ij} = \mu + \tau_i + b_j + \epsilon_{ij}
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute estimated marginal means for the Treatment variable</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>emms <span class="ot">&lt;-</span> <span class="fu">emmeans</span>(model_block, <span class="sc">~</span> Treatment)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>emms <span class="co"># displays EMMs with standard errors and 95% confidence intervals</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>emms</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
 <div class="callout-header d-flex align-content-center">
