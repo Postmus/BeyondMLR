@@ -1,6 +1,6 @@
 ---
 title: "Beyond MLR - Week 2: Experimental Design II"
-subtitle: "Two-way factorial ANOVA and crossed random effects"
+subtitle: "Two-way factorial ANOVA, replicated randomized block designs, and crossed random-effects models"
 author: "Dr. Douwe Postmus"
 format:
   revealjs:
@@ -32,11 +32,31 @@ if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.mixed)
 ```
 
+## What did we learn last week
+
+::: {style="font-size:88%"}
+- Dummy and effects coding are two schemes for incorporating nominal variables (unordered factors in R) into linear regression models
+  - The interpretation of coefficients depends on the coding scheme
+    - Effects coding: coefficients represent deviations from the overall mean
+    - Dummy coding: coefficients represent differences from the reference category
+  - Estimated marginal means and ANOVA tests for the overall treatment effect are invariant to the coding scheme
+- In randomized block designs, blocks (e.g., cages) define a shared environment for all experimental units (e.g., rats) within that block
+  - Observations within the same block are positively correlated if the blocking variable is not included as a fixed effect
+  - In such cases, the power to detect a treatment effect can be increased by including block as a random effect, which
+  decomposes the unexplained variation (i.e., variation not explained by the fixed effects) into:
+    - Variation between blocks (due to shared conditions)
+    - Residual variation between individual units within blocks
+  - The magnitude of the power gain depends on the degree of within-block correlation, quantified by the intraclass correlation coefficient (ICC)   
+:::
+
 ## Today's lecture
 
 - Designs with two experimental factors
-- Replicated randomized block designs
-- Models with crossed random effects  
+  - Two-way factorial ANOVA
+  - Main effects versus simple effects
+- Designs wih nested and crossed random effects
+  - Replicated randomized block designs
+  - Crossed random-effects models  
   
 # Part 1: Designs with two experimental factors
 
@@ -100,9 +120,8 @@ $$
 | High | $\mu + \alpha_3 + \beta_1 + (\alpha\beta)_{31}$ | $\mu + \alpha_3 + \beta_2 + (\alpha\beta)_{32}$ | $\mu + \alpha_3$ |
 | Column mean | $\mu + \beta_1$ | $\mu + \beta_2$ | Grand mean = $\mu$ |
 
-```{=html}
-<div style="margin-top:1.0em;"></div>
-```
+::: {style="margin-top:1.0em;"}
+:::
 
 - Effects coding with sum-to-zero constraints enables natural interpretation:
   - $\mu$ represents the overall average across all groups
@@ -156,9 +175,8 @@ kable(
 
 ::::
 
-```{=html}
-<div style="margin-top:1.0em;"></div>
-```
+::: {style="margin-top:1.0em;"}
+:::
 
 - The interaction effect is not significant (p = 0.116), so we proceed with interpreting the main effects
 - The main effect of exercise is significant, indicating differences among the marginal means (row means) across low, moderate, and high exercise levels
@@ -207,9 +225,8 @@ kable(data.frame(emm_diet),
 
 ::::
 
-```{=html}
-<div style="margin-top:1.0em;"></div>
-```
+::: {style="margin-top:1.0em;"}
+:::
 
 Pairwise comparisons (with Bonferroni adjusted p-values):
 
@@ -322,9 +339,8 @@ kable(
 
 ::::
 
-```{=html}
-<div style="margin-top:1.0em;"></div>
-```
+::: {style="margin-top:1.0em;"}
+:::
 
 - The interaction effect is significant (p < 0.05), indicating that the effect of curing time on hardness depends on the composite type
 - The main effects tests still have meaning: they test whether the average effect of each factor differs from zero, pooled across all levels of the other factor
@@ -377,9 +393,8 @@ kable(
 
 ::::
 
-```{=html}
-<div style="margin-top:1.0em;"></div>
-```
+::: {style="margin-top:1.0em;"}
+:::
 
 - The effect of curing time is significant only for the hybrid composite (p < 0.05), where longer curing (60s) produces higher hardness
 - Curing time has no significant effect on hardness for microfine and microhybrid composites
@@ -428,12 +443,21 @@ A two-way factorial ANOVA revealed a significant interaction between composite t
 
 ## Lab 3: Two-way factorial ANOVA with two experimental factors
 
-::: {.figure}
 ![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
-:::
 
+# Part 2: Designs wih nested and crossed random effects
 
-# Part 2: Replicated randomized block designs
+## Hierarchical versus crossed data structures
+
+- Grouped data arise when observational units share common conditions defined by one or more context variables
+- In a randomized block design, observational units are grouped into blocks defined by levels of a context variable, creating a two-level hierarchical structure 
+- A replicated randomized block design extends this to a three-level hierarchy, with individual observations nested within treatment–block combinations, which are nested within blocks
+- When observations are influenced by two (or more) context variables, different types of grouping structures may arise
+  - Hierarchical: one context variable is nested within the other
+    - Example: pupils nested in classes and classes nested in schools
+  - Crossed: lower-level units are simultaneously nested within two separate, non-nested hierarchies
+    - Example: grades cross-classified by student and evaluator
+- Crossed and hierarchical structures can be combined, for example when observations are nested within specific combinations of crossed factors such as student–evaluator pairs    
 
 ## Interactions between fixed and random effects
 
@@ -449,23 +473,7 @@ A two-way factorial ANOVA revealed a significant interaction between composite t
 
 ## Lab 4: replicated randomized block designs
 
-::: {.figure}
 ![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
-:::
-
-# Part 3: Models with crossed random effects  
-
-## Hierarchical versus crossed data structures
-
-- Grouped data arise when observational units share common conditions defined by one or more context variables
-- In a randomized block design, observational units are grouped into blocks defined by levels of a context variable, creating a two-level hierarchical structure 
-- A replicated randomized block design extends this to a three-level hierarchy, with individual observations nested within treatment–block combinations, which are nested within blocks
-- When observations are influenced by two (or more) context variables, different types of grouping structures may arise
-  - Hierarchical: one context variable is nested within the other
-    - Example: pupils nested in classes and classes nested in schools
-  - Crossed: lower-level units are simultaneously nested within two separate, non-nested hierarchies
-    - Example: grades cross-classified by student and evaluator
-- Crossed and hierarchical structures can be combined, for example when observations are nested within specific combinations of crossed factors such as student–evaluator pairs    
 
 ## Example: radiologist measurements of tumor size
 
