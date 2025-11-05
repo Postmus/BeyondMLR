@@ -445,35 +445,18 @@ A two-way factorial ANOVA revealed a significant interaction between composite t
 
 ![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
 
-# Part 2: Designs wih nested and crossed random effects
+# Part 2: Cross-classified random-effects models
 
-## Hierarchical versus crossed data structures
+## Hierarchical and crossed grouping structures
 
 - Grouped data arise when observational units share common conditions defined by one or more context variables
 - In a randomized block design, observational units are grouped into blocks defined by levels of a context variable, creating a two-level hierarchical structure 
-- A replicated randomized block design extends this to a three-level hierarchy, with individual observations nested within treatment–block combinations, which are nested within blocks
-- When observations are influenced by two (or more) context variables, different types of grouping structures may arise
-  - Hierarchical: one context variable is nested within the other
-    - Example: pupils nested in classes and classes nested in schools
-  - Crossed: lower-level units are simultaneously nested within two separate, non-nested hierarchies
-    - Example: grades cross-classified by student and evaluator
-- Crossed and hierarchical structures can be combined, for example when observations are nested within specific combinations of crossed factors such as student–evaluator pairs    
-
-## Interactions between fixed and random effects
-
-- Two-way factorial ANOVA with two experimental factors:
-  - Explored the interaction between two fixed effects
-  - The interaction itself was of substantive interest, testing whether the effect of one factor depends on the level of the other
-- Randomized block design (last week):
-  - Included a fixed treatment effect and a random cage effect
-  - The random effect accounts for block-to-block variability, which is not of substantive interest
-- Replicated randomized block design: 
-  - Extends the basic design by adding replicates within each block, allowing estimation of a treatment–block (fixed–random) interaction
-  - Including it makes the model more robust by acknowledging block-level heterogeneity, though this typically leads to more conservative inference for the treatment effect
-
-## Lab 4: replicated randomized block designs
-
-![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
+- When observations are influenced by multiple context variables, different grouping structures can occur
+  - Hierarchical: one context variable is nested within the other (discussed in weeks 3 and 4)
+    - Example: pupils (level 1) nested within classes (level 2), and classes nested within schools (level 3)
+    - Example: longitudinal measurements (level 1) nested within patients (level 2), and patients nested within clinics (level 3)
+  - Crossed: lower-level units belong to combinations of two (or more) non-nested higher-level units
+    - Example: exam grades (level 1) cross-classified by student (level 2) and teacher (level 2)
 
 ## Example: radiologist measurements of tumor size
 
@@ -531,7 +514,7 @@ ggplot(data.tomour, aes(x = radiologist, y = measurement, group = patient, colou
   - True differences between patients (biological variation in tumor size)
   - Systematic differences between radiologists (some may measure consistently higher or lower)
   - Unexplained measurement error
-- To separate these sources of variability, we use a **crossed random-effects model**
+- To separate these sources of variability, we use a **cross-classified random-effects model**
   - Both patients and radiologists are treated as random samples from larger populations
   - Random intercepts are included for each, as they are not hierarchically nested
 
@@ -652,3 +635,19 @@ $ICC_{\text{agreement}} =
 - About 74% of the total variability in measured tumor size reflects true differences between patients
 - The remaining 26% is due to radiologist differences and measurement noise
 - This indicates fairly high agreement among radiologists: measurements largely reflect real biological variation rather than who performed them
+
+## Interactions between fixed and random effects
+
+- Two-way factorial ANOVA with two experimental factors:
+  - Explored the interaction between two fixed effects
+  - The interaction itself was of substantive interest, testing whether the effect of one factor depends on the level of the other
+- Randomized block design (last week):
+  - Included a fixed treatment effect and a random cage effect
+  - The random effect accounts for block-to-block variability, which is not of substantive interest
+- Replicated randomized block design: 
+  - Extends the basic design by adding replicates within each block, allowing estimation of a treatment–block (fixed–random) interaction
+  - Including it makes the model more robust by acknowledging block-level heterogeneity, though this typically leads to more conservative inference for the treatment effect
+
+## Lab 4: replicated randomized block designs
+
+![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
