@@ -51,14 +51,16 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.
 
 ## Today's lecture
 
-- Designs with two experimental factors
-  - Two-way factorial ANOVA
-  - Main effects versus simple effects
-- Designs wih nested and crossed random effects
-  - Replicated randomized block designs
-  - Crossed random-effects models  
-  
-# Part 1: Designs with two experimental factors
+- Two-way factorial ANOVA
+  - Designs with two fixed experimental factors
+  - Main effects and interactions
+  - Marginal versus conditional means
+- Replicated randomized block designs
+  - Introduces an interaction between a fixed effect (treatment) and a random effect (block)
+- Crossed random-effects models
+  - Assessment of inter-rater agreement
+     
+# Part 1: Two-way factorial ANOVA
 
 ## First example: weight loss experiment
 
@@ -135,7 +137,7 @@ $$
 2. Test the interaction effect
     - If the interaction effect is significant
       - Examine **simple effects**: the effect of one factor within each level of the other factor
-      - Estimate and test conditional means, applying a Bonferroni adjustment for pairwise contrasts within levels
+      - Estimate and test conditional means, applying a Bonferroni adjustment for pairwise comparisons within levels
     - If the interaction effect is not significant
       - Examine **main effects**: the average effect of each factor across all levels of the other factor
       - Estimate and test marginal means, and for any significant factor with more than two levels, perform Bonferroni-adjusted pairwise comparisons
@@ -343,8 +345,10 @@ kable(
 :::
 
 - The interaction effect is significant (p < 0.05), indicating that the effect of curing time on hardness depends on the composite type
-- The main effects tests still have meaning: they test whether the average effect of each factor differs from zero, pooled across all levels of the other factor
-- Simple effects analysis is more informative when an interaction is present, examining how one factor affects the response within each level of the other factor
+- The tests for the main effects assess whether the average effect of each factor, averaged over all levels of the other factor, differs from zero
+  - Main effect of composite: are the row means different?
+  - Main effect of curing time: are the column means different?
+- When an interaction is present, a simple effects analysis is more informative, examining how one factor affects the response within each level of the other factor
 
 ## Simple effects analysis
 
@@ -445,20 +449,38 @@ A two-way factorial ANOVA revealed a significant interaction between composite t
 
 ![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
 
-# Part 2: Cross-classified random-effects models
+# Part 2: Replicated randomized block designs
+
+## Lab 4: Replicated randomized block designs
+
+![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
+
+## Summary
+
+- Randomized block design:
+  - Estimates the fixed effect of treatment while accounting for block-to-block variability
+  - The blocking variable is modeled as a random effect
+- Replicated randomized block design:
+  - Extends the basic design by adding replicates within each block
+  - Allows inclusion of a random treatment–block interaction term
+  - Although this interaction is not of direct interest, modeling it better reflects uncertainty in the average treatment effect and typically yields more conservative inference
+- Interactions between fixed effects (time) and random effects (subject) are also common in longitidinal data analysis (discussed in week 4)
+
+# Part 3: Crossed random-effects models
 
 ## Hierarchical and crossed grouping structures
 
 - Grouped data arise when observational units share common conditions defined by one or more context variables
-- In a randomized block design, observational units are grouped into blocks defined by levels of a context variable, creating a two-level hierarchical structure 
-- When observations are influenced by multiple context variables, different grouping structures can occur
-  - Hierarchical: one context variable is nested within the other (discussed in weeks 3 and 4)
+- So far, we have considered data structures with a single context variable, such as the blocks in a randomized block design
+  - This creates a two-level hierarchical structure, with the observational units at the lower level (level 1) and the levels of the context variable at the higher level (level 2)
+- When observational units are influenced by multiple context variables, different grouping structures can occur
+  - Hierarchical: one context variable is nested within another (discussed in weeks 3 and 4)
     - Example: pupils (level 1) nested within classes (level 2), and classes nested within schools (level 3)
-    - Example: longitudinal measurements (level 1) nested within patients (level 2), and patients nested within clinics (level 3)
   - Crossed: lower-level units belong to combinations of two (or more) non-nested higher-level units
     - Example: exam grades (level 1) cross-classified by student (level 2) and teacher (level 2)
+    - In medical research, crossed structures often arise when assessing inter-rater agreement
 
-## Example: radiologist measurements of tumor size
+## Example: agreement among radiologists
 
 ```{r}
 set.seed(123)
@@ -514,7 +536,7 @@ ggplot(data.tomour, aes(x = radiologist, y = measurement, group = patient, colou
   - True differences between patients (biological variation in tumor size)
   - Systematic differences between radiologists (some may measure consistently higher or lower)
   - Unexplained measurement error
-- To separate these sources of variability, we use a **cross-classified random-effects model**
+- To separate these sources of variability, we use a **crossed random-effects model**
   - Both patients and radiologists are treated as random samples from larger populations
   - Random intercepts are included for each, as they are not hierarchically nested
 
@@ -635,19 +657,3 @@ $ICC_{\text{agreement}} =
 - About 74% of the total variability in measured tumor size reflects true differences between patients
 - The remaining 26% is due to radiologist differences and measurement noise
 - This indicates fairly high agreement among radiologists: measurements largely reflect real biological variation rather than who performed them
-
-## Interactions between fixed and random effects
-
-- Two-way factorial ANOVA with two experimental factors:
-  - Explored the interaction between two fixed effects
-  - The interaction itself was of substantive interest, testing whether the effect of one factor depends on the level of the other
-- Randomized block design (last week):
-  - Included a fixed treatment effect and a random cage effect
-  - The random effect accounts for block-to-block variability, which is not of substantive interest
-- Replicated randomized block design: 
-  - Extends the basic design by adding replicates within each block, allowing estimation of a treatment–block (fixed–random) interaction
-  - Including it makes the model more robust by acknowledging block-level heterogeneity, though this typically leads to more conservative inference for the treatment effect
-
-## Lab 4: replicated randomized block designs
-
-![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
