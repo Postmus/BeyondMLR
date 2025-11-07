@@ -176,6 +176,21 @@ window.Quarto = {
     </ul>
   </li>
   <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-labs-week-2" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Labs week 2</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-labs-week-2">    
+        <li>
+    <a class="dropdown-item" href="./BLR_lab_two_way_factorial.html">
+ <span class="dropdown-text">Lab 3</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./BLR_lab_replicated_randomized_block.html">
+ <span class="dropdown-text">Lab 4</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-assignments" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Assignments</span>
     </a>
@@ -213,6 +228,7 @@ window.Quarto = {
   </ul></li>
   <li><a href="#simple-effects-analysis" id="toc-simple-effects-analysis" class="nav-link" data-scroll-target="#simple-effects-analysis">Simple Effects Analysis</a>
   <ul class="collapse">
+  <li><a href="#alternative-decomposition-simple-effects-conditional-on-therapy-type" id="toc-alternative-decomposition-simple-effects-conditional-on-therapy-type" class="nav-link" data-scroll-target="#alternative-decomposition-simple-effects-conditional-on-therapy-type">Alternative Decomposition: Simple Effects Conditional on Therapy Type</a></li>
   <li><a href="#model-diagnostics" id="toc-model-diagnostics" class="nav-link" data-scroll-target="#model-diagnostics">Model Diagnostics</a></li>
   </ul></li>
   </ul></li>
@@ -293,7 +309,7 @@ window.Quarto = {
 <p>The design consists of 6 treatment combinations (3 therapy types × 2 severity levels), with 10 patients randomly assigned to each combination.</p>
 <section id="exploratory-data-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory Data Analysis</h2>
-<p>To understand how recovery rates vary across therapy type and disease severity, we start by creating an interaction plot showing the mean recovery rate for each combination:</p>
+<p>To understand how recovery rates vary across therapy type and disease severity, we start by creating an <strong>interaction plot</strong>. An interaction plot is a graphical tool that helps visualize whether the effect of one factor (in this case, therapy) depends on the levels of another factor (in this case, disease severity). If the lines on the interaction plot are parallel, this suggests there is no interaction, meaning the effect of therapy is the same for both disease severities. If the lines are not parallel, this indicates a potential interaction, meaning the effect of therapy differs depending on the severity of the disease.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualizing the results</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data_twoway, <span class="fu">aes</span>(<span class="at">x =</span> Therapy, <span class="at">y =</span> RecoveryRate, <span class="at">color =</span> Severity, <span class="at">group =</span> Severity)) <span class="sc">+</span></span>
@@ -392,7 +408,8 @@ Y_{ijk} = \mu + \alpha_i + \beta_j + (\alpha\beta)_{ij} + \epsilon_{ijk}
 </section>
 <section id="simple-effects-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="simple-effects-analysis">Simple Effects Analysis</h2>
-<p>Because thew interaction effect is significant, we proceed with examing the simple effects: the effect of one factor within each level of the other factor. In this case, we examine the effect of therapy type (Standard vs Enhanced vs Control) separately for each disease severity level:</p>
+<p>Because the interaction effect is significant, we proceed with examining the simple effects: the effect of one factor within each level of the other factor. When analyzing an interaction, we have a choice in how to decompose it. We could examine either the effect of therapy type (Standard vs Enhanced vs Control) separately for each disease severity level, or alternatively, we could examine the effect of disease severity (Mild vs Severe) separately for each therapy type.</p>
+<p>In this clinical context, we choose to examine the effect of therapy type conditional on disease severity level. This choice is clinically motivated: from a treatment planning perspective, clinicians need to know which therapies work best for patients presenting with different disease severity levels. Understanding how therapy effectiveness varies across severity groups directly informs treatment decisions and allows for severity-stratified recommendations. In other words, the question “which therapy works best for mild cases versus severe cases?” is more clinically actionable than asking “how does severity affect outcomes for each therapy type?”</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute simple effects: effect of therapy type within each severity level</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>se_severity <span class="ot">&lt;-</span> <span class="fu">emmeans</span>(model_twoway, <span class="sc">~</span> Therapy <span class="sc">|</span> Severity)</span>
@@ -417,6 +434,49 @@ Y_{ijk} = \mu + \alpha_i + \beta_j + (\alpha\beta)_{ij} + \epsilon_{ijk}
 <p>For which disease severity level(s) does therapy type have a significant effect on recovery rate? What is the practical interpretation of this finding?</p>
 </div>
 </div>
+<section id="alternative-decomposition-simple-effects-conditional-on-therapy-type" class="level3">
+<h3 class="anchored" data-anchor-id="alternative-decomposition-simple-effects-conditional-on-therapy-type">Alternative Decomposition: Simple Effects Conditional on Therapy Type</h3>
+<p>As mentioned earlier, we could also decompose the interaction by examining the effect of disease severity separately for each therapy type. While this perspective is less clinically motivated than the severity-stratified approach above, it can still provide useful insights.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Exercise">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Perform a simple effects analysis conditional on therapy type (i.e., examine the effect of disease severity (Mild vs Severe) within each therapy type).</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For which therapy type(s) does disease severity have a significant effect on recovery rate?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>How do these findings complement or differ from the severity-stratified analysis we performed above?</p>
+</div>
+</div>
+</section>
 <section id="model-diagnostics" class="level3">
 <h3 class="anchored" data-anchor-id="model-diagnostics">Model Diagnostics</h3>
 <p>To assess the adequacy of the fitted model, we create two diagnostic plots:</p>

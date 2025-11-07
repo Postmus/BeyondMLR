@@ -39,7 +39,7 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.
   - The interpretation of coefficients depends on the coding scheme
     - Effects coding: coefficients represent deviations from the overall mean
     - Dummy coding: coefficients represent differences from the reference category
-  - Estimated marginal means and ANOVA tests for the overall treatment effect are invariant to the coding scheme
+  - ANOVA tests, estimated marginal means, and post-hoc comparisons are invariant to the coding scheme
 - In randomized block designs, blocks (e.g., cages) define a shared environment for all experimental units (e.g., rats) within that block
   - Observations within the same block are positively correlated if the blocking variable is not included as a fixed effect
   - In such cases, the power to detect a treatment effect can be increased by including block as a random effect, which
@@ -58,6 +58,7 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.
 - Replicated randomized block designs
   - Introduces an interaction between a fixed effect (treatment) and a random effect (block)
 - Crossed random-effects models
+  - Models with two random effects
   - Assessment of inter-rater agreement
      
 # Part 1: Two-way factorial ANOVA
@@ -266,7 +267,7 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 ::::
 
-## Writing up the results - worked example
+## Reporting the results - worked example
 
 A two-way factorial ANOVA showed no significant interaction between exercise intensity and diet type, F(2, 54) = 2.21, p = 0. 116. There were significant main effects of both exercise intensity and diet type on the change in body weight. For exercise intensity, the estimated marginal means (95% CI) were −8.40 (−8.84, −7.96) kg for high intensity exercise, −5.51 (−5.95, −5.06) kg for moderate intensity exercise, and −3.35 (−3.79, −2.90) kg for low intensity exercise. Bonferroni-adjusted pairwise comparisons indicated that all exercise levels differed significantly from one another (p < 0.001 for all comparisons). For diet type, the estimated marginal means (95% CI) were −6.54 (−6.90, −6.17) kg for the high-protein diet and −4.97 (−5.33, −4.60) kg for the standard diet.  
 
@@ -345,7 +346,7 @@ kable(
 :::
 
 - The interaction effect is significant (p < 0.05), indicating that the effect of curing time on hardness depends on the composite type
-- The tests for the main effects assess whether the average effect of each factor, averaged over all levels of the other factor, differs from zero
+- As discussed previously, the tests for the main effects assess whether the average effect of each factor, averaged over all levels of the other factor, differs from zero
   - Main effect of composite: are the row means different?
   - Main effect of curing time: are the column means different?
 - When an interaction is present, a simple effects analysis is more informative, examining how one factor affects the response within each level of the other factor
@@ -427,29 +428,39 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 ::::
 
-## Writing up the results - worked example
+## Reporting the results - worked example
 
-A two-way factorial ANOVA revealed a significant interaction between composite type and curing time, F(2, 54) = 26.72, p < 0.001. Given the significant interaction, a simple effects analysis was performed to examine the effect of curing time within each composite type. For hybrid composite, hardness was significantly higher with 60-second curing (52.1, 95% CI: 51.2–53.0) compared to 20-second curing (47.0, 95% CI: 46.1–47.8), with a difference of 5.13 units (p < 0.001). For microfine composite, there was no significant difference between 20-second curing (49.7, 95% CI: 48.8–50.5) and 60-second curing (49.5, 95% CI: 48.6–50.3), p = 0.739. Similarly, for microhybrid composite, curing time had no significant effect, with means of 50.7 (95% CI: 49.9–51.6) for 20-second curing and 50.3 (95% CI: 49.4–51.1) for 60-second curing, p = 0.460. These results indicate that the benefit of extended curing time is material-specific, applying only to the hybrid composite.
-
-## Summary
-
-- Two-way factorial ANOVA can be used to test the effects of two experimental factors and their interaction:
-  - When the interaction is not significant, examine main effects via marginal means
-  - When the interaction is significant, simple effects analysis is more informative—examining how one factor affects the response within each level of the other
-- Key distinction:
-  - Main effects: average effect of one factor across all levels of the other factor
-  - Simple effects: effect of one factor within a specific level of the other factor
-  - Interaction indicates that simple effects differ from main effects
-- Effects coding with sum-to-zero constraints enables natural interpretation:
-  - Grand mean represents the overall average
-  - Main effect coefficients represent deviations from the grand mean
-  - Interaction coefficients represent deviations from additivity
+A two-way factorial ANOVA revealed a significant interaction between composite type and curing time, F(2, 54) = 26.72, p < 0.001. Given this interaction, a simple-effects analysis was conducted to examine the effect of curing time within each composite type. For hybrid composite, curing time significantly affected hardness (p < 0.001): mean hardness was higher after 60-second curing (52.1, 95% CI: 51.2–53.0) than after 20-second curing (47.0, 95% CI: 46.1–47.8). For microfine composite, there was no significant difference between 20-second curing (49.7, 95% CI: 48.8–50.5) and 60-second curing (49.5, 95% CI: 48.6–50.3), p = 0.739. For microhybrid composite, curing time likewise had no significant effect, with means of 50.7 (95% CI: 49.9–51.6) for 20-second curing and 50.3 (95% CI: 49.4–51.1) for 60-second curing, p = 0.460.
 
 ## Lab 3: Two-way factorial ANOVA with two experimental factors
 
 ![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
 
+## Summary
+
+- Two-way factorial ANOVA can be used to test the effects of two experimental factors and their interaction:
+  - When the interaction is not significant, proceed with testing the main effects
+  - When the interaction is significant, simple effects analysis is more informative—examining how one factor affects the response within each level of the other
+- Key distinction:
+  - Main effects: average effect of one factor across all levels of the other factor
+  - Simple effects: effect of one factor within a specific level of the other factor
+  - Interaction indicates that simple effects differ from main effects
+
 # Part 2: Replicated randomized block designs
+
+## Interactions between fixed and random effects
+
+- In part 1, we examined interactions between two fixed effects in a two-way factorial ANOVA
+  
+- It is also possible to have interactions between a fixed effect and a random effect
+  - Example: in a randomized block design, treatment is a fixed effect and blocks are a random effect
+  - A treatment-by-block interaction means that the treatment effect varies across blocks
+
+- When we model a treatment-by-block interaction, the interaction itself becomes a random effect
+  - Rather than estimating a separate interaction parameter for each block, we estimate the variance of the treatment-by-block interaction
+    - This variance captures how much the treatment effect fluctuates across the population of blocks
+    - High variance indicates that treatment effectiveness is inconsistent across contexts
+    - Low variance indicates that treatment effects are stable and generalizable
 
 ## Lab 4: Replicated randomized block designs
 
@@ -460,11 +471,12 @@ A two-way factorial ANOVA revealed a significant interaction between composite t
 - Randomized block design:
   - Estimates the fixed effect of treatment while accounting for block-to-block variability
   - The blocking variable is modeled as a random effect
+
 - Replicated randomized block design:
   - Extends the basic design by adding replicates within each block
   - Allows inclusion of a random treatment–block interaction term
-  - Although this interaction is not of direct interest, modeling it better reflects uncertainty in the average treatment effect and typically yields more conservative inference
-- Interactions between fixed effects (time) and random effects (subject) are also common in longitidinal data analysis (discussed in week 4)
+  - Although this interaction is not of direct interest, modeling it gives a more realistic representation of uncertainty in the average treatment effect and yields more conservative inference when the treatment–block interaction ICC is large
+    - More conservative: lower probability of declaring a treatment effect when none exists (better control of Type I error)
 
 # Part 3: Crossed random-effects models
 
@@ -474,7 +486,7 @@ A two-way factorial ANOVA revealed a significant interaction between composite t
 - So far, we have considered data structures with a single context variable, such as the blocks in a randomized block design
   - This creates a two-level hierarchical structure, with the observational units at the lower level (level 1) and the levels of the context variable at the higher level (level 2)
 - When observational units are influenced by multiple context variables, different grouping structures can occur
-  - Hierarchical: one context variable is nested within another (discussed in weeks 3 and 4)
+  - Hierarchical: one context variable is nested within another (discussed in subsequent weeks)
     - Example: pupils (level 1) nested within classes (level 2), and classes nested within schools (level 3)
   - Crossed: lower-level units belong to combinations of two (or more) non-nested higher-level units
     - Example: exam grades (level 1) cross-classified by student (level 2) and teacher (level 2)
@@ -657,3 +669,19 @@ $ICC_{\text{agreement}} =
 - About 74% of the total variability in measured tumor size reflects true differences between patients
 - The remaining 26% is due to radiologist differences and measurement noise
 - This indicates fairly high agreement among radiologists: measurements largely reflect real biological variation rather than who performed them
+
+## Summary
+
+- Crossed random-effects models extend beyond hierarchical structures by including two (or more) non-nested random effects
+  
+- Crossed random-effects models require replication in data collection
+  - Each patient must be assessed by multiple radiologists (and vice versa)
+  - This crossed design allows us to estimate separate variance components for each source of variability
+  - Without such replication, we cannot disentangle the effects of different random factors
+
+- Crossed random-effects models are particularly valuable in medical research for assessing inter-rater agreement and consistency
+
+- Interactions between crossed random effects are also possible
+  - This would require multiple measurements per patient-radiologist pair
+  - For example: each radiologist measures each tumor twice, allowing us to estimate a patient-by-radiologist interaction capturing whether consistency between raters varies across patients
+  

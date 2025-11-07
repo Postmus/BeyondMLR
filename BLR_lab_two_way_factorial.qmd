@@ -147,7 +147,9 @@ What do the F-tests and p-values in the ANOVA table tell us about the significan
 
 ## Simple Effects Analysis
 
-Because thew interaction effect is significant, we proceed with examing the simple effects: the effect of one factor within each level of the other factor. In this case, we examine the effect of therapy type (Standard vs Enhanced vs Control) separately for each disease severity level:
+Because the interaction effect is significant, we proceed with examining the simple effects: the effect of one factor within each level of the other factor. When analyzing an interaction, we have a choice in how to decompose it. We could examine either the effect of therapy type (Standard vs Enhanced vs Control) separately for each disease severity level, or alternatively, we could examine the effect of disease severity (Mild vs Severe) separately for each therapy type. 
+
+In this clinical context, we choose to examine the effect of therapy type conditional on disease severity level. This choice is clinically motivated: from a treatment planning perspective, clinicians need to know which therapies work best for patients presenting with different disease severity levels. Understanding how therapy effectiveness varies across severity groups directly informs treatment decisions and allows for severity-stratified recommendations. In other words, the question "which therapy works best for mild cases versus severe cases?" is more clinically actionable than asking "how does severity affect outcomes for each therapy type?"
 
 ```{r}
 # Compute simple effects: effect of therapy type within each severity level
@@ -165,6 +167,32 @@ se_pairs
 
 ::: {.callout-important icon=false title="Question"}
 For which disease severity level(s) does therapy type have a significant effect on recovery rate? What is the practical interpretation of this finding?
+:::
+
+### Alternative Decomposition: Simple Effects Conditional on Therapy Type
+
+As mentioned earlier, we could also decompose the interaction by examining the effect of disease severity separately for each therapy type. While this perspective is less clinically motivated than the severity-stratified approach above, it can still provide useful insights.
+
+::: {.callout-important icon=false title="Exercise"}
+Perform a simple effects analysis conditional on therapy type (i.e., examine the effect of disease severity (Mild vs Severe) within each therapy type). 
+:::
+
+```{r}
+#| include: false 
+se_therapy <- emmeans(model_twoway, ~ Severity | Therapy)
+se_therapy
+
+se_pairs <- pairs(se_therapy, adjust = "bonferroni")
+se_pairs
+```
+
+
+::: {.callout-important icon=false title="Question"}
+For which therapy type(s) does disease severity have a significant effect on recovery rate?
+:::
+
+::: {.callout-important icon=false title="Question"}
+How do these findings complement or differ from the severity-stratified analysis we performed above?
 :::
 
 ### Model Diagnostics

@@ -5,7 +5,6 @@ format:
     toc: true
     toc-depth: 3
     toc-location: right    
-    embed-resources: true
   pdf:
     toc: false
 execute:
@@ -131,15 +130,13 @@ Does the plot suggest any differences in the overall effectiveness of the treatm
 What does the plot suggest about variability between laboratories? Are some laboratories consistently higher or lower in wound healing across all treatments?
 :::
 
-## A Mixed Effects Model for the Randomized Block Design
+## A Mixed Effects Model for the Replicated Randomized Block Design
 
 As in the previous lab, laboratory is included as a random effect and treatment as a fixed effect in the model. The key new feature is the **treatment-by-laboratory interaction** term, which is also modeled as a random effect.
 
 To understand why the interaction term must also be modeled as random, we need to consider the nature of random effects in this context. Since laboratory is treated as a random effect, we are assuming that the laboratories in the experiment represent a random sample from a larger population of possible laboratory conditions. This means that we are not just interested in the specific laboratories in the study, but in how the treatments would perform across any set of laboratories with varying conditions.
 
 When we include an interaction term between treatment and laboratory, we are asking whether the effect of each treatment depends on the laboratory environment. If we had modeled laboratory as a fixed effect (i.e., we were only interested in those specific laboratories), the interaction could also be treated as fixed. However, because laboratory is random, the interaction must also be treated as random to reflect the idea that the variability in treatment effects across laboratories applies not just to the specific laboratories in the study, but to any laboratory from the broader population.
-
-In other words, by modeling the interaction as random, we are assuming that the variation in treatment effects is not unique to the five laboratories in the study, but rather represents random fluctuations in treatment effectiveness that could occur in any laboratory setting. This approach allows us to generalize our findings beyond the laboratories in the experiment, making the model more realistic and applicable to a wider range of scenarios.
 
 ### Model Specification
 
@@ -213,6 +210,15 @@ Inspect the ANOVA table and report whether the overall treatment effect is stati
 Use the `emmeans` package to perform pairwise comparisons between treatments and explore which pairs differ.
 :::
 
+```{r}
+#| include: false
+emmeans_model_block <- emmeans(model_block, ~ Treatment)
+emmeans_model_block
+
+pairs(emmeans_model_block, adjust = "bonferroni")
+```
+
+
 ### Assessing the variance components
 
 The variance components can be assessed using the **intra-class correlation coefficient (ICC)**, which expresses how much of the total unexplained variance arises from each random effect:
@@ -234,10 +240,10 @@ icc_int
 
 **Explanation:** The `tidy()` function from the `broom.mixed` package takes complex model output and organizes it into a standardized tidy data frame, where each row corresponds to one model parameter (e.g., fixed effect, random-effect variance, residual variance). Here, we use it to extract the random-effect variance components from the fitted model object (argument `effects = "ran_pars"`)
 
-- The **laboratory ICC** quantifies how strongly wound-healing outcomes are correlated within the same laboratory (reflecting baseline lab differences)
-- The **interaction ICC** quantifies how much of the total variability arises from differences in treatment effects across laboratories
+- The **laboratory ICC** quantifies how strongly wound-healing outcomes are correlated within the same laboratory, reflecting baseline differences between labs
+- The **interaction ICC** quantifies the proportion of total variability attributable to differences in treatment effects across laboratories
 
-Together, these ICCs describe how hierarchical structure influences precision: the larger the ICCs, the more variability stems from between-lab and treatment–lab differences rather than residual error.
+The larger these ICCs, the greater the divergence between a mixed-effects model and an OLS analysis that ignores the grouping structure.
 
 ::: {.callout-important icon=false title="Question"}
 How large is the ICC for the laboratory effect? What does this tell us about differences in baseline wound-healing across labs?
@@ -251,9 +257,9 @@ How large is the ICC for the treatment-by-laboratory interaction? Does this sugg
 
 The process of performing model diagnostics for the replicated randomized block design is the same as for the traditional randomized block design. Therefore, we refer to the previous lab for detailed instructions on assessing model assumptions and performing diagnostic checks.
 
-## Fitting a two-way additive ANOVA without the random interaction term
+## Exploring the impact of omitting the random interaction term from the mixed effects model 
 
-To explore how the inclusion of the random treatment-by-laboratory interaction impacts inference for the fixed effect of wound healing treatment, we now fit a simpler mixed-effects model that includes only a random intercept for laboratory. This corresponds to a two-way additive ANOVA with wound healing treatment as a fixed effect and laboratory as a random effect.
+To explore how the inclusion of the random treatment-by-laboratory interaction impacts inference for the fixed effect of wound healing treatment, we now fit a simpler mixed-effects model that includes only a random intercept for laboratory.
 
 ```{r}
 # Fit the model without random interaction term
@@ -285,4 +291,3 @@ Inspect the model summaries and ANOVA tables for both models. What do you obverv
 
 In short, the main treatment effect represents the average across all laboratories. When only a few labs are available, allowing for random treatment-by-lab heterogeneity makes that average more uncertain. In this example, the difference is minor because the interaction ICC is low (0.167), meaning that little variability arises from treatment-by-lab heterogeneity. When the interaction ICC is larger, treatment effects become less certain (reflected in larger standard errors and higher p-values) because more of the total variability is due to differences in treatment performance across laboratories.
 
-By contrast, if laboratory were treated as a fixed factor, the main effect of treatment would represent the average treatment difference over these five specific laboratories, meaning there is no additional uncertainty associated with lab-to-lab variation. In that case, adding a treatment-by-lab interaction would typically reduce the residual variance, leading to smaller standard errors and lower p-values. However, inference would then be limited to these five laboratories only; we would not generalize to other settings. The increase in p-values observed under the random-effects approach therefore reflects the added uncertainty that comes from generalizing beyond the observed laboratories.
