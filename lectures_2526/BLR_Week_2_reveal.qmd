@@ -32,22 +32,32 @@ if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.mixed)
 ```
 
-## What did we learn last week
+## What did we learn last week - part 1
 
-::: {style="font-size:88%"}
-- Dummy and effects coding are two schemes for incorporating nominal variables (unordered factors in R) into linear regression models
-  - The interpretation of coefficients depends on the coding scheme
+#### One-way ANOVA
+
+- Dummy coding and effects coding are two schemes for incorporating nominal variables (unordered factors in R) into linear regression models
+  - The interpretation of coefficients depends on the coding scheme:
     - Effects coding: coefficients represent deviations from the overall mean
     - Dummy coding: coefficients represent differences from the reference category
   - ANOVA tests, estimated marginal means, and post-hoc comparisons are invariant to the coding scheme
+
+#### Feedback assignment 1
+
+- No major difficulties were encountered in the submitted reports and associated Quarto files
+  - Analyses and interpretations were generally correct
+  - Students demonstrated appropriate use of the `dplyr` and `ggplot2` packages for creating summary tables and graphs
+
+## What did we learn last week - part 2
+
 - In randomized block designs, blocks (e.g., cages) define a shared environment for all experimental units (e.g., rats) within that block
-  - Observations within the same block are positively correlated if the blocking variable is not included as a fixed effect
-  - In such cases, the power to detect a treatment effect can be increased by including block as a random effect, which
-  decomposes the unexplained variation (i.e., variation not explained by the fixed effects) into:
-    - Variation between blocks (due to shared conditions)
-    - Residual variation between individual units within blocks
+- As a result, observations within the same block are positively correlated, violating the independent errors assumption underlying ordinary linear regression 
+  - Applying ordinary linear regression in these situations gives unbiased treatment effect estimates but overestimates the corresponding standard errors, reducing the power to detect a treatment effect
+- The independent errors assumption can be relaxed by including block as a random effect, which decomposes the unexplained variation (i.e., variation not explained by treatment) into:
+  - Variation between blocks (due to shared conditions)
+  - Residual variation between individual units within blocks
+- Compared to ordinary linear regression, this approach increases the precision with which the treatment effect is estimated, resulting in greater statistical power
   - The magnitude of the power gain depends on the degree of within-block correlation, quantified by the intraclass correlation coefficient (ICC)   
-:::
 
 ## Today's lecture
 
@@ -432,7 +442,7 @@ plot(fit, which = 1, main = "Residuals vs Fitted")
 
 A two-way factorial ANOVA revealed a significant interaction between composite type and curing time, F(2, 54) = 26.72, p < 0.001. Given this interaction, a simple-effects analysis was conducted to examine the effect of curing time within each composite type. For hybrid composite, curing time significantly affected hardness (p < 0.001): mean hardness was higher after 60-second curing (52.1, 95% CI: 51.2–53.0) than after 20-second curing (47.0, 95% CI: 46.1–47.8). For microfine composite, there was no significant difference between 20-second curing (49.7, 95% CI: 48.8–50.5) and 60-second curing (49.5, 95% CI: 48.6–50.3), p = 0.739. For microhybrid composite, curing time likewise had no significant effect, with means of 50.7 (95% CI: 49.9–51.6) for 20-second curing and 50.3 (95% CI: 49.4–51.1) for 60-second curing, p = 0.460.
 
-## Lab 3: Two-way factorial ANOVA with two experimental factors
+## Lab 3: Two-way factorial ANOVA
 
 ![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
 
@@ -468,15 +478,22 @@ A two-way factorial ANOVA revealed a significant interaction between composite t
 
 ## Summary
 
+::: {style="font-size:95%"}
+
 - Randomized block design:
-  - Estimates the fixed effect of treatment while accounting for block-to-block variability
-  - The blocking variable is modeled as a random effect
+  - Estimates the fixed treatment effect while accounting for block-to-block variability by modeling 
+  the blocking variable as a random effect
+  - Generally provides greater power than ordinary linear regression by accounting for within-block correlation
 
 - Replicated randomized block design:
-  - Extends the basic design by adding replicates within each block
-  - Allows inclusion of a random treatment–block interaction term
-  - Although this interaction is not of direct interest, modeling it gives a more realistic representation of uncertainty in the average treatment effect and yields more conservative inference when the treatment–block interaction ICC is large
-    - More conservative: lower probability of declaring a treatment effect when none exists (better control of Type I error)
+  - Extends the basic design by including multiple replicates within each block
+  - Allows estimation of a random treatment-by-block interaction term
+  - Although this interaction is not of direct interest, modeling it provides a more realistic representation of uncertainty in the average treatment effect
+  - Yields more conservative inference when the treatment-by-block interaction ICC is large
+    - More conservative: lower probability of falsely declaring a treatment effect (better Type I error control)
+    - Despite being more conservative, still generally provides greater power than ordinary linear regression that ignores the blocking structure
+
+:::
 
 # Part 3: Crossed random-effects models
 
@@ -571,15 +588,9 @@ model_crossed <- lmer(measurement ~ (1 | radiologist) + (1 | patient), data = da
 ```
 :::
 
-## Quantifying agreement and consistency
+## Quantifying agreement
 
-:::: {.columns style="font-size:90%"}
-
-::: {.column width="50%"}
-
-**Agreement**
-
-- Measures the extent to which radiologists give the same numerical results when assessing the same patients  
+- Agreement measures the extent to which radiologists give the same numerical results when assessing the same patients  
 - Defined as the proportion of total variance explained by true patient differences  
   $$
   ICC_{\text{agreement}} =
@@ -588,29 +599,6 @@ model_crossed <- lmer(measurement ~ (1 | radiologist) + (1 | patient), data = da
   $$
 
 - High values indicate that most of the variation reflects real biological differences rather than who performed the measurement
-
-:::
-
-::: {.column width="50%"}
-
-**Consistency**
-
-- Measures the extent to which radiologists give measurements that rank patients in the same order
-- Defined as the proportion of variance explained by true patient differences, excluding radiologist-level variability  
-  $$
-  ICC_{\text{consistency}} =
-  \frac{\sigma^2_{\text{patient}}}
-       {\sigma^2_{\text{patient}} + \sigma^2}
-  $$
-
-- High values indicate that radiologists are consistent in ranking patients, even if their absolute measurements are on different scales
-
-:::
-
-::::
-
-- In this context, agreement is the more logical measure because treatment planning depends on the absolute tumor size values, not just on how patients rank relative to one another  
-
 
 ## Results and interpretation
 
@@ -674,14 +662,10 @@ $ICC_{\text{agreement}} =
 
 - Crossed random-effects models extend beyond hierarchical structures by including two (or more) non-nested random effects
   
-- Crossed random-effects models require replication in data collection
-  - Each patient must be assessed by multiple radiologists (and vice versa)
-  - This crossed design allows us to estimate separate variance components for each source of variability
-  - Without such replication, we cannot disentangle the effects of different random factors
+- Crossed random-effects models are commonly used in medical research for assessing inter-rater agreement when the outcome is measured on a continuous scale
+  - For binary outcomes, agreement is typically assessed using Cohen's kappa or Fleiss' kappa
 
-- Crossed random-effects models are particularly valuable in medical research for assessing inter-rater agreement and consistency
-
-- Interactions between crossed random effects are also possible
-  - This would require multiple measurements per patient-radiologist pair
-  - For example: each radiologist measures each tumor twice, allowing us to estimate a patient-by-radiologist interaction capturing whether consistency between raters varies across patients
+- Interactions between crossed random effects are also possible:
+  - This requires multiple measurements per patient-radiologist pair
+  - For example: each radiologist measures each tumor twice, allowing estimation of a patient-by-radiologist interaction that captures whether consistency between raters varies across patients  
   
