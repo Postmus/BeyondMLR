@@ -170,6 +170,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../../Assignments/Week 1/Assignment_week_1.html">
  <span class="dropdown-text">Week 1</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../../Assignments/Week 2/Assignment_week_2.html">
+ <span class="dropdown-text">Week 2</span></a>
+  </li>  
     </ul>
   </li>
 </ul>
@@ -197,7 +201,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#perform-an-exploratory-data-analysis-eda" id="toc-perform-an-exploratory-data-analysis-eda" class="nav-link" data-scroll-target="#perform-an-exploratory-data-analysis-eda">2. Perform an Exploratory Data Analysis (EDA)</a></li>
   <li><a href="#fit-a-mixed-effects-model" id="toc-fit-a-mixed-effects-model" class="nav-link" data-scroll-target="#fit-a-mixed-effects-model">3. Fit a Mixed-Effects Model</a></li>
   <li><a href="#test-for-overall-differences" id="toc-test-for-overall-differences" class="nav-link" data-scroll-target="#test-for-overall-differences">4. Test for Overall Differences</a></li>
-  <li><a href="#perform-pairwise-comparisons" id="toc-perform-pairwise-comparisons" class="nav-link" data-scroll-target="#perform-pairwise-comparisons">5. Perform Pairwise Comparisons</a></li>
+  <li><a href="#assess-variance-components" id="toc-assess-variance-components" class="nav-link" data-scroll-target="#assess-variance-components">5. Assess variance components</a></li>
   <li><a href="#evaluate-model-assumptions" id="toc-evaluate-model-assumptions" class="nav-link" data-scroll-target="#evaluate-model-assumptions">6. Evaluate Model Assumptions</a></li>
   </ul></li>
   <li><a href="#requirements-for-the-report" id="toc-requirements-for-the-report" class="nav-link" data-scroll-target="#requirements-for-the-report">Requirements for the Report</a></li>
@@ -289,13 +293,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><code>Patient × ExerciseRoutine</code> (to account for potential variability in how patients respond to different routines).</li>
 </ul></li>
 </ul></li>
-<li>Test whether the <code>Patient × ExerciseRoutine</code> random interaction term is necessary by comparing the full model (with the interaction term) to a reduced model (without the interaction term).</li>
-<li>Based on the results of this test:
-<ul>
-<li>If the interaction term is significant, proceed with the full model for further analysis.</li>
-<li>If the interaction term is not significant, proceed with the reduced model.</li>
-</ul></li>
-<li>Summarize the chosen model:
+<li>Summarize the model:
 <ul>
 <li>Report the fixed effects and variance components.</li>
 </ul></li>
@@ -305,12 +303,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="test-for-overall-differences">4. Test for Overall Differences</h3>
 <ul>
 <li>Use the selected model to test for overall differences in functional mobility scores across exercise routines.</li>
+<li>If significant overall differences are found, perform pairwise comparisons to identify which routines differ.</li>
 </ul>
 </section>
-<section id="perform-pairwise-comparisons" class="level3">
-<h3 class="anchored" data-anchor-id="perform-pairwise-comparisons">5. Perform Pairwise Comparisons</h3>
+<section id="assess-variance-components" class="level3">
+<h3 class="anchored" data-anchor-id="assess-variance-components">5. Assess variance components</h3>
 <ul>
-<li>If significant overall differences are found, calculate estimated marginal means and perform pairwise comparisons to identify which routines differ.</li>
+<li>Calculate ICCs to evaluate the variance components</li>
 </ul>
 </section>
 <section id="evaluate-model-assumptions" class="level3">

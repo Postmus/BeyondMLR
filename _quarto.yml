@@ -29,6 +29,8 @@ website:
         menu:
           - text: "Week 1"
             href: Assignments/Week 1/Assignment_week_1.qmd
+          - text: "Week 2"
+            href: Assignments/Week 2/Assignment_week_2.qmd  
 
 format:
   html:

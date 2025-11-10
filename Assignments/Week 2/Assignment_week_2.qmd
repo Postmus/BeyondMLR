@@ -1,17 +1,12 @@
 ---
 title: "Assignment Week 2: Effectiveness of Exercise Routines on Functional Mobility"
 format: html
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true   
 ---
-
-```{r}
-#| label: setup
-#| include: false
-
-# configure global options for R code chunks:
-# warning = F to suppress the display of warning messages generated during the execution of code chunks
-# message = F to suppress the display of messages produced during the execution of code chunks
-knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
-```
 
 ## Introduction
 
@@ -63,18 +58,15 @@ dataset <- read.csv("functional_mobility.csv", colClasses = c("ExerciseRoutine" 
   - **Random Effects**: 
     - `Patient` (to account for variability between individuals).
     - `Patient × ExerciseRoutine` (to account for potential variability in how patients respond to different routines).
-- Test whether the `Patient × ExerciseRoutine` random interaction term is necessary by comparing the full model (with the interaction term) to a reduced model (without the interaction term).
-- Based on the results of this test:
-  - If the interaction term is significant, proceed with the full model for further analysis.
-  - If the interaction term is not significant, proceed with the reduced model.
-- Summarize the chosen model:
+- Summarize the model:
   - Report the fixed effects and variance components.
 
 ### 4. Test for Overall Differences
 - Use the selected model to test for overall differences in functional mobility scores across exercise routines.
+- If significant overall differences are found, perform pairwise comparisons to identify which routines differ.
 
-### 5. Perform Pairwise Comparisons
-- If significant overall differences are found, calculate estimated marginal means and perform pairwise comparisons to identify which routines differ.
+### 5. Assess variance components
+- Calculate ICCs to evaluate the variance components
 
 ### 6. Evaluate Model Assumptions
 - Assess the model's assumptions (e.g., normality of residuals, homoscedasticity) using diagnostic plots.
