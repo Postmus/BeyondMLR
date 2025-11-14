@@ -1,0 +1,382 @@
+---
+title: "Beyond MLR - Week 3: Experimental Design II"
+subtitle: "Cluster randomization and multi-level analysis of cross-sectional obervational data"
+author: "Dr. Douwe Postmus"
+format:
+  revealjs:
+    theme: [default, custom-reveal.scss]
+    slide-number: true
+    toc: false
+    slide-level: 2
+    incremental: false
+    code-overflow: wrap
+    scrollable: true
+    smaller: true
+    width: 1280
+    height: 720
+    margin: 0.06
+    max-scale: 2
+    footer: "Beyond multiple linear regression - week 3"
+    logo: UMCG-logo.png
+execute:
+  warning: false
+  message: false
+  eval: true
+  echo: false
+---
+
+```{r}
+#| include: false
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.mixed)
+```
+
+## What did we learn last week
+
+- Two-way factorial ANOVA
+  - Designs with two fixed experimental factors
+  - Main effects and interactions
+  - Marginal versus conditional means
+- Replicated randomized block designs
+  - Introduces an interaction between a fixed effect (treatment) and a random effect (block)
+- Crossed random-effects models
+  - Models with two random effects
+  - Assessment of inter-rater agreement
+
+## Today's lecture
+
+TODO: outline
+     
+# Part 1: Cluster randomization
+
+```{r}
+### Simulate a hypothetical cluster-randomized trial
+
+# Set parameters
+set.seed(42)
+n_wards <- 12
+n_patients_per_ward <- 30
+treatment_effect <- 1   # Improvement in physical function score (0-12 scale)
+sigma_ward <- 1.3         # SD of ward random effects
+sigma_residual <- 1.5     # SD of individual-level residual variation
+
+# Generate ward-level data
+wards <- data.frame(
+  ward_id = 1:n_wards,
+  intervention = rep(c("standard_care", "early_mobilization"), each = n_wards/2),
+  ward_effect = rnorm(n_wards, mean = 0, sd = sigma_ward)
+)
+
+# Generate patient-level data
+patients <- expand.grid(
+  ward_id = 1:n_wards,
+  patient_within_ward = 1:n_patients_per_ward
+) |>
+  mutate(
+    patient_id = 1:(n_wards * n_patients_per_ward),
+    age = round(rnorm(n_wards * n_patients_per_ward, mean = 65, sd = 12)),
+    preop_function = round(rnorm(n_wards * n_patients_per_ward, mean = 9, sd = 2))  # Pre-operative function score (0-12)
+  )
+
+# Merge ward-level information with patient-level data
+patients <- merge(patients, wards, by = "ward_id")
+
+# Simulate outcomes (physical function score at discharge: 0-12 scale)
+patients <- patients |>
+  mutate(
+    function_score = 6 +  # Baseline post-surgery function
+                     0.2 * (preop_function - 9) +  # Effect of pre-op function
+                     ward_effect + 
+                     ifelse(intervention == "early_mobilization", treatment_effect, 0) + 
+                     rnorm(n_wards * n_patients_per_ward, mean = 0, sd = sigma_residual),
+    function_score = round(pmin(12, pmax(0, function_score)))  # Round and bound between 0-12
+  )
+
+# Prepare final dataset
+data_cluster_randomization <- patients |>
+  mutate(
+    intervention = factor(intervention, levels = c("standard_care", "early_mobilization")),
+    ward_id = factor(ward_id)
+  )
+``` 
+
+## Example: Early mobilization after surgery
+
+- Research question:
+  - Does implementing a structured early mobilization protocol in post-surgical wards improve patients' physical function recovery compared to standard care?
+  
+- Study design:
+  - 12 post-surgical wards randomized to enhanced early mobilization (n=6) or standard care (n=6)
+  - Approximately 30 patients per ward recovering from major abdominal surgery
+  - Total sample: 360 patients nested within 12 wards
+
+- Intervention:
+  - Enhanced: Mobilization within 6 hours post-surgery, structured progression, twice-daily physiotherapy
+  - Standard care: Mobilization begins day 1-2 post-operatively, mobilization as clinically indicated
+
+- Outcome:
+  - Physical function score at hospital discharge (Short Physical Performance Battery: 0-12 scale, higher = better)
+
+## Level of randomization
+
+:::: {.columns}
+
+::: {.column width="50%"}
+**Randomized block design**
+
+- Blocks are a nuisance factor we control for (e.g., litters, cages)
+- Treatment assigned to individual units within each block
+- Each block contains multiple treatment conditions
+- Treatment is an **individual-level variable**
+  - Experimental units = observational units
+- Goal: increase precision
+:::
+
+::: {.column width="50%"}
+**Cluster randomization**
+
+- Clusters define the unit of randomization (e.g., wards, clinics)
+- Treatment assigned to entire clusters
+- All individuals in a cluster receive the same treatment
+- Treatment is a **cluster-level variable**
+  - Experimental units ≠ observational units
+- Reason: practical/ethical constraints, contamination risk
+:::
+
+::::
+
+## Why cluster randomization?
+
+- The intervention targets ward-level factors:
+  - Staff training on mobilization techniques
+  - Environmental changes (walking aids, hallway markings)
+  - Culture change in ward practices
+  
+- Cannot individualize treatment within wards:
+  - Nursing staff work across all patients on the ward
+  - Staff cannot easily apply different protocols to different patients
+  
+- Risk of contamination:
+  - If standard and enhanced care coexist on same ward, practices will blend
+  - Treatment "spillover" undermines the comparison
+
+## Data structure: long format
+
+- The dataset has **one row per patient** (observational unit), even though randomization occurred at the ward level (experimental unit)
+
+- Key structure:
+  - 360 patients (rows) nested within 12 wards
+  - `intervention` is a **cluster-level variable**: all patients in the same ward have the same intervention
+  - `function_score` is a **patient-level outcome**: varies between patients within the same ward
+
+```{r}
+#| echo: false
+data_cluster_randomization |>
+  select(patient_id, ward_id, intervention, age, preop_function, function_score) |>
+  arrange(ward_id, patient_id) |>
+  slice(c(1:3, 31:33, 331:333)) |>
+  kable(
+    digits = 0,
+    format = "html",
+    table.attr = 'style="font-size: 60%; margin-left: 0; margin-right: auto"',
+    col.names = c("Patient ID", "Ward ID", "Intervention", "Age", "Pre-op function", "Function score")
+  )
+```
+
+
+## Exploratory data analysis
+
+```{r}
+# Calculate ward-level means
+ward_summary <- data_cluster_randomization |>
+  group_by(ward_id, intervention) |>
+  summarise(
+    mean_function = mean(function_score),
+    n = n(),
+    .groups = "drop"
+  )
+
+# Calculate overall and intervention-specific means
+grand_mean <- mean(data_cluster_randomization$function_score)
+intervention_means <- data_cluster_randomization |>
+  group_by(intervention) |>
+  summarise(mean_function = mean(function_score))
+
+# Create visualization showing individual patients and ward means
+ggplot(data_cluster_randomization, aes(x = ward_id, y = function_score, color = intervention)) +
+  geom_hline(yintercept = grand_mean, linetype = "solid", color = "black", linewidth = 1) +
+  geom_hline(data = intervention_means, 
+             aes(yintercept = mean_function, color = intervention), 
+             linetype = "dashed", linewidth = 0.8) +
+  geom_jitter(alpha = 0.4, width = 0.2, size = 1.5) +
+  geom_point(data = ward_summary, aes(y = mean_function), 
+             size = 4, shape = 18) +
+  labs(
+    x = "Ward",
+    y = "Physical function score (0-12)",
+    color = "Intervention",
+    title = "Physical function scores by ward and intervention",
+    subtitle = "Points = individual patients; Diamonds = ward means; Solid line = grand mean; Dashed lines = intervention means"
+  ) +
+  scale_color_manual(
+    values = c("standard_care" = "#E69F00", "early_mobilization" = "#56B4E9"),
+    labels = c("Standard care", "Early mobilization")
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    axis.text.x = element_text(angle = 0, hjust = 0.5)
+  )
+```
+
+## Statistical model specification
+
+To estimate the treatment effect while accounting for clustering within wards, we use a mixed-effects model with a random intercept for ward:
+
+$$
+Y_{ij} = \mu + \alpha_{T_j} + u_j + \varepsilon_{ij}
+$$
+
+- Model components:
+  - $Y_{ij}$: physical function score for patient $i$ in ward $j$
+  - $\mu$: grand mean (overall average across both intervention groups)
+  - $\alpha_{T_j}$: fixed effect of treatment assigned to ward $j$ (deviation from grand mean)
+    - $T_j$ denotes the treatment group of ward $j$ (standard care or early mobilization)
+  - $u_j \sim N(0, \sigma^2_{\text{ward}})$: random effect for ward $j$, capturing ward-to-ward variability
+  - $\varepsilon_{ij} \sim N(0, \sigma^2)$: residual error for patient $i$ in ward $j$
+
+## Results: fixed effects
+
+```{r}
+#| echo: false
+options(contrasts = c("contr.sum", "contr.poly"))  # Effects coding
+model_cluster <- lmer(function_score ~ intervention + (1 | ward_id), 
+                      data = data_cluster_randomization)
+```
+
+**Estimated marginal means**
+
+```{r}
+#| echo: false
+emm <- emmeans(model_cluster, ~ intervention)
+kable(
+  data.frame(emm),
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 90%; margin-left: 0; margin-right: auto"'
+)
+```
+
+::: {style="margin-top:1.0em;"}
+:::
+
+**ANOVA table**
+
+```{r}
+#| echo: false
+anova_table <- anova(model_cluster)
+kable(
+  anova_table,
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 90%; margin-left: 0; margin-right: auto"'
+)
+```
+
+::: {style="margin-top:1.0em;"}
+:::
+
+- Early mobilization results in a mean physical function score of `r round(summary(emm)$emmean[2], 2)` (95% CI: [`r round(summary(emm)$lower.CL[2], 2)`, `r round(summary(emm)$upper.CL[2], 2)`])
+
+- Standard care results in a mean physical function score of `r round(summary(emm)$emmean[1], 2)` (95% CI: [`r round(summary(emm)$lower.CL[1], 2)`, `r round(summary(emm)$upper.CL[1], 2)`])
+
+- The `r round(summary(emm)$emmean[2] - summary(emm)$emmean[1], 2)` points difference in mean physical function score between early mobilization and standard care is statistically significant (F = `r round(anova_table$"F value"[1], 2)`, p < 0.001)
+
+## Results: variance components
+
+```{r}
+#| echo: false
+re <- broom.mixed::tidy(model_cluster, effects = "ran_pars")
+kable(
+  re[, c("group", "term", "estimate")],
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
+)
+```
+
+::: {style="margin-top:1.0em;"}
+:::
+
+- **Ward-level variance ($\sigma^2_{\text{ward}}$):** `r round(as.data.frame(VarCorr(model_cluster))$vcov[1], 2)`
+  - Captures the variability between wards
+
+- **Residual variance ($\sigma^2$):** `r round(as.data.frame(VarCorr(model_cluster))$vcov[2], 2)` 
+  - Captures the variability between patients within the same ward
+
+- **Intraclass correlation coefficient (ICC):** 
+$$\text{ICC} = \frac{\sigma^2_{\text{ward}}}{\sigma^2_{\text{ward}} + \sigma^2} = \frac{`r round(as.data.frame(VarCorr(model_cluster))$vcov[1], 2)`}{`r round(as.data.frame(VarCorr(model_cluster))$vcov[1], 2)` + `r round(as.data.frame(VarCorr(model_cluster))$vcov[2], 2)`} = `r round(as.data.frame(VarCorr(model_cluster))$vcov[1] / sum(as.data.frame(VarCorr(model_cluster))$vcov), 2)`$$
+
+- About `r round(100 * as.data.frame(VarCorr(model_cluster))$vcov[1] / sum(as.data.frame(VarCorr(model_cluster))$vcov), 0)`% of total variance in physical function scores is attributable to differences between wards, indicating moderate clustering of outcomes within wards
+
+## Ordinary linear regression ignoring clustering
+
+```{r}
+#| echo: false
+model_ols <- lm(function_score ~ intervention, data = data_cluster_randomization)
+```
+
+**Estimated marginal means**
+
+```{r}
+#| echo: false
+emm_ols <- emmeans(model_ols, ~ intervention)
+kable(
+  data.frame(emm_ols),
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 90%; margin-left: 0; margin-right: auto"'
+)
+```
+
+::: {style="margin-top:1.0em;"}
+:::
+
+**ANOVA table**
+
+```{r}
+#| echo: false
+anova_ols <- anova(model_ols)
+kable(
+  anova_ols,
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 90%; margin-left: 0; margin-right: auto"'
+)
+```
+
+::: {style="margin-top:1.0em;"}
+:::
+
+- The estimated treatment effect is similar (`r round(summary(emm_ols)$emmean[2] - summary(emm_ols)$emmean[1], 2)` vs. `r round(summary(emm)$emmean[2] - summary(emm)$emmean[1], 2)` points)
+
+- However, the standard errors are **too small** (SE = `r round(summary(emm_ols)$SE[1], 3)` vs. `r round(summary(emm)$SE[1], 3)` in the mixed model)
+
+- This leads to overly narrow confidence intervals and **inflated Type I error rates**
+
+- The F-statistic is much larger (F = `r round(anova_ols$"F value"[1], 2)` vs. F = `r round(anova_table$"F value"[1], 2)`), falsely suggesting stronger evidence
+
+## Effective sample size
+
+- We randomized **12 wards** (6 per intervention), not 360 individual patients
+
+- Because outcomes are correlated within wards, the effective sample size is much smaller than 360
+  - Think of it as having information equivalent to somewhere between 12 wards and 360 independent patients
+  - With moderate clustering (ICC ≈ 30%), the effective sample size is closer to the number of clusters than the number of individuals
+
+- The mixed model accounts for this reduced information by producing larger (and correct) standard errors
+
+- Ordinary linear regression incorrectly treats all 360 patients as independent, leading to overly optimistic conclusions
+
+# Part 2: Multi-level analysis of cross-sectional obervational data

@@ -2,27 +2,32 @@
 title: "Beyond MLR Lab 5: multilevel analysis"
 format: 
   html:
-    toc: true       # Enable the table of contents
-    toc-depth: 3    # Set the depth of headers included in the ToC (e.g., H1, H2, H3)
-    toc-location: right   # Optional: Can be left, right, or floating    
-    code-overflow: wrap 
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    code-overflow: wrap
+    embed-resources: true 
   pdf: 
     toc: false
-
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true
 ---
 
+::: {.callout-note icon=false title="Preliminary setup"}
+In this lab, we will use the R packages `ggplot2`, `dplyr`, `emmeans`, and `lmerTest`. You can use the script below to automatically install and load them using the `pacman` package.
+
 ```{r}
-#| label: setup
-#| include: false
+# Check whether pacman is available and install if needed
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 
-# configure global options for R code chunks:
-# warning = F to suppress the display of warning messages generated during the execution of code chunks
-# message = F to suppress the display of messages produced during the execution of code chunks
-knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
-
-# This qmd file requires the following packages to be installed:
-#c("dplyr", "ggplot2", "emmeans", "lme4", "lmerTest")
+# Use pacman to install (if needed) and load the required packages
+pacman::p_load(dplyr, ggplot2, emmeans, lmerTest)
 ```
+:::
 
 In this lab, we will explore the analysis of multilevel data, focusing on situations where subjects are nested within larger contexts, such as schools, neighborhoods, or clinics. The data include subject-level characteristics (e.g., age, gender), which reflect differences between individuals and help explain variation in their outcomes within a specific context. They also include context-level characteristics (e.g., school funding, neighborhood income), which account for differences between contexts and help explain variation in subject-level outcomes across these contexts.
 
@@ -50,11 +55,6 @@ The dataset is available on Brightspace under the name `airbnb.csv`. It contains
 Let's load the data and use the `str()` function to inspect the structure of the dataset.
 
 ```{r}
-# Load the required libraries
-library(dplyr)
-library(ggplot2)
-library(lmerTest)
-
 # Load the Chicago AirBnB data. Note that the call below assumes the csv file is placed in the 'data' folder directly above the root folder of the project. Update the string as needed if the file is located elsewhere.
 chicago_airbnb <- read.csv("data/airbnb.csv")
 
