@@ -112,8 +112,8 @@ data_cluster_randomization <- patients |>
   - Total sample: 360 patients nested within 12 wards
 
 - Intervention:
-  - Enhanced: Mobilization within 6 hours post-surgery, structured progression, twice-daily physiotherapy
-  - Standard care: Mobilization begins day 1-2 post-operatively, mobilization as clinically indicated
+  - Enhanced: mobilization within 6 hours post-surgery, structured progression, twice-daily physiotherapy
+  - Standard care: mobilization begins day 1-2 post-operatively, mobilization as clinically indicated
 
 - Outcome:
   - Physical function score at hospital discharge (Short Physical Performance Battery: 0-12 scale, higher = better)
@@ -128,8 +128,7 @@ data_cluster_randomization <- patients |>
 - Blocks are a nuisance factor we control for (e.g., litters, cages)
 - Treatment assigned to individual units within each block
 - Each block contains multiple treatment conditions
-- Treatment is an **individual-level variable**
-  - Experimental units = observational units
+- Treatment is an **individual-level** (level 1) variable
 - Goal: increase precision
 :::
 
@@ -139,8 +138,7 @@ data_cluster_randomization <- patients |>
 - Clusters define the unit of randomization (e.g., wards, clinics)
 - Treatment assigned to entire clusters
 - All individuals in a cluster receive the same treatment
-- Treatment is a **cluster-level variable**
-  - Experimental units ≠ observational units
+- Treatment is a **cluster-level** (level 2) variable
 - Reason: practical/ethical constraints, contamination risk
 :::
 
@@ -160,30 +158,6 @@ data_cluster_randomization <- patients |>
 - Risk of contamination:
   - If standard and enhanced care coexist on same ward, practices will blend
   - Treatment "spillover" undermines the comparison
-
-## Data structure: long format
-
-- The dataset has **one row per patient** (observational unit), even though randomization occurred at the ward level (experimental unit)
-
-- Key structure:
-  - 360 patients (rows) nested within 12 wards
-  - `intervention` is a **cluster-level variable**: all patients in the same ward have the same intervention
-  - `function_score` is a **patient-level outcome**: varies between patients within the same ward
-
-```{r}
-#| echo: false
-data_cluster_randomization |>
-  select(patient_id, ward_id, intervention, age, preop_function, function_score) |>
-  arrange(ward_id, patient_id) |>
-  slice(c(1:3, 31:33, 331:333)) |>
-  kable(
-    digits = 0,
-    format = "html",
-    table.attr = 'style="font-size: 60%; margin-left: 0; margin-right: auto"',
-    col.names = c("Patient ID", "Ward ID", "Intervention", "Age", "Pre-op function", "Function score")
-  )
-```
-
 
 ## Exploratory data analysis
 
@@ -297,9 +271,10 @@ kable(
 
 ```{r}
 #| echo: false
-re <- broom.mixed::tidy(model_cluster, effects = "ran_pars")
+re <- broom.mixed::tidy(model_cluster, effects = "ran_pars") |>
+  mutate(variance = estimate^2)
 kable(
-  re[, c("group", "term", "estimate")],
+  re[, c("group", "term", "estimate", "variance")],
   digits = 3,
   format = "html",
   table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
@@ -369,13 +344,15 @@ kable(
 
 ## Effective sample size
 
-- We randomized **12 wards** (6 per intervention), not 360 individual patients
+- When the ICC is large, wards vary substantially in their baseline performance
+  - Any observed treatment effect could partly reflect chance allocation of the intervention to better-performing wards, rather than a true intervention effect
+  - With only 12 wards randomized, we have limited ability to distinguish "lucky randomization" from true treatment benefits
 
-- Because outcomes are correlated within wards, the effective sample size is much smaller than 360
+- This decrease in precision with cluster-level variables is reflected in the notion of **effective sample size**
+  - Because outcomes are correlated within wards, the effective sample size is much smaller than 360
   - Think of it as having information equivalent to somewhere between 12 wards and 360 independent patients
-  - With moderate clustering (ICC ≈ 30%), the effective sample size is closer to the number of clusters than the number of individuals
-
-- The mixed model accounts for this reduced information by producing larger (and correct) standard errors
+  
+- The mixed model accounts for this uncertainty by producing larger (and correct) standard errors and wider confidence intervals
 
 - Ordinary linear regression incorrectly treats all 360 patients as independent, leading to overly optimistic conclusions
 
