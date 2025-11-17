@@ -29,7 +29,7 @@ execute:
 #| include: false
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
-pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.mixed)
+pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.mixed, gridExtra)
 ```
 
 ## What did we learn last week
@@ -356,4 +356,471 @@ kable(
 
 - Ordinary linear regression incorrectly treats all 360 patients as independent, leading to overly optimistic conclusions
 
-# Part 2: Multi-level analysis of cross-sectional obervational data
+# Part 2: Multi-level analysis of cross-sectional observational data
+
+```{r}
+### Simulate observational hierarchical data
+
+# Set parameters
+set.seed(123)
+n_hospitals <- 18
+n_patients_per_hospital <- 40
+beta_age <- 0.15           # Effect of patient age (per year)
+beta_severity <- 1.2       # Effect of disease severity (per point)
+beta_teaching <- -2.0      # Effect of teaching hospital status
+beta_size <- -0.01         # Effect of hospital size (per bed)
+sigma_hospital <- 2.5      # SD of hospital random effects
+sigma_residual <- 3.0      # SD of individual-level residual variation
+
+# Generate hospital-level data
+hospitals <- data.frame(
+  hospital_id = 1:n_hospitals,
+  academic_status = sample(c("non_academic", "academic"), n_hospitals, replace = TRUE, prob = c(0.67, 0.33)),
+  hospital_size = round(rnorm(n_hospitals, mean = 400, sd = 150)),
+  hospital_effect = rnorm(n_hospitals, mean = 0, sd = sigma_hospital)
+)
+
+# Generate patient-level data
+patients_obs <- expand.grid(
+  hospital_id = 1:n_hospitals,
+  patient_within_hospital = 1:n_patients_per_hospital
+) |>
+  mutate(
+    patient_id = 1:(n_hospitals * n_patients_per_hospital),
+    age = round(rnorm(n_hospitals * n_patients_per_hospital, mean = 68, sd = 12)),
+    cci_score = round(rnorm(n_hospitals * n_patients_per_hospital, mean = 4, sd = 2))  # Charlson Comorbidity Index (0-10+)
+  )
+
+# Merge hospital-level information with patient-level data
+patients_obs <- merge(patients_obs, hospitals, by = "hospital_id")
+
+# Simulate outcomes (length of stay in days)
+patients_obs <- patients_obs |>
+  mutate(
+    length_of_stay = 8 +                                    # Baseline length of stay
+                     beta_age * (age - 68) +                # Effect of age
+                     beta_severity * (cci_score - 4) +      # Effect of comorbidity burden (CCI)
+                     beta_teaching * (academic_status == "academic") +  # Effect of academic status
+                     beta_size * (hospital_size - 400) +    # Effect of hospital size
+                     hospital_effect +                       # Hospital random effect
+                     rnorm(n_hospitals * n_patients_per_hospital, mean = 0, sd = sigma_residual),
+    length_of_stay = round(pmax(1, length_of_stay))        # Minimum 1 day
+  )
+
+# Prepare final dataset
+data_observational <- patients_obs |>
+  mutate(
+    academic_status = factor(academic_status, levels = c("non_academic", "academic")),
+    hospital_id = factor(hospital_id)
+  ) |>
+  select(patient_id, hospital_id, age, cci_score, academic_status, hospital_size, length_of_stay)
+```
+
+## Example: Hospital length of stay
+
+- Research questions:
+  - To what extent does length of stay vary between hospitals compared with within hospitals?
+  - Which patient-level and hospital-level factors are associated with length of stay?
+
+- Study design:
+  - Cross-sectional observational study
+  - ~720 patients nested within 18 hospitals
+  - Varying hospital sizes (non-academic and academic hospitals)
+
+- Variables:
+  - **Patient-level** (level 1): age, comorbidity burden (Charlson Comorbidity Index)
+  - **Hospital-level** (level 2): academic status, hospital size (number of beds)
+  - **Outcome**: length of stay (days)
+  
+
+## Exploratory data analysis - grouping structure
+
+```{r}
+# Calculate hospital-level means
+hospital_summary <- data_observational |>
+  group_by(hospital_id) |>
+  summarise(
+    mean_los = mean(length_of_stay),
+    sd_los = sd(length_of_stay),
+    n = n(),
+    .groups = "drop"
+  ) |>
+  arrange(mean_los)
+
+# Calculate overall mean
+grand_mean_obs <- mean(data_observational$length_of_stay)
+
+# Order hospitals by mean
+hospital_order <- hospital_summary |>
+  arrange(mean_los) |>
+  pull(hospital_id)
+
+data_observational_ordered <- data_observational |>
+  mutate(hospital_id = factor(hospital_id, levels = hospital_order))
+
+# Create visualization showing variation within and between hospitals
+ggplot(data_observational_ordered, aes(x = hospital_id, y = length_of_stay)) +
+  geom_hline(yintercept = grand_mean_obs, linetype = "solid", color = "black", linewidth = 1) +
+  geom_jitter(alpha = 0.3, width = 0.2, size = 1, color = "gray60") +
+  geom_point(data = hospital_summary, aes(x = hospital_id, y = mean_los), 
+             size = 4, shape = 18, color = "red") +
+  labs(
+    x = "Hospital (ordered by mean length of stay)",
+    y = "Length of stay (days)",
+    title = "Variation in length of stay: within and between hospitals",
+    subtitle = "Points = individual patients; Diamonds = hospital means; Solid line = grand mean"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, size = 8)
+  )
+```
+
+- **Within-hospital variation**: patients in the same hospital have different lengths of stay
+- **Between-hospital variation**: hospital means differ substantially from each other
+
+## Exploratory data analysis - covariate effects
+
+:::: {.columns}
+
+::: {.column width="50%"}
+**Patient-level covariates**
+
+```{r}
+#| echo: false
+# Scatterplot for age
+p1 <- ggplot(data_observational, aes(x = age, y = length_of_stay)) +
+  geom_point(alpha = 0.3, color = "steelblue") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkblue") +
+  labs(
+    x = "Age (years)",
+    y = "Length of stay (days)",
+    title = "Age vs. Length of stay"
+  ) +
+  theme_minimal()
+
+# Scatterplot for CCI
+p2 <- ggplot(data_observational, aes(x = cci_score, y = length_of_stay)) +
+  geom_jitter(alpha = 0.3, width = 0.2, color = "steelblue") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkblue") +
+  labs(
+    x = "Charlson Comorbidity Index",
+    y = "Length of stay (days)",
+    title = "CCI vs. Length of stay"
+  ) +
+  theme_minimal()
+
+gridExtra::grid.arrange(p1, p2, ncol = 1)
+```
+:::
+
+::: {.column width="50%"}
+**Hospital-level covariates**
+
+```{r}
+#| echo: false
+# Boxplot for academic status
+p3 <- ggplot(data_observational, aes(x = academic_status, y = length_of_stay, fill = academic_status)) +
+  geom_boxplot(alpha = 0.6) +
+  scale_fill_manual(values = c("non_academic" = "#E69F00", "academic" = "#56B4E9")) +
+  labs(
+    x = "Hospital type",
+    y = "Length of stay (days)",
+    title = "Academic status vs. Length of stay"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+# Scatterplot for hospital size (aggregate by hospital)
+hospital_data <- data_observational |>
+  group_by(hospital_id, hospital_size) |>
+  summarise(mean_los = mean(length_of_stay), .groups = "drop")
+
+p4 <- ggplot(hospital_data, aes(x = hospital_size, y = mean_los)) +
+  geom_point(size = 3, color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "darkblue") +
+  labs(
+    x = "Hospital size (beds)",
+    y = "Mean length of stay (days)",
+    title = "Hospital size vs. Mean length of stay"
+  ) +
+  theme_minimal()
+
+gridExtra::grid.arrange(p3, p4, ncol = 1)
+```
+:::
+
+::::
+
+::: {style="margin-top:1.0em;"}
+:::
+
+- Older patients and those with higher comorbidity burden tend to have longer hospital stays
+- Academic hospitals appear to have slightly shorter stays on average
+- Larger hospitals tend to have shorter average length of stay
+
+## Null model: variance partitioning
+
+The **null model** (or **unconditional model**) contains only random intercepts for hospitals, without any covariates:
+
+$$
+Y_{ij} = \mu + u_j + \varepsilon_{ij}
+$$
+
+where $u_j \sim N(0, \sigma^2_{\text{hospital}})$ and $\varepsilon_{ij} \sim N(0, \sigma^2)$
+
+```{r}
+#| echo: false
+model_null <- lmer(length_of_stay ~ 1 + (1 | hospital_id), data = data_observational)
+```
+
+::: {style="margin-top:1.0em;"}
+:::
+
+:::: {.columns}
+
+::: {.column width="50%"}
+**Fixed effects:**
+
+```{r}
+#| echo: false
+fe_null <- broom.mixed::tidy(model_null, effects = "fixed")
+kable(
+  fe_null[, c("term", "estimate", "std.error")],
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"',
+  col.names = c("Term", "Estimate", "SE")
+)
+```
+:::
+
+::: {.column width="50%"}
+**Variance components:**
+
+```{r}
+#| echo: false
+vc_null <- broom.mixed::tidy(model_null, effects = "ran_pars") |>
+  mutate(variance = estimate^2)
+kable(
+  vc_null[, c("group", "estimate", "variance")],
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"',
+  col.names = c("Group", "SD", "Variance")
+)
+```
+:::
+
+::::
+
+::: {style="margin-top:1.0em;"}
+:::
+
+- Grand mean: `r round(fixef(model_null), 2)` days
+- **ICC** = `r round(as.data.frame(VarCorr(model_null))$vcov[1] / sum(as.data.frame(VarCorr(model_null))$vcov), 3)`: about `r round(100 * as.data.frame(VarCorr(model_null))$vcov[1] / sum(as.data.frame(VarCorr(model_null))$vcov), 0)`% of variance in length of stay is attributable to differences between hospitals
+
+- This "unconditional" ICC quantifies clustering before accounting for any patient or hospital characteristics
+
+## Adding patient-level characteristics
+
+Model with patient characteristics (age, comorbidity burden):
+
+$$
+Y_{ij} = \mu + \beta_1 \text{Age_centered}_{ij} + \beta_2 \text{CCI_centered}_{ij} + u_j + \varepsilon_{ij}
+$$
+
+```{r}
+#| echo: false
+# Center patient-level predictors at grand mean
+data_observational <- data_observational |>
+  mutate(
+    age_centered = age - mean(age),
+    cci_centered = cci_score - mean(cci_score)
+  )
+
+model_patient <- lmer(length_of_stay ~ age_centered + cci_centered + (1 | hospital_id), 
+                      data = data_observational)
+```
+
+::: {style="margin-top:1.0em;"}
+:::
+
+:::: {.columns}
+
+::: {.column width="60%"}
+**Coefficient estimates:**
+
+```{r}
+#| echo: false
+fe_patient <- broom.mixed::tidy(model_patient, effects = "fixed")
+kable(
+  fe_patient[, c("term", "estimate", "std.error", "statistic", "p.value")],
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"'
+)
+```
+:::
+
+::: {.column width="40%"}
+**Variance components:**
+
+```{r}
+#| echo: false
+vc_patient <- broom.mixed::tidy(model_patient, effects = "ran_pars") |>
+  mutate(variance = estimate^2)
+kable(
+  vc_patient[, c("group", "estimate", "variance")],
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"',
+  col.names = c("Group", "SD", "Variance")
+)
+```
+:::
+
+::::
+
+::: {style="margin-top:1.0em;"}
+:::
+
+- Intercept (`r round(fixef(model_patient)["(Intercept)"], 2)` days) represents the expected length of stay for a patient with average age and average comorbidity burden
+
+- Each additional year of age is associated with a `r round(fixef(model_patient)["age_centered"], 2)` day increase in length of stay
+
+- Each additional point on the CCI is associated with a `r round(fixef(model_patient)["cci_centered"], 2)` day increase in length of stay
+
+## Centering continuous covariates
+
+- Centering means subtracting the mean from each observation: $X_{\text{centered}} = X - \bar{X}$
+- Benefits of centering:
+  - Improves interpretation: intercept represents outcome at the mean of covariates (rather than at zero, which may be outside the observed range)
+  - Reduces multicollinearity when including interaction terms
+
+## Adding hospital-level characteristics
+
+Model with both patient and hospital characteristics:
+
+$$
+Y_{ij} = \mu + \beta_1 \text{Age_centered}_{ij} + \beta_2 \text{CCI_centered}_{ij} + \alpha_j + \beta_3 \text{Size}_j + u_j + \varepsilon_{ij}
+$$
+
+- $\alpha_j$: fixed effect of academic status for hospital $j$ (effects coding: $\alpha_{\text{academic}} + \alpha_{\text{non-academic}} = 0$)
+  
+```{r}
+#| echo: false
+# Center hospital-level predictors and use effects coding
+data_observational <- data_observational |>
+  mutate(
+    size_centered = hospital_size - mean(hospital_size)
+  )
+
+options(contrasts = c("contr.sum", "contr.poly"))  # Effects coding
+model_full <- lmer(length_of_stay ~ age_centered + cci_centered + academic_status + size_centered + (1 | hospital_id), 
+                   data = data_observational)
+```
+
+```{r}
+#| echo: false
+#| include: false
+emm_academic <- emmeans(model_full, ~ academic_status)
+```
+
+:::: {.columns}
+
+::: {.column width="60%"}
+**Coefficient estimates:**
+
+```{r}
+#| echo: false
+fe_full <- broom.mixed::tidy(model_full, effects = "fixed")
+kable(
+  fe_full[, c("term", "estimate", "std.error", "statistic", "p.value")],
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"'
+)
+```
+:::
+
+::: {.column width="40%"}
+**Variance components:**
+
+```{r}
+#| echo: false
+vc_full <- broom.mixed::tidy(model_full, effects = "ran_pars") |>
+  mutate(variance = estimate^2)
+kable(
+  vc_full[, c("group", "estimate", "variance")],
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 70%; margin-left: 0; margin-right: auto"',
+  col.names = c("Group", "SD", "Variance")
+)
+```
+:::
+
+::::
+
+::: {style="margin-top:1.0em;"}
+:::
+
+- After adjusting for patient characteristics, academic hospitals have a mean length of stay of `r round(summary(emm_academic)$emmean[1], 2)` days, while non-academic hospitals have `r round(summary(emm_academic)$emmean[2], 2)` days
+
+- Each 100-bed increase in hospital size is associated with a `r round(100 * fixef(model_full)["size_centered"], 2)` day change in length of stay
+
+## Variance components: model comparison
+
+```{r}
+#| echo: false
+# Extract variance components from all three models
+vc_comparison <- data.frame(
+  Model = c("Null model", "Null model", "Patient-level characteristics", "Patient-level characteristics", "Full model", "Full model"),
+  Component = rep(c("Hospital", "Residual"), 3),
+  Variance = c(
+    as.data.frame(VarCorr(model_null))$vcov[1],
+    as.data.frame(VarCorr(model_null))$vcov[2],
+    as.data.frame(VarCorr(model_patient))$vcov[1],
+    as.data.frame(VarCorr(model_patient))$vcov[2],
+    as.data.frame(VarCorr(model_full))$vcov[1],
+    as.data.frame(VarCorr(model_full))$vcov[2]
+  )
+)
+
+kable(
+  vc_comparison,
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
+)
+```
+
+::: {style="margin-top:1.0em;"}
+:::
+
+- **Unconditional ICC** (null model) = `r round(as.data.frame(VarCorr(model_null))$vcov[1] / sum(as.data.frame(VarCorr(model_null))$vcov), 3)`: `r round(100 * as.data.frame(VarCorr(model_null))$vcov[1] / sum(as.data.frame(VarCorr(model_null))$vcov), 0)`% of total variance in length of stay is attributable to differences between hospitals before adjusting for any covariates
+
+- Adding patient-level characteristics reduces **residual variance** (within-hospital variation)
+
+- Adding hospital-level characteristics reduces **hospital variance** (between-hospital variation)
+
+- **Conditional ICC** (full model) = `r round(as.data.frame(VarCorr(model_full))$vcov[1] / sum(as.data.frame(VarCorr(model_full))$vcov), 3)`: after accounting for all covariates, `r round(100 * as.data.frame(VarCorr(model_full))$vcov[1] / sum(as.data.frame(VarCorr(model_full))$vcov), 0)`% of unexplained variance remains at the hospital level
+
+## Unconditional versus conditional ICC
+
+- Unconditional ICC
+  - Computed from a null model without covariates
+  - Captures the raw intra-cluster correlation in the data
+  - Useful for describing the dependence structure in cross-sectional, hierarchical datasets
+
+- Conditional ICC
+  - Computed from a model that includes covariates
+  - Reflects residual clustering after adjustment
+  - Influences precision differently depending on the type of fixed effect
+    - Cluster-level effects: higher ICC → lower precision
+    - Individual-level effects: higher ICC → higher precision
+
+## Lab 5: multi-level analysis Chicago AirBnB data
+
+![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
