@@ -431,9 +431,26 @@ data_observational <- patients_obs |>
   - **Patient-level** (level 1): age, comorbidity burden (Charlson Comorbidity Index)
   - **Hospital-level** (level 2): academic status, hospital size (number of beds)
   - **Outcome**: length of stay (days)
-  
 
-## Exploratory data analysis - grouping structure
+## Exploratory data analysis - outcome variable
+
+```{r}
+# Create histogram of length of stay
+ggplot(data_observational, aes(x = length_of_stay)) +
+  geom_histogram(binwidth = 2, fill = "steelblue", color = "black", alpha = 0.7) +
+  geom_vline(xintercept = mean(data_observational$length_of_stay), 
+             color = "red", linetype = "dashed", linewidth = 1) +
+  labs(
+    x = "Length of stay (days)",
+    y = "Frequency",
+    title = "Distribution of hospital length of stay",
+    subtitle = paste0("Mean = ", round(mean(data_observational$length_of_stay), 1), " days; ",
+                     "SD = ", round(sd(data_observational$length_of_stay), 1), " days")
+  ) +
+  theme_minimal()
+```
+
+## [Exploratory data analysis - variance decomposition]{style="font-size: 0.9em;"}
 
 ```{r}
 # Calculate hospital-level means

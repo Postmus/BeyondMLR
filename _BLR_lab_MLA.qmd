@@ -12,7 +12,7 @@ format:
 execute:
   warning: false
   message: false
-  eval: false
+  eval: true
   echo: true
 ---
 
@@ -59,44 +59,52 @@ Let's load the data and use the `str()` function to inspect the structure of the
 chicago_airbnb <- read.csv("data/airbnb.csv")
 
 # Convert all character variables into factors
-chicago_airbnb <- chicago_airbnb %>%
+chicago_airbnb <- chicago_airbnb |>
   mutate_if(is.character, as.factor)
 
 # Inspect the structure of the dataset
 str(chicago_airbnb)
 ```
 
-This initial inspection makes clear that the Airbnb dataset has a multilevel structure: 1,561 individual listings are nested within 43 neighborhoods, which are further nested within 9 districts. To get a better feeling for this grouping structure, we begin by summarizing the number of listings in each neighborhood:
+This initial inspection makes clear that the Airbnb dataset has a multi-level, hierarchical structure: 1,561 individual listings are nested within 43 neighborhoods, which are further nested within 9 districts. 
+
+### Grouping structure
+
+To get a better feeling for the grouping structure, we create a summary table showing the number of listings within each neighborhood grouped by district and visualize it with a faceted bar chart:
 
 ```{r}
-# Summarize number of listings within each neighborhood
-listing_summary <- chicago_airbnb %>%
-  group_by(neighborhood) %>%
-  summarise(num_listings = n())
+# Create a detailed table showing listings per neighborhood, grouped by district
+neighborhood_summary <- chicago_airbnb |>
+  group_by(district, neighborhood) |>
+  summarise(num_listings = n(), .groups = "drop") |>
+  arrange(district, desc(num_listings))
 
-# Visualize the distribution of listings across neighborhoods
-ggplot(listing_summary, aes(x = reorder(neighborhood, num_listings), y = num_listings)) +
+# Create a faceted bar chart showing listings per neighborhood by district
+ggplot(neighborhood_summary, aes(x = reorder(neighborhood, num_listings), 
+  y = num_listings)) +
   geom_bar(stat = "identity", fill = "skyblue", color = "black") +
+  facet_wrap(~ district, scales = "free_y", ncol = 3) +
   coord_flip() +
-  labs(title = "Number of Listings per Neighborhood",
+  labs(title = "Number of Listings per Neighborhood by District",
        x = "Neighborhood",
-       y = "Number of Listings")
+       y = "Number of Listings") +
+  theme_minimal() +
+  theme(axis.text.y = element_text(size = 7))
 ```
 
 Explanation:
 
-* `group_by(neighborhood)`: groups the data by the neighborhood column so that operations like counting can be applied to each group separately.
-* After grouping, `summarise()` calculates the number of rows (listings) in each group (neighborhood) using the `n()` function. The result is stored in a new data fame with two columns:
-  - `neighborhood`: the name of the neighborhood;
-  - `num_listings`: the number of listings in that neighborhood.
+* `group_by(district, neighborhood)`: groups the data by both district and neighborhood so that we can count listings within each neighborhood while maintaining the district grouping.
+* `n()`: counts the total number of listings within each neighborhood.
+* `arrange(district, desc(num_listings))`: sorts the table first by district, then by the number of listings in descending order within each district.
+* `reorder(neighborhood, num_listings)`: reorders the neighborhood factor levels based on the values of `num_listings`. By default, R plots categorical variables (like neighborhood names) in alphabetical order, which makes it difficult to see patterns. The `reorder()` function changes this order so that neighborhoods are arranged from lowest to highest number of listings, making it much easier to identify which neighborhoods have the most and fewest listings within each district panel.
+* The result shows the full hierarchical structure: how many listings are in each neighborhood, organized by district.
 
 ::: {.callout-important icon=false title="Question"}
-What does the plot tell us about the distribution of Airbnb listings across neighborhoods?
+What does the faceted bar chart tell us about the hierarchical structure of the data? Which neighborhoods within each district have the most listings?
 :::
 
-::: {.callout-important icon=false title="Coding excerise"}
-Create a similar plot to visualize the distribution of neighborhoods across districts. Hint: group the dataset by the `district` column and count the number of unique neighborhoods in each district. See `?summarise` for a list of useful functions to use within `summarise()`.
-:::
+### Outcome variable
 
 Next, we create a histogram to visualize the distribution of the outcome variable `price`:
 
@@ -113,48 +121,89 @@ While normality of the outcome is not strictly required for a mixed-effects mode
 
 ```{r}
 # Log-transform the price variable
-chicago_airbnb <- chicago_airbnb %>%
+chicago_airbnb <- chicago_airbnb |>
   mutate(log_price = log(price))
 ```
 
-We also want to get a sense of the variability in the listing prices within and between neighborhoods. For this, we are going to select the 10 neighborhoods with the most listings and create a scatter plot with the log-transformed price on the y-axis and the neighborhood on the x-axis:
+### Variance decomposition
+
+We also want to get a sense of the variability in the listing prices within and between neighborhoods. For this, we are going to randomly select 10 neighborhoods and create a scatter plot with the log-transformed price on the y-axis and the neighborhood on the x-axis:
 
 ```{r}
-# Select the top 10 neighborhoods with the most listings
-top_neighborhoods <- listing_summary %>%
-  slice_max(num_listings, n = 10) %>%
-  pull(neighborhood)
+# Set seed for reproducibility
+set.seed(123)
 
-# Filter the data to include only the top neighborhoods
-top_neighborhood_data <- chicago_airbnb %>%
-  filter(neighborhood %in% top_neighborhoods)
-```
+# Randomly select 10 unique neighborhoods
+random_neighborhoods <- sample(unique(chicago_airbnb$neighborhood), size = 10)
 
-Explanation:
+# Filter the data to include only the randomly selected neighborhoods
+random_neighborhood_data <- chicago_airbnb |>
+  filter(neighborhood %in% random_neighborhoods)
 
-* `slice_max(num_listings, n = 10)`: selects the top 10 neighborhoods with the most listings based on the `num_listings` column.
-* `pull(neighborhood)`: extracts the neighborhood names from the resulting tibble as a vector.
-* `filter(neighborhood %in% top_neighborhoods)`: filters the `chicago_airbnb` dataset to include only rows where the neighborhood column matches one of the neighborhoods in the `top_neighborhoods` vector.
-
-```{r}
 # Calculate the average log_price for each neighborhood
-neighborhood_avg_price <- top_neighborhood_data %>%
-  group_by(neighborhood) %>%
-  summarise(avg_log_price = mean(log_price, na.rm = TRUE))
+neighborhood_avg_price <- random_neighborhood_data |>
+  group_by(neighborhood) |>
+  summarise(avg_log_price = mean(log_price, na.rm = TRUE), .groups = "drop")
 
-# create a scatter plot of log_price by neighborhood
-ggplot(top_neighborhood_data, aes(x = neighborhood, y = log_price)) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Price by Neighborhood",
-       x = "Neighborhood",
+# Calculate the overall grand mean across all neighborhoods (not just the sample)
+grand_mean <- mean(chicago_airbnb$log_price, na.rm = TRUE)
+
+# Create scatter plot with jittered observations
+ggplot(random_neighborhood_data, aes(x = reorder(neighborhood, log_price, FUN = mean), y = log_price)) +
+  geom_hline(yintercept = grand_mean, linetype = "solid", color = "black", linewidth = 1) +
+  geom_jitter(alpha = 0.3, width = 0.2, size = 1, color = "gray60") +
+  geom_point(data = neighborhood_avg_price, aes(x = neighborhood, y = avg_log_price), 
+             size = 4, shape = 18, color = "red") +
+  labs(title = "Variation in listing prices: within and between neighborhoods",
+       subtitle = "Points = individual listings; Diamonds = neighborhood means; Solid line = grand mean (all data)",
+       x = "Neighborhood (ordered by mean log price)",
        y = "Log-transformed price") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  geom_point(data = neighborhood_avg_price, aes(x = neighborhood, y = avg_log_price), color = "red", size = 3) +  # neighborhood-level averages 
-  geom_hline(yintercept = mean(neighborhood_avg_price$avg_log_price, na.rm = TRUE), linetype = "dashed", color = "blue") # overall average
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ::: {.callout-important icon=false title="Question"}
 What does this plot suggest about the variability in listing prices within and between neighborhoods?
+:::
+
+### Covariate effects
+
+Before fitting models with covariates, it is useful to explore the relationships between potential predictors and the outcome variable. Let us examine how some subject-level characteristics relate to listing prices.
+
+First, we will look at the relationship between the number of reviews and log-transformed price:
+
+```{r}
+# Scatterplot with smooth line for reviews vs log_price
+ggplot(chicago_airbnb, aes(x = reviews, y = log_price)) +
+  geom_jitter(alpha = 0.2, width = 0.1, color = "gray60") +
+  geom_smooth(method = "lm", se = FALSE, color = "steelblue", linewidth = 1.5) +
+  labs(title = "Relationship between number of reviews and listing price",
+       x = "Number of reviews",
+       y = "Log-transformed price") +
+  theme_minimal()
+```
+
+Next, let us examine how listing prices vary across different room types:
+
+```{r}
+# Boxplot for room_type vs log_price
+ggplot(chicago_airbnb, aes(x = room_type, y = log_price, fill = room_type)) +
+  geom_boxplot(alpha = 0.7) +
+  labs(title = "Listing prices by room type",
+       x = "Room type",
+       y = "Log-transformed price") +
+  theme_minimal() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+::: {.callout-important icon=false title="Coding exercise"}
+Create similar visualizations to explore the relationships between:
+
+1. Overall satisfaction rating and log-transformed price (scatterplot with smooth line)
+2. Number of bedrooms and log-transformed price (boxplot)
+
+What patterns do you observe? Do higher satisfaction ratings and more bedrooms tend to be associated with higher or lower prices?
 :::
 
 ## Random intercept model 
@@ -180,7 +229,7 @@ As a second step, we extend the random intercept model with subject-level variab
 options(contrasts = c("contr.sum", "contr.poly"))
 
 # Center the continuous subject-levl variables
-chicago_airbnb <- chicago_airbnb %>%
+chicago_airbnb <- chicago_airbnb |>
   mutate(overall_satisfaction_c = scale(overall_satisfaction, scale = FALSE),
          accommodates_c = scale(accommodates, scale = FALSE),
          bedrooms_c = scale(bedrooms, scale = FALSE),
@@ -219,7 +268,7 @@ As a third step, we extend the previously fitted model with context-level variab
 
 ```{r}
 # Center the context-level variables
-chicago_airbnb <- chicago_airbnb %>%
+chicago_airbnb <- chicago_airbnb |>
   mutate(WalkScore_c = scale(WalkScore, scale = FALSE),
          TransitScore_c = scale(TransitScore, scale = FALSE),
          BikeScore_c = scale(BikeScore, scale = FALSE))
