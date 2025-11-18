@@ -1,18 +1,18 @@
 ---
-title: "Beyond MLR Lab 5: multilevel analysis"
-format: 
+title: "Beyond MLR Lab 5: multi-level analysis of cross-sectional observational data"
+format:
   html:
     toc: true
     toc-depth: 3
     toc-location: right
     code-overflow: wrap
-    embed-resources: true 
-  pdf: 
+    embed-resources: true
+  pdf:
     toc: false
 execute:
   warning: false
   message: false
-  eval: true
+  eval: false
   echo: true
 ---
 
@@ -29,8 +29,6 @@ pacman::p_load(dplyr, ggplot2, emmeans, lmerTest)
 ```
 :::
 
-In this lab, we will explore the analysis of multilevel data, focusing on situations where subjects are nested within larger contexts, such as schools, neighborhoods, or clinics. The data include subject-level characteristics (e.g., age, gender), which reflect differences between individuals and help explain variation in their outcomes within a specific context. They also include context-level characteristics (e.g., school funding, neighborhood income), which account for differences between contexts and help explain variation in subject-level outcomes across these contexts.
-
 # Chicago AirBnB Data
 
 The Chicago Airbnb dataset was compiled by Trinh and Ameri as part of a course project at St. Olaf College and is included with the book Beyond Multiple Linear Regression by Roback and Legler (2021). It contains information on 1,561 Airbnb listings in Chicago, including details such as nightly price, overall satisfaction rating, number of reviews, and various other listing characteristics. Additionally, the dataset includes neighborhood-level information, such as ratings for walkability, access to public transit, and bikeability, providing valuable context for the listings' locations.
@@ -45,7 +43,6 @@ The dataset is available on Brightspace under the name `airbnb.csv`. It contains
 * bedrooms: the number of bedrooms the listing has
 * minstay: the minimum number of nights to stay in the listing
 * neighborhood: the neighborhood in which the listing is located
-* district: the broader district in which the listing is located
 * WalkScore: the neighborhood's rating for walkability (0 - 100)
 * TransitScore: the neighborhood's rating for access to public transit (0 - 100)
 * BikeScore: the neighborhood's rating for bikeability (0 - 100)
@@ -66,42 +63,41 @@ chicago_airbnb <- chicago_airbnb |>
 str(chicago_airbnb)
 ```
 
-This initial inspection makes clear that the Airbnb dataset has a multi-level, hierarchical structure: 1,561 individual listings are nested within 43 neighborhoods, which are further nested within 9 districts. 
+This initial inspection makes clear that the Airbnb dataset has a hierarchical structure: 1,561 individual listings are nested within 43 neighborhoods. While the dataset also includes a `district` variable that groups neighborhoods into 9 broader districts, for educational purposes we will treat this as a two-level hierarchical structure with listings (level 1) nested within neighborhoods (level 2), ignoring the higher-level clustering of neighborhoods into districts.
 
 ### Grouping structure
 
-To get a better feeling for the grouping structure, we create a summary table showing the number of listings within each neighborhood grouped by district and visualize it with a faceted bar chart:
+To get a better feeling for the grouping structure, we create a summary table showing the number of listings within each neighborhood and visualize it with a bar chart:
 
 ```{r}
-# Create a detailed table showing listings per neighborhood, grouped by district
+# Create a summary table showing listings per neighborhood
 neighborhood_summary <- chicago_airbnb |>
-  group_by(district, neighborhood) |>
+  group_by(neighborhood) |>
   summarise(num_listings = n(), .groups = "drop") |>
-  arrange(district, desc(num_listings))
+  arrange(desc(num_listings))
 
-# Create a faceted bar chart showing listings per neighborhood by district
-ggplot(neighborhood_summary, aes(x = reorder(neighborhood, num_listings), 
-  y = num_listings)) +
+# Create a bar chart showing listings per neighborhood (top 20)
+neighborhood_summary |>
+  top_n(20, num_listings) |>
+  ggplot(aes(x = reorder(neighborhood, num_listings), y = num_listings)) +
   geom_bar(stat = "identity", fill = "skyblue", color = "black") +
-  facet_wrap(~ district, scales = "free_y", ncol = 3) +
   coord_flip() +
-  labs(title = "Number of Listings per Neighborhood by District",
+  labs(title = "Number of Listings per Neighborhood (Top 20)",
        x = "Neighborhood",
        y = "Number of Listings") +
-  theme_minimal() +
-  theme(axis.text.y = element_text(size = 7))
+  theme_minimal()
 ```
 
 Explanation:
 
-* `group_by(district, neighborhood)`: groups the data by both district and neighborhood so that we can count listings within each neighborhood while maintaining the district grouping.
+* `group_by(neighborhood)`: groups the data by neighborhood so that we can count listings within each neighborhood.
 * `n()`: counts the total number of listings within each neighborhood.
-* `arrange(district, desc(num_listings))`: sorts the table first by district, then by the number of listings in descending order within each district.
-* `reorder(neighborhood, num_listings)`: reorders the neighborhood factor levels based on the values of `num_listings`. By default, R plots categorical variables (like neighborhood names) in alphabetical order, which makes it difficult to see patterns. The `reorder()` function changes this order so that neighborhoods are arranged from lowest to highest number of listings, making it much easier to identify which neighborhoods have the most and fewest listings within each district panel.
-* The result shows the full hierarchical structure: how many listings are in each neighborhood, organized by district.
+* `arrange(desc(num_listings))`: sorts the table by the number of listings in descending order.
+* `top_n(20, num_listings)`: selects the 20 neighborhoods with the most listings for visualization.
+* `reorder(neighborhood, num_listings)`: reorders the neighborhood factor levels based on the values of `num_listings`, arranging neighborhoods from lowest to highest number of listings for easier interpretation.
 
 ::: {.callout-important icon=false title="Question"}
-What does the faceted bar chart tell us about the hierarchical structure of the data? Which neighborhoods within each district have the most listings?
+Which neighborhoods have the most Airbnb listings? Is there substantial variation in the number of listings across neighborhoods?
 :::
 
 ### Outcome variable
@@ -111,10 +107,11 @@ Next, we create a histogram to visualize the distribution of the outcome variabl
 ```{r}
 # Create a histogram of price
 ggplot(chicago_airbnb, aes(x = price)) +
-  geom_histogram(fill = "skyblue", color = "black") +
-  labs(title = "Histogram of Listing Prices",
-       x = "Price",
-       y = "Frequency")
+  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+  labs(title = "Distribution of Listing Prices",
+       x = "Nightly Price (USD)",
+       y = "Frequency") +
+  theme_minimal()
 ```
 
 While normality of the outcome is not strictly required for a mixed-effects model, transforming a right-skewed variable like price can help stabilize variance and linearize relationships. We therefore create a new variable, `log_price`, to store the log-transformed prices:
@@ -125,7 +122,7 @@ chicago_airbnb <- chicago_airbnb |>
   mutate(log_price = log(price))
 ```
 
-### Variance decomposition
+### Variance components
 
 We also want to get a sense of the variability in the listing prices within and between neighborhoods. For this, we are going to randomly select 10 neighborhoods and create a scatter plot with the log-transformed price on the y-axis and the neighborhood on the x-axis:
 
@@ -145,14 +142,14 @@ neighborhood_avg_price <- random_neighborhood_data |>
   group_by(neighborhood) |>
   summarise(avg_log_price = mean(log_price, na.rm = TRUE), .groups = "drop")
 
-# Calculate the overall grand mean across all neighborhoods (not just the sample)
+# Calculate the overall grand mean across all neighborhoods
 grand_mean <- mean(chicago_airbnb$log_price, na.rm = TRUE)
 
 # Create scatter plot with jittered observations
 ggplot(random_neighborhood_data, aes(x = reorder(neighborhood, log_price, FUN = mean), y = log_price)) +
   geom_hline(yintercept = grand_mean, linetype = "solid", color = "black", linewidth = 1) +
   geom_jitter(alpha = 0.3, width = 0.2, size = 1, color = "gray60") +
-  geom_point(data = neighborhood_avg_price, aes(x = neighborhood, y = avg_log_price), 
+  geom_point(data = neighborhood_avg_price, aes(x = neighborhood, y = avg_log_price),
              size = 4, shape = 18, color = "red") +
   labs(title = "Variation in listing prices: within and between neighborhoods",
        subtitle = "Points = individual listings; Diamonds = neighborhood means; Solid line = grand mean (all data)",
@@ -206,9 +203,9 @@ Create similar visualizations to explore the relationships between:
 What patterns do you observe? Do higher satisfaction ratings and more bedrooms tend to be associated with higher or lower prices?
 :::
 
-## Random intercept model 
+## Random intercept model
 
-To model the variability in listing prices within and between neighborhoods, we start by fitting a random intercept model to account for the nesting of listings within neighborhoods, ignoring the higher-level nesting of neighborhoods into districts. The model is specified as follows:
+To model the variability in listing prices within and between neighborhoods, we start by fitting a random intercept model to account for the nesting of listings within neighborhoods. This model is specified as follows:
 
 ```{r}
 # Fit the random intercept model
@@ -222,13 +219,13 @@ Based on the estimated variance components, what can you conclude about the rela
 
 ## Extending the random intercept model with subject-level variables
 
-As a second step, we extend the random intercept model with subject-level variables. To facilitate the interpretation of the model coefficients, we start by setting the coding scheme for categorical variables to effects coding. We also center the numerical variables by subtracting the mean value from each observation. This step is important to reduce multicollinearity, improve numerical stability, and make the coefficients more interpretable.
+As a second step, we extend the random intercept model with subject-level variables. To facilitate the interpretation of the model coefficients, we start by setting the coding scheme for categorical variables to effects coding. We also center the numerical variables by subtracting the mean value from each observation. This step is important to reduce multicollinearity, improve numerical stability, and make the intercept more interpretable.
 
 ```{r}
 # Use effects coding for the categorical variables
 options(contrasts = c("contr.sum", "contr.poly"))
 
-# Center the continuous subject-levl variables
+# Center the continuous subject-level variables
 chicago_airbnb <- chicago_airbnb |>
   mutate(overall_satisfaction_c = scale(overall_satisfaction, scale = FALSE),
          accommodates_c = scale(accommodates, scale = FALSE),
@@ -239,7 +236,7 @@ chicago_airbnb <- chicago_airbnb |>
 Next, we fit the random intercept model with the subject-level variables included:
 
 ```{r}
-# Fit the random intercept model with subject-level variables    
+# Fit the random intercept model with subject-level variables
 random_intercept_model_L1variables <- lmer(log_price ~ overall_satisfaction_c + room_type + accommodates_c + bedrooms_c + minstay_c + (1 | neighborhood), data = chicago_airbnb)
 summary(random_intercept_model_L1variables)
 
@@ -282,22 +279,35 @@ random_intercept_model_L1L2variables <- lmer(log_price ~ overall_satisfaction_c 
 summary(random_intercept_model_L1L2variables)
 
 # Obtain the ANOVA table
-anova(random_intercept_model_L1L2variables)  
+anova(random_intercept_model_L1L2variables)
 ```
 
 ::: {.callout-important icon=false title="Question"}
 How does the inclusion of context-level variables affect the estimated variance components? More specifically, does the inclusion of context-level variables affect the within-neighborhood variance, the between-neighborhood variance, or both? Can you explain why?
 :::
 
-Not all the context-level variables included in the model are significant predictors of listing prices. To obtain a more parsimonious model, we use the `step()` function from the `lmerTest` package to perform a backward elimination of the fixed-effect terms:
+### Model selection using stepwise elimination
+
+Not all the context-level variables included in the model are significant predictors of listing prices. To obtain a more parsimonious model, we can use the `step()` function from the `lmerTest` package to perform a backward elimination of the fixed-effect terms.
+
+The `step()` function uses **F-tests** to systematically test which terms can be removed without significantly worsening model fit. Here's how it works:
+
+**Backward elimination process:**
+
+1. Starting with the full model, the function computes F-tests for all marginal terms (i.e., terms that can be dropped while respecting the hierarchy of terms in the model)
+2. It identifies the term with the highest (least significant) p-value from the F-tests
+3. If that p-value exceeds the significance threshold (default α = 0.05), the term is removed
+4. The process repeats with the new reduced model until no more terms can be removed
+
+The F-tests used by `step()` are based on comparing models using Satterthwaite's approximation for the denominator degrees of freedom, which is appropriate for mixed models.
 
 ```{r}
 # Perform stepwise selection to identify the most important predictors
-step(random_intercept_model_L1L2variables, reduce.random = FALSE)
+step(random_intercept_model_L1L2variables)
 ```
 
 ::: {.callout-important icon=false title="Question"}
-Which individual-level and context-level variables are retained in the final model after the stepwise selection procedure? 
+Which individual-level and context-level variables are retained in the final model after the stepwise selection procedure?
 :::
 
 ## Exploring cross-level interactions
@@ -306,26 +316,80 @@ Finally, we explore the possibility of cross-level interactions between individu
 
 The relationship between the overall satisfaction rating of an individual listing and its price may depend on neighborhood characteristics such as their walkability and access to public transit. For instance, higher satisfaction ratings might have a stronger effect on prices in less walkable or transit-accessible neighborhoods, where positive reviews could help compensate for the disadvantages of limited walkability or transit options. In contrast, in neighborhoods with high walkability or access to public transit ratings, these location-based amenities might already drive prices, reducing the added impact of satisfaction ratings.
 
-To test whether the effect of the individual-level variable `overall_satisfaction` on listing prices varies across different values of the context-level variable `WalkScore`, we refit the model with an interaction term between these two variables:
+To formally test whether cross-level interactions improve model fit, we use **likelihood ratio tests (LRT)** to compare nested models with and without the interaction term.
+
+**Likelihood ratio test basics:**
+
+The likelihood ratio test compares two nested models:
+
+* **Null model (restricted)**: the model without the interaction term
+* **Alternative model (full)**: the model with the interaction term
+
+The test statistic is calculated as:
+$$\text{LR} = -2 \times (\text{log-likelihood of restricted model} - \text{log-likelihood of full model})$$
+
+Under the null hypothesis (that the interaction term is not needed), this test statistic follows a chi-square distribution with degrees of freedom equal to the difference in the number of parameters between the two models. A significant result (p < 0.05) indicates that the model with the interaction provides a significantly better fit to the data.
+
+**Important note about ML vs. REML:**
+
+When comparing models with different fixed effects using likelihood ratio tests, we must use **ML (Maximum Likelihood)** rather than **REML (Restricted Maximum Likelihood)**. This is because REML likelihoods are not directly comparable across models with different fixed effect structures. We specify `REML = FALSE` when fitting the models for LRT comparisons.
+
+Let's test whether the `overall_satisfaction × WalkScore` interaction significantly improves model fit:
 
 ```{r}
-# Fit the model with the interaction between overall_satisfaction and WalkScore
-random_intercept_model_interaction <- lmer(log_price ~ overall_satisfaction_c * WalkScore_c + room_type + accommodates_c + bedrooms_c + minstay_c + WalkScore_c + TransitScore_c + BikeScore_c + (1 | neighborhood), data = chicago_airbnb)
-summary(random_intercept_model_interaction)
+# Fit the base model without any interactions (using ML)
+model_no_interaction <- lmer(log_price ~ overall_satisfaction_c + room_type + accommodates_c + bedrooms_c + minstay_c + WalkScore_c + TransitScore_c + BikeScore_c + (1 | neighborhood), data = chicago_airbnb, REML = FALSE)
+
+# Fit model with WalkScore interaction (using ML)
+model_interaction_walk <- lmer(log_price ~ overall_satisfaction_c * WalkScore_c + room_type + accommodates_c + bedrooms_c + minstay_c + TransitScore_c + BikeScore_c + (1 | neighborhood), data = chicago_airbnb, REML = FALSE)
+
+# Likelihood ratio test for WalkScore interaction
+anova(model_no_interaction, model_interaction_walk)
 ```
+
 ::: {.callout-important icon=false title="Question"}
-Is there evidence of a significant interaction between overall satisfaction ratings and neighborhood walkability in predicting listing prices? If so, how do you interpret the interaction term coefficient?
+Based on the likelihood ratio test, does the `overall_satisfaction × WalkScore` interaction significantly improve model fit? What does this tell you about how the relationship between satisfaction ratings and listing prices varies across neighborhoods with different walkability levels?
 :::
 
-Similarly, to test whether the effect of the individual-level variable `overall_satisfaction` varies across different values of the context-level variable `TransitScore`, we refit the model with an interaction term between these two variables:
+::: {.callout-important icon=false title="Coding exercise"}
+Following the example above, test whether the `overall_satisfaction × TransitScore` interaction significantly improves model fit.
 
-```{r}
-# Fit the model with the interaction between overall_satisfaction and WalkScore
-random_intercept_model_interaction <- lmer(log_price ~ overall_satisfaction_c * WalkScore_c + room_type + accommodates_c + bedrooms_c + minstay_c + WalkScore_c + TransitScore_c + BikeScore_c + (1 | neighborhood), data = chicago_airbnb)
-summary(random_intercept_model_interaction)
-```
-::: {.callout-important icon=false title="Question"}
-Is there evidence of a significant interaction between overall satisfaction ratings and neighborhood walkability in predicting listing prices? If so, how do you interpret the interaction term coefficient?
+1. Fit a model that includes the `overall_satisfaction × TransitScore` interaction (remember to use `REML = FALSE`)
+2. Perform a likelihood ratio test comparing this model to the base model without interactions
+3. Interpret the results: Does the interaction significantly improve model fit? What does this suggest about how satisfaction ratings relate to prices in neighborhoods with different levels of transit accessibility?
+:::
+
+::: {.callout-note icon=false title="F-tests vs. Likelihood Ratio Tests for fixed effects"}
+In this lab, we've used two different approaches for testing fixed effects:
+
+**F-tests (via `step()` function):**
+
+* Based on Satterthwaite's approximation for degrees of freedom
+* Work with REML estimation (the default for `lmer()`)
+* Provide approximate p-values that account for the uncertainty in variance component estimates
+* Particularly useful for automated model selection procedures
+* Generally more conservative (higher p-values) due to the approximation
+
+**Likelihood Ratio Tests (via `anova()` comparing models):**
+
+* Based on comparing the likelihoods of nested models
+* Require ML estimation (`REML = FALSE`) for comparing models with different fixed effects
+* Provide exact test statistics following a chi-square distribution
+* More appropriate for formal hypothesis testing of specific effects
+* Often used for testing interactions or other theory-driven model comparisons
+
+**Which should you use?**
+
+Both approaches are valid and will generally lead to similar conclusions. The choice often depends on context:
+
+* Use **F-tests** (with REML) when you want to retain the better variance component estimates and are performing exploratory model selection
+* Use **LRTs** (with ML) when you want to formally test specific hypotheses about fixed effects or when comparing models is the primary goal
+
+In practice, if both methods give similar results, you can be more confident in your conclusions. If they differ, it is worth investigating further and considering the specific research question at hand.
+
+**Important note about missing data:**
+
+Likelihood ratio tests require that both models being compared are fitted on **exactly the same observations**. If different predictors have different patterns of missing values, models may use different subsets of data, making the LRT invalid. The F-tests via `step()` are generally more robust to this issue as they work within a single REML-fitted model. If you encounter errors about "number of rows in use has changed" when using LRTs, ensure all models use the same complete-case dataset by explicitly removing missing values before model fitting.
 :::
 
 ### Model diagnostics
