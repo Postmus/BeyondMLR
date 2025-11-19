@@ -2363,6 +2363,7 @@ window.Quarto = {
   </ul></li>
   <li><a href="#exploring-cross-level-interactions" id="toc-exploring-cross-level-interactions" class="nav-link" data-scroll-target="#exploring-cross-level-interactions">Exploring cross-level interactions</a>
   <ul class="collapse">
+  <li><a href="#interpreting-the-interaction" id="toc-interpreting-the-interaction" class="nav-link" data-scroll-target="#interpreting-the-interaction">Interpreting the interaction</a></li>
   <li><a href="#model-diagnostics" id="toc-model-diagnostics" class="nav-link" data-scroll-target="#model-diagnostics">Model diagnostics</a></li>
   </ul></li>
   </ul></li>
@@ -2400,7 +2401,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>In this lab, we will use the R packages <code>ggplot2</code>, <code>dplyr</code>, <code>emmeans</code>, and <code>lmerTest</code>. You can use the script below to automatically install and load them using the <code>pacman</code> package.</p>
+<p>In this lab, we will use the R packages <code>ggplot2</code>, <code>dplyr</code>, <code>emmeans</code>, <code>lmerTest</code>. You can use the script below to automatically install and load them using the <code>pacman</code> package.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check whether pacman is available and install if needed</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">repos =</span> <span class="fu">c</span>(<span class="at">CRAN =</span> <span class="st">&quot;https://cloud.r-project.org&quot;</span>))</span>
@@ -2561,7 +2562,7 @@ window.Quarto = {
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scatterplot with smooth line for reviews vs log_price</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(chicago_airbnb, <span class="fu">aes</span>(<span class="at">x =</span> reviews, <span class="at">y =</span> log_price)) <span class="sc">+</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>(<span class="at">alpha =</span> <span class="fl">0.2</span>, <span class="at">width =</span> <span class="fl">0.1</span>, <span class="at">color =</span> <span class="st">&quot;gray60&quot;</span>) <span class="sc">+</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">&quot;gray60&quot;</span>) <span class="sc">+</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">&quot;steelblue&quot;</span>, <span class="at">linewidth =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Relationship between number of reviews and listing price&quot;</span>,</span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">&quot;Number of reviews&quot;</span>,</span>
@@ -2787,7 +2788,85 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Based on the likelihood ratio test, does the <code>overall_satisfaction × WalkScore</code> interaction significantly improve model fit? What does this tell you about how the relationship between satisfaction ratings and listing prices varies across neighborhoods with different walkability levels?</p>
+<p>Based on the likelihood ratio test, does the <code>overall_satisfaction × WalkScore</code> interaction significantly improve model fit?</p>
+</div>
+</div>
+<section id="interpreting-the-interaction" class="level3">
+<h3 class="anchored" data-anchor-id="interpreting-the-interaction">Interpreting the interaction</h3>
+<p>If the interaction is significant, we can use the <code>emmeans</code> package to compute estimated marginal means (EMMs) at specific combinations of satisfaction ratings and walkability scores. These estimated marginal means represent the model’s predicted log prices at particular values of the predictors, holding all other variables constant at their reference levels. By calculating EMMs at representative values (such as low, average, and high levels), we can create a clear visualization of how the effect of satisfaction on price varies across different walkability levels.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use representative values based on the data distribution</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># For interpretability, we&#39;ll use low (Q1), medium (mean = 0), and high (Q3) values</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>satisfaction_low <span class="ot">&lt;-</span> <span class="fu">quantile</span>(chicago_airbnb<span class="sc">$</span>overall_satisfaction_c, <span class="fl">0.25</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>satisfaction_high <span class="ot">&lt;-</span> <span class="fu">quantile</span>(chicago_airbnb<span class="sc">$</span>overall_satisfaction_c, <span class="fl">0.75</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>walkscore_low <span class="ot">&lt;-</span> <span class="fu">quantile</span>(chicago_airbnb<span class="sc">$</span>WalkScore_c, <span class="fl">0.25</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>walkscore_high <span class="ot">&lt;-</span> <span class="fu">quantile</span>(chicago_airbnb<span class="sc">$</span>WalkScore_c, <span class="fl">0.75</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a 3x3 grid using low (Q1), average (0), and high (Q3) values</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>predictions_grid <span class="ot">&lt;-</span> <span class="fu">emmeans</span>(model_interaction_walk,</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>                            <span class="at">specs =</span> <span class="sc">~</span> overall_satisfaction_c <span class="sc">*</span> WalkScore_c,</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>                            <span class="at">at =</span> <span class="fu">list</span>(<span class="at">overall_satisfaction_c =</span> <span class="fu">c</span>(satisfaction_low, <span class="dv">0</span>, satisfaction_high),</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">WalkScore_c =</span> <span class="fu">c</span>(walkscore_low, <span class="dv">0</span>, walkscore_high)),</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>                            <span class="at">lmer.df =</span> <span class="st">&quot;satterthwaite&quot;</span>)</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the 3x3 grid of predictions</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(predictions_grid)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Explanation of the <code>emmeans()</code> arguments:</p>
+<ul>
+<li>The first argument is the fitted model object (<code>model_interaction_walk</code>)</li>
+<li><code>specs = ~ overall_satisfaction_c * WalkScore_c</code> specifies which variables to compute marginal means for, including their interaction</li>
+<li><code>at = list(...)</code> specifies the exact values at which to evaluate the predictors. Here we use three levels for each variable: Q1 (low), 0 (average, since variables are centered), and Q3 (high)</li>
+<li><code>lmer.df = &quot;satterthwaite&quot;</code> specifies the method for computing degrees of freedom and confidence intervals, using Satterthwaite’s approximation which is appropriate for mixed models</li>
+<li>All other predictors in the model (room type, accommodates, bedrooms, etc.) are automatically held at their reference levels or means</li>
+</ul>
+<p>The output shows a 3 × 3 grid of estimated marginal means with their standard errors and confidence intervals, representing the estimated log price at each combination of satisfaction and walkability levels.</p>
+<p>Now we can visualize these estimated marginal means using an interaction plot:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert predictions to data frame for plotting</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>pred_df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(predictions_grid)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add descriptive labels for the factor levels</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>pred_df<span class="sc">$</span>satisfaction_label <span class="ot">&lt;-</span> <span class="fu">factor</span>(pred_df<span class="sc">$</span>overall_satisfaction_c,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">levels =</span> <span class="fu">c</span>(satisfaction_low, <span class="dv">0</span>, satisfaction_high),</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Low (Q1)&quot;</span>, <span class="st">&quot;Average (Mean)&quot;</span>, <span class="st">&quot;High (Q3)&quot;</span>))</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>pred_df<span class="sc">$</span>walkscore_label <span class="ot">&lt;-</span> <span class="fu">factor</span>(pred_df<span class="sc">$</span>WalkScore_c,</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">levels =</span> <span class="fu">c</span>(walkscore_low, <span class="dv">0</span>, walkscore_high),</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Low (Q1)&quot;</span>, <span class="st">&quot;Average (Mean)&quot;</span>, <span class="st">&quot;High (Q3)&quot;</span>))</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Create interaction plot</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(pred_df, <span class="fu">aes</span>(<span class="at">x =</span> satisfaction_label, <span class="at">y =</span> emmean,</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>                    <span class="at">color =</span> walkscore_label, <span class="at">group =</span> walkscore_label)) <span class="sc">+</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Interaction between Satisfaction and Walkability&quot;</span>,</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">&quot;Estimated log prices at different combinations of satisfaction and walkability&quot;</span>,</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">&quot;Overall Satisfaction Level&quot;</span>,</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;Estimated Log Price&quot;</span>,</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">&quot;Walkability Level&quot;</span>) <span class="sc">+</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>This visualization shows:</p>
+<ul>
+<li><strong>Three lines</strong> representing neighborhoods with low, average, and high walkability</li>
+<li><strong>Slopes</strong> indicating how satisfaction relates to price at each walkability level</li>
+<li>If the lines are <strong>parallel</strong>, the interaction effect is weak or non-significant</li>
+<li>If the lines have <strong>different slopes</strong>, it indicates that the satisfaction-price relationship varies by walkability</li>
+</ul>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Based on the interaction plot, how does the relationship between satisfaction ratings and listing prices differ across neighborhoods with varying walkability levels? Do satisfaction ratings matter more (have a stronger effect) in low-walkability or high-walkability neighborhoods?</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Coding exercise">
@@ -2818,7 +2897,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>In this lab, we’ve used two different approaches for testing fixed effects:</p>
+<p>In this lab, we have used two different approaches for testing fixed effects:</p>
 <p><strong>F-tests (via <code>step()</code> function):</strong></p>
 <ul>
 <li>Based on Satterthwaite’s approximation for degrees of freedom</li>
@@ -2846,6 +2925,7 @@ window.Quarto = {
 <p>Likelihood ratio tests require that both models being compared are fitted on <strong>exactly the same observations</strong>. If different predictors have different patterns of missing values, models may use different subsets of data, making the LRT invalid. The F-tests via <code>step()</code> are generally more robust to this issue as they work within a single REML-fitted model. If you encounter errors about “number of rows in use has changed” when using LRTs, ensure all models use the same complete-case dataset by explicitly removing missing values before model fitting.</p>
 </div>
 </div>
+</section>
 <section id="model-diagnostics" class="level3">
 <h3 class="anchored" data-anchor-id="model-diagnostics">Model diagnostics</h3>
 <p>The process of performing model diagnostics for the random intercept models fitted in this lab is similar to the one described in the previous labs. Therefore, we refer to those labs for more detailed instructions on assessing model assumptions.</p>

@@ -17,7 +17,7 @@ execute:
 ---
 
 ::: {.callout-note icon=false title="Preliminary setup"}
-In this lab, we will use the R packages `ggplot2`, `dplyr`, `emmeans`, and `lmerTest`. You can use the script below to automatically install and load them using the `pacman` package.
+In this lab, we will use the R packages `ggplot2`, `dplyr`, `emmeans`, `lmerTest`. You can use the script below to automatically install and load them using the `pacman` package.
 
 ```{r}
 # Check whether pacman is available and install if needed
@@ -172,7 +172,7 @@ First, we will look at the relationship between the number of reviews and log-tr
 ```{r}
 # Scatterplot with smooth line for reviews vs log_price
 ggplot(chicago_airbnb, aes(x = reviews, y = log_price)) +
-  geom_jitter(alpha = 0.2, width = 0.1, color = "gray60") +
+  geom_point(color = "gray60") +
   geom_smooth(method = "lm", se = FALSE, color = "steelblue", linewidth = 1.5) +
   labs(title = "Relationship between number of reviews and listing price",
        x = "Number of reviews",
@@ -348,7 +348,81 @@ anova(model_no_interaction, model_interaction_walk)
 ```
 
 ::: {.callout-important icon=false title="Question"}
-Based on the likelihood ratio test, does the `overall_satisfaction × WalkScore` interaction significantly improve model fit? What does this tell you about how the relationship between satisfaction ratings and listing prices varies across neighborhoods with different walkability levels?
+Based on the likelihood ratio test, does the `overall_satisfaction × WalkScore` interaction significantly improve model fit?
+:::
+
+### Interpreting the interaction
+
+If the interaction is significant, we can use the `emmeans` package to compute estimated marginal means (EMMs) at specific combinations of satisfaction ratings and walkability scores. These estimated marginal means represent the model's predicted log prices at particular values of the predictors, holding all other variables constant at their reference levels. By calculating EMMs at representative values (such as low, average, and high levels), we can create a clear visualization of how the effect of satisfaction on price varies across different walkability levels.
+
+```{r}
+# Use representative values based on the data distribution
+# For interpretability, we'll use low (Q1), medium (mean = 0), and high (Q3) values
+satisfaction_low <- quantile(chicago_airbnb$overall_satisfaction_c, 0.25, na.rm = TRUE)
+satisfaction_high <- quantile(chicago_airbnb$overall_satisfaction_c, 0.75, na.rm = TRUE)
+
+walkscore_low <- quantile(chicago_airbnb$WalkScore_c, 0.25, na.rm = TRUE)
+walkscore_high <- quantile(chicago_airbnb$WalkScore_c, 0.75, na.rm = TRUE)
+
+# Create a 3x3 grid using low (Q1), average (0), and high (Q3) values
+predictions_grid <- emmeans(model_interaction_walk,
+                            specs = ~ overall_satisfaction_c * WalkScore_c,
+                            at = list(overall_satisfaction_c = c(satisfaction_low, 0, satisfaction_high),
+                                     WalkScore_c = c(walkscore_low, 0, walkscore_high)),
+                            lmer.df = "satterthwaite")
+
+# Display the 3x3 grid of predictions
+print(predictions_grid)
+```
+
+Explanation of the `emmeans()` arguments:
+
+* The first argument is the fitted model object (`model_interaction_walk`)
+* `specs = ~ overall_satisfaction_c * WalkScore_c` specifies which variables to compute marginal means for, including their interaction
+* `at = list(...)` specifies the exact values at which to evaluate the predictors. Here we use three levels for each variable: Q1 (low), 0 (average, since variables are centered), and Q3 (high)
+* `lmer.df = "satterthwaite"` specifies the method for computing degrees of freedom and confidence intervals, using Satterthwaite's approximation which is appropriate for mixed models
+* All other predictors in the model (room type, accommodates, bedrooms, etc.) are automatically held at their reference levels or means
+
+The output shows a 3 × 3 grid of estimated marginal means with their standard errors and confidence intervals, representing the estimated log price at each combination of satisfaction and walkability levels.
+
+Now we can visualize these estimated marginal means using an interaction plot:
+
+```{r}
+# Convert predictions to data frame for plotting
+pred_df <- as.data.frame(predictions_grid)
+
+# Add descriptive labels for the factor levels
+pred_df$satisfaction_label <- factor(pred_df$overall_satisfaction_c,
+                                     levels = c(satisfaction_low, 0, satisfaction_high),
+                                     labels = c("Low (Q1)", "Average (Mean)", "High (Q3)"))
+
+pred_df$walkscore_label <- factor(pred_df$WalkScore_c,
+                                  levels = c(walkscore_low, 0, walkscore_high),
+                                  labels = c("Low (Q1)", "Average (Mean)", "High (Q3)"))
+
+# Create interaction plot
+ggplot(pred_df, aes(x = satisfaction_label, y = emmean,
+                    color = walkscore_label, group = walkscore_label)) +
+  geom_point(size = 3) +
+  geom_line(linewidth = 1) +
+  labs(title = "Interaction between Satisfaction and Walkability",
+       subtitle = "Estimated log prices at different combinations of satisfaction and walkability",
+       x = "Overall Satisfaction Level",
+       y = "Estimated Log Price",
+       color = "Walkability Level") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+This visualization shows:
+
+* **Three lines** representing neighborhoods with low, average, and high walkability
+* **Slopes** indicating how satisfaction relates to price at each walkability level
+* If the lines are **parallel**, the interaction effect is weak or non-significant
+* If the lines have **different slopes**, it indicates that the satisfaction-price relationship varies by walkability
+
+::: {.callout-important icon=false title="Question"}
+Based on the interaction plot, how does the relationship between satisfaction ratings and listing prices differ across neighborhoods with varying walkability levels? Do satisfaction ratings matter more (have a stronger effect) in low-walkability or high-walkability neighborhoods?
 :::
 
 ::: {.callout-important icon=false title="Coding exercise"}
@@ -360,7 +434,7 @@ Following the example above, test whether the `overall_satisfaction × TransitSc
 :::
 
 ::: {.callout-note icon=false title="F-tests vs. Likelihood Ratio Tests for fixed effects"}
-In this lab, we've used two different approaches for testing fixed effects:
+In this lab, we have used two different approaches for testing fixed effects:
 
 **F-tests (via `step()` function):**
 
