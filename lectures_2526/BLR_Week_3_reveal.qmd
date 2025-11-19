@@ -454,7 +454,7 @@ data_observational <- patients_obs |>
 
 - Research questions:
   - How much of the variation in length of stay is attributable to hospitals?
-  - Which patient-level and hospital-level factors are associated with length of stay?
+  - Which patient-level and hospital-level characteristics are associated with length of stay?
 
 - Study design:
   - Cross-sectional observational study
@@ -670,7 +670,7 @@ kable(
 
 - Grand mean: `r round(fixef(model_null), 2)` days
 - ICC = `r round(as.data.frame(VarCorr(model_null))$vcov[1] / sum(as.data.frame(VarCorr(model_null))$vcov), 3)`: about `r round(100 * as.data.frame(VarCorr(model_null))$vcov[1] / sum(as.data.frame(VarCorr(model_null))$vcov), 0)`% of variance in length of stay is attributable to differences between hospitals
-- This unconditional ICC reflects the correlation in length of stay among patients from the same hospital, measured before adjusting for any patient or hospital characteristics
+- This ICC reflects the correlation in length of stay among patients from the same hospital, measured before adjusting for any patient or hospital characteristics
 
 ## Adding patient-level characteristics
 
@@ -741,7 +741,7 @@ kable(
 
 - Each additional point on the CCI is associated with a `r round(fixef(model_patient)["cci_centered"], 2)` day increase in length of stay
 
-- Adding patient-level characteristics typically reduces residual variance (within-hospital variation) and may also reduce hospital variance if hospitals differ in their patient mix
+- Adding patient-level characteristics reduces residual (within-hospital) variance and may also reduce between-hospital variance if hospitals differ in their patient mix
 
 ## Adding hospital-level characteristics
 
@@ -817,58 +817,203 @@ kable(
 
 - Adding hospital-level characteristics reduces between-hospital variance while leaving the residual variance unchanged
 
-## Variance components: model comparison
+## Estimating the ICC in observational versus experimental studies
 
-:::: {.columns}
+- In observational studies the ICC is calculated from the null model because we want to describe the raw clustering structure in the data
+  - This raw clustering structure motivates the use of multilevel models
 
-::: {.column width="60%"}
-**Variance components**
+- In experimental studies (cluster randomization or randomized blocks) the ICC is calculated from a model that includes treatment because we want to describe the residual clustering after adjusting for the design
+  - This residual clustering determines power and sample size
+
+- The guiding principle is that the ICC should reflect the type of variation that is relevant for the study objective, which differs between observational and experimental settings
+
+## Lab 5: multi-level analysis of the Chicago AirBnB dataset
+
+![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
+
+## Three-level hierarchical model
 
 ```{r}
-#| echo: false
-# Extract variance components from all three models
-vc_comparison <- data.frame(
-  Model = c("Null model", "Null model", "Patient model", "Patient model", "Full model", "Full model"),
-  Component = rep(c("Hospital", "Residual"), 3),
-  Variance = c(
-    as.data.frame(VarCorr(model_null))$vcov[1],
-    as.data.frame(VarCorr(model_null))$vcov[2],
-    as.data.frame(VarCorr(model_patient))$vcov[1],
-    as.data.frame(VarCorr(model_patient))$vcov[2],
-    as.data.frame(VarCorr(model_full))$vcov[1],
-    as.data.frame(VarCorr(model_full))$vcov[2]
-  )
-)
+chicago_airbnb <- read.csv("../data/airbnb.csv")
 
+chicago_airbnb <- chicago_airbnb |>
+  mutate_if(is.character, as.factor)
+
+chicago_airbnb <- chicago_airbnb |>
+  mutate(log_price = log(price))
+
+# Fit both models for later comparison
+two_lvl_model <- lmer(log_price ~ 1 + (1 | neighborhood), data = chicago_airbnb)
+three_lvl_model <- lmer(log_price ~ 1 + (1 | district/neighborhood), data = chicago_airbnb)
+```
+
+In the Chicago AirBnB dataset, neighborhoods are nested within districts, creating a three-level hierarchy: listings (level 1) within neighborhoods (level 2) within districts (level 3).
+
+```{r}
+#| echo: true
+#| eval: false
+three_lvl_model <- lmer(log_price ~ 1 + (1 | district/neighborhood),
+ data = chicago_airbnb)
+```
+
+::: {style="margin-top:1.0em;"}
+:::
+
+:::: {.columns style="font-size: 0.8em;"}
+
+::: {.column width="50%"}
+**Variance components:**
+
+```{r}
+vc_three_level <- broom.mixed::tidy(three_lvl_model, effects = "ran_pars") |>
+  mutate(variance = estimate^2)
 kable(
-  vc_comparison,
+  vc_three_level[, c("group", "estimate", "variance")],
   digits = 3,
   format = "html",
-  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
+  table.attr = 'style="font-size: 100%; margin-left: 0; margin-right: auto"',
+  col.names = c("Group", "SD", "Variance")
 )
 ```
 :::
 
-::: {.column width="40%"}
-**Intraclass correlations**
+::: {.column width="50%"}
+**Intraclass correlations:**
 
 ```{r}
-#| echo: false
-# Calculate ICCs for each model
-icc_null <- as.data.frame(VarCorr(model_null))$vcov[1] / sum(as.data.frame(VarCorr(model_null))$vcov)
-icc_patient <- as.data.frame(VarCorr(model_patient))$vcov[1] / sum(as.data.frame(VarCorr(model_patient))$vcov)
-icc_full <- as.data.frame(VarCorr(model_full))$vcov[1] / sum(as.data.frame(VarCorr(model_full))$vcov)
+# Calculate ICCs for three-level model
+var_district <- as.data.frame(VarCorr(three_lvl_model))$vcov[2]
+var_neighborhood_3lvl <- as.data.frame(VarCorr(three_lvl_model))$vcov[1]
+var_residual_3lvl <- as.data.frame(VarCorr(three_lvl_model))$vcov[3]
+total_var <- var_district + var_neighborhood_3lvl + var_residual_3lvl
 
-icc_table <- data.frame(
-  Model = c("Null model", "Patient model", "Full model"),
-  ICC = c(icc_null, icc_patient, icc_full)
-)
+icc_neighborhood_3lvl <- (var_district + var_neighborhood_3lvl) / total_var
+icc_district <- var_district / total_var
+```
 
+$$\text{ICC}_{\text{neighborhood}} = \frac{\sigma^2_{\text{district}} + \sigma^2_{\text{neighborhood}}}{\sigma^2_{\text{district}} + \sigma^2_{\text{neighborhood}} + \sigma^2} = `r round(icc_neighborhood_3lvl, 3)`$$
+
+$$\text{ICC}_{\text{district}} = \frac{\sigma^2_{\text{district}}}{\sigma^2_{\text{district}} + \sigma^2_{\text{neighborhood}} + \sigma^2} = `r round(icc_district, 3)`$$
+:::
+
+::::
+
+::: {style="margin-top:0.5em; font-size: 0.9em;"}
+- **ICC_neighborhood**: correlation between two listings from the same neighborhood (= `r round(icc_neighborhood_3lvl, 3)`)
+- **ICC_district**: correlation between two listings from different neighborhoods but the same district (= `r round(icc_district, 3)`)
+:::
+
+## Comparing estimated variance components {style="font-size: 0.85em;"}
+
+:::: {.columns}
+
+::: {.column width="50%"}
+**Two-level model**
+
+```{r}
+# Calculate variance components for two-level model
+var_neighborhood_2lvl <- as.data.frame(VarCorr(two_lvl_model))$vcov[1]
+var_residual_2lvl <- as.data.frame(VarCorr(two_lvl_model))$vcov[2]
+```
+
+```{r}
+vc_two_level <- broom.mixed::tidy(two_lvl_model, effects = "ran_pars") |>
+  mutate(variance = estimate^2)
 kable(
-  icc_table,
+  vc_two_level[, c("group", "estimate", "variance")],
   digits = 3,
   format = "html",
-  table.attr = 'style="font-size: 80%; margin-left: 0; margin-right: auto"'
+  table.attr = 'style="font-size: 100%; margin-left: 0; margin-right: auto"',
+  col.names = c("Group", "SD", "Variance")
+)
+```
+
+Total between-neighborhood variance: `r round(var_neighborhood_2lvl, 3)`
+:::
+
+::: {.column width="50%"}
+**Three-level model**
+
+```{r}
+# Calculate variance components for three-level model
+var_district <- as.data.frame(VarCorr(three_lvl_model))$vcov[2]
+var_neighborhood_3lvl <- as.data.frame(VarCorr(three_lvl_model))$vcov[1]
+var_residual_3lvl <- as.data.frame(VarCorr(three_lvl_model))$vcov[3]
+```
+
+```{r}
+vc_three_level_compare <- broom.mixed::tidy(three_lvl_model, effects = "ran_pars") |>
+  mutate(variance = estimate^2)
+kable(
+  vc_three_level_compare[, c("group", "estimate", "variance")],
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 100%; margin-left: 0; margin-right: auto"',
+  col.names = c("Group", "SD", "Variance")
+)
+```
+
+Total between-neighborhood variance: `r round(var_district + var_neighborhood_3lvl, 3)`
+:::
+
+::::
+
+::: {style="margin-top:1.0em;"}
+:::
+
+- The **residual variance** is the same in both models (`r round(var_residual_2lvl, 3)` vs. `r round(var_residual_3lvl, 3)`)
+  - This represents within-neighborhood variation, which is unaffected by how we model between-neighborhood structure
+
+- The **total between-neighborhood variance** is slightly higher in the three-level model (`r round(var_district + var_neighborhood_3lvl, 3)`) than in the two-level model (`r round(var_neighborhood_2lvl, 3)`)
+  - In the two-level model, all between-neighborhood variance is attributed to neighborhoods
+  - In the three-level model, this variance is partitioned into district effects (`r round(var_district, 3)`) and neighborhood-within-district effects (`r round(var_neighborhood_3lvl, 3)`)
+  - The three-level model provides a more accurate decomposition when neighborhoods are nested within districts
+
+## Comparing estimated level-1 coefficients
+
+Let's compare models with level-1 predictors (listing characteristics) in both two-level and three-level models:
+
+```{r}
+# Center predictors
+chicago_airbnb <- chicago_airbnb |>
+  mutate(
+    bedrooms_centered = bedrooms - mean(bedrooms, na.rm = TRUE),
+    accommodates_centered = accommodates - mean(accommodates, na.rm = TRUE)
+  )
+
+# Fit models with level-1 predictors
+two_lvl_l1 <- lmer(log_price ~ bedrooms_centered + accommodates_centered + (1 | neighborhood),
+                   data = chicago_airbnb)
+three_lvl_l1 <- lmer(log_price ~ bedrooms_centered + accommodates_centered + (1 | district/neighborhood),
+                     data = chicago_airbnb)
+```
+
+:::: {.columns style="font-size: 0.75em;"}
+
+::: {.column width="50%"}
+**Two-level model**
+
+```{r}
+fe_two_l1 <- broom.mixed::tidy(two_lvl_l1, effects = "fixed")
+kable(
+  fe_two_l1[, c("term", "estimate", "std.error", "statistic", "p.value")],
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 100%; margin-left: 0; margin-right: auto"'
+)
+```
+:::
+
+::: {.column width="50%"}
+**Three-level model**
+
+```{r}
+fe_three_l1 <- broom.mixed::tidy(three_lvl_l1, effects = "fixed")
+kable(
+  fe_three_l1[, c("term", "estimate", "std.error", "statistic", "p.value")],
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 100%; margin-left: 0; margin-right: auto"'
 )
 ```
 :::
@@ -878,27 +1023,84 @@ kable(
 ::: {style="margin-top:1.0em;"}
 :::
 
-- **Unconditional ICC** (null model) = `r round(icc_null, 3)`: `r round(100 * icc_null, 0)`% of total variance in length of stay is attributable to differences between hospitals before adjusting for any covariates
+- Level-1 coefficient estimates are nearly identical between models
+  - Each additional bedroom: ~`r round(coef(summary(two_lvl_l1))["bedrooms_centered", "Estimate"], 3)` vs. ~`r round(coef(summary(three_lvl_l1))["bedrooms_centered", "Estimate"], 3)` log-price increase
+  - Each additional guest capacity: ~`r round(coef(summary(two_lvl_l1))["accommodates_centered", "Estimate"], 3)` vs. ~`r round(coef(summary(three_lvl_l1))["accommodates_centered", "Estimate"], 3)` log-price increase
 
-- **ICC after patient adjustments** = `r round(icc_patient, 3)`: `r round(100 * icc_patient, 0)`% of remaining variance is at the hospital level after accounting for patient characteristics
+- Standard errors are also very similar
+  - Level-1 effects are estimated from within-neighborhood variation, which is unaffected by the district-level structure
 
-- **Conditional ICC** (full model) = `r round(icc_full, 3)`: `r round(100 * icc_full, 0)`% of unexplained variance remains at the hospital level after accounting for all covariates
+## Comparing estimated level-2 coefficients
 
-## Unconditional versus conditional ICC
+Now let's add a level-2 predictor (neighborhood WalkScore) to both models:
 
-- Unconditional ICC
-  - Computed from a null model without covariates
-  - Captures the raw correlation among individuals in the same cluster
-  - Useful for describing the baseline dependence structure in hierarchical data
+```{r}
+# Calculate neighborhood-level mean WalkScore
+neighborhood_walkscore <- chicago_airbnb |>
+  group_by(neighborhood) |>
+  summarise(mean_walkscore = mean(WalkScore, na.rm = TRUE)) |>
+  mutate(walkscore_centered = mean_walkscore - mean(mean_walkscore, na.rm = TRUE))
 
-- Conditional ICC
-  - Computed from a model that includes covariates
-  - Reflects the remaining clustering after adjustment
-  - Affects precision differently for different types of fixed effects
-    - Group-level (level 2) covariates: a higher ICC reduces precision
-    - Individual-level (level 1) covariates: a higher ICC increases precision
-    - Cross-level (level 1 x level 2) interactions: a higher ICC can raise or lower precision depending on whether the interaction is affected more by variation within hospitals or by differences between hospitals
+chicago_airbnb <- chicago_airbnb |>
+  left_join(neighborhood_walkscore, by = "neighborhood")
 
-## Lab 5: multi-level analysis Chicago AirBnB data
+# Fit models with level-2 predictor
+two_lvl_l2 <- lmer(log_price ~ walkscore_centered + (1 | neighborhood),
+                   data = chicago_airbnb)
+three_lvl_l2 <- lmer(log_price ~ walkscore_centered + (1 | district/neighborhood),
+                     data = chicago_airbnb)
+```
 
-![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
+:::: {.columns style="font-size: 0.75em;"}
+
+::: {.column width="50%"}
+**Two-level model**
+
+```{r}
+fe_two_l2 <- broom.mixed::tidy(two_lvl_l2, effects = "fixed")
+kable(
+  fe_two_l2[, c("term", "estimate", "std.error", "statistic", "p.value")],
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 100%; margin-left: 0; margin-right: auto"'
+)
+```
+:::
+
+::: {.column width="50%"}
+**Three-level model**
+
+```{r}
+fe_three_l2 <- broom.mixed::tidy(three_lvl_l2, effects = "fixed")
+kable(
+  fe_three_l2[, c("term", "estimate", "std.error", "statistic", "p.value")],
+  digits = 3,
+  format = "html",
+  table.attr = 'style="font-size: 100%; margin-left: 0; margin-right: auto"'
+)
+```
+:::
+
+::::
+
+::: {style="margin-top:1.0em;"}
+:::
+
+- The level-2 coefficient estimate may differ slightly between models
+  - WalkScore effect: ~`r round(coef(summary(two_lvl_l2))["walkscore_centered", "Estimate"], 3)` vs. ~`r round(coef(summary(three_lvl_l2))["walkscore_centered", "Estimate"], 3)` log-price change per unit WalkScore
+
+- The standard error is larger in the three-level model
+  - SE: `r round(coef(summary(two_lvl_l2))["walkscore_centered", "Std. Error"], 3)` vs. `r round(coef(summary(three_lvl_l2))["walkscore_centered", "Std. Error"], 3)`
+  - Neighborhoods within the same district are correlated, reducing the effective number of independent observations
+  - This increases uncertainty in the level-2 coefficient estimate
+
+## Summary
+
+- Adding a level 3 grouping reveals additional clustering at that level, which reduces the effective number of independent units for estimating level 2 effects
+
+- Level 1 coefficients change little because they rely on within-neighborhood variation, which is not strongly affected by adding a district level
+
+- Level 2 coefficients often show larger standard errors because neighborhoods within the same district are correlated, reducing the amount of independent between-neighborhood information
+
+- The model reallocates part of the between-neighborhood variation to the district level, leaving less usable variation for estimating level 2 effects
+
