@@ -1,6 +1,6 @@
 ---
-title: "Beyond MLR - Week 3: Experimental Design II"
-subtitle: "Cluster randomization and multi-level analysis of cross-sectional obervational data"
+title: "Beyond MLR - Week 3"
+subtitle: "Cluter randomization and multi-level analysis of cross-sectional obervational data"
 author: "Dr. Douwe Postmus"
 format:
   revealjs:
@@ -32,21 +32,31 @@ if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.mixed, gridExtra)
 ```
 
-## What did we learn last week
+## What did we learn in previous weeks - part 1
 
-- Two-way factorial ANOVA
-  - Designs with two fixed experimental factors
-  - Main effects and interactions
-  - Marginal versus conditional means
-- Replicated randomized block designs
-  - Introduces an interaction between a fixed effect (treatment) and a random effect (block)
-- Crossed random-effects models
-  - Models with two random effects
-  - Assessment of inter-rater agreement
+- Grouped data arise when units of analysis share common conditions defined by one or more context variables
+  - Because of this shared context, units from the same group tend to be positively correlated
+  - The extent of this dependence is described by the ICC
+
+- Two-level hierarchical data
+  - Randomized block design: experimental units (level 1) nested in blocks (level 2)
+  - Treatment is a level-1 variable because treatments vary at the level of individual experimental units
+  - Ignoring blocks (using OLS) yields unbiased treatment estimates but is inefficient because block-to-block variation is absorbed into the residual, inflating the residual variance and lowering power
+
+- Cross-classified data
+  - Units of analysis belong to combinations of two (or more) non-nested higher-level units
+    - Tumor volume measurements cross-classified by patient and radiologist
+  - In medical settings this structure is often used to assess inter-rater agreement
 
 ## Today's lecture
 
-TODO: outline
+- Cluster randomization
+  - Treatment as a cluster-level (level 2) variable
+
+- Multi-level analysis of cross-sectional observational data
+  - Models with both individual-level (level 1) and context-level (level 2) variables
+  - Cross-level interactions
+  - Three-level hierarchical models
 
 # Part 1: Cluster randomization
 
@@ -108,7 +118,7 @@ data_cluster_randomization <- patients |>
 
 - Study design:
   - 12 post-surgical wards randomized to enhanced early mobilization (n=6) or standard care (n=6)
-  - Approximately 30 patients per ward recovering from major abdominal surgery
+  - 30 patients per ward recovering from major abdominal surgery
   - Total sample: 360 patients nested within 12 wards
 
 - Intervention:
@@ -143,21 +153,6 @@ data_cluster_randomization <- patients |>
 :::
 
 ::::
-
-## Why cluster randomization?
-
-- The intervention targets ward-level factors:
-  - Staff training on mobilization techniques
-  - Environmental changes (walking aids, hallway markings)
-  - Culture change in ward practices
-
-- Cannot individualize treatment within wards:
-  - Nursing staff work across all patients on the ward
-  - Staff cannot easily apply different protocols to different patients
-
-- Risk of contamination:
-  - If standard and enhanced care coexist on same ward, practices will blend
-  - Treatment "spillover" undermines the comparison
 
 ## Exploratory data analysis
 
@@ -345,16 +340,18 @@ kable(
 ## Effective sample size
 
 - When the ICC is large, wards vary substantially in their baseline performance
-  - Any observed treatment effect could partly reflect chance allocation of the intervention to better-performing wards, rather than a true intervention effect
-  - With only 12 wards randomized, we have limited ability to distinguish "lucky randomization" from true treatment benefits
+  - The observed treatment effect may partly reflect random differences in which wards received the intervention
+  - With only 12 wards randomized, we have limited ability to separate true treatment effects from block-level variation that happened to align with the treatment assignment
 
 - This decrease in precision with cluster-level variables is reflected in the notion of **effective sample size**
   - Because outcomes are correlated within wards, the effective sample size is much smaller than 360
   - Think of it as having information equivalent to somewhere between 12 wards and 360 independent patients
 
-- The mixed model accounts for this uncertainty by producing larger (and correct) standard errors and wider confidence intervals
+- The mixed model accounts for this by correctly modelling between-ward variation instead of pooling it into the fixed treatment effect, producing larger standard errors and wider confidence intervals
 
-- Ordinary linear regression incorrectly treats all 360 patients as independent, leading to overly optimistic conclusions
+- Ordinary linear regression incorrectly treats all 360 patients as independent, pools ward-level differences into the fixed effect, and therefore gives overly optimistic conclusions
+
+
 
 ## Consequences of ignoring the grouping structure {style="font-size: 0.9em;"}
 
@@ -365,13 +362,13 @@ kable(
 
 - Treatment is assigned at the **individual level** (level 1)
 - Accounting for blocks **increases precision**
-  - Reduces residual variance by removing block-to-block variation
-  - Smaller standard errors for treatment effects
-  - More statistical power to detect treatment differences
+  - Removes block-to-block variation from the residual
+  - Leads to smaller standard errors for treatment effects
+  - Increases statistical power to detect treatment differences
 - Ignoring blocks is **inefficient but valid**
   - Treatment effect estimates remain unbiased
   - Standard errors are larger (loss of power)
-  - No inflation of Type I error rates
+  - No inflation of Type I error (false positive) rates
 :::
 
 ::: {.column width="50%"}
@@ -379,16 +376,27 @@ kable(
 
 - Treatment is assigned at the **cluster level** (level 2)
 - Accounting for clusters **decreases precision**
-  - Effective sample size is reduced
-  - Larger standard errors for treatment effects
-  - Less statistical power compared to individual randomization
-- Ignoring clusters is **invalid**
+  - Reduces the effective sample size
+  - Leads to larger standard errors for treatment effects
+  - Provides less power than individual-level randomization
+- Ignoring clusters is **invalid** for inference
   - Treatment effect estimates remain unbiased
   - Standard errors are too small (anti-conservative)
-  - Inflated Type I error rates
+  - Inflated Type I error (false positive) rates
 :::
 
 ::::
+
+## What did we learn in previous weeks - part 2 {style="font-size: 0.9em;"}
+
+- Three-level hierarchical data
+  - Replicated randomized block design: experimental units (level 1) nested in treatment conditions (level 2) nested in blocks (level 3)
+  - Treatment is a level-2 variable because each block has its own set of treatment conditions
+  - Ignoring the treatment–block interaction changes the validity of treatment inferences
+    - If a random block effect is included but the treatment–block interaction is omitted, block-specific treatment differences are incorrectly pooled into the fixed treatment effect, resulting in overly optimistic standard errors
+    - This is conceptually the same mistake as ignoring clustering in a cluster randomized trial, where cluster-level variation is pooled into the fixed effect and leads to anti-conservative inference
+  - Including random block and treatment–block effects correctly partitions variation across levels and gives valid uncertainty estimates for treatment effects
+    - The number of truly independent pieces of information is determined by the number of blocks and treatment conditions, not by the total number of experimental units (effective sample size)  
 
 # Part 2: Multi-level analysis of cross-sectional observational data
 
@@ -458,7 +466,7 @@ data_observational <- patients_obs |>
 
 - Study design:
   - Cross-sectional observational study
-  - ~720 patients nested within 18 hospitals
+  - 720 patients nested within 18 hospitals
   - Varying hospital sizes (non-academic and academic hospitals)
 
 - Variables:
@@ -1096,11 +1104,13 @@ kable(
 
 ## Summary
 
-- Adding a level 3 grouping reveals additional clustering at that level, which reduces the effective number of independent units for estimating level 2 effects
+- Adding a level 3 grouping reveals additional clustering at that level, which further reduces the effective number of independent units available and therefore increases the standard errors of level 2 effects
 
-- Level 1 coefficients change little because they rely on within-neighborhood variation, which is not strongly affected by adding a district level
+- Standard errors of level 1 coefficients change little because they are driven by within-neighborhood variation, which is only minimally affected by introducing a district level
 
-- Level 2 coefficients often show larger standard errors because neighborhoods within the same district are correlated, reducing the amount of independent between-neighborhood information
+- Standard errors of level 2 coefficients often increase because neighborhoods within the same district are correlated, reducing the amount of independent between-neighborhood information
 
-- The model reallocates part of the between-neighborhood variation to the district level, leaving less usable variation for estimating level 2 effects
+- When the interest lies in testing individual-level hypotheses, the impact of adding a higher level is usually limited because level 1 precision is largely preserved
+
+- When the interest lies in context-level effects or cross-level interactions, the impact is more substantial because these effects rely on between-cluster information, which becomes less independent as higher levels are introduced
 
