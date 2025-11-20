@@ -36,17 +36,69 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.
 
 - Grouped data arise when units of analysis share common conditions defined by one or more context variables
   - Because of this shared context, units from the same group tend to be positively correlated
-  - The extent of this dependence is described by the ICC
+  - The extent of this correlation is quantified by the ICC
 
-- Two-level hierarchical data
-  - Randomized block design: experimental units (level 1) nested in blocks (level 2)
-  - Treatment is a level-1 variable because treatments vary at the level of individual experimental units
-  - Ignoring blocks (using OLS) yields unbiased treatment estimates but is inefficient because block-to-block variation is absorbed into the residual, inflating the residual variance and lowering power
+ - Two-level hierarchical data
+   - Randomized block design: experimental units (level 1) nested in blocks (level 2)
+   - Ignoring blocks (using OLS) yields unbiased treatment estimates but is inefficient because block-to-block variation is absorbed into the residual error, inflating the residual variance and lowering power 
+   - The higher the ICC, the larger the loss in power
 
-- Cross-classified data
-  - Units of analysis belong to combinations of two (or more) non-nested higher-level units
-    - Tumor volume measurements cross-classified by patient and radiologist
-  - In medical settings this structure is often used to assess inter-rater agreement
+::: {.callout-warning icon=false title="Student question related to the week 2 assignment"}
+Why would you use the ICC to assess the attribution of random effects to the variance? Why not also include the variation explained by the fixed effect to the total variation instead (like a R-squared for the random effects?)
+:::
+
+## Unconditional variance, conditional variance, and explained variance
+
+- Unconditional variance: the variability of the outcome without conditioning on any covariates (i.e., the raw variance of the outcome variable)
+- Conditional variance: the variability of the outcome after conditioning on covariates in a regression model (i.e. variability among units with identical covariate values)
+- Explained variance (R-squared): how much the unconditional variance is reduced by including covariates
+  - R-squared = (unconditional variance - conditional variance) / unconditional variance
+- In multilevel models we distinguish two forms of R-squared
+  - Marginal R-squared: proportion of variance explained by the fixed effects only (i.e., reduction in variability among units with identical covariate values)
+  - Conditional R-squared: proportion of variance explained by both fixed and random effects (i.e., reduction in variability among units with identical covariate values and identical group membership)
+
+## Correlation within groups
+
+::: {style="font-size: 0.9em;"}
+
+- In the familiar notion of correlation, we examine how two variables (X and Y) co-vary within the same unit
+- In multilevel models, correlation refers to the similarity between outcomes that belong to the same group
+- A useful thought experiment for two-level hierarchical data
+  - Imagine repeatedly selecting a group at random and then sampling two units from that group
+  - Groups with a high or low underlying effect will produce two outcomes that tend to move together across repeated samples
+- We can visualise this idea by randomly selecting two observations from each group and plotting the resulting pairs in a scatterplot
+  - When the between-group differences are large, the pairs tend to lie close to the diagonal
+  - When the between-group differences are small, the pairs scatter widely across the plot
+ - The ICC quantifies this within-group correlation
+   - It is computed as the ratio of the between-group variance to the total variance
+   - In a null model this uses the unconditional variance (no covariates)
+   - In a model with covariates this uses the conditional variance (after adjusting for covariates)
+
+:::
+
+## Effects coding versus dummy coding
+
+::: {style="font-size: 0.9em;"}
+
+Suppose we have two groups: group A: mean = 5; group B: mean = 10
+
+**Dummy coding**
+
+- Choose A as the reference
+- Code A as 0, code B as 1
+- The intercept equals the mean of A → 5
+- The coefficient for the group variable equals the difference between B and A → 10 − 5 = 5
+- Interpretation: B is 5 units higher than A
+
+**Effects coding**
+
+- No reference group
+- Code A as +1, code B as -1
+- The intercept equals the grand mean → (5 + 10) / 2 = 7.5
+- The coefficient shows how far A deviates from the grand mean → 5 − 7.5 = -2.5 
+- Interpretation: A is 2.5 below the overall mean; B is 2.5 above the overall mean
+
+:::
 
 ## Today's lecture
 
