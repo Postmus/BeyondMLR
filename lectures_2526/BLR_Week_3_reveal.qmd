@@ -32,47 +32,68 @@ if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.mixed, gridExtra)
 ```
 
-## What did we learn in previous weeks - part 1
+## What did we learn in previous weeks
+
+::: {style="font-size: 0.95em;"}
 
 - Grouped data arise when units of analysis share common conditions defined by one or more context variables
   - Because of this shared context, units from the same group tend to be positively correlated
   - The extent of this correlation is quantified by the ICC
 
- - Two-level hierarchical data
-   - Randomized block design: experimental units (level 1) nested in blocks (level 2)
-   - Ignoring blocks (using OLS) yields unbiased treatment estimates but is inefficient because block-to-block variation is absorbed into the residual error, inflating the residual variance and lowering power 
-   - The higher the ICC, the larger the loss in power
-
-::: {.callout-warning icon=false title="Student question related to the week 2 assignment"}
-Why would you use the ICC to assess the attribution of random effects to the variance? Why not also include the variation explained by the fixed effect to the total variation instead (like a R-squared for the random effects?)
-:::
-
-## Unconditional variance, conditional variance, and explained variance
-
-- Unconditional variance: the variability of the outcome without conditioning on any covariates (i.e., the raw variance of the outcome variable)
-- Conditional variance: the variability of the outcome after conditioning on covariates in a regression model (i.e. variability among units with identical covariate values)
-- Explained variance (R-squared): how much the unconditional variance is reduced by including covariates
-  - R-squared = (unconditional variance - conditional variance) / unconditional variance
-- In multilevel models we distinguish two forms of R-squared
-  - Marginal R-squared: proportion of variance explained by the fixed effects only (i.e., reduction in variability among units with identical covariate values)
-  - Conditional R-squared: proportion of variance explained by both fixed and random effects (i.e., reduction in variability among units with identical covariate values and identical group membership)
-
-## Correlation within groups
-
-::: {style="font-size: 0.9em;"}
+#### What do we mean by within-group correlation?
 
 - In the familiar notion of correlation, we examine how two variables (X and Y) co-vary within the same unit
-- In multilevel models, correlation refers to the similarity between outcomes that belong to the same group
+- In multi-level data, correlation refers to the similarity between outcomes that belong to the same group
 - A useful thought experiment for two-level hierarchical data
   - Imagine repeatedly selecting a group at random and then sampling two units from that group
-  - Groups with a high or low underlying effect will produce two outcomes that tend to move together across repeated samples
-- We can visualise this idea by randomly selecting two observations from each group and plotting the resulting pairs in a scatterplot
-  - When the between-group differences are large, the pairs tend to lie close to the diagonal
-  - When the between-group differences are small, the pairs scatter widely across the plot
- - The ICC quantifies this within-group correlation
-   - It is computed as the ratio of the between-group variance to the total variance
-   - In a null model this uses the unconditional variance (no covariates)
-   - In a model with covariates this uses the conditional variance (after adjusting for covariates)
+  - Groups with higher (or lower) group means will consistently produce pairs of outcomes that both tend to be above (or below) the grand mean
+  - If we repeat this process many times and plot each pair of outcomes on a scatterplot, the degree to which points cluster around the diagonal reveals the strength of the correlation structure
+- The ICC quantifies the strength of this within-group correlation  
+
+:::
+
+## What did we learn in previous weeks
+
+::: {style="font-size: 0.88em;"}
+
+- Randomized block design
+   - Two-level hierarchical data: experimental units (level 1) nested in blocks (level 2)
+   - Ignoring blocks (using OLS) yields unbiased treatment estimates but is inefficient because block-to-block variation is absorbed into the residual error, inflating the residual variance and lowering power 
+   - The higher the ICC, the larger the loss in power when blocks are ignored
+
+- Replicated randomized block design
+  - Three-level hierarchical data: experimental units (level 1) nested in treatment conditions (level 2) nested in blocks (level 3)
+  - Ignoring the treatment–block interaction pools block-specific treatment differences into the fixed treatment effect estimates, resulting in standard errors that are too small (anti-conservative)
+  - The higher the treatment-block ICC, the larger the inflation of Type I error when the interaction is ignored
+
+- Inter-rater agreement
+  - Cross-classified data: measurements (level 1) cross-classified by subject (level 2) and rater (level 2)
+  - Inter-rater agreement is quantified by the ICC for subjects
+    - A high subject ICC indicates that measurements within the same subject are highly correlated (raters give similar scores to the same subject)
+
+:::
+
+## ICC versus explained variance
+
+::: {style="font-size: 0.88em;"}
+
+- **ICC** describes the correlation structure in the data (how similar are units within the same group?)
+  - Relevant for: understanding dependence, sample size calculations
+
+- **Explained variance (R-squared)** describes how well covariates predict the outcome
+  - Relevant for: assessing model fit, evaluating the importance of predictors
+
+#### In multi-level models
+
+- **R-squared has two forms**
+  - Marginal R-squared: proportion of variance explained by fixed effects only (similar to OLS)
+  - Conditional R-squared: proportion of variance explained by both fixed and random effects
+
+- **ICC can be calculated from different models**
+  - ICC from null model (no covariates): describes the raw clustering structure in the data
+    - In observational studies: motivates the use of multi-level models and quantifies dependence before any adjustments
+  - ICC from treatment model (includes treatment as fixed effect): describes the residual clustering after adjusting for treatment (clustering among units with identical treatment assignment)
+    - In experimental studies: determines power and sample size requirements
 
 :::
 
@@ -439,17 +460,6 @@ kable(
 
 ::::
 
-## What did we learn in previous weeks - part 2 {style="font-size: 0.9em;"}
-
-- Three-level hierarchical data
-  - Replicated randomized block design: experimental units (level 1) nested in treatment conditions (level 2) nested in blocks (level 3)
-  - Treatment is a level-2 variable because each block has its own set of treatment conditions
-  - Ignoring the treatment–block interaction changes the validity of treatment inferences
-    - If a random block effect is included but the treatment–block interaction is omitted, block-specific treatment differences are incorrectly pooled into the fixed treatment effect, resulting in overly optimistic standard errors
-    - This is conceptually the same mistake as ignoring clustering in a cluster randomized trial, where cluster-level variation is pooled into the fixed effect and leads to anti-conservative inference
-  - Including random block and treatment–block effects correctly partitions variation across levels and gives valid uncertainty estimates for treatment effects
-    - The number of truly independent pieces of information is determined by the number of blocks and treatment conditions, not by the total number of experimental units (effective sample size)  
-
 # Part 2: Multi-level analysis of cross-sectional observational data
 
 ```{r}
@@ -670,7 +680,7 @@ gridExtra::grid.arrange(p3, p4, ncol = 1)
 - Academic hospitals appear to have slightly shorter stays on average
 - Larger hospitals tend to have shorter average length of stay
 
-## Null model: variance partitioning
+## Null model: variance components
 
 The **null model** (or **unconditional model**) contains only random intercepts for hospitals, without any covariates:
 
@@ -876,16 +886,6 @@ kable(
 - Each 100-bed increase in hospital size is associated with a `r round(100 * fixef(model_full)["size_centered"], 2)` day change in length of stay
 
 - Adding hospital-level characteristics reduces between-hospital variance while leaving the residual variance unchanged
-
-## Estimating the ICC in observational versus experimental studies
-
-- In observational studies the ICC is calculated from the null model because we want to describe the raw clustering structure in the data
-  - This raw clustering structure motivates the use of multilevel models
-
-- In experimental studies (cluster randomization or randomized blocks) the ICC is calculated from a model that includes treatment because we want to describe the residual clustering after adjusting for the design
-  - This residual clustering determines power and sample size
-
-- The guiding principle is that the ICC should reflect the type of variation that is relevant for the study objective, which differs between observational and experimental settings
 
 ## Lab 5: multi-level analysis of the Chicago AirBnB dataset
 
