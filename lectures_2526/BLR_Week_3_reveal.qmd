@@ -424,11 +424,9 @@ kable(
 
 - Ordinary linear regression incorrectly treats all 360 patients as independent, pools ward-level differences into the fixed effect, and therefore gives overly optimistic conclusions
 
+## [Consequences of ignoring the grouping structure]{style="font-size: 0.9em;"} 
 
-
-## Consequences of ignoring the grouping structure {style="font-size: 0.9em;"}
-
-:::: {.columns}
+:::: {.columns style="font-size: 0.9em;"}
 
 ::: {.column width="50%"}
 **Randomized block design**
@@ -536,7 +534,7 @@ data_observational <- patients_obs |>
   - **Hospital-level** (level 2): academic status, hospital size (number of beds)
   - **Outcome**: length of stay (days)
 
-## Exploratory data analysis - outcome variable
+## Exploratory data analysis: outcome variable
 
 ```{r}
 # Create histogram of length of stay
@@ -554,7 +552,7 @@ ggplot(data_observational, aes(x = length_of_stay)) +
   theme_minimal()
 ```
 
-## Exploratory data analysis - variance components {style="font-size: 0.9em;"}
+## [Exploratory data analysis: variance components]{style="font-size: 0.9em;"}
 
 ```{r}
 # Calculate hospital-level means
@@ -600,7 +598,7 @@ ggplot(data_observational_ordered, aes(x = hospital_id, y = length_of_stay)) +
 - **Within-hospital variation**: patients in the same hospital have different lengths of stay
 - **Between-hospital variation**: hospital means differ substantially from each other
 
-## Exploratory data analysis - covariate effects
+## Exploratory data analysis: covariate effects
 
 :::: {.columns}
 
@@ -963,9 +961,9 @@ $$\text{ICC}_{\text{district}} = \frac{\sigma^2_{\text{district}}}{\sigma^2_{\te
 - **ICC_district**: correlation between two listings from different neighborhoods but the same district (= `r round(icc_district, 3)`)
 :::
 
-## Comparing estimated variance components {style="font-size: 0.85em;"}
+## [Comparing estimated variance components]{style="font-size: 0.9em;"}
 
-:::: {.columns}
+:::: {.columns style="font-size: 0.85em;"}
 
 ::: {.column width="50%"}
 **Two-level model**
@@ -1018,8 +1016,7 @@ Total between-neighborhood variance: `r round(var_district + var_neighborhood_3l
 
 ::::
 
-::: {style="margin-top:1.0em;"}
-:::
+::: {style="margin-top:1.0em; font-size: 0.85em;"}
 
 - The **residual variance** is the same in both models (`r round(var_residual_2lvl, 3)` vs. `r round(var_residual_3lvl, 3)`)
   - This represents within-neighborhood variation, which is unaffected by how we model between-neighborhood structure
@@ -1028,6 +1025,8 @@ Total between-neighborhood variance: `r round(var_district + var_neighborhood_3l
   - In the two-level model, all between-neighborhood variance is attributed to neighborhoods
   - In the three-level model, this variance is partitioned into district effects (`r round(var_district, 3)`) and neighborhood-within-district effects (`r round(var_neighborhood_3lvl, 3)`)
   - The three-level model provides a more accurate decomposition when neighborhoods are nested within districts
+
+:::
 
 ## Comparing estimated level-1 coefficients
 
