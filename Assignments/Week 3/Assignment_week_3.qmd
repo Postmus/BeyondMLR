@@ -2,17 +2,12 @@
 title: "Assignment Week 3: Multilevel Analysis of School Effectiveness"
 subtitle: "Examining Student and School-Level Factors in Inner London"
 format: html
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true   
 ---
-
-```{r}
-#| label: setup
-#| include: false
-
-# configure global options for R code chunks:
-# warning = F to suppress the display of warning messages generated during the execution of code chunks
-# message = F to suppress the display of messages produced during the execution of code chunks
-knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
-```
 
 ## Introduction
 
@@ -44,9 +39,24 @@ Your goals are to determine:
 ### Load the Dataset
 Download the dataset (see link in the Downloads section below) and read it into R. Make sure all character variables are correctly encoded as factors.
 
+::: {.callout-tip icon=false title="Hint"}
+When loading the data, convert the `School` variable to a factor. This will make it easier to use `reorder()` in ggplot when creating visualizations that order schools by their mean exam scores.
+
+```{r}
+# Load the data
+ilea_data <- read.csv("downloads/ilea_data.csv")
+
+# Convert all character variables into factors
+ilea_data <- ilea_data %>%
+  mutate_if(is.character, as.factor) %>%
+  mutate(School = as.factor(School))
+```
+:::
+
 ### Exploratory Data Analysis (EDA): 
-- Visualize the nesting structure of the data (i.e., number of students per school)
 - Explore the distribution of the outcome variable (`ExamScore`)
+- Explore the variance components (i.e., make a plot displaying the within- and between-school variation)
+- Explore the relationships between fixed effects and the outcome variable
 
 ### Multi-Level Modeling
 - Start by fitting a **null model** (i.e., a random intercept model without any predictors) to partition the variance in exam scores between students and schools. Assess how much of the variability in exam scores is due to differences between students and schools.

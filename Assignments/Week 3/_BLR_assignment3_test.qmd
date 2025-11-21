@@ -31,56 +31,63 @@ library(dplyr)
 library(ggplot2)
 library(lmerTest)
 
-ilea_data <- read.csv("downloads/ilea_data.csv")
+ilea_data <- read.csv("Assignments/Week 3/downloads/ilea_data.csv")
 
 # Convert all character variables into factors
 ilea_data <- ilea_data %>%
-  mutate_if(is.character, as.factor)
+  mutate_if(is.character, as.factor) %>%
+  mutate(School = as.factor(School))
 
 # Inspect the structure of the dataset
 str(ilea_data)
 ```
 
-To get a better feeling for this grouping structure, we begin by summarizing the number of students within each school:
-```{r}
-# Summarize number of students within each school
-school_summary <- ilea_data %>%
-  group_by(School) %>%
-  summarise(num_students = n())
+We start by creating a histogram to visualize the distribution of the outcome variable `ExamScore`:
 
-# Visualize the distribution of students across schools
-ggplot(school_summary, aes(x = reorder(School, num_students), y = num_students)) +
-  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
-  coord_flip() +
-  labs(title = "Number of Students per School",
-       x = "School",
-       y = "Number of Students")
+```{r}
+# Create a histogram of exam scores
+ggplot(ilea_data, aes(x = ExamScore)) +
+  geom_histogram(binwidth = 2, fill = "steelblue", color = "black", alpha = 0.7) +
+  geom_vline(xintercept = mean(ilea_data$ExamScore), linetype = "dashed", color = "red") +
+  labs(title = "Distribution of Exam Scores",
+       x = "Exam Score",
+       y = "Frequency") +
+  theme_minimal()
 ```
 
-Next, we create a histogram to visualize the distribution of the outcome variable `ExamScore`:
-
-We also want to get a sense of the variability in the exam scores within and between schools. For this, we are going to select the 10 neighborhoods with the most listings and create a scatter plot with the exam core price on the y-axis and the school on the x-axis:
+We also want to get a sense of the variability in exam scores within and between schools. For this, we randomly select 15 schools and create a scatter plot showing individual student scores and school means:
 
 ```{r}
-# Select the top 10 schools with the most students
-top_schools <- school_summary %>%
-  slice_max(num_students, n = 10) %>%
-  pull(School)
+# Set seed for reproducibility
+set.seed(123)
 
-# Filter the data to include only the top schools
-top_school_data <- ilea_data %>%
-  filter(School %in% top_schools)
-```
+# Randomly select 15 unique schools
+random_schools <- sample(unique(ilea_data$School), size = 15)
 
-```{r}
-# Create a scatterplot of the exam scores by school for the 10 schools with the most students
-ggplot(top_school_data, aes(x = as.factor(School), y = ExamScore)) +
-  geom_point(alpha = 0.5) +
-  labs(title = "Exam Scores by School",
-       x = "School",
+# Filter the data to include only the randomly selected schools
+random_school_data <- ilea_data |>
+  filter(School %in% random_schools)
+
+# Calculate the average ExamScore for each school
+school_avg_score <- random_school_data |>
+  group_by(School) |>
+  summarise(avg_exam_score = mean(ExamScore, na.rm = TRUE), .groups = "drop")
+
+# Calculate the overall grand mean across all schools
+grand_mean <- mean(ilea_data$ExamScore, na.rm = TRUE)
+
+# Create scatter plot with jittered observations
+ggplot(random_school_data, aes(x = reorder(School, ExamScore, FUN = mean), y = ExamScore)) +
+  geom_hline(yintercept = grand_mean, linetype = "solid", color = "black", linewidth = 1) +
+  geom_jitter(alpha = 0.3, width = 0.2, size = 1, color = "gray60") +
+  geom_point(data = school_avg_score, aes(x = reorder(School, avg_exam_score), y = avg_exam_score),
+             size = 4, shape = 18, color = "red") +
+  labs(title = "Variation in exam scores: within and between schools",
+       subtitle = "Points = individual students; Diamonds = school means; Solid line = grand mean (all data)",
+       x = "School (ordered by mean exam score)",
        y = "Exam Score") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  geom_hline(yintercept = mean(ilea_data$ExamScore), linetype = "dashed", color = "blue") 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 ```
 
 ## Random intercept model 
@@ -145,4 +152,37 @@ summary(random_intercept_model_interaction1)
 # Fit the model with the interaction between PercentFSM_c and VRBand
 random_intercept_model_interaction2 <- lmer(ExamScore ~ PercentFSM_c*VRBand + (1 | School), data = ilea_data)
 summary(random_intercept_model_interaction2)
+```
+
+## Model diagnostics: checking residuals
+
+To assess whether the model assumptions are satisfied, we examine the conditional residuals. We'll create diagnostic plots to check for normality and homoscedasticity.
+
+```{r}
+# Fit a more complete model including both individual and school-level variables
+model_full <- lmer(ExamScore ~ Gender + VRBand + PercentFSM_c + (1 | School), data = ilea_data)
+
+# Extract conditional residuals from the full model
+ilea_data <- ilea_data %>%
+  mutate(residuals = residuals(model_full),
+         fitted = fitted(model_full))
+
+# Create a Q-Q plot to assess normality of residuals
+ggplot(ilea_data, aes(sample = residuals)) +
+  stat_qq() +
+  stat_qq_line(color = "red") +
+  labs(title = "Q-Q Plot of Conditional Residuals",
+       x = "Theoretical Quantiles",
+       y = "Sample Quantiles") +
+  theme_minimal()
+
+# Create a residuals vs fitted plot to assess homoscedasticity
+ggplot(ilea_data, aes(x = fitted, y = residuals)) +
+  geom_point(alpha = 0.3, size = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  geom_smooth(se = FALSE, color = "blue") +
+  labs(title = "Residuals vs Fitted Values",
+       x = "Fitted Values",
+       y = "Conditional Residuals") +
+  theme_minimal()
 ```
