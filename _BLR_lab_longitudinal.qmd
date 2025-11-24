@@ -1,32 +1,36 @@
 ---
-title: "Beyond MLR Lab 6: Longitudinal data analysis" 
-format: 
+title: "Beyond MLR Lab 6: Longitudinal data analysis"
+format:
   html:
     toc: true       # Enable the table of contents
     toc-depth: 3    # Set the depth of headers included in the ToC (e.g., H1, H2, H3)
-    toc-location: right   # Optional: Can be left, right, or floating    
-    code-overflow: wrap 
-  pdf: 
+    toc-location: right   # Optional: Can be left, right, or floating
+    code-overflow: wrap
+  pdf:
     toc: false
-
+execute:
+  warning: false
+  message: false
+  eval: true
+  echo: true
 ---
 
+::: {.callout-note icon=false title="Preliminary setup"}
+In this lab, we will use the R packages `haven`, `ggplot2`, `dplyr`, `emmeans`, `lmerTest`. You can use the script below to automatically install and load them using the `pacman` package.
+
 ```{r}
-#| label: setup
-#| include: false
+# Check whether pacman is available and install if needed
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 
-# configure global options for R code chunks:
-# warning = F to suppress the display of warning messages generated during the execution of code chunks
-# message = F to suppress the display of messages produced during the execution of code chunks
-knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
-
-# This qmd file requires the following packages to be installed:
-#c("dplyr", "ggplot2", "emmeans", "lme4", "lmerTest")
+# Use pacman to install (if needed) and load the required packages
+pacman::p_load(haven, dplyr, ggplot2, emmeans, lmerTest)
 ```
-
-In this lab, we will explore the analysis of longitudinal data using linear mixed-effects models. Longitudinal data involve repeated measurements taken on the same subjects over time, allowing us to study changes in outcomes within individuals. 
+:::
 
 # Adolescent alcohol use data
+
+In this lab, we will explore the analysis of longitudinal data using linear mixed-effects models. Longitudinal data involve repeated measurements taken on the same subjects over time, allowing us to study changes in outcomes within individuals.
 
 The dataset we will use comes from a study of adolescent alcohol use, featured in Singer and Willett’s *Applied Longitudinal Data Analysis: Modeling Change and Event Occurrence* (2003). This study tracked 82 adolescents over three years (ages 14, 15, and 16) to examine how their alcohol use changed over time.
 
@@ -34,13 +38,13 @@ The dataset we will use comes from a study of adolescent alcohol use, featured i
 
 The dataset contains the following variables:
 
-- **Outcome variable**: 
+- **Outcome variable**:
   - `alcuse`: Continuous measure of alcohol use based on various survey items.
 - **Grouping variable**:
-  - `id`: Unique identifier for each adolescent in the study.  
+  - `id`: Unique identifier for each adolescent in the study.
 - **Covariates**:
   - `coa`: Dichotomous variable indicating parental alcoholism (1 = yes, 0 = no).
-  - `male`: Dichotomous variable indicating male gender (1 = yes, 0 = no).
+  - `sex`: Dichotomous variable indicating sex.
   - `peer`: Continuous measure of peer alcohol use, assessed at age 14.
   - `age`: Numerical variable representing the age of the adolescent at each time point (14, 15, 16).
 
@@ -48,26 +52,26 @@ The dataset contains the following variables:
 
 In this lab, we are going to address the following research question:
 
-> Does being a child of an alcoholic parent influence the level and change in alcohol use from ages 14 to 16?
+> What factors predict adolescent alcohol use and its change over time? Specifically, do parental alcoholism, sex, and peer alcohol use influence baseline levels and trajectories of alcohol use from ages 14 to 16?
 
 ## Data import, cleaning, and inspection
 
 ```{r}
-# Load the required libraries
-library(dplyr)
-library(ggplot2)
-library(lmerTest)
-library(haven)
-
-# Load the adolescent alcohol use data. Note that the call below assumes the dataset is placed in the 'data' folder directly above the root folder of the project. Update the string as needed if the file is located elsewhere. Because the dataset is in SPSS format, we use the `haven` package to import it:
+# Load the adolescent alcohol use data
+# Note: the call below assumes the dataset is placed in the 'data' folder
+# directly above the root folder of the project. Update the path as needed.
 alcohol_data <- read_sav("data/alcoholpp.sav")
 
-# Convert the dummy coded dichotomous variables into factors
-alcohol_data <- alcohol_data %>%
+# Convert labelled variables (dbl+lbl) to factors using their value labels
+# and set effects coding (contr.sum) for interpretation
+alcohol_data <- alcohol_data |>
   mutate(
-    coa = as.factor(coa),
-    male = as.factor(male),
+    coa = as_factor(coa),
+    sex = as_factor(sex)
   )
+
+# Use effects coding for the categorical variables
+options(contrasts = c("contr.sum", "contr.poly"))
 
 # Inspect the structure of the dataset
 str(alcohol_data)
@@ -86,8 +90,8 @@ set.seed(123)  # Set seed for reproducibility
 sampled_ids <- sample(1:82, 16)
 
 # Filter dataset for the sampled IDs and plot
-alcohol_data %>%
-  filter(id %in% sampled_ids) %>%
+alcohol_data |>
+  filter(id %in% sampled_ids) |>
   ggplot(aes(x = age, y = alcuse)) +
   geom_line() +                               # Add trajectories (lines)
   geom_point(size = 2, alpha = 0.7) +         # Add individual data points (dots)
@@ -109,17 +113,44 @@ alcohol_data %>%
 The dataset used in this lab is zero-inflated, with a large number of zero alcohol use values. While linear mixed-effects models are not necessarily the best approach for analyzing such data, we will use them in this lab to focus on the methodology. The results derived in this lab are intended for educational purposes only.
 :::
 
+### Overall mean trajectory
+
+Before examining how alcohol use trajectories differ by predictor variables, we first explore the overall mean trajectory to assess the shape of change over time.
+
+```{r}
+# Compute the overall mean alcohol use by age
+mean_trajectory <- alcohol_data |>
+  group_by(age) |>
+  summarise(mean_alcuse = mean(alcuse, na.rm = TRUE), .groups = "drop")
+
+# Plot the overall mean trajectory
+ggplot(mean_trajectory, aes(x = age, y = mean_alcuse)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  labs(
+    title = "Overall Mean Alcohol Use Trajectory",
+    x = "Age",
+    y = "Mean Alcohol Use"
+  ) +
+  ylim(0, 1.5) +
+  theme_minimal()
+```
+
+::: {.callout-important icon=false title="Question"}
+Based on the overall mean trajectory, does the change in alcohol use over time appear to be linear, or would a quadratic trend be more appropriate?
+:::
+
 ### Mean trajectories by parental alcoholism
 
-Next, we will examine the mean trajectories of alcohol use by parental alcoholism (`COA`). This will provide an overview of how this variable relates to alcohol use over time.
+Next, we will examine the mean trajectories of alcohol use by parental alcoholism (`coa`). This will provide an overview of how this variable relates to alcohol use over time.
 
 ```{r}
 # Compute the mean alcohol use by age, and COA status
-mean_alcuse <- alcohol_data %>%
-  group_by(age, coa) %>%
-  summarise(mean_alcuse = mean(alcuse, na.rm = TRUE))
+mean_alcuse <- alcohol_data |>
+  group_by(age, coa) |>
+  summarise(mean_alcuse = mean(alcuse, na.rm = TRUE), .groups = "drop")
 
-# Plot the mean trajectories by COA 
+# Plot the mean trajectories by COA
 ggplot(mean_alcuse, aes(x = age, y = mean_alcuse, color = coa)) +
   geom_line() +
   labs(
@@ -127,95 +158,209 @@ ggplot(mean_alcuse, aes(x = age, y = mean_alcuse, color = coa)) +
     x = "Age",
     y = "Mean Alcohol Use"
   ) +
-  scale_color_manual(values = c("0" = "blue", "1" = "red")) +
   ylim(0, 3) +
   theme_minimal()
 ```
 
 ::: {.callout-important icon=false title="Question"}
-Based on the plot, do you expect there to be a main effect of parental alcoholism (COA) or age on alcohol use?
+Based on the plot, do you expect there to be a effect of parental alcoholism (`coa`) on alcohol use? Do you expect there to be an interaction effect between `coa` and age? Explain your reasoning based on the trends shown in the plot.
 :::
 
-::: {.callout-important icon=false title="Question"}
-Do you expect there to be an interaction effect between COA and age? Explain your reasoning based on the trends shown in the plot.
+::: {.callout-important icon=false title="Coding exercise"}
+Create similar plots to explore mean trajectories by `sex` and by `peer` alcohol use.
+
+**Hint for peer alcohol use:** Since `peer` is a continuous variable, you can categorize it into tertiles (low, medium, high) for visualization purposes using the following code:
+
+```r
+alcohol_data <- alcohol_data |>
+  mutate(peer_cat = cut(peer,
+                        breaks = quantile(peer, probs = c(0, 1/3, 2/3, 1), na.rm = TRUE),
+                        labels = c("Low", "Medium", "High"),
+                        include.lowest = TRUE))
+```
+
+Then compute mean trajectories by `age` and `peer_cat`, and create a plot similar to the one above.
 :::
 
-### Random intercept model
+## Assessing the intraclass correlation coefficient (ICC)
 
-We will start by fitting a random intercept model to the data. This model assumes that each individual has a unique baseline level of alcohol use at age 14, which varies randomly around the population mean. The model can be specified as follows:
+Before building more complex models, we first assess the intraclass correlation coefficient (ICC) to understand how much of the variance in alcohol use is attributable to differences between individuals. In longitudinal data analysis, we calculate the ICC from a model that includes time as a fixed effect.
+
+### Modeling time flexibly for ICC calculation
+
+Since we have only 3 time points (ages 14, 15, and 16), we can model time with maximum flexibility by including both linear and quadratic terms. This saturated representation uses 2 degrees of freedom to perfectly fit the 3 observed means, which is equivalent to treating time as a categorical variable. However, we prefer the continuous representation because it:
+
+1. Maintains interpretable coefficients (linear and quadratic change)
+2. Allows us to extend the model to include random slopes later (which is not identifiable with categorical time and one observation per person-time combination)
+3. Provides a natural framework for growth modeling
 
 ```{r}
 # Center age at 14 for interpretability
 alcohol_data$age_centered <- alcohol_data$age - 14
 
-# Fit a random intercept model with age centered at 14 and coa
-random_intercept_model <- lmer(alcuse ~ age_centered*coa + (1 | id), data = alcohol_data)
-summary(random_intercept_model)
+# Create quadratic term
+alcohol_data$age_centered_sq <- alcohol_data$age_centered^2
+
+# Fit a random intercept model with linear and quadratic time
+icc_model <- lmer(alcuse ~ age_centered + age_centered_sq + (1 | id), data = alcohol_data)
+summary(icc_model)
 ```
 
-::: {.callout-important icon=false title="Question"}
-Calculate the ICC based on the estimated variance components. What proportion of variance in alcohol use is due to differences between individuals?
+::: {.callout-note icon=false title="ICC in longitudinal vs. cross-sectional data"}
+**Why include time when calculating ICC in longitudinal data?**
+
+In longitudinal data analysis, time is the fundamental structure of the data. Including time as a fixed effect allows us to partition the variance *after* accounting for systematic change over time. The resulting ICC then represents the proportion of total variance (after accounting for time trends) that is due to between-person differences. A high ICC indicates that individuals differ substantially in their overall levels of alcohol use, even after accounting for common age-related changes.
+
+**Contrast with cross-sectional multilevel data:**
+
+In the previous lab on cross-sectional multilevel data, we calculated the ICC from an unconditional (null) model without any predictors. This was appropriate because in cross-sectional data, we want to understand the proportion of total variance attributable to clustering (e.g., neighborhoods) before introducing any covariates. The focus is on the overall clustering structure rather than change over time.
+
+**Key distinction:**
+
+- Cross-sectional: ICC from null model → proportion of total variance due to clustering
+- Longitudinal: ICC from model with time → proportion of total variance (after time trends) due to between-person differences
 :::
 
-### Random slope model
-
-To extend the previous model to include a random slope, we specify `(1 + age_centered | id)` in the model formula:
-
-```{r}
-# Fit the random slope model
-random_slope_model <- lmer(alcuse ~ age_centered*coa + (1 + age_centered | id), data = alcohol_data)
-
-# Display the summary of the model
-summary(random_slope_model)
-```
-
-We begin by assessing the variance components of the model. In addition to including a random intercept for the grouping variable `id`, the model now incorporates a random slope for the `age_centered` variable. This allows the rate of change in alcohol use with age to vary across individuals. Furthermore, the model includes a term for the correlation between the random intercept and the random slope, which captures the relationship between an individual's baseline level of alcohol use and their rate of change over time. This correlation provides insight into whether individuals with higher initial levels of alcohol use are more likely to increase or decrease their usage as they age.
-
 ::: {.callout-important icon=false title="Question"}
-What does the estimated correlation between the random intercept and random slope tell us about the relationship between baseline alcohol use and the rate of change over time?
+Calculate the ICC based on the estimated variance components from the `icc_model`. What proportion of variance in alcohol use (after accounting for age trends) is due to differences between individuals?
 :::
 
-The inclusion of the correlation between the random intercept and the random slope arises from how we specified the formula object in the model. By default, the random effects are modeled as a multivariate normal distribution, allowing for the estimation of a correlation between the intercept and slope. However, an alternative specification is also possible, where the random intercept and random slope are assumed to be independent. This can be achieved by using a formula that separates the random intercept and slope terms, such as `(1 | id) + (0 + age_centered | id)`. Such a model may be appropriate if there is no theoretical or empirical justification for expecting a relationship between baseline levels and rates of change, or if simplifying the model does not significantly worsen model fit, which can be tested for using a Likelihood ratio test.
+## Model building
 
-Here, we focus on comparing the random slope model against the previously fitted random intercept model. This approach allows us to evaluate whether modeling individual trajectories with these additional random effects provides a significantly better fit to the data compared to a simpler model that accounts only for variability in baseline alcohol use.
+We will now follow a systematic model building approach for longitudinal data, as outlined in the principles at the end of this lab. We start with a saturated fixed-effects structure that includes all predictors and their interactions with time, combined with a complex random-effects structure (random intercept and random slope).
 
-```{r}
-# Perform the likelihood ratio test
-anova(random_intercept_model, random_slope_model, refit = FALSE)
-```
+### Step 1: Fit the saturated model
 
-::: {.callout-important icon=false title="Question"}
-What does the likelihood ratio test tell us about the comparison between the random intercept and random slope models?
+We begin by fitting a model that includes all available predictors (`coa`, `sex`, `peer`) and their interactions with time (`age_centered` and `age_centered_sq`). For the random effects, we include a random intercept and a random linear slope for time.
+
+::: {.callout-note icon=false title="Why not random quadratic slopes?"}
+With only 3 observations per person, we do not have sufficient information to reliably estimate individual-specific quadratic trajectories. While we are only estimating variance components (not separate parameters for each person), the issue is one of **identifiability at the individual level**: with 3 time points, we cannot distinguish between "person i has a different quadratic trajectory" and "person i has random measurement error."
+
+**General guideline for random effects:**
+
+- 3 time points: Random intercept + random linear slope is feasible
+- 4+ time points: Could consider random quadratic slopes (though rarely used in practice)
+- The quadratic term remains as a **fixed effect** to model the average curvature across all individuals
+
+This limitation is why continuous time modeling (which imposes structure) is preferred over categorical time modeling (which would make even random linear slopes unidentifiable with one observation per person-time combination).
 :::
 
-### Assessing the fixed effects structure
+```{r}
+# Center peer at its mean for interpretability
+alcohol_data$peer_centered <- alcohol_data$peer - mean(alcohol_data$peer, na.rm = TRUE)
 
-Now that we have determined an appropriate structure for the random effects, we turn our attention to evaluating the fixed effects. The fixed effects represent the average relationships between the predictors and the outcome variable across all individuals in the study. Specifically, this includes the main effects of `age_centered` and `coa` as well as their interaction. By assessing the fixed effects, we aim to determine whether these predictors significantly contribute to explaining variation in alcohol use and whether their inclusion aligns with our theoretical expectations.
+# Fit the saturated model with all predictors and their interactions with time
+# Note: Random effects include only intercept and linear slope, not quadratic slope
+saturated_model <- lmer(
+  alcuse ~ (age_centered + age_centered_sq) * (coa + sex + peer_centered) + (1 + age_centered | id),
+  data = alcohol_data
+)
+summary(saturated_model)
+```
 
-To determine whether the relationship between age and alcohol use differs depending on `coa` status, we start by testing the interaction effect between `age_centered` and `coa`:
+### Step 2: Determine the random-effects structure
+
+Before simplifying the fixed effects, we first determine whether the random slope for time is necessary. We compare the saturated model (with random slope) against a model with only a random intercept using a likelihood ratio test. Since we are comparing random effects, we retain REML estimation.
 
 ```{r}
-# Obtain the ANOVA table for the random slope model
-anova(random_slope_model)
+# Fit a model with only random intercept (same fixed effects as saturated model)
+random_intercept_only <- lmer(
+  alcuse ~ (age_centered + age_centered_sq) * (coa + sex + peer_centered) + (1 | id),
+  data = alcohol_data
+)
+
+# Compare models using likelihood ratio test
+anova(random_intercept_only, saturated_model, refit = FALSE)
 ```
 
 ::: {.callout-important icon=false title="Question"}
-Based on the ANOVA table, what can you conclude about the interaction effect between `age_centered` and `coa` on alcohol use?
+Based on the likelihood ratio test, is the random slope for time necessary? What does this tell us about individual trajectories?
 :::
 
-Because the interaction effect is insignificant, we can simplify the model by removing this term. We then refit the model and assess the main effects of `age_centered` and `coa`:
+The manual likelihood ratio test above can be automated using the `step()` function from the `lmerTest` package. This function performs backward elimination of random effects using the same likelihood ratio tests, but does so systematically:
 
 ```{r}
-# Fit the simplified model without the interaction term
-simplified_model <- lmer(alcuse ~ age_centered + coa + (1 + age_centered | id), data = alcohol_data)
-summary(simplified_model)
+# Use step() to test random effects structure
+# reduce.random = TRUE: test and potentially remove random effects
+# reduce.fixed = FALSE: keep all fixed effects unchanged
+step_random <- step(saturated_model, reduce.random = TRUE, reduce.fixed = FALSE)
 
-# Obtain the ANOVA table for the simplified model
-anova(simplified_model, refit=TRUE)
+# Extract the model with the final random effects structure
+model_with_final_random <- get_model(step_random)
+```
+
+The `step()` function will yield the same result as the manual test above. Using `step()` is particularly useful when you have multiple random effects to test.
+
+### Step 3: Simplify the fixed-effects structure
+
+Now that we have determined the appropriate random-effects structure, we use the model from Step 2 as the starting point to simplify the fixed effects. By setting `reduce.fixed = TRUE` and `reduce.random = FALSE`, the function will only eliminate non-significant fixed effects while keeping the random effects structure unchanged.
+
+```{r}
+# Use step() to simplify fixed effects only
+# Start with the model that has the final random effects structure from Step 2
+# reduce.fixed = TRUE: test and potentially remove fixed effects
+# reduce.random = FALSE: keep the random effects structure unchanged
+step_result <- step(model_with_final_random, reduce.fixed = TRUE, reduce.random = FALSE)
+print(step_result)
+
+# Extract the final model
+final_model <- get_model(step_result)
+```
+
+The `step()` function performs backward elimination of fixed effects, adhering to important model building principles such as the marginality principle (lower-order terms are retained if higher-order terms involving them remain in the model) and uses F-tests with Satterthwaite approximation for hypothesis testing.
+
+::: {.callout-important icon=false title="Question"}
+Based on the output from `step()`, which random effects and fixed effects terms were removed from the model? Does the final model include any interaction effects, or only main effects?
+:::
+
+### Step 4: Final model and interpretation
+
+Based on the model building process, we arrive at our final model. We can now interpret the results in detail:
+
+```{r}
+# Display the final model summary
+summary(final_model)
 ```
 
 ::: {.callout-important icon=false title="Question"}
-What can you conclude about the main effects of age and parental alcoholism on adolescent alcohol use based on the simplified model?
+Based on the final model, what can you conclude about the factors that predict adolescent alcohol use and its change over time? Consider:
+
+- Which predictors have significant effects on alcohol use?
+- How does alcohol use change with age on average?
+- Are there differences between groups (e.g., children of alcoholic parents vs. not, sex differences)?
+- Do any predictors interact with time (age), suggesting different trajectories for different groups?
+:::
+
+### Model diagnostics
+
+After fitting the final model, it is important to check the modeling assumptions. We focus on checking the assumptions regarding the conditional residuals, which represent the deviation of the observed data from the model's predictions after accounting for both fixed and random effects. These residuals can be considered estimates of the errors $\epsilon_{ij}$, which are assumed to be normally distributed with a mean of zero and constant variance.
+
+To check these assumptions, we generate diagnostic plots:
+
+- **Residuals vs. Fitted Plot**: Checks for homoscedasticity (constant variance) and linearity
+- **Normal Q-Q Plot**: Assesses whether the residuals follow a normal distribution
+
+```{r}
+# Extract conditional residuals from the final model
+residuals_cond <- resid(final_model)
+
+# Residuals vs Fitted
+plot(fitted(final_model), residuals_cond,
+     main = "Residuals vs Fitted",
+     xlab = "Fitted values",
+     ylab = "Conditional Residuals")
+abline(h = 0, col = "red")
+
+# Normal Q-Q Plot
+qqnorm(residuals_cond, main = "Normal Q-Q Plot of Conditional Residuals")
+qqline(residuals_cond, col = "red")
+```
+
+::: {.callout-important icon=false title="Question"}
+Based on the diagnostic plots, do you observe any violations of the model assumptions? Consider:
+
+- Does the Residuals vs. Fitted plot show any patterns suggesting non-constant variance or non-linearity?
+- Does the Q-Q plot suggest that the residuals are approximately normally distributed?
 :::
 
 ## Model building principles for longitudinal data analysis
@@ -223,27 +368,23 @@ What can you conclude about the main effects of age and parental alcoholism on a
 Model building for longitudinal data analysis follows a systematic approach to ensure that the final model is both parsimonious and adequately represents the data. The process typically involves the following steps:
 
 1. **Start with a saturated fixed-effects structure and a complex random-effects structure**
-   
+
    - A **saturated fixed-effects structure** includes all plausible predictors and their interactions based on theoretical considerations and prior knowledge. This ensures that no potentially important effect is excluded at the outset.
    - A **complex random-effects structure** allows for a flexible representation of variability in the data. For example, random intercepts and random slopes are included to account for between-subject variability and other grouping factors.
-   
+
    This initial specification provides a robust starting point for model refinement, ensuring the inclusion of all meaningful variability in the model.
 
 2. **Determine the appropriate random-effects structure**
 
-   - Simplify the random-effects structure by comparing models with different random-effects terms using likelihood ratio tests (LRTs). 
+   - Simplify the random-effects structure by comparing models with different random-effects terms using likelihood ratio tests (LRTs).
    - Importantly, these comparisons are made without refitting the models using maximum likelihood (ML). Restricted maximum likelihood (REML) is retained during this step to ensure accurate estimation of variance components.
    - Remove unnecessary random-effects terms to avoid overfitting while retaining terms that account for substantial variability in the data.
 
 3. **Simplify the fixed-effects structure**
 
    - Starting from the saturated fixed-effects structure combined with the final reduced random-effects structure, iteratively remove non-significant fixed effects.
-   - For fixed-effects structure refinement, models must be refitted using ML rather than REML. This ensures correct inference for hypothesis testing and comparison of nested models.
-   - Once the final fixed-effects structure is determined, the model can be refitted using REML for final parameter estimation.
-
-### Additional considerations for model comparison
-
-The model building principles described above apply specifically to the comparison of **nested models**, where one model is a special case of another (e.g., a simpler model can be obtained by constraining parameters in the more complex model). In such cases, likelihood ratio tests (LRTs) provide a robust framework for selecting between models.
-
-However, when comparing **non-nested models**, where one model cannot be derived from the other by parameter constraints, LRTs are not appropriate. Instead, model selection criteria such as Akaike Information Criterion (AIC) or Bayesian Information Criterion (BIC) should be used. These criteria provide a balance between model fit and complexity, aiding in the selection of the most parsimonious model that adequately represents the data.
+   - There are two approaches for testing fixed effects:
+     - **F-tests with approximate degrees of freedom** (e.g., Satterthwaite or Kenward-Roger approximation): Used by the `step()` function in this lab. Does not require refitting models and retains REML estimation.
+     - **Likelihood ratio tests (LRTs)**: When using LRTs for fixed effects testing, models must be refitted using maximum likelihood (ML) rather than REML. This ensures correct inference for hypothesis testing and comparison of nested models.
+   - Once the final fixed-effects structure is determined using either approach, the model can be refitted using REML for final parameter estimation.
 
