@@ -290,20 +290,33 @@ How does the inclusion of context-level variables affect the estimated variance 
 
 Not all the context-level variables included in the model are significant predictors of listing prices. To obtain a more parsimonious model, we can use the `step()` function from the `lmerTest` package to perform a backward elimination of the fixed-effect terms.
 
-The `step()` function uses **F-tests** to systematically test which terms can be removed without significantly worsening model fit. Here's how it works:
+The `step()` function implements **backward elimination** in two stages:
 
-**Backward elimination process:**
+1. **First stage (random effects)**: By default, `step()` first eliminates random-effect terms using likelihood ratio tests (via the `ranova()` function)
+2. **Second stage (fixed effects)**: Then it eliminates fixed-effect terms by repeatedly calling `drop1()`, which uses F-tests
 
-1. Starting with the full model, the function computes F-tests for all marginal terms (i.e., terms that can be dropped while respecting the hierarchy of terms in the model)
-2. It identifies the term with the highest (least significant) p-value from the F-tests
-3. If that p-value exceeds the significance threshold (default α = 0.05), the term is removed
+**Backward elimination process for fixed effects:**
+
+1. Starting with the full covariate model (after any random effects elimination), `drop1()` computes F-tests for all marginal fixed-effect terms (i.e., terms that can be dropped while respecting the hierarchy of terms in the model)
+2. `step()` identifies the term with the highest (least significant) p-value from the F-tests
+3. If that p-value exceeds the significance threshold (default α = 0.05 for fixed effects), the term is removed
 4. The process repeats with the new reduced model until no more terms can be removed
 
-The F-tests used by `step()` are based on comparing models using Satterthwaite's approximation for the denominator degrees of freedom, which is appropriate for mixed models.
+The F-tests used by `drop1()` are based on Satterthwaite's approximation for the denominator degrees of freedom, which is appropriate for mixed models.
+
+::: {.callout-note icon=false title="Controlling what step() eliminates"}
+The `drop1()` function is specifically designed for testing **fixed effects**. The `step()` function, by default, can eliminate both **random effects** (using likelihood ratio tests) and **fixed effects** (using F-tests). However, this behavior can be controlled using the `reduce.random` and `reduce.fixed` parameters:
+
+* `reduce.random = TRUE` (default): allows elimination of random effects
+* `reduce.fixed = TRUE` (default): allows elimination of fixed effects
+
+In this lab, we focus on selecting fixed effects for our random intercept model, so we will set `reduce.random = FALSE` to prevent any changes to the random effect structure. Testing different random effect structures (such as whether to include random slopes) will be covered in more detail in the next lab on longitudinal data analysis.
+:::
 
 ```{r}
 # Perform stepwise selection to identify the most important predictors
-step(random_intercept_model_L1L2variables)
+# Set reduce.random = FALSE to only eliminate fixed effects (not random effects)
+step(random_intercept_model_L1L2variables, reduce.random = FALSE)
 ```
 
 ::: {.callout-important icon=false title="Question"}
@@ -316,39 +329,20 @@ Finally, we explore the possibility of cross-level interactions between individu
 
 The relationship between the overall satisfaction rating of an individual listing and its price may depend on neighborhood characteristics such as their walkability and access to public transit. For instance, higher satisfaction ratings might have a stronger effect on prices in less walkable or transit-accessible neighborhoods, where positive reviews could help compensate for the disadvantages of limited walkability or transit options. In contrast, in neighborhoods with high walkability or access to public transit ratings, these location-based amenities might already drive prices, reducing the added impact of satisfaction ratings.
 
-To formally test whether cross-level interactions improve model fit, we use **likelihood ratio tests (LRT)** to compare nested models with and without the interaction term.
-
-**Likelihood ratio test basics:**
-
-The likelihood ratio test compares two nested models:
-
-* **Null model (restricted)**: the model without the interaction term
-* **Alternative model (full)**: the model with the interaction term
-
-The test statistic is calculated as:
-$$\text{LR} = -2 \times (\text{log-likelihood of restricted model} - \text{log-likelihood of full model})$$
-
-Under the null hypothesis (that the interaction term is not needed), this test statistic follows a chi-square distribution with degrees of freedom equal to the difference in the number of parameters between the two models. A significant result (p < 0.05) indicates that the model with the interaction provides a significantly better fit to the data.
-
-**Important note about ML vs. REML:**
-
-When comparing models with different fixed effects using likelihood ratio tests, we must use **ML (Maximum Likelihood)** rather than **REML (Restricted Maximum Likelihood)**. This is because REML likelihoods are not directly comparable across models with different fixed effect structures. We specify `REML = FALSE` when fitting the models for LRT comparisons.
-
-Let's test whether the `overall_satisfaction × WalkScore` interaction significantly improves model fit:
+To test whether the `overall_satisfaction × WalkScore` interaction is significant, we can fit a model with the interaction and use `drop1()` or `anova()` to test its contribution:
 
 ```{r}
-# Fit the base model without any interactions (using ML)
-model_no_interaction <- lmer(log_price ~ overall_satisfaction_c + room_type + accommodates_c + bedrooms_c + minstay_c + WalkScore_c + TransitScore_c + BikeScore_c + (1 | neighborhood), data = chicago_airbnb, REML = FALSE)
+# Fit model with WalkScore interaction
+model_interaction_walk <- lmer(log_price ~ overall_satisfaction_c * WalkScore_c + room_type + accommodates_c + bedrooms_c + minstay_c + TransitScore_c + BikeScore_c + (1 | neighborhood), data = chicago_airbnb)
 
-# Fit model with WalkScore interaction (using ML)
-model_interaction_walk <- lmer(log_price ~ overall_satisfaction_c * WalkScore_c + room_type + accommodates_c + bedrooms_c + minstay_c + TransitScore_c + BikeScore_c + (1 | neighborhood), data = chicago_airbnb, REML = FALSE)
-
-# Likelihood ratio test for WalkScore interaction
-anova(model_no_interaction, model_interaction_walk)
+# Test the interaction term
+drop1(model_interaction_walk)
 ```
 
+The `drop1()` output will show whether the interaction term `overall_satisfaction_c:WalkScore_c` significantly contributes to the model. Look for the p-value in the `Pr(>F)` column for this interaction term.
+
 ::: {.callout-important icon=false title="Question"}
-Based on the likelihood ratio test, does the `overall_satisfaction × WalkScore` interaction significantly improve model fit?
+Based on the F-test from `drop1()`, is the `overall_satisfaction × WalkScore` interaction statistically significant? What does this tell you about whether the effect of satisfaction on price depends on neighborhood walkability?
 :::
 
 ### Interpreting the interaction
@@ -380,7 +374,7 @@ Explanation of the `emmeans()` arguments:
 * The first argument is the fitted model object (`model_interaction_walk`)
 * `specs = ~ overall_satisfaction_c * WalkScore_c` specifies which variables to compute marginal means for, including their interaction
 * `at = list(...)` specifies the exact values at which to evaluate the predictors. Here we use three levels for each variable: Q1 (low), 0 (average, since variables are centered), and Q3 (high)
-* `lmer.df = "satterthwaite"` specifies the method for computing degrees of freedom and confidence intervals, using Satterthwaite's approximation which is appropriate for mixed models
+* `lmer.df = "satterthwaite"` specifies the method for computing degrees of freedom and confidence intervals. We use Satterthwaite's approximation to be consistent with the default method used by `lmerTest` for F-tests
 * All other predictors in the model (room type, accommodates, bedrooms, etc.) are automatically held at their reference levels or means
 
 The output shows a 3 × 3 grid of estimated marginal means with their standard errors and confidence intervals, representing the estimated log price at each combination of satisfaction and walkability levels.
@@ -426,44 +420,21 @@ Based on the interaction plot, how does the relationship between satisfaction ra
 :::
 
 ::: {.callout-important icon=false title="Coding exercise"}
-Following the example above, test whether the `overall_satisfaction × TransitScore` interaction significantly improves model fit.
+Following the example above, test whether the `overall_satisfaction × TransitScore` interaction is statistically significant.
 
-1. Fit a model that includes the `overall_satisfaction × TransitScore` interaction (remember to use `REML = FALSE`)
-2. Perform a likelihood ratio test comparing this model to the base model without interactions
-3. Interpret the results: Does the interaction significantly improve model fit? What does this suggest about how satisfaction ratings relate to prices in neighborhoods with different levels of transit accessibility?
+1. Fit a model that includes the `overall_satisfaction × TransitScore` interaction
+2. Use `drop1()` to test whether the interaction term is significant
+3. Interpret the results: Is the interaction significant? What does this suggest about how satisfaction ratings relate to prices in neighborhoods with different levels of transit accessibility?
 :::
 
-::: {.callout-note icon=false title="F-tests vs. Likelihood Ratio Tests for fixed effects"}
-In this lab, we have used two different approaches for testing fixed effects:
+::: {.callout-note icon=false title="Testing strategy for mixed models"}
+In this lab, we have used **F-tests** (via `step()` and `drop1()`) to test fixed effects in our mixed models. These tests:
 
-**F-tests (via `step()` function):**
+* Use Satterthwaite's approximation for degrees of freedom
+* Work with REML estimation (the default for `lmer()`, which gives better variance component estimates)
+* Are appropriate for testing whether fixed effect terms should be included in the model
 
-* Based on Satterthwaite's approximation for degrees of freedom
-* Work with REML estimation (the default for `lmer()`)
-* Provide approximate p-values that account for the uncertainty in variance component estimates
-* Particularly useful for automated model selection procedures
-* Generally more conservative (higher p-values) due to the approximation
-
-**Likelihood Ratio Tests (via `anova()` comparing models):**
-
-* Based on comparing the likelihoods of nested models
-* Require ML estimation (`REML = FALSE`) for comparing models with different fixed effects
-* Provide exact test statistics following a chi-square distribution
-* More appropriate for formal hypothesis testing of specific effects
-* Often used for testing interactions or other theory-driven model comparisons
-
-**Which should you use?**
-
-Both approaches are valid and will generally lead to similar conclusions. The choice often depends on context:
-
-* Use **F-tests** (with REML) when you want to retain the better variance component estimates and are performing exploratory model selection
-* Use **LRTs** (with ML) when you want to formally test specific hypotheses about fixed effects or when comparing models is the primary goal
-
-In practice, if both methods give similar results, you can be more confident in your conclusions. If they differ, it is worth investigating further and considering the specific research question at hand.
-
-**Important note about missing data:**
-
-Likelihood ratio tests require that both models being compared are fitted on **exactly the same observations**. If different predictors have different patterns of missing values, models may use different subsets of data, making the LRT invalid. The F-tests via `step()` are generally more robust to this issue as they work within a single REML-fitted model. If you encounter errors about "number of rows in use has changed" when using LRTs, ensure all models use the same complete-case dataset by explicitly removing missing values before model fitting.
+This approach provides a consistent workflow for testing and selecting fixed effects. For testing **random effects** (such as whether to include random slopes in addition to random intercepts), we use **likelihood ratio tests (LRT)**, which we will cover in the next lab on longitudinal data analysis.
 :::
 
 ### Model diagnostics
