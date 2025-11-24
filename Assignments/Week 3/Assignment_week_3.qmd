@@ -6,12 +6,12 @@ execute:
   warning: false
   message: false
   eval: false
-  echo: true   
+  echo: true
 ---
 
 ## Introduction
 
-In this assignment, you will analyze a dataset collected by the Inner London Education Authority (ILEA) to examine the effectiveness of schools. The dataset consists of examination records of 15,362 students from 140 secondary schools over the years 1985, 1986, and 1987. This dataset was sourced from the data library of the Centre for Multilevel Modelling at the University of Bristol. 
+In this assignment, you will analyze a dataset collected by the Inner London Education Authority (ILEA) to examine the effectiveness of schools. The dataset consists of examination records of 15,362 students from 140 secondary schools over the years 1985, 1986, and 1987. This dataset was sourced from the data library of the Centre for Multilevel Modelling at the University of Bristol.
 
 ## Dataset Description
 
@@ -40,7 +40,7 @@ Your goals are to determine:
 Download the dataset (see link in the Downloads section below) and read it into R. Make sure all character variables are correctly encoded as factors.
 
 ::: {.callout-tip icon=false title="Hint"}
-When loading the data, convert the `School` variable to a factor. This will make it easier to use `reorder()` in ggplot when creating visualizations that order schools by their mean exam scores.
+When loading the data, convert the `School` variable to a factor. This will make it easier to use `reorder()` in `ggplot2` when creating visualizations that order schools by their mean exam scores.
 
 ```{r}
 # Load the data
@@ -53,7 +53,7 @@ ilea_data <- ilea_data %>%
 ```
 :::
 
-### Exploratory Data Analysis (EDA): 
+### Exploratory Data Analysis (EDA):
 - Explore the distribution of the outcome variable (`ExamScore`)
 - Explore the variance components (i.e., make a plot displaying the within- and between-school variation)
 - Explore the relationships between fixed effects and the outcome variable

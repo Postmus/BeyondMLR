@@ -24,13 +24,19 @@ website:
           - text: "Lab 3"
             href: BLR_lab_two_way_factorial.qmd
           - text: "Lab 4"
-            href: BLR_lab_replicated_randomized_block.qmd      
+            href: BLR_lab_replicated_randomized_block.qmd
+      - text: "Lab week 3"
+        menu:
+          - text: "Lab 5"
+            href: BLR_lab_MLA.qmd
       - text: "Assignments"
         menu:
           - text: "Week 1"
             href: Assignments/Week 1/Assignment_week_1.qmd
           - text: "Week 2"
-            href: Assignments/Week 2/Assignment_week_2.qmd  
+            href: Assignments/Week 2/Assignment_week_2.qmd
+          - text: "Week 3"
+            href: Assignments/Week 3/Assignment_week_3.qmd
 
 format:
   html:
