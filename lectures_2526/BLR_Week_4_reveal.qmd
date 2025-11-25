@@ -1,0 +1,76 @@
+---
+title: "Beyond MLR - Week 4"
+subtitle: "Longitudinal data analysis"
+author: "Dr. Douwe Postmus"
+format:
+  revealjs:
+    theme: [default, custom-reveal.scss]
+    slide-number: true
+    toc: false
+    slide-level: 2
+    incremental: false
+    code-overflow: wrap
+    scrollable: true
+    smaller: true
+    width: 1280
+    height: 720
+    margin: 0.06
+    max-scale: 2
+    footer: "Beyond multiple linear regression - week 4"
+    logo: UMCG-logo.png
+execute:
+  warning: false
+  message: false
+  eval: true
+  echo: false
+---
+
+```{r}
+#| include: false
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.mixed, gridExtra)
+```
+
+## Calculation of the ICC
+
+::: {.callout-note icon=false title="ICC in longitudinal vs. cross-sectional data"}
+**Why include time when calculating ICC in longitudinal data?**
+
+In longitudinal data analysis, time is the fundamental structure of the data. Including time as a fixed effect allows us to partition the variance *after* accounting for systematic change over time. The resulting ICC then represents the proportion of total variance (after accounting for time trends) that is due to between-person differences. A high ICC indicates that individuals differ substantially in their overall levels of alcohol use, even after accounting for common age-related changes.
+
+**Contrast with cross-sectional multilevel data:**
+
+In the previous lab on cross-sectional multilevel data, we calculated the ICC from an unconditional (null) model without any predictors. This was appropriate because in cross-sectional data, we want to understand the proportion of total variance attributable to clustering (e.g., neighborhoods) before introducing any covariates. The focus is on the overall clustering structure rather than change over time.
+
+**Key distinction:**
+
+- Cross-sectional: ICC from null model → proportion of total variance due to clustering
+- Longitudinal: ICC from model with time → proportion of total variance (after time trends) due to between-person differences
+:::
+
+## Model building principles for longitudinal data analysis
+
+Model building for longitudinal data analysis follows a systematic approach to ensure that the final model is both parsimonious and adequately represents the data. The process typically involves the following steps:
+
+1. **Start with a saturated fixed-effects structure and a complex random-effects structure**
+
+   - A **saturated fixed-effects structure** includes all plausible predictors and their interactions based on theoretical considerations and prior knowledge. This ensures that no potentially important effect is excluded at the outset.
+   - A **complex random-effects structure** allows for a flexible representation of variability in the data. For example, random intercepts and random slopes are included to account for between-subject variability and other grouping factors.
+
+   This initial specification provides a robust starting point for model refinement, ensuring the inclusion of all meaningful variability in the model.
+
+2. **Determine the appropriate random-effects structure**
+
+   - Simplify the random-effects structure by comparing models with different random-effects terms using likelihood ratio tests (LRTs).
+   - Importantly, these comparisons are made without refitting the models using maximum likelihood (ML). Restricted maximum likelihood (REML) is retained during this step to ensure accurate estimation of variance components.
+   - Remove unnecessary random-effects terms to avoid overfitting while retaining terms that account for substantial variability in the data.
+
+3. **Simplify the fixed-effects structure**
+
+   - Starting from the saturated fixed-effects structure combined with the final reduced random-effects structure, iteratively remove non-significant fixed effects.
+   - There are two approaches for testing fixed effects:
+     - **F-tests with approximate degrees of freedom** (e.g., Satterthwaite or Kenward-Roger approximation): Used by the `step()` function in this lab. Does not require refitting models and retains REML estimation.
+     - **Likelihood ratio tests (LRTs)**: When using LRTs for fixed effects testing, models must be refitted using maximum likelihood (ML) rather than REML. This ensures correct inference for hypothesis testing and comparison of nested models.
+   - Once the final fixed-effects structure is determined using either approach, the model can be refitted using REML for final parameter estimation.
+

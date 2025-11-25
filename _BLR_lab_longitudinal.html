@@ -69,7 +69,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="_BLR_lab_longitudinal_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="_BLR_lab_longitudinal_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="_BLR_lab_longitudinal_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="_BLR_lab_longitudinal_files/libs/bootstrap/bootstrap-3db0125aafd63ffcd7574a689bf5132b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="_BLR_lab_longitudinal_files/libs/bootstrap/bootstrap-3e45291ea7da9a15c45a4ee4abce6f5d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -118,8 +118,8 @@ window.Quarto = {
   <li><a href="#data-import-cleaning-and-inspection" id="toc-data-import-cleaning-and-inspection" class="nav-link" data-scroll-target="#data-import-cleaning-and-inspection">Data import, cleaning, and inspection</a></li>
   <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis">Exploratory data analysis</a>
   <ul class="collapse">
-  <li><a href="#individual-trajectories-of-alcohol-use" id="toc-individual-trajectories-of-alcohol-use" class="nav-link" data-scroll-target="#individual-trajectories-of-alcohol-use">Individual trajectories of alcohol use</a></li>
-  <li><a href="#overall-mean-trajectory" id="toc-overall-mean-trajectory" class="nav-link" data-scroll-target="#overall-mean-trajectory">Overall mean trajectory</a></li>
+  <li><a href="#overall-pattern-and-individual-variation" id="toc-overall-pattern-and-individual-variation" class="nav-link" data-scroll-target="#overall-pattern-and-individual-variation">Overall pattern and individual variation</a></li>
+  <li><a href="#examining-individual-trajectories-in-detail" id="toc-examining-individual-trajectories-in-detail" class="nav-link" data-scroll-target="#examining-individual-trajectories-in-detail">Examining individual trajectories in detail</a></li>
   <li><a href="#mean-trajectories-by-parental-alcoholism" id="toc-mean-trajectories-by-parental-alcoholism" class="nav-link" data-scroll-target="#mean-trajectories-by-parental-alcoholism">Mean trajectories by parental alcoholism</a></li>
   </ul></li>
   <li><a href="#assessing-the-intraclass-correlation-coefficient-icc" id="toc-assessing-the-intraclass-correlation-coefficient-icc" class="nav-link" data-scroll-target="#assessing-the-intraclass-correlation-coefficient-icc">Assessing the intraclass correlation coefficient (ICC)</a>
@@ -134,7 +134,6 @@ window.Quarto = {
   <li><a href="#step-4-final-model-and-interpretation" id="toc-step-4-final-model-and-interpretation" class="nav-link" data-scroll-target="#step-4-final-model-and-interpretation">Step 4: Final model and interpretation</a></li>
   <li><a href="#model-diagnostics" id="toc-model-diagnostics" class="nav-link" data-scroll-target="#model-diagnostics">Model diagnostics</a></li>
   </ul></li>
-  <li><a href="#model-building-principles-for-longitudinal-data-analysis" id="toc-model-building-principles-for-longitudinal-data-analysis" class="nav-link" data-scroll-target="#model-building-principles-for-longitudinal-data-analysis">Model building principles for longitudinal data analysis</a></li>
   </ul></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="_BLR_lab_longitudinal.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
@@ -222,18 +221,17 @@ window.Quarto = {
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>alcohol_data <span class="ot">&lt;-</span> <span class="fu">read_sav</span>(<span class="st">"data/alcoholpp.sav"</span>)</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert labelled variables (dbl+lbl) to factors using their value labels</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># and set effects coding (contr.sum) for interpretation</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>alcohol_data <span class="ot">&lt;-</span> alcohol_data <span class="sc">|&gt;</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">coa =</span> <span class="fu">as_factor</span>(coa),</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">sex =</span> <span class="fu">as_factor</span>(sex)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Use effects coding for the categorical variables</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">contrasts =</span> <span class="fu">c</span>(<span class="st">"contr.sum"</span>, <span class="st">"contr.poly"</span>))</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect the structure of the dataset</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(alcohol_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>alcohol_data <span class="ot">&lt;-</span> alcohol_data <span class="sc">|&gt;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">coa =</span> <span class="fu">as_factor</span>(coa),</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">sex =</span> <span class="fu">as_factor</span>(sex)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Use effects coding for the categorical variables</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">contrasts =</span> <span class="fu">c</span>(<span class="st">"contr.sum"</span>, <span class="st">"contr.poly"</span>))</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect the structure of the dataset</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(alcohol_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>tibble [246 × 6] (S3: tbl_df/tbl/data.frame)
  $ id    : num [1:246] 1 1 1 2 2 2 3 3 3 4 ...
@@ -257,28 +255,29 @@ window.Quarto = {
 </section>
 <section id="exploratory-data-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory data analysis</h2>
-<section id="individual-trajectories-of-alcohol-use" class="level3">
-<h3 class="anchored" data-anchor-id="individual-trajectories-of-alcohol-use">Individual trajectories of alcohol use</h3>
-<p>We will start by examining the individual trajectories of alcohol use over time. One way to achieve this is a facet plot, which displays each individual’s trajectory in a separate subplot. In this case, however, the dataset consists of 82 individuals, making it impractical to display all trajectories. We therefore take a random sample of 16 individuals for visualization.</p>
+<section id="overall-pattern-and-individual-variation" class="level3">
+<h3 class="anchored" data-anchor-id="overall-pattern-and-individual-variation">Overall pattern and individual variation</h3>
+<p>We begin by examining both the overall mean trajectory and individual trajectories simultaneously. This “spaghetti plot” shows all individual trajectories (thin gray lines) overlaid with the overall mean trajectory (thick blue line), providing an immediate sense of both the average pattern and the variability around it.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)  <span class="co"># Set seed for reproducibility</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample 16 unique individuals</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>sampled_ids <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">82</span>, <span class="dv">16</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute the overall mean alcohol use by age</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>mean_trajectory <span class="ot">&lt;-</span> alcohol_data <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(age) <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_alcuse =</span> <span class="fu">mean</span>(alcuse, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter dataset for the sampled IDs and plot</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>alcohol_data <span class="sc">|&gt;</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(id <span class="sc">%in%</span> sampled_ids) <span class="sc">|&gt;</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> age, <span class="at">y =</span> alcuse)) <span class="sc">+</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span>                               <span class="co"># Add trajectories (lines)</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span>         <span class="co"># Add individual data points (dots)</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> id) <span class="sc">+</span>                          <span class="co"># Create a subplot for each individual</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create spaghetti plot: individual trajectories + mean trajectory</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(alcohol_data, <span class="fu">aes</span>(<span class="at">x =</span> age, <span class="at">y =</span> alcuse)) <span class="sc">+</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">group =</span> id), <span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">color =</span> <span class="st">"gray60"</span>) <span class="sc">+</span>  <span class="co"># Individual trajectories</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> mean_trajectory, <span class="fu">aes</span>(<span class="at">x =</span> age, <span class="at">y =</span> mean_alcuse), </span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">color =</span> <span class="st">"steelblue"</span>, <span class="at">linewidth =</span> <span class="fl">1.5</span>) <span class="sc">+</span>             <span class="co"># Mean trajectory</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> mean_trajectory, <span class="fu">aes</span>(<span class="at">x =</span> age, <span class="at">y =</span> mean_alcuse), </span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>             <span class="at">color =</span> <span class="st">"steelblue"</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span>                   <span class="co"># Mean points</span></span>
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Individual Alcohol Use Trajectories with Data Points"</span>,</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Age"</span>,</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Alcohol Use"</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Individual and Mean Alcohol Use Trajectories"</span>,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Gray lines = individual trajectories; Blue line = overall mean"</span>,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Age"</span>,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Alcohol Use"</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -287,12 +286,60 @@ window.Quarto = {
 </div>
 </div>
 </div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Based on the spaghetti plot:</p>
+<ol type="1">
+<li>Does the change in alcohol use over time appear to be linear, or would a quadratic trend be more appropriate?</li>
+<li>How much variability is there in individual trajectories around the mean? Does this variability suggest the need for random effects in our models?</li>
+</ol>
+</div>
+</div>
+</section>
+<section id="examining-individual-trajectories-in-detail" class="level3">
+<h3 class="anchored" data-anchor-id="examining-individual-trajectories-in-detail">Examining individual trajectories in detail</h3>
+<p>While the spaghetti plot gives us a good overview of the overall variability, it can be difficult to distinguish specific individual patterns when all trajectories are overlaid. To get a better sense of the different types of individual trajectories, we’ll examine a random sample of 16 individuals using a facet plot.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)  <span class="co"># Set seed for reproducibility</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample 16 unique individuals</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>sampled_ids <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">82</span>, <span class="dv">16</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter dataset for the sampled IDs and plot</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>alcohol_data <span class="sc">|&gt;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(id <span class="sc">%in%</span> sampled_ids) <span class="sc">|&gt;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> age, <span class="at">y =</span> alcuse)) <span class="sc">+</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span>                               <span class="co"># Add trajectories (lines)</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span>         <span class="co"># Add individual data points (dots)</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> id) <span class="sc">+</span>                          <span class="co"># Create a subplot for each individual</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Sample of Individual Alcohol Use Trajectories"</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Age"</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Alcohol Use"</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_lab_longitudinal_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 <section id="observations" class="level4">
 <h4 class="anchored" data-anchor-id="observations">Observations:</h4>
 <ul>
 <li>Many adolescents report no alcohol use (<code>alcuse = 0</code>) across all time points.</li>
-<li>For adolescents who do report alcohol use, the trajectories vary, with some increasing, decreasing, or remaining relatively stable over time.</li>
-<li>This variability underscores the need for statistical models, such as linear mixed-effects models, to account for differences both within and between individuals.</li>
+<li>For adolescents who do report alcohol use, the trajectories show diverse patterns: some increasing, some decreasing, and some remaining relatively stable over time.</li>
+<li>The heterogeneity in both baseline levels and rates of change motivates the use of random intercepts and random slopes in our models.</li>
 </ul>
 <div class="callout callout-style-default callout-warning callout-titled" title="Disclaimer">
 <div class="callout-header d-flex align-content-center">
@@ -308,48 +355,6 @@ window.Quarto = {
 </div>
 </div>
 </section>
-</section>
-<section id="overall-mean-trajectory" class="level3">
-<h3 class="anchored" data-anchor-id="overall-mean-trajectory">Overall mean trajectory</h3>
-<p>Before examining how alcohol use trajectories differ by predictor variables, we first explore the overall mean trajectory to assess the shape of change over time.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute the overall mean alcohol use by age</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>mean_trajectory <span class="ot">&lt;-</span> alcohol_data <span class="sc">|&gt;</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(age) <span class="sc">|&gt;</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_alcuse =</span> <span class="fu">mean</span>(alcuse, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the overall mean trajectory</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mean_trajectory, <span class="fu">aes</span>(<span class="at">x =</span> age, <span class="at">y =</span> mean_alcuse)) <span class="sc">+</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Overall Mean Alcohol Use Trajectory"</span>,</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Age"</span>,</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Mean Alcohol Use"</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="fl">1.5</span>) <span class="sc">+</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="_BLR_lab_longitudinal_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Based on the overall mean trajectory, does the change in alcohol use over time appear to be linear, or would a quadratic trend be more appropriate?</p>
-</div>
-</div>
 </section>
 <section id="mean-trajectories-by-parental-alcoholism" class="level3">
 <h3 class="anchored" data-anchor-id="mean-trajectories-by-parental-alcoholism">Mean trajectories by parental alcoholism</h3>
@@ -388,7 +393,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Based on the plot, do you expect there to be a effect of parental alcoholism (<code>coa</code>) on alcohol use? Do you expect there to be an interaction effect between <code>coa</code> and age? Explain your reasoning based on the trends shown in the plot.</p>
+<p>Based on the plot, do you expect there to be a effect of parental alcoholism on alcohol use? Do you expect there to be an interaction effect between parental alcoholism and age? Explain your reasoning based on the trends shown in the plot.</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Coding exercise">
@@ -415,7 +420,7 @@ window.Quarto = {
 </section>
 <section id="assessing-the-intraclass-correlation-coefficient-icc" class="level2">
 <h2 class="anchored" data-anchor-id="assessing-the-intraclass-correlation-coefficient-icc">Assessing the intraclass correlation coefficient (ICC)</h2>
-<p>Before building more complex models, we first assess the intraclass correlation coefficient (ICC) to understand how much of the variance in alcohol use is attributable to differences between individuals. In longitudinal data analysis, we calculate the ICC from a model that includes time as a fixed effect.</p>
+<p>Before building more complex models, we first assess the intraclass correlation coefficient (ICC) to understand how much of the variance in alcohol use is attributable to differences between individuals. In longitudinal data analysis, the ICC is typically calculated from a model that includes time as a fixed effect.</p>
 <section id="modeling-time-flexibly-for-icc-calculation" class="level3">
 <h3 class="anchored" data-anchor-id="modeling-time-flexibly-for-icc-calculation">Modeling time flexibly for ICC calculation</h3>
 <p>Since we have only 3 time points (ages 14, 15, and 16), we can model time with maximum flexibility by including both linear and quadratic terms. This saturated representation uses 2 degrees of freedom to perfectly fit the 3 observed means, which is equivalent to treating time as a categorical variable. However, we prefer the continuous representation because it:</p>
@@ -425,8 +430,8 @@ window.Quarto = {
 <li>Provides a natural framework for growth modeling</li>
 </ol>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Center age at 14 for interpretability</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>alcohol_data<span class="sc">$</span>age_centered <span class="ot">&lt;-</span> alcohol_data<span class="sc">$</span>age <span class="sc">-</span> <span class="dv">14</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Center age at 15 </span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>alcohol_data<span class="sc">$</span>age_centered <span class="ot">&lt;-</span> alcohol_data<span class="sc">$</span>age <span class="sc">-</span> <span class="dv">15</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create quadratic term</span></span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>alcohol_data<span class="sc">$</span>age_centered_sq <span class="ot">&lt;-</span> alcohol_data<span class="sc">$</span>age_centered<span class="sc">^</span><span class="dv">2</span></span>
@@ -454,37 +459,16 @@ Number of obs: 246, groups:  id, 82
 
 Fixed effects:
                  Estimate Std. Error        df t value Pr(&gt;|t|)    
-(Intercept)       0.63047    0.11525 151.98797   5.470 1.81e-07 ***
-age_centered      0.39568    0.19773 162.00000   2.001    0.047 *  
+(Intercept)       0.96363    0.11525 151.98797   8.361 3.68e-14 ***
+age_centered      0.27065    0.05484 162.00000   4.935 1.97e-06 ***
 age_centered_sq  -0.06251    0.09498 162.00000  -0.658    0.511    
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Correlation of Fixed Effects:
             (Intr) ag_cnt
-age_centerd -0.396       
-ag_cntrd_sq  0.275 -0.961</code></pre>
-</div>
-</div>
-<div class="callout callout-style-default callout-note no-icon callout-titled" title="ICC in longitudinal vs. cross-sectional data">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>ICC in longitudinal vs.&nbsp;cross-sectional data
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Why include time when calculating ICC in longitudinal data?</strong></p>
-<p>In longitudinal data analysis, time is the fundamental structure of the data. Including time as a fixed effect allows us to partition the variance <em>after</em> accounting for systematic change over time. The resulting ICC then represents the proportion of total variance (after accounting for time trends) that is due to between-person differences. A high ICC indicates that individuals differ substantially in their overall levels of alcohol use, even after accounting for common age-related changes.</p>
-<p><strong>Contrast with cross-sectional multilevel data:</strong></p>
-<p>In the previous lab on cross-sectional multilevel data, we calculated the ICC from an unconditional (null) model without any predictors. This was appropriate because in cross-sectional data, we want to understand the proportion of total variance attributable to clustering (e.g., neighborhoods) before introducing any covariates. The focus is on the overall clustering structure rather than change over time.</p>
-<p><strong>Key distinction:</strong></p>
-<ul>
-<li>Cross-sectional: ICC from null model → proportion of total variance due to clustering</li>
-<li>Longitudinal: ICC from model with time → proportion of total variance (after time trends) due to between-person differences</li>
-</ul>
+age_centerd  0.000       
+ag_cntrd_sq -0.549  0.000</code></pre>
 </div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
@@ -504,30 +488,9 @@ ag_cntrd_sq  0.275 -0.961</code></pre>
 </section>
 <section id="model-building" class="level2">
 <h2 class="anchored" data-anchor-id="model-building">Model building</h2>
-<p>We will now follow a systematic model building approach for longitudinal data, as outlined in the principles at the end of this lab. We start with a saturated fixed-effects structure that includes all predictors and their interactions with time, combined with a complex random-effects structure (random intercept and random slope).</p>
 <section id="step-1-fit-the-saturated-model" class="level3">
 <h3 class="anchored" data-anchor-id="step-1-fit-the-saturated-model">Step 1: Fit the saturated model</h3>
-<p>We begin by fitting a model that includes all available predictors (<code>coa</code>, <code>sex</code>, <code>peer</code>) and their interactions with time (<code>age_centered</code> and <code>age_centered_sq</code>). For the random effects, we include a random intercept and a random linear slope for time.</p>
-<div class="callout callout-style-default callout-note no-icon callout-titled" title="Why not random quadratic slopes?">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Why not random quadratic slopes?
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>With only 3 observations per person, we do not have sufficient information to reliably estimate individual-specific quadratic trajectories. While we are only estimating variance components (not separate parameters for each person), the issue is one of <strong>identifiability at the individual level</strong>: with 3 time points, we cannot distinguish between “person i has a different quadratic trajectory” and “person i has random measurement error.”</p>
-<p><strong>General guideline for random effects:</strong></p>
-<ul>
-<li>3 time points: Random intercept + random linear slope is feasible</li>
-<li>4+ time points: Could consider random quadratic slopes (though rarely used in practice)</li>
-<li>The quadratic term remains as a <strong>fixed effect</strong> to model the average curvature across all individuals</li>
-</ul>
-<p>This limitation is why continuous time modeling (which imposes structure) is preferred over categorical time modeling (which would make even random linear slopes unidentifiable with one observation per person-time combination).</p>
-</div>
-</div>
+<p>Following the model building strategy outlined in the lecture, we start with a saturated fixed-effects structure that includes all predictors and their interactions with time, combined with a complex random-effects structure (random intercept and random slope).</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Center peer at its mean for interpretability</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>alcohol_data<span class="sc">$</span>peer_centered <span class="ot">&lt;-</span> alcohol_data<span class="sc">$</span>peer <span class="sc">-</span> <span class="fu">mean</span>(alcohol_data<span class="sc">$</span>peer, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
@@ -551,38 +514,38 @@ REML criterion at convergence: 617.7
 
 Scaled residuals: 
      Min       1Q   Median       3Q      Max 
--2.89184 -0.49756 -0.03724  0.42170  2.35831 
+-2.89183 -0.49749 -0.03726  0.42173  2.35838 
 
 Random effects:
- Groups   Name         Variance Std.Dev. Corr 
- id       (Intercept)  0.2715   0.5210        
-          age_centered 0.1405   0.3749   -0.09
- Residual              0.3327   0.5768        
+ Groups   Name         Variance Std.Dev. Corr
+ id       (Intercept)  0.3764   0.6135       
+          age_centered 0.1405   0.3748   0.53
+ Residual              0.3327   0.5768       
 Number of obs: 246, groups:  id, 82
 
 Fixed effects:
                                Estimate Std. Error        df t value Pr(&gt;|t|)
-(Intercept)                     0.65828    0.08631  93.60469   7.627 1.96e-11
-age_centered                    0.39260    0.16852 101.42781   2.330  0.02180
-age_centered_sq                -0.06347    0.07845  78.00121  -0.809  0.42096
-coa1                           -0.29667    0.08777  93.60469  -3.380  0.00106
-sex1                           -0.04621    0.08836  93.60469  -0.523  0.60223
-peer_centered                   0.65906    0.12332  93.60469   5.344 6.37e-07
-age_centered:coa1               0.06307    0.17136 101.42781   0.368  0.71359
-age_centered:sex1               0.12632    0.17252 101.42781   0.732  0.46576
-age_centered:peer_centered      0.11021    0.24078 101.42782   0.458  0.64815
-age_centered_sq:coa1           -0.02222    0.07977  78.00121  -0.279  0.78135
-age_centered_sq:sex1           -0.12795    0.08031  78.00121  -1.593  0.11515
-age_centered_sq:peer_centered  -0.10915    0.11208  78.00122  -0.974  0.33316
+(Intercept)                     0.98742    0.09350 136.81731  10.560  &lt; 2e-16
+age_centered                    0.26567    0.06151  77.99803   4.319 4.57e-05
+age_centered_sq                -0.06347    0.07845  77.99810  -0.809  0.42096
+coa1                           -0.25581    0.09508 136.81731  -2.690  0.00802
+sex1                           -0.04785    0.09573 136.81731  -0.500  0.61798
+peer_centered                   0.66012    0.13360 136.81731   4.941 2.23e-06
+age_centered:coa1               0.01864    0.06255  77.99803   0.298  0.76650
+age_centered:sex1              -0.12959    0.06297  77.99803  -2.058  0.04294
+age_centered:peer_centered     -0.10809    0.08789  77.99803  -1.230  0.22244
+age_centered_sq:coa1           -0.02222    0.07977  77.99810  -0.279  0.78135
+age_centered_sq:sex1           -0.12795    0.08031  77.99810  -1.593  0.11515
+age_centered_sq:peer_centered  -0.10915    0.11208  77.99810  -0.974  0.33316
                                  
 (Intercept)                   ***
-age_centered                  *  
+age_centered                  ***
 age_centered_sq                  
 coa1                          ** 
 sex1                             
 peer_centered                 ***
 age_centered:coa1                
-age_centered:sex1                
+age_centered:sex1             *  
 age_centered:peer_centered       
 age_centered_sq:coa1             
 age_centered_sq:sex1             
@@ -592,17 +555,17 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Correlation of Fixed Effects:
                (Intr) ag_cnt ag_cn_ coa1   sex1   pr_cnt ag_cntrd:c1
-age_centerd    -0.438                                               
-ag_cntrd_sq     0.303 -0.931                                        
-coa1           -0.101  0.044 -0.031                                 
-sex1            0.034 -0.015  0.010 -0.090                          
-peer_centrd    -0.023  0.010 -0.007  0.178 -0.231                   
-ag_cntrd:c1     0.044 -0.101  0.094 -0.438  0.040 -0.078            
-ag_cntrd:s1    -0.015  0.034 -0.032  0.040 -0.438  0.101 -0.090     
-ag_cntrd:p_     0.010 -0.023  0.022 -0.078  0.101 -0.438  0.178     
-ag_cntrd_sq:c1 -0.031  0.094 -0.101  0.303 -0.027  0.054 -0.931     
-ag_cntrd_sq:s1  0.010 -0.032  0.034 -0.027  0.303 -0.070  0.084     
-ag_cntrd_:_    -0.007  0.022 -0.023  0.054 -0.070  0.303 -0.166     
+age_centerd     0.263                                               
+ag_cntrd_sq    -0.559  0.000                                        
+coa1           -0.101 -0.027  0.057                                 
+sex1            0.034  0.009 -0.019 -0.090                          
+peer_centrd    -0.023 -0.006  0.013  0.178 -0.231                   
+ag_cntrd:c1    -0.027 -0.101  0.000  0.263 -0.024  0.047            
+ag_cntrd:s1     0.009  0.034  0.000 -0.024  0.263 -0.061 -0.090     
+ag_cntrd:p_    -0.006 -0.023  0.000  0.047 -0.061  0.263  0.178     
+ag_cntrd_sq:c1  0.057  0.000 -0.101 -0.559  0.051 -0.100  0.000     
+ag_cntrd_sq:s1 -0.019  0.000  0.034  0.051 -0.559  0.129  0.000     
+ag_cntrd_:_     0.013  0.000 -0.023 -0.100  0.129 -0.559  0.000     
                ag_cntrd:s1 ag_c:_ ag_cntrd_sq:c1 ag_cntrd_sq:s1
 age_centerd                                                    
 ag_cntrd_sq                                                    
@@ -612,9 +575,29 @@ peer_centrd
 ag_cntrd:c1                                                    
 ag_cntrd:s1                                                    
 ag_cntrd:p_    -0.231                                          
-ag_cntrd_sq:c1  0.084      -0.166                              
-ag_cntrd_sq:s1 -0.931       0.215 -0.090                       
-ag_cntrd_:_     0.215      -0.931  0.178         -0.231        </code></pre>
+ag_cntrd_sq:c1  0.000       0.000                              
+ag_cntrd_sq:s1  0.000       0.000 -0.090                       
+ag_cntrd_:_     0.000       0.000  0.178         -0.231        </code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Why not random quadratic slopes?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Why not random quadratic slopes?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>With only 3 observations per person, we do not have sufficient information to reliably estimate individual-specific quadratic trajectories. While we are only estimating variance components (not separate parameters for each person), the issue is one of <strong>identifiability at the individual level</strong>: with 3 time points, we cannot distinguish between “person i has a different quadratic trajectory” and “person i has random measurement error.”</p>
+<p><strong>General guideline for random effects:</strong></p>
+<ul>
+<li>3 time points: Random intercept + random linear slope is feasible</li>
+<li>4+ time points: Could consider random quadratic slopes (though rarely used in practice)</li>
+<li>The quadratic term remains as a <strong>fixed effect</strong> to model the average curvature across all individuals</li>
+</ul>
+<p>This limitation is why continuous time modeling (which imposes structure) is preferred over categorical time modeling (which would make even random linear slopes unidentifiable with one observation per person-time combination).</p>
 </div>
 </div>
 </section>
@@ -658,28 +641,15 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <p>Based on the likelihood ratio test, is the random slope for time necessary? What does this tell us about individual trajectories?</p>
 </div>
 </div>
-<p>The manual likelihood ratio test above can be automated using the <code>step()</code> function from the <code>lmerTest</code> package. This function performs backward elimination of random effects using the same likelihood ratio tests, but does so systematically:</p>
+<section id="using-step-for-sequential-testing-of-random-effects" class="level4">
+<h4 class="anchored" data-anchor-id="using-step-for-sequential-testing-of-random-effects">Using step() for sequential testing of random effects</h4>
+<p>When working with more complex random-effects structures (e.g., multiple random slopes), it becomes impractical to manually test each term. The <code>step()</code> function from the <code>lmerTest</code> package provides a systematic approach by performing sequential backward elimination of random effects using likelihood ratio tests:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use step() to test random effects structure</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># reduce.random = TRUE: test and potentially remove random effects</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># reduce.fixed = FALSE: keep all fixed effects unchanged</span></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>step_random <span class="ot">&lt;-</span> <span class="fu">step</span>(saturated_model, <span class="at">reduce.random =</span> <span class="cn">TRUE</span>, <span class="at">reduce.fixed =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the model with the final random effects structure</span></span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>model_with_final_random <span class="ot">&lt;-</span> <span class="fu">get_model</span>(step_random)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>The <code>step()</code> function will yield the same result as the manual test above. Using <code>step()</code> is particularly useful when you have multiple random effects to test.</p>
-</section>
-<section id="step-3-simplify-the-fixed-effects-structure" class="level3">
-<h3 class="anchored" data-anchor-id="step-3-simplify-the-fixed-effects-structure">Step 3: Simplify the fixed-effects structure</h3>
-<p>Now that we have determined the appropriate random-effects structure, we use the model from Step 2 as the starting point to simplify the fixed effects. By setting <code>reduce.fixed = TRUE</code> and <code>reduce.random = FALSE</code>, the function will only eliminate non-significant fixed effects while keeping the random effects structure unchanged.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use step() to simplify fixed effects only</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Start with the model that has the final random effects structure from Step 2</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># reduce.fixed = TRUE: test and potentially remove fixed effects</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># reduce.random = FALSE: keep the random effects structure unchanged</span></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>step_result <span class="ot">&lt;-</span> <span class="fu">step</span>(model_with_final_random, <span class="at">reduce.fixed =</span> <span class="cn">TRUE</span>, <span class="at">reduce.random =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(step_result)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(step_random)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Backward reduced random-effect table:
 
@@ -695,34 +665,85 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 Backward reduced fixed-effect table:
 Degrees of freedom method: Satterthwaite 
 
-                              Eliminated  Sum Sq Mean Sq NumDF   DenDF F value
-age_centered_sq:coa                    1  0.0258  0.0258     1  78.001  0.0776
-age_centered:coa                       2  0.0292  0.0292     1  78.000  0.0888
-age_centered:peer_centered             3  0.0529  0.0529     1 102.727  0.1607
-age_centered:sex                       4  0.2557  0.2557     1 104.082  0.7847
-age_centered_sq:peer_centered          5  0.8008  0.8008     1 103.354  2.4631
-age_centered                           0  1.8515  1.8515     1 105.359  5.6510
-coa                                    0  4.5350  4.5350     1  78.000 13.8417
-peer_centered                          0 11.8110 11.8110     1  78.000 36.0492
-age_centered_sq:sex                    0  2.7814  2.7814     1 104.451  8.4893
-                                 Pr(&gt;F)    
-age_centered_sq:coa           0.7813517    
-age_centered:coa              0.7665060    
-age_centered:peer_centered    0.6893322    
-age_centered:sex              0.3777385    
-age_centered_sq:peer_centered 0.1196051    
-age_centered                  0.0192490 *  
-coa                           0.0003732 ***
-peer_centered                 5.736e-08 ***
-age_centered_sq:sex           0.0043701 ** 
+                              Eliminated  Sum Sq Mean Sq NumDF  DenDF F value
+age_centered:coa                       0 0.02955 0.02955     1 77.998  0.0888
+age_centered:sex                       0 1.40909 1.40909     1 77.998  4.2349
+age_centered:peer_centered             0 0.50329 0.50329     1 77.998  1.5126
+age_centered_sq:coa                    0 0.02581 0.02581     1 77.998  0.0776
+age_centered_sq:sex                    0 0.84463 0.84463     1 77.998  2.5385
+age_centered_sq:peer_centered          0 0.31554 0.31554     1 77.998  0.9483
+                               Pr(&gt;F)  
+age_centered:coa              0.76650  
+age_centered:sex              0.04294 *
+age_centered:peer_centered    0.22244  
+age_centered_sq:coa           0.78135  
+age_centered_sq:sex           0.11515  
+age_centered_sq:peer_centered 0.33316  
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Model found:
-alcuse ~ age_centered + age_centered_sq + coa + sex + peer_centered + (1 + age_centered | id) + age_centered_sq:sex</code></pre>
+alcuse ~ (age_centered + age_centered_sq) * (coa + sex + peer_centered) + (1 + age_centered | id)</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the final model</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>final_model <span class="ot">&lt;-</span> <span class="fu">get_model</span>(step_result)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the model with the final random effects structure</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>model_with_final_random <span class="ot">&lt;-</span> <span class="fu">get_model</span>(step_random)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>In this example, we have only one random effect that can be tested (the random slope for <code>age_centered</code>), so <code>step()</code> performs the same likelihood ratio test we conducted manually above. However, the real advantage of <code>step()</code> becomes apparent when you have multiple random effects terms: the function tests them sequentially, removing the least significant term at each step until all remaining random effects are statistically significant or until further simplification would violate model hierarchy.</p>
+</section>
+</section>
+<section id="step-3-simplify-the-fixed-effects-structure" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-simplify-the-fixed-effects-structure">Step 3: Simplify the fixed-effects structure</h3>
+<p>Now that we have determined the appropriate random-effects structure, we use the model from Step 2 as the starting point to simplify the fixed effects. By setting <code>reduce.fixed = TRUE</code> and <code>reduce.random = FALSE</code>, the function will only eliminate non-significant fixed effects while keeping the random effects structure unchanged.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use step() to simplify fixed effects only</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Start with the model that has the final random effects structure from Step 2</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># reduce.fixed = TRUE: test and potentially remove fixed effects</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># reduce.random = FALSE: keep the random effects structure unchanged</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>step_result <span class="ot">&lt;-</span> <span class="fu">step</span>(model_with_final_random, <span class="at">reduce.fixed =</span> <span class="cn">TRUE</span>, <span class="at">reduce.random =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(step_result)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Backward reduced random-effect table:
+
+                                        Eliminated npar  logLik    AIC    LRT
+&lt;none&gt;                                               16 -308.85 649.70       
+age_centered in (1 + age_centered | id)          0   14 -316.59 661.18 15.475
+                                        Df Pr(&gt;Chisq)    
+&lt;none&gt;                                                   
+age_centered in (1 + age_centered | id)  2  0.0004361 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Backward reduced fixed-effect table:
+Degrees of freedom method: Satterthwaite 
+
+                              Eliminated  Sum Sq Mean Sq NumDF  DenDF F value
+age_centered_sq:coa                    1  0.0258  0.0258     1 77.998  0.0776
+age_centered:coa                       2  0.0292  0.0292     1 78.000  0.0888
+age_centered_sq:peer_centered          3  0.2935  0.2935     1 79.001  0.8926
+age_centered:peer_centered             4  0.5646  0.5646     1 78.988  1.7193
+age_centered_sq:sex                    5  1.1714  1.1714     1 79.999  3.5667
+age_centered_sq                        6  0.2136  0.2136     1 81.000  0.6305
+coa                                    0  4.6687  4.6687     1 78.001 13.8418
+peer_centered                          0 12.1591 12.1591     1 78.001 36.0494
+age_centered:sex                       0  1.9199  1.9199     1 79.999  5.6920
+                                 Pr(&gt;F)    
+age_centered_sq:coa           0.7813508    
+age_centered:coa              0.7665065    
+age_centered_sq:peer_centered 0.3476571    
+age_centered:peer_centered    0.1935795    
+age_centered_sq:sex           0.0625740 .  
+age_centered_sq               0.4294947    
+coa                           0.0003732 ***
+peer_centered                 5.736e-08 ***
+age_centered:sex              0.0194061 *  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Model found:
+alcuse ~ age_centered + coa + sex + peer_centered + (1 + age_centered | id) + age_centered:sex</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the final model</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>final_model <span class="ot">&lt;-</span> <span class="fu">get_model</span>(step_result)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The <code>step()</code> function performs backward elimination of fixed effects, adhering to important model building principles such as the marginality principle (lower-order terms are retained if higher-order terms involving them remain in the model) and uses F-tests with Satterthwaite approximation for hypothesis testing.</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
@@ -743,48 +764,47 @@ alcuse ~ age_centered + age_centered_sq + coa + sex + peer_centered + (1 + age_c
 <h3 class="anchored" data-anchor-id="step-4-final-model-and-interpretation">Step 4: Final model and interpretation</h3>
 <p>Based on the model building process, we arrive at our final model. We can now interpret the results in detail:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the final model summary</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(final_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the final model summary</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(final_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Linear mixed model fit by REML. t-tests use Satterthwaite's method [
 lmerModLmerTest]
-Formula: alcuse ~ age_centered + age_centered_sq + coa + sex + peer_centered +  
-    (1 + age_centered | id) + age_centered_sq:sex
+Formula: 
+alcuse ~ age_centered + coa + sex + peer_centered + (1 + age_centered |  
+    id) + age_centered:sex
    Data: alcohol_data
 
-REML criterion at convergence: 606.9
+REML criterion at convergence: 605.5
 
 Scaled residuals: 
      Min       1Q   Median       3Q      Max 
--2.79283 -0.44841 -0.07872  0.42465  2.36630 
+-2.57953 -0.42682 -0.09155  0.39138  2.29282 
 
 Random effects:
- Groups   Name         Variance Std.Dev. Corr 
- id       (Intercept)  0.2754   0.5248        
-          age_centered 0.1421   0.3770   -0.10
- Residual              0.3276   0.5724        
+ Groups   Name         Variance Std.Dev. Corr
+ id       (Intercept)  0.3747   0.6121       
+          age_centered 0.1374   0.3707   0.54
+ Residual              0.3373   0.5808       
 Number of obs: 246, groups:  id, 82
 
 Fixed effects:
-                       Estimate Std. Error         df t value Pr(&gt;|t|)    
-(Intercept)            0.657363   0.086099  93.775899   7.635 1.87e-11 ***
-age_centered           0.395675   0.166446 105.358949   2.377 0.019249 *  
-age_centered_sq       -0.064531   0.077420  80.810660  -0.834 0.407004    
-coa1                  -0.278077   0.074743  78.000349  -3.720 0.000373 ***
-sex1                  -0.009545   0.079181  80.812280  -0.121 0.904346    
-peer_centered          0.630568   0.105023  78.000349   6.004 5.74e-08 ***
-age_centered_sq:sex1  -0.082803   0.028419 104.451239  -2.914 0.004370 ** 
+                  Estimate Std. Error       df t value Pr(&gt;|t|)    
+(Intercept)        0.94568    0.07746 78.20102  12.209  &lt; 2e-16 ***
+age_centered       0.26710    0.06111 79.99914   4.371 3.69e-05 ***
+coa1              -0.27808    0.07474 78.00063  -3.720 0.000373 ***
+sex1              -0.13963    0.07912 78.81001  -1.765 0.081459 .  
+peer_centered      0.63057    0.10502 78.00063   6.004 5.74e-08 ***
+age_centered:sex1 -0.14580    0.06111 79.99914  -2.386 0.019406 *  
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Correlation of Fixed Effects:
-            (Intr) ag_cnt ag_cn_ coa1   sex1   pr_cnt
-age_centerd -0.435                                   
-ag_cntrd_sq  0.300 -0.930                            
-coa1        -0.087  0.000  0.000                     
-sex1         0.030  0.000 -0.003 -0.086              
-peer_centrd -0.020  0.000  0.000  0.178 -0.219       
-ag_cntrd_:1 -0.007  0.000  0.009  0.000 -0.311  0.000</code></pre>
+            (Intr) ag_cnt coa1   sex1   pr_cnt
+age_centerd  0.315                            
+coa1        -0.096  0.000                     
+sex1         0.033  0.008 -0.086              
+peer_centrd -0.022  0.000  0.178 -0.219       
+ag_cntrd:s1  0.008  0.024  0.000  0.309  0.000</code></pre>
 </div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question">
@@ -816,15 +836,15 @@ ag_cntrd_:1 -0.007  0.000  0.009  0.000 -0.311  0.000</code></pre>
 <li><strong>Normal Q-Q Plot</strong>: Assesses whether the residuals follow a normal distribution</li>
 </ul>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract conditional residuals from the final model</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>residuals_cond <span class="ot">&lt;-</span> <span class="fu">resid</span>(final_model)</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Residuals vs Fitted</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">fitted</span>(final_model), residuals_cond,</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Residuals vs Fitted"</span>,</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Fitted values"</span>,</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"Conditional Residuals"</span>)</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">col =</span> <span class="st">"red"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract conditional residuals from the final model</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>residuals_cond <span class="ot">&lt;-</span> <span class="fu">resid</span>(final_model)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Residuals vs Fitted</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">fitted</span>(final_model), residuals_cond,</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Residuals vs Fitted"</span>,</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Fitted values"</span>,</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"Conditional Residuals"</span>)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">col =</span> <span class="st">"red"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -832,9 +852,9 @@ ag_cntrd_:1 -0.007  0.000  0.009  0.000 -0.311  0.000</code></pre>
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Normal Q-Q Plot</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(residuals_cond, <span class="at">main =</span> <span class="st">"Normal Q-Q Plot of Conditional Residuals"</span>)</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(residuals_cond, <span class="at">col =</span> <span class="st">"red"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Normal Q-Q Plot</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(residuals_cond, <span class="at">main =</span> <span class="st">"Normal Q-Q Plot of Conditional Residuals"</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(residuals_cond, <span class="at">col =</span> <span class="st">"red"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -857,39 +877,10 @@ ag_cntrd_:1 -0.007  0.000  0.009  0.000 -0.311  0.000</code></pre>
 <ul>
 <li>Does the Residuals vs.&nbsp;Fitted plot show any patterns suggesting non-constant variance or non-linearity?</li>
 <li>Does the Q-Q plot suggest that the residuals are approximately normally distributed?</li>
-<li>Are there any outliers or influential observations that might warrant further investigation?</li>
 </ul>
 </div>
 </div>
 </section>
-</section>
-<section id="model-building-principles-for-longitudinal-data-analysis" class="level2">
-<h2 class="anchored" data-anchor-id="model-building-principles-for-longitudinal-data-analysis">Model building principles for longitudinal data analysis</h2>
-<p>Model building for longitudinal data analysis follows a systematic approach to ensure that the final model is both parsimonious and adequately represents the data. The process typically involves the following steps:</p>
-<ol type="1">
-<li><p><strong>Start with a saturated fixed-effects structure and a complex random-effects structure</strong></p>
-<ul>
-<li>A <strong>saturated fixed-effects structure</strong> includes all plausible predictors and their interactions based on theoretical considerations and prior knowledge. This ensures that no potentially important effect is excluded at the outset.</li>
-<li>A <strong>complex random-effects structure</strong> allows for a flexible representation of variability in the data. For example, random intercepts and random slopes are included to account for between-subject variability and other grouping factors.</li>
-</ul>
-<p>This initial specification provides a robust starting point for model refinement, ensuring the inclusion of all meaningful variability in the model.</p></li>
-<li><p><strong>Determine the appropriate random-effects structure</strong></p>
-<ul>
-<li>Simplify the random-effects structure by comparing models with different random-effects terms using likelihood ratio tests (LRTs).</li>
-<li>Importantly, these comparisons are made without refitting the models using maximum likelihood (ML). Restricted maximum likelihood (REML) is retained during this step to ensure accurate estimation of variance components.</li>
-<li>Remove unnecessary random-effects terms to avoid overfitting while retaining terms that account for substantial variability in the data.</li>
-</ul></li>
-<li><p><strong>Simplify the fixed-effects structure</strong></p>
-<ul>
-<li>Starting from the saturated fixed-effects structure combined with the final reduced random-effects structure, iteratively remove non-significant fixed effects.</li>
-<li>There are two approaches for testing fixed effects:
-<ul>
-<li><strong>F-tests with approximate degrees of freedom</strong> (e.g., Satterthwaite or Kenward-Roger approximation): Used by the <code>step()</code> function in this lab. Does not require refitting models and retains REML estimation.</li>
-<li><strong>Likelihood ratio tests (LRTs)</strong>: When using LRTs for fixed effects testing, models must be refitted using maximum likelihood (ML) rather than REML. This ensures correct inference for hypothesis testing and comparison of nested models.</li>
-</ul></li>
-<li>Once the final fixed-effects structure is determined using either approach, the model can be refitted using REML for final parameter estimation.</li>
-</ul></li>
-</ol>
 </section>
 </section>
 

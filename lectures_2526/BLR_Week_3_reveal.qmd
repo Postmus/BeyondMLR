@@ -949,9 +949,9 @@ icc_neighborhood_3lvl <- (var_district + var_neighborhood_3lvl) / total_var
 icc_district <- var_district / total_var
 ```
 
-$$\text{ICC}_{\text{neighborhood}} = \frac{\sigma^2_{\text{district}} + \sigma^2_{\text{neighborhood}}}{\sigma^2_{\text{district}} + \sigma^2_{\text{neighborhood}} + \sigma^2} = `r round(icc_neighborhood_3lvl, 3)`$$
+$$\text{ICC}_{\text{neighborhood}} = \frac{\sigma^2_{\text{district}} + \sigma^2_{\text{neighborhood:district}}}{\sigma^2_{\text{district}} + \sigma^2_{\text{neighborhood:district}} + \sigma^2} = `r round(icc_neighborhood_3lvl, 3)`$$
 
-$$\text{ICC}_{\text{district}} = \frac{\sigma^2_{\text{district}}}{\sigma^2_{\text{district}} + \sigma^2_{\text{neighborhood}} + \sigma^2} = `r round(icc_district, 3)`$$
+$$\text{ICC}_{\text{district}} = \frac{\sigma^2_{\text{district}}}{\sigma^2_{\text{district}} + \sigma^2_{\text{neighborhood:district}} + \sigma^2} = `r round(icc_district, 3)`$$
 :::
 
 ::::
@@ -1144,6 +1144,7 @@ kable(
 
 ::: {style="margin-top:1.0em;"}
 :::
+
 
 - The level-2 coefficient estimate may differ slightly between models
   - WalkScore effect: ~`r round(coef(summary(two_lvl_l2))["walkscore_centered", "Estimate"], 3)` vs. ~`r round(coef(summary(three_lvl_l2))["walkscore_centered", "Estimate"], 3)` log-price change per unit WalkScore

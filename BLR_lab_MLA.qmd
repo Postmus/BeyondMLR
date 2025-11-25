@@ -6,7 +6,6 @@ format:
     toc-depth: 3
     toc-location: right
     code-overflow: wrap
-    embed-resources: true
   pdf:
     toc: false
 execute:
