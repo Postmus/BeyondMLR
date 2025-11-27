@@ -63,11 +63,7 @@ In this lab, we are going to address the following research question:
 alcohol_data <- read_sav("data/alcoholpp.sav")
 
 # Convert labelled variables (dbl+lbl) to factors using their value labels
-alcohol_data <- alcohol_data |>
-  mutate(
-    coa = as_factor(coa),
-    sex = as_factor(sex)
-  )
+alcohol_data <- alcohol_data |> mutate(across(where(is.labelled), as_factor))
 
 # Use effects coding for the categorical variables
 options(contrasts = c("contr.sum", "contr.poly"))

@@ -8,7 +8,7 @@ jsp_data <- read.csv("downloads/jsp_data.csv")
 
 # Convert all character variables into factors
 jsp_data <- jsp_data %>%
-  mutate_if(is.character, as.factor)
+  mutate(across(where(is.character), as.factor))
 
 # Inspect the structure of the dataset
 str(jsp_data)
