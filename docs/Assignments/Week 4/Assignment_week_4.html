@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -40,7 +75,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-e28534083635e9d585c433950aea14cb.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-533017223e8a98a9c833763b1bd2a188.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -177,13 +212,13 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#objectives" id="toc-objectives" class="nav-link" data-scroll-target="#objectives">Objectives</a></li>
   <li><a href="#steps-to-complete-the-analysis" id="toc-steps-to-complete-the-analysis" class="nav-link" data-scroll-target="#steps-to-complete-the-analysis">Steps to complete the analysis</a>
   <ul class="collapse">
-  <li><a href="#load-the-dataset" id="toc-load-the-dataset" class="nav-link" data-scroll-target="#load-the-dataset">Load the dataset</a></li>
-  <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis">Exploratory data analysis</a></li>
-  <li><a href="#model-building" id="toc-model-building" class="nav-link" data-scroll-target="#model-building">Model building</a></li>
-  <li><a href="#interpret-the-results" id="toc-interpret-the-results" class="nav-link" data-scroll-target="#interpret-the-results">Interpret the results</a></li>
+  <li><a href="#step-1-load-and-prepare-the-data" id="toc-step-1-load-and-prepare-the-data" class="nav-link" data-scroll-target="#step-1-load-and-prepare-the-data">Step 1: Load and prepare the data</a></li>
+  <li><a href="#step-2-exploratory-data-analysis" id="toc-step-2-exploratory-data-analysis" class="nav-link" data-scroll-target="#step-2-exploratory-data-analysis">Step 2: Exploratory data analysis</a></li>
+  <li><a href="#step-3-model-the-time-structure" id="toc-step-3-model-the-time-structure" class="nav-link" data-scroll-target="#step-3-model-the-time-structure">Step 3: Model the time structure</a></li>
+  <li><a href="#step-4-add-the-gender-covariate" id="toc-step-4-add-the-gender-covariate" class="nav-link" data-scroll-target="#step-4-add-the-gender-covariate">Step 4: Add the gender covariate</a></li>
+  <li><a href="#step-5-interpret-the-results" id="toc-step-5-interpret-the-results" class="nav-link" data-scroll-target="#step-5-interpret-the-results">Step 5: Interpret the results</a></li>
   </ul></li>
   <li><a href="#requirements-for-the-report" id="toc-requirements-for-the-report" class="nav-link" data-scroll-target="#requirements-for-the-report">Requirements for the report</a></li>
-  <li><a href="#downloads" id="toc-downloads" class="nav-link" data-scroll-target="#downloads">Downloads</a></li>
   </ul>
 </nav>
     </div>
@@ -229,52 +264,96 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="objectives">Objectives</h2>
 <p>Your objectives are to:</p>
 <ol type="1">
-<li>Develop an appropriate model to describe the growth curve of children’s weight over time, considering fixed and random effects.</li>
-<li>Use the model to answer the following research questions:
-<ul>
-<li>How does the weight of children change over time (e.g., constant, linear, quadratic)?</li>
-<li>How does gender influence the mean growth curve of children’s weight?</li>
-</ul></li>
+<li>Develop an appropriate model to describe the growth curve of children’s weight over time, using the “time structure first” approach.</li>
+<li>Use the model to answer the following research question: How does gender influence the growth trajectory of children’s weight?</li>
 </ol>
 </section>
 <section id="steps-to-complete-the-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="steps-to-complete-the-analysis">Steps to complete the analysis</h2>
-<section id="load-the-dataset" class="level3">
-<h3 class="anchored" data-anchor-id="load-the-dataset">Load the dataset</h3>
-<p>Download the dataset (see link in the Downloads section below) and read it into R. Ensure that the <code>Gender</code> variable is correctly encoded as a factor.</p>
+<section id="step-1-load-and-prepare-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-load-and-prepare-the-data">Step 1: Load and prepare the data</h3>
+<p>Download the dataset (see link in the Downloads section below) and read it into R. Ensure that the <code>Gender</code> variable is correctly encoded as a factor. Center the <code>Age</code> variable to aid interpretation.</p>
+<div class="callout callout-style-default callout-tip no-icon callout-titled" title="Hint">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Hint
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Since the dataset is in CSV format (not SPSS), we use <code>read.csv()</code> instead of <code>read_sav()</code> from the <code>haven</code> package. Character variables can be converted to factors using the same approach as in previous assignments:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the data</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>asian_data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"downloads/asian_data.csv"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert all character variables into factors</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>asian_data <span class="ot">&lt;-</span> asian_data <span class="sc">|&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.character), as.factor))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
 </section>
-<section id="exploratory-data-analysis" class="level3">
-<h3 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory data analysis</h3>
+<section id="step-2-exploratory-data-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-exploratory-data-analysis">Step 2: Exploratory data analysis</h3>
 <ul>
-<li>Explore the individual and mean trajectories of weight gain over time.</li>
+<li>Create a spaghetti plot showing individual trajectories and the overall mean trajectory.</li>
+<li>Examine whether the mean trajectory appears linear or whether a quadratic (or higher-order) trend might be needed.</li>
+<li>Create plots of mean trajectories by gender to visualize potential differences.</li>
 </ul>
 </section>
-<section id="model-building" class="level3">
-<h3 class="anchored" data-anchor-id="model-building">Model building</h3>
-<ul>
-<li>Begin with a comprehensive (saturated) model and iteratively simplify it to determine the best fixed and random effects structure.</li>
-<li>Use likelihood ratio tests to refine random effects (models not refitted with ML).</li>
-<li>Use likelihood ratio tests with models refitted using ML to refine fixed effects.</li>
-</ul>
+<section id="step-3-model-the-time-structure" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-model-the-time-structure">Step 3: Model the time structure</h3>
+<p>Following the “time structure first” approach from the lab:</p>
+<ol type="1">
+<li><p><strong>Fit a flexible model for time</strong>: Start with a model that includes plausible polynomial terms for time (linear, quadratic, and possibly cubic given the age range) as fixed effects, along with random intercept and random slope.</p></li>
+<li><p><strong>Test the random slope</strong>: Use a likelihood ratio test (<code>refit = FALSE</code>) to determine whether the random slope for time is necessary.</p></li>
+<li><p><strong>Calculate the ICC</strong>: Based on the random intercept model, calculate and interpret the ICC.</p></li>
+<li><p><strong>Test the fixed effects for time</strong>: Use likelihood ratio tests (<code>refit = TRUE</code>) to determine which polynomial terms are needed. Keep the random effects structure fixed during this step.</p></li>
+<li><p><strong>Check residual diagnostics</strong>: Create a residuals vs.&nbsp;fitted plot to verify that the time trend is adequately captured.</p></li>
+</ol>
+<div class="callout callout-style-default callout-tip no-icon callout-titled" title="Hint: Using the bobyqa optimizer">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Hint: Using the bobyqa optimizer
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When fitting models with random slopes, you may encounter convergence warnings. To avoid these, use the <code>bobyqa</code> optimizer by adding <code>control = lmerControl(optimizer = "bobyqa")</code> to your <code>lmer()</code> calls:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">lmer</span>(Weight <span class="sc">~</span> age_c <span class="sc">+</span> (age_c <span class="sc">|</span> ChildID), </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> asian_data,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">control =</span> <span class="fu">lmerControl</span>(<span class="at">optimizer =</span> <span class="st">"bobyqa"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
 </section>
-<section id="interpret-the-results" class="level3">
-<h3 class="anchored" data-anchor-id="interpret-the-results">Interpret the results</h3>
-<p>Interpret the findings from your analysis, focusing on answering the research questions outlined in the Objectives section.</p>
+<section id="step-4-add-the-gender-covariate" class="level3">
+<h3 class="anchored" data-anchor-id="step-4-add-the-gender-covariate">Step 4: Add the gender covariate</h3>
+<p>Once the time structure is established:</p>
+<ol type="1">
+<li>Fit a model that includes gender and its interaction with the time terms.</li>
+<li>Test whether gender affects the growth trajectory (main effect and/or interaction with time).</li>
+<li>Simplify the model if interaction terms are not significant.</li>
+</ol>
+</section>
+<section id="step-5-interpret-the-results" class="level3">
+<h3 class="anchored" data-anchor-id="step-5-interpret-the-results">Step 5: Interpret the results</h3>
+<p>Interpret the findings from your final model, focusing on:</p>
+<ul>
+<li>How children’s weight changes over time on average</li>
+<li>Whether boys and girls differ in their baseline weight and/or growth rate</li>
+<li>The variance components: how much do children vary in their baseline weight and growth rates?</li>
+</ul>
 </section>
 </section>
 <section id="requirements-for-the-report" class="level2">
 <h2 class="anchored" data-anchor-id="requirements-for-the-report">Requirements for the report</h2>
-<p>Your report should clearly explain:</p>
-<ol type="1">
-<li>The reasoning behind your choice of model structure.</li>
-<li>The interpretation of key model parameters in the context of the research questions.</li>
-<li>Any limitations or assumptions affecting your analysis.</li>
-</ol>
-<p>Submit both the <strong>Quarto source file (<code>.qmd</code>)</strong> and the <strong>rendered HTML file</strong>. Ensure that the HTML file includes visible code (<code>echo = TRUE</code>) for reproducibility.</p>
-</section>
-<section id="downloads" class="level2">
-<h2 class="anchored" data-anchor-id="downloads">Downloads</h2>
-<p><a href="downloads/asian_data.csv">Download dataset</a></p>
+<p>Submit both the <strong>Quarto source file (<code>.qmd</code>)</strong> and the <strong>rendered HTML file</strong>. The HTML file should be rendered with code visibility enabled (<code>echo = TRUE</code>).</p>
 
 
 </section>

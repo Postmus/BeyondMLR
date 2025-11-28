@@ -1,0 +1,302 @@
+---
+title: "Assignment 4: longitudinal data analysis"
+subtitle: "Model answer"
+format: 
+  html:
+    toc: true       
+    toc-depth: 3   
+    toc-location: right
+    code-overflow: wrap 
+    embed-resources: true
+execute:  
+  warning: false
+  message: false
+  eval: true
+  echo: true    
+---
+
+## Step 1: Load and prepare the data
+
+```{r}
+# Load the required libraries
+library(dplyr)
+library(ggplot2)
+library(lmerTest)
+
+# Load the data
+asian_data <- read.csv("/home/simalgo/BeyondMLR/Assignments/Week 4/downloads/asian_data.csv")
+
+# Convert all character variables into factors
+asian_data <- asian_data |>
+  mutate(across(where(is.character), as.factor))
+
+# Use effects coding for categorical variables
+options(contrasts = c("contr.sum", "contr.poly"))
+
+# Inspect the structure of the dataset
+str(asian_data)
+```
+
+```{r}
+# Center age at 12 months (approximately the middle of the age range)
+asian_data <- asian_data |>
+  mutate(
+    age_c = Age - 12,
+    age_c2 = age_c^2,
+    age_c3 = age_c^3
+  )
+
+# Check the age range
+summary(asian_data$Age)
+```
+
+## Step 2: Exploratory data analysis
+
+### Spaghetti plot: individual and mean trajectories
+
+```{r}
+# Compute the overall mean weight by age (binned for visualization)
+mean_trajectory <- asian_data |>
+  mutate(age_bin = round(Age)) |>
+  group_by(age_bin) |>
+  summarise(mean_weight = mean(Weight, na.rm = TRUE), .groups = "drop")
+
+# Create spaghetti plot
+ggplot(asian_data, aes(x = Age, y = Weight)) +
+  geom_line(aes(group = ChildID), alpha = 0.2, color = "gray60") +
+  geom_smooth(method = "loess", se = FALSE, color = "steelblue", linewidth = 1.5) +
+  labs(
+    title = "Individual and Mean Growth Trajectories",
+    subtitle = "Gray lines = individual trajectories; Blue line = smoothed mean",
+    x = "Age (months)",
+    y = "Weight (grams)"
+  ) +
+  theme_minimal()
+```
+
+**Observations:**
+
+- Clear upward trend: children gain weight as they age
+- Growth appears to decelerate at older ages (suggesting a quadratic or higher-order term may be needed)
+- Substantial variation in both baseline weight and growth rates between children
+
+### Mean trajectories by gender
+
+```{r}
+# Compute mean trajectories by gender
+mean_by_gender <- asian_data |>
+  mutate(age_bin = round(Age)) |>
+  group_by(age_bin, Gender) |>
+  summarise(mean_weight = mean(Weight, na.rm = TRUE), .groups = "drop")
+
+# Plot mean trajectories by gender
+ggplot(asian_data, aes(x = Age, y = Weight, color = Gender)) +
+  geom_line(aes(group = ChildID), alpha = 0.1) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1.5) +
+  labs(
+    title = "Growth Trajectories by Gender",
+    subtitle = "Faint lines = individuals; Bold lines = smoothed group means",
+    x = "Age (months)",
+    y = "Weight (grams)",
+    color = "Gender"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+**Observations:**
+
+- Boys appear to be heavier than girls on average throughout the age range
+- The trajectories appear roughly parallel, suggesting a main effect of gender but possibly no interaction with time
+
+## Step 3: Model the time structure
+
+### Step 3.1: Fit a flexible model for time
+
+We start with a model that includes linear, quadratic, and cubic terms for time, along with random intercept and random slope.
+
+```{r}
+# Fit the full time model with cubic polynomial and random slope
+time_model_full <- lmer(Weight ~ age_c + age_c2 + age_c3 + (age_c | ChildID), 
+                        data = asian_data,
+                        control = lmerControl(optimizer = "bobyqa"))
+summary(time_model_full)
+```
+
+### Step 3.2: Test the random slope
+
+```{r}
+# Fit model with random intercept only
+time_model_ri <- lmer(Weight ~ age_c + age_c2 + age_c3 + (1 | ChildID), 
+                      data = asian_data,
+                      control = lmerControl(optimizer = "bobyqa"))
+
+# Compare models using LRT (refit = FALSE for random effects)
+anova(time_model_ri, time_model_full, refit = FALSE)
+```
+
+**Conclusion:** The random slope is highly significant (p < 0.001), indicating that children differ in their growth rates. We retain the random slope structure.
+
+### Step 3.3: Calculate the ICC
+
+```{r}
+# Extract variance components from the random intercept model
+vc <- as.data.frame(VarCorr(time_model_ri))
+var_intercept <- vc$vcov[1]
+var_residual <- vc$vcov[2]
+
+# Calculate ICC
+icc <- var_intercept / (var_intercept + var_residual)
+cat("Variance between children:", round(var_intercept, 0), "\n")
+cat("Variance within children:", round(var_residual, 0), "\n")
+cat("ICC:", round(icc, 3), "\n")
+```
+
+**Interpretation:** The ICC indicates that approximately `r round(icc * 100)`% of the variance in weight (after accounting for age trends) is due to stable differences between children.
+
+### Step 3.4: Test the fixed effects for time
+
+We test the polynomial terms starting from the highest order, keeping the random slope structure throughout.
+
+```{r}
+# Test cubic term
+time_model_quad <- lmer(Weight ~ age_c + age_c2 + (age_c | ChildID), 
+                        data = asian_data,
+                        control = lmerControl(optimizer = "bobyqa"))
+anova(time_model_quad, time_model_full, refit = TRUE)
+```
+
+**Conclusion:** The cubic term is highly significant (p < 0.001). Following the marginality principle, we retain all lower-order terms (linear and quadratic) without further testing. The final time model includes linear, quadratic, and cubic terms.
+
+### Step 3.5: Residual diagnostics
+
+```{r}
+# Create diagnostic plot for cubic model
+diag_data <- data.frame(
+  fitted = fitted(time_model_full),
+  residuals = resid(time_model_full)
+)
+
+ggplot(diag_data, aes(x = fitted, y = residuals)) +
+  geom_point(alpha = 0.3) +
+  geom_hline(yintercept = 0, color = "red", linewidth = 1) +
+  geom_smooth(method = "loess", se = TRUE, color = "blue", fill = "lightblue") +
+  labs(
+    title = "Residuals vs Fitted Values (Cubic Model)",
+    x = "Fitted values",
+    y = "Conditional Residuals"
+  ) +
+  theme_minimal()
+```
+
+**Conclusion:** The loess curve lies close to zero across the range of fitted values, indicating that the cubic polynomial adequately captures the growth trajectory.
+
+### Step 3.6: Comparing alternative time models
+
+Not all students may include higher-order polynomial terms. To illustrate the consequences of under-specifying the time structure, we fit models with (i) linear + quadratic terms only and (ii) linear term only, and examine their residual diagnostics.
+
+#### Quadratic model
+
+```{r}
+# Diagnostic plot for quadratic model
+diag_data_quad <- data.frame(
+  fitted = fitted(time_model_quad),
+  residuals = resid(time_model_quad)
+)
+
+ggplot(diag_data_quad, aes(x = fitted, y = residuals)) +
+  geom_point(alpha = 0.3) +
+  geom_hline(yintercept = 0, color = "red", linewidth = 1) +
+  geom_smooth(method = "loess", se = TRUE, color = "blue", fill = "lightblue") +
+  labs(
+    title = "Residuals vs Fitted Values (Quadratic Model)",
+    x = "Fitted values",
+    y = "Conditional Residuals"
+  ) +
+  theme_minimal()
+```
+
+#### Linear model
+
+```{r}
+# Fit linear-only model
+time_model_linear <- lmer(Weight ~ age_c + (age_c | ChildID), 
+                          data = asian_data,
+                          control = lmerControl(optimizer = "bobyqa"))
+
+# Diagnostic plot for linear model
+diag_data_linear <- data.frame(
+  fitted = fitted(time_model_linear),
+  residuals = resid(time_model_linear)
+)
+
+ggplot(diag_data_linear, aes(x = fitted, y = residuals)) +
+  geom_point(alpha = 0.3) +
+  geom_hline(yintercept = 0, color = "red", linewidth = 1) +
+  geom_smooth(method = "loess", se = TRUE, color = "blue", fill = "lightblue") +
+  labs(
+    title = "Residuals vs Fitted Values (Linear Model)",
+    x = "Fitted values",
+    y = "Conditional Residuals"
+  ) +
+  theme_minimal()
+```
+
+**Observations:**
+
+- **Quadratic model:** The loess curve shows a slight S-shaped pattern, deviating from zero at the extremes. This suggests that the quadratic model does not fully capture the growth trajectory, though the deviation is modest.
+- **Linear model:** The loess curve shows a clear curved pattern, substantially deviating from zero. The model systematically over-predicts at low and high fitted values and under-predicts in the middle range. This is a classic sign that the linear time trend is inadequate.
+
+These diagnostic plots demonstrate the importance of checking residuals when modeling longitudinal data. A model that appears to fit well based on significance tests may still fail to capture important features of the growth trajectory.
+
+## Step 4: Add the gender covariate
+
+### Step 4.1: Fit full model with gender
+
+We add gender and its interactions with the time terms.
+
+```{r}
+# Fit model with gender main effect and interactions with time
+full_model <- lmer(
+  Weight ~ (age_c + age_c2 + age_c3) * Gender + (age_c | ChildID),
+  data = asian_data,
+  control = lmerControl(optimizer = "bobyqa")
+)
+summary(full_model)
+```
+
+### Step 4.2: Simplify the model
+
+We use the `step()` function to perform backward elimination of non-significant fixed effects.
+
+```{r}
+# Use step() to simplify fixed effects
+step_result <- step(full_model, reduce.fixed = TRUE, reduce.random = FALSE)
+print(step_result)
+
+# Extract the final model
+final_model <- get_model(step_result)
+```
+
+### Step 4.3: Final model summary
+
+```{r}
+summary(final_model)
+```
+
+## Step 5: Interpretation
+
+### Fixed effects interpretation
+
+```{r}
+# Display fixed effects with confidence intervals
+confint(final_model, method = "Wald", parm = "beta_")
+```
+
+Based on the final model:
+
+1. **Time trends:** The significant linear, quadratic, and cubic terms indicate that children's weight follows a curved growth trajectory. The positive linear term shows overall weight gain, while the negative quadratic term indicates deceleration of growth at older ages.
+
+2. **Gender effect:** The significant main effect of gender indicates that boys and girls differ in their weight. With effects coding, the coefficient represents the deviation from the grand mean. 
+
+3. **Gender × time interaction:** If retained in the final model, this would indicate that boys and girls have different growth rates. If eliminated by `step()`, it suggests the trajectories are parallel (same growth pattern, different baseline).

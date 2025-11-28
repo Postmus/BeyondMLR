@@ -11,7 +11,7 @@ format:
 execute:
   warning: false
   message: false
-  eval: true
+  eval: false
   echo: true
 ---
 
@@ -183,111 +183,185 @@ alcohol_data <- alcohol_data |>
 Then compute mean trajectories by `age` and `peer_cat`, and create a plot similar to the one above.
 :::
 
-## Assessing the intraclass correlation coefficient (ICC)
+## Modeling the time structure
 
-Before building more complex models, we first assess the intraclass correlation coefficient (ICC) to understand how much of the variance in alcohol use is attributable to differences between individuals. In longitudinal data analysis, the ICC is typically calculated from a model that includes time as a fixed effect.
+Before adding covariates, we first establish the appropriate model for time. This "time structure first" approach ensures that we correctly capture how the outcome changes over time before investigating what factors might explain individual differences.
 
-### Modeling time flexibly for ICC calculation
+### Step 1: Fit a flexible model for time
 
-Since we have only 3 time points (ages 14, 15, and 16), we can model time with maximum flexibility by including both linear and quadratic terms. This saturated representation uses 2 degrees of freedom to perfectly fit the 3 observed means, which is equivalent to treating time as a categorical variable. However, we prefer the continuous representation because it:
+We start with a model that includes:
 
-1. Maintains interpretable coefficients (linear and quadratic change)
-2. Allows us to extend the model to include random slopes later (which is not identifiable with categorical time and one observation per person-time combination)
-3. Provides a natural framework for growth modeling
+- **Saturated fixed effects for time**: linear and quadratic terms (with 3 time points, this perfectly captures the mean trajectory)
+- **Random intercept and random slope**: allowing individuals to differ in both their baseline level and their rate of change
 
 ```{r}
-# Center age at 15 
+# Center age at 15 (middle time point)
 alcohol_data$age_centered <- alcohol_data$age - 15
 
 # Create quadratic term
 alcohol_data$age_centered_sq <- alcohol_data$age_centered^2
 
-# Fit a random intercept model with linear and quadratic time
-icc_model <- lmer(alcuse ~ age_centered + age_centered_sq + (1 | id), data = alcohol_data)
-summary(icc_model)
+# Fit the full model with random intercept and random slope
+time_model_full <- lmer(alcuse ~ age_centered + age_centered_sq + (age_centered | id), 
+                        data = alcohol_data,
+                        control = lmerControl(optimizer = "bobyqa"))
+summary(time_model_full)
+```
+
+::: {.callout-tip icon=false title="Using the bobyqa optimizer"}
+We use `control = lmerControl(optimizer = "bobyqa")` to specify the BOBYQA (Bound Optimization BY Quadratic Approximation) optimizer. This derivative-free optimizer is often more robust than the default, especially for models with random slopes or when predictor variables are on different scales. It can help avoid convergence warnings that sometimes occur with the default optimizer.
+:::
+
+::: {.callout-note icon=false title="Understanding the random effects syntax"}
+The term `(age_centered | id)` specifies the random effects structure. This is shorthand for `(1 + age_centered | id)`, which includes:
+
+- **Random intercept** (`1`): each individual has their own baseline level
+- **Random slope** (`age_centered`): each individual has their own rate of change over time
+- **Correlation**: the intercept and slope are allowed to be correlated (e.g., do individuals who start higher also change faster?)
+
+Compare this to `(1 | id)` used in previous labs, which only included a random intercept. The random slope is the key new element for longitudinal data, capturing the **subject × time interaction** discussed in the lecture.
+
+**Uncorrelated random effects**: If you want to assume the intercept and slope are uncorrelated, use `(1 | id) + (0 + age_centered | id)` or equivalently `(age_centered || id)`. This estimates separate variances but fixes the correlation to zero, reducing the number of parameters by one. This is sometimes used when the model with correlated random effects fails to converge, or when there is no theoretical reason to expect a correlation between baseline level and rate of change.
+:::
+
+::: {.callout-note icon=false title="Why not random quadratic slopes?"}
+With only 3 observations per person, we cannot reliably estimate individual-specific quadratic trajectories (syntax: `(age_centered + age_centered_sq | id)`). The issue is one of **identifiability**: with 3 time points, we cannot distinguish between "person i has a different curvature" and "person i has random measurement error."
+
+**General guideline:**
+
+- 3 time points: Random intercept + random linear slope is feasible
+- 4+ time points: Could consider random quadratic slopes (though rarely needed)
+- The quadratic term remains as a **fixed effect** to model the average curvature
+:::
+
+### Step 2: Test the random slope
+
+We compare the full model (with random slope) against a model with only a random intercept using a likelihood ratio test. Since we are comparing random effects, we use `refit = FALSE` to retain REML estimation.
+
+```{r}
+# Fit a model with only random intercept
+time_model_ri <- lmer(alcuse ~ age_centered + age_centered_sq + (1 | id), 
+                      data = alcohol_data,
+                      control = lmerControl(optimizer = "bobyqa"))
+
+# Compare models using likelihood ratio test
+anova(time_model_ri, time_model_full, refit = FALSE)
 ```
 
 ::: {.callout-important icon=false title="Question"}
-Calculate the ICC based on the estimated variance components from the `icc_model`. What proportion of variance in alcohol use (after accounting for age trends) is due to differences between individuals?
+Based on the likelihood ratio test, is the random slope for time necessary? What does this tell us about whether individuals differ in their rate of change in alcohol use?
 :::
 
-## Model building
+### Step 3: Calculate the ICC
 
-### Step 1: Fit the saturated model
+Regardless of the random slope test result, we calculate the ICC from the random intercept model. This tells us what proportion of the variance in alcohol use (after accounting for time trends) is due to stable differences between individuals.
 
-Following the model building strategy outlined in the lecture, we start with a saturated fixed-effects structure that includes all predictors and their interactions with time, combined with a complex random-effects structure (random intercept and random slope).
+```{r}
+# Extract variance components from the random intercept model
+vc <- as.data.frame(VarCorr(time_model_ri))
+var_intercept <- vc$vcov[1]
+var_residual <- vc$vcov[2]
+
+# Calculate ICC
+icc <- var_intercept / (var_intercept + var_residual)
+cat("ICC:", round(icc, 3), "\n")
+```
+
+::: {.callout-important icon=false title="Question"}
+Interpret the ICC. What does it tell you about the relative importance of between-person versus within-person variation in alcohol use?
+:::
+
+### Step 4: Test the fixed effects for time
+
+Now we test whether the quadratic and linear time components are needed. We use likelihood ratio tests with `refit = TRUE` because we are comparing models with different fixed effects. We keep the random slope structure throughout.
+
+```{r}
+# Test quadratic term: compare model with vs without age_centered_sq
+time_model_linear <- lmer(alcuse ~ age_centered + (age_centered | id), data = alcohol_data,
+                          control = lmerControl(optimizer = "bobyqa"))
+anova(time_model_linear, time_model_full, refit = TRUE)
+```
+
+::: {.callout-important icon=false title="Question"}
+Is the quadratic term significant? What does this tell you about the shape of the average trajectory?
+:::
+
+```{r}
+# Test linear term: compare model with vs without age_centered
+time_model_null <- lmer(alcuse ~ 1 + (age_centered | id), data = alcohol_data,
+                        control = lmerControl(optimizer = "bobyqa"))
+anova(time_model_null, time_model_linear, refit = TRUE)
+```
+
+::: {.callout-important icon=false title="Question"}
+Is the linear term significant? What does this tell you about whether alcohol use changes over time on average?
+:::
+
+### Step 5: Residual diagnostics
+
+After determining the time structure, we check whether the model adequately captures the time trend by examining the residuals.
+
+```{r}
+# Use the final time model (based on tests above, linear model with random slopes)
+final_time_model <- time_model_linear
+
+# Create a data frame for plotting
+diag_data <- data.frame(
+  fitted = fitted(final_time_model),
+  residuals = resid(final_time_model)
+)
+
+# Residuals vs Fitted using ggplot2
+ggplot(diag_data, aes(x = fitted, y = residuals)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, color = "red", linewidth = 1) +
+  geom_smooth(method = "loess", se = TRUE, color = "blue", fill = "lightblue") +
+  labs(
+    title = "Residuals vs Fitted",
+    x = "Fitted values",
+    y = "Conditional Residuals"
+  ) +
+  theme_minimal()
+```
+
+::: {.callout-important icon=false title="Question"}
+Does the loess curve (blue line) lie close to zero across the range of fitted values?
+:::
+
+::: {.callout-warning icon=true title="Interpreting the diagnostic plot"}
+The residual plot reveals patterns that are largely driven by the **zero-inflated nature** of the data. The clustering of points at low fitted values reflects the many adolescents with zero alcohol use. The loess curve dipping below zero at low fitted values and rising above zero at higher values, along with the increasing spread of residuals (heteroscedasticity), are typical of zero-inflated outcomes. While a linear mixed model provides a useful approximation for teaching purposes, more appropriate models for these data might include two-part (hurdle) models or zero-inflated models.
+:::
+
+## Adding covariates
+
+Now that we have established the appropriate time structure, we can investigate which covariates predict alcohol use and whether they modify the effect of time (cross-level interactions).
+
+### Step 1: Fit a full model with all covariates
+
+We start with a model that includes all predictors and their interactions with time, combined with the random-effects structure and fixed time structure determined above (linear time with random intercept and random slope).
 
 ```{r}
 # Center peer at its mean for interpretability
 alcohol_data$peer_centered <- alcohol_data$peer - mean(alcohol_data$peer, na.rm = TRUE)
 
-# Fit the saturated model with all predictors and their interactions with time
-# Note: Random effects include only intercept and linear slope, not quadratic slope
-saturated_model <- lmer(
-  alcuse ~ (age_centered + age_centered_sq) * (coa + sex + peer_centered) + (1 + age_centered | id),
-  data = alcohol_data
+# Fit the full model with all predictors and their interactions with time
+# Fixed effects: linear time only (quadratic was not significant in Step 4)
+# Random effects: intercept and slope for age_centered (based on the test in Step 2)
+full_model <- lmer(
+  alcuse ~ age_centered * (coa + sex + peer_centered) + (age_centered | id),
+  data = alcohol_data,
+  control = lmerControl(optimizer = "bobyqa")
 )
-summary(saturated_model)
+summary(full_model)
 ```
 
-::: {.callout-note icon=false title="Why not random quadratic slopes?"}
-With only 3 observations per person, we do not have sufficient information to reliably estimate individual-specific quadratic trajectories. While we are only estimating variance components (not separate parameters for each person), the issue is one of **identifiability at the individual level**: with 3 time points, we cannot distinguish between "person i has a different quadratic trajectory" and "person i has random measurement error."
+### Step 2: Simplify the fixed-effects structure
 
-**General guideline for random effects:**
-
-- 3 time points: Random intercept + random linear slope is feasible
-- 4+ time points: Could consider random quadratic slopes (though rarely used in practice)
-- The quadratic term remains as a **fixed effect** to model the average curvature across all individuals
-
-This limitation is why continuous time modeling (which imposes structure) is preferred over categorical time modeling (which would make even random linear slopes unidentifiable with one observation per person-time combination).
-:::
-
-### Step 2: Determine the random-effects structure
-
-Before simplifying the fixed effects, we first determine whether the random slope for time is necessary. We compare the saturated model (with random slope) against a model with only a random intercept using a likelihood ratio test. Since we are comparing random effects, we retain REML estimation.
+We use the `step()` function to perform backward elimination of non-significant fixed effects.
 
 ```{r}
-# Fit a model with only random intercept (same fixed effects as saturated model)
-random_intercept_only <- lmer(
-  alcuse ~ (age_centered + age_centered_sq) * (coa + sex + peer_centered) + (1 | id),
-  data = alcohol_data
-)
-
-# Compare models using likelihood ratio test
-anova(random_intercept_only, saturated_model, refit = FALSE)
-```
-
-::: {.callout-important icon=false title="Question"}
-Based on the likelihood ratio test, is the random slope for time necessary? What does this tell us about individual trajectories?
-:::
-
-#### Using step() for sequential testing of random effects
-
-When working with more complex random-effects structures (e.g., multiple random slopes), it becomes impractical to manually test each term. The `step()` function from the `lmerTest` package provides a systematic approach by performing sequential backward elimination of random effects using likelihood ratio tests:
-
-```{r}
-# Use step() to test random effects structure
-# reduce.random = TRUE: test and potentially remove random effects
-# reduce.fixed = FALSE: keep all fixed effects unchanged
-step_random <- step(saturated_model, reduce.random = TRUE, reduce.fixed = FALSE)
-print(step_random)
-
-# Extract the model with the final random effects structure
-model_with_final_random <- get_model(step_random)
-```
-
-In this example, we have only one random effect that can be tested (the random slope for `age_centered`), so `step()` performs the same likelihood ratio test we conducted manually above. However, the real advantage of `step()` becomes apparent when you have multiple random effects terms: the function tests them sequentially, removing the least significant term at each step until all remaining random effects are statistically significant or until further simplification would violate model hierarchy.
-
-### Step 3: Simplify the fixed-effects structure
-
-Now that we have determined the appropriate random-effects structure, we use the model from Step 2 as the starting point to simplify the fixed effects. By setting `reduce.fixed = TRUE` and `reduce.random = FALSE`, the function will only eliminate non-significant fixed effects while keeping the random effects structure unchanged.
-
-```{r}
-# Use step() to simplify fixed effects only
-# Start with the model that has the final random effects structure from Step 2
-# reduce.fixed = TRUE: test and potentially remove fixed effects
-# reduce.random = FALSE: keep the random effects structure unchanged
-step_result <- step(model_with_final_random, reduce.fixed = TRUE, reduce.random = FALSE)
+# Use step() to simplify fixed effects
+step_result <- step(full_model, reduce.fixed = TRUE, reduce.random = FALSE)
 print(step_result)
 
 # Extract the final model
@@ -297,10 +371,10 @@ final_model <- get_model(step_result)
 The `step()` function performs backward elimination of fixed effects, adhering to important model building principles such as the marginality principle (lower-order terms are retained if higher-order terms involving them remain in the model) and uses F-tests with Satterthwaite approximation for hypothesis testing.
 
 ::: {.callout-important icon=false title="Question"}
-Based on the output from `step()`, which random effects and fixed effects terms were removed from the model? Does the final model include any interaction effects, or only main effects?
+Based on the output from `step()`, which fixed effects terms were removed from the model? Does the final model include any interaction effects with time (cross-level interactions), or only main effects?
 :::
 
-### Step 4: Final model and interpretation
+### Step 3: Final model and interpretation
 
 Based on the model building process, we arrive at our final model. We can now interpret the results in detail:
 
@@ -313,41 +387,6 @@ summary(final_model)
 Based on the final model, what can you conclude about the factors that predict adolescent alcohol use and its change over time? Consider:
 
 - Which predictors have significant effects on alcohol use?
-- How does alcohol use change with age on average?
 - Are there differences between groups (e.g., children of alcoholic parents vs. not, sex differences)?
 - Do any predictors interact with time (age), suggesting different trajectories for different groups?
 :::
-
-### Model diagnostics
-
-After fitting the final model, it is important to check the modeling assumptions. We focus on checking the assumptions regarding the conditional residuals, which represent the deviation of the observed data from the model's predictions after accounting for both fixed and random effects. These residuals can be considered estimates of the errors $\epsilon_{ij}$, which are assumed to be normally distributed with a mean of zero and constant variance.
-
-To check these assumptions, we generate diagnostic plots:
-
-- **Residuals vs. Fitted Plot**: Checks for homoscedasticity (constant variance) and linearity
-- **Normal Q-Q Plot**: Assesses whether the residuals follow a normal distribution
-
-```{r}
-# Extract conditional residuals from the final model
-residuals_cond <- resid(final_model)
-
-# Residuals vs Fitted
-plot(fitted(final_model), residuals_cond,
-     main = "Residuals vs Fitted",
-     xlab = "Fitted values",
-     ylab = "Conditional Residuals")
-abline(h = 0, col = "red")
-
-# Normal Q-Q Plot
-qqnorm(residuals_cond, main = "Normal Q-Q Plot of Conditional Residuals")
-qqline(residuals_cond, col = "red")
-```
-
-::: {.callout-important icon=false title="Question"}
-Based on the diagnostic plots, do you observe any violations of the model assumptions? Consider:
-
-- Does the Residuals vs. Fitted plot show any patterns suggesting non-constant variance or non-linearity?
-- Does the Q-Q plot suggest that the residuals are approximately normally distributed?
-:::
-
-

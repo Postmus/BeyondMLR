@@ -2,15 +2,12 @@
 title: "Assignment Week 4: Longitudinal Data Analysis"
 subtitle: "Modeling Growth Curves in Asian Children's Weight Data"
 format: html
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true
 ---
-
-```{r}
-#| label: setup
-#| include: false
-
-# Configure global options for R code chunks:
-knitr::opts_chunk$set(warning = FALSE, message = FALSE, eval = FALSE)
-```
 
 ## Introduction
 
@@ -31,40 +28,77 @@ The dataset consists of the following variables:
 
 Your objectives are to:
 
-1. Develop an appropriate model to describe the growth curve of children's weight over time, considering fixed and random effects.
-2. Use the model to answer the following research questions:
-   - How does the weight of children change over time (e.g., constant, linear, quadratic)?
-   - How does gender influence the mean growth curve of children's weight?
+1. Develop an appropriate model to describe the growth curve of children's weight over time, using the "time structure first" approach.
+2. Use the model to answer the following research question: How does gender influence the growth trajectory of children's weight?
 
 ## Steps to complete the analysis
 
-### Load the dataset
+### Step 1: Load and prepare the data
 
-Download the dataset (see link in the Downloads section below) and read it into R. Ensure that the `Gender` variable is correctly encoded as a factor.
+Download the dataset (see link in the Downloads section below) and read it into R. Ensure that the `Gender` variable is correctly encoded as a factor. Center the `Age` variable to aid interpretation.
 
-### Exploratory data analysis
+::: {.callout-tip icon=false title="Hint"}
+Since the dataset is in CSV format (not SPSS), we use `read.csv()` instead of `read_sav()` from the `haven` package. Character variables can be converted to factors using the same approach as in previous assignments:
 
-- Explore the individual and mean trajectories of weight gain over time.
+```{r}
+# Load the data
+asian_data <- read.csv("downloads/asian_data.csv")
 
-### Model building
+# Convert all character variables into factors
+asian_data <- asian_data |>
+  mutate(across(where(is.character), as.factor))
+```
+:::
 
-- Begin with a comprehensive (saturated) model and iteratively simplify it to determine the best fixed and random effects structure.
-- Use likelihood ratio tests to refine random effects (models not refitted with ML).
-- Use likelihood ratio tests with models refitted using ML to refine fixed effects.
+### Step 2: Exploratory data analysis
 
-### Interpret the results
+- Create a spaghetti plot showing individual trajectories and the overall mean trajectory.
+- Examine whether the mean trajectory appears linear or whether a quadratic (or higher-order) trend might be needed.
+- Create plots of mean trajectories by gender to visualize potential differences.
 
-Interpret the findings from your analysis, focusing on answering the research questions outlined in the Objectives section.
+### Step 3: Model the time structure
+
+Following the "time structure first" approach from the lab:
+
+1. **Fit a flexible model for time**: Start with a model that includes plausible polynomial terms for time (linear, quadratic, and possibly cubic given the age range) as fixed effects, along with random intercept and random slope.
+
+2. **Test the random slope**: Use a likelihood ratio test (`refit = FALSE`) to determine whether the random slope for time is necessary.
+
+3. **Calculate the ICC**: Based on the random intercept model, calculate and interpret the ICC.
+
+4. **Test the fixed effects for time**: Use likelihood ratio tests (`refit = TRUE`) to determine which polynomial terms are needed. Keep the random effects structure fixed during this step.
+
+5. **Check residual diagnostics**: Create a residuals vs. fitted plot to verify that the time trend is adequately captured.
+
+::: {.callout-tip icon=false title="Hint: Using the bobyqa optimizer"}
+When fitting models with random slopes, you may encounter convergence warnings. To avoid these, use the `bobyqa` optimizer by adding `control = lmerControl(optimizer = "bobyqa")` to your `lmer()` calls:
+
+```{r}
+model <- lmer(Weight ~ age_c + (age_c | ChildID), 
+              data = asian_data,
+              control = lmerControl(optimizer = "bobyqa"))
+```
+:::
+
+### Step 4: Add the gender covariate
+
+Once the time structure is established:
+
+1. Fit a model that includes gender and its interaction with the time terms.
+2. Test whether gender affects the growth trajectory (main effect and/or interaction with time).
+3. Simplify the model if interaction terms are not significant.
+
+### Step 5: Interpret the results
+
+Interpret the findings from your final model, focusing on:
+
+- How children's weight changes over time on average
+- Whether boys and girls differ in their baseline weight and/or growth rate
+- The variance components: how much do children vary in their baseline weight and growth rates?
 
 ## Requirements for the report
 
-Your report should clearly explain:
-
-1. The reasoning behind your choice of model structure.
-2. The interpretation of key model parameters in the context of the research questions.
-3. Any limitations or assumptions affecting your analysis.
-
-Submit both the **Quarto source file (`.qmd`)** and the **rendered HTML file**. Ensure that the HTML file includes visible code (`echo = TRUE`) for reproducibility.
+Submit both the **Quarto source file (`.qmd`)** and the **rendered HTML file**. The HTML file should be rendered with code visibility enabled (`echo = TRUE`).
 
 ## Downloads
 
