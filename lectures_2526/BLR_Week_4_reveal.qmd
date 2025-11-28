@@ -32,50 +32,21 @@ if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.mixed, gridExtra, haven)
 ```
 
-## Today's lecture
+## From cross-sectional to longitudinal data
 
-::: {style="font-size: 0.95em;"}
+**Cross-sectional hierarchical data** (last week)
 
-**Longitudinal data analysis**
-
-- Longitudinal data: repeated measurements on the same subjects over time
-- Key feature: observations within the same subject are correlated
-- Goal: understand patterns of change over time and factors that influence them
-
-**Topics covered**
-
-1. Introduction to the growth data example
-2. Exploratory data analysis for longitudinal data
-3. Random intercept model for longitudinal data
-4. Extension to random slopes
-5. Model building strategy (to be continued)
-
-:::
-
-## Longitudinal data as multi-level data
-
-::: {style="font-size: 0.85em;"}
-
-**Cross-sectional multi-level data** (last week)
-
-- Subjects nested within groups (e.g., patients in hospitals, listings in neighborhoods)
-- Between-group differences: groups differ in their average outcomes
-- Within-group correlation: subjects in the same group tend to be similar
+- Units nested within groups (e.g., patients in hospitals, listings in neighborhoods)
+- Individual-level predictors (level 1): characteristics that vary across units within groups
+- Context-level predictors (level 2): characteristics that vary across groups
+- Cross-level interactions: a context-level predictor modifies the effect of an individual-level predictor
 
 **Longitudinal data** (this week)
 
-- Measurement occations nested within subjects
-- Between-subject differences: individuals differ in their baseline levels
-- Within-subject correlation: repeated measurements on the same person are correlated
-- **New element**: individuals may also differ in their *rate of change* over time
-
-**Longitudinal data is multi-level data**
-
-- In longitudinal data, subjects are the "groups"
-- Time is a level-1 variable (varies within subjects)
-- Subject characteristics are level-2 variables (constant within subjects)
-
-:::
+- Measurement occasions (level 1) nested within subjects (level 2)
+- Time is a level-1 variable (varies across measurement occasions)
+- Subject characteristics are level-2 variables (vary across subjects)
+- **New element**: individuals may differ in their rate of change over time (subject × time interaction)
 
 ## Growth data example
 
@@ -143,66 +114,21 @@ ggplot(growth, aes(x = age, y = height)) +
 
 ## Observations from the spaghetti plot
 
-::: {style="font-size: 0.95em;"}
-
 **Overall pattern**
 
 - Clear upward trend: boys grow taller as they age
 - Growth appears roughly linear, possibly with slight deceleration at older ages
-- The mean trajectory shows consistent growth over the first year
 
 **Individual variation**
 
-- **Variation in baseline**: some boys start taller, others shorter (different intercepts)
-- **Variation in growth rate**: some boys grow faster than others (different slopes)
-- Trajectories remain roughly parallel but with clear individual differences
+- Variation in baseline: some boys start taller, others shorter (different intercepts)
+- Trajectories appear roughly parallel, though this does not rule out some minor variation in growth rates
 
 **Implications for modeling**
 
 - Need to account for correlation of measurements within individuals
 - Random intercepts to capture individual differences in baseline height
 - Random slopes may be needed to capture individual differences in growth rates
-
-:::
-
-## Examining individual trajectories
-
-```{r}
-#| fig-width: 10
-#| fig-height: 5.5
-
-set.seed(123)
-sampled_ids <- sample(unique(growth$id), 16)
-
-growth |>
-  filter(id %in% sampled_ids) |>
-  ggplot(aes(x = age, y = height)) +
-  geom_line() +
-  geom_point(size = 1, alpha = 0.7) +
-  facet_wrap(~ id, ncol = 4) +
-  labs(
-    title = "Sample of Individual Growth Trajectories (16 boys)",
-    x = "Age (weeks)",
-    y = "Height (cm)"
-  ) +
-  theme_minimal() +
-  theme(strip.text = element_text(size = 8))
-```
-
-## Observations from individual trajectories
-
-**What the facet plot reveals**
-
-- Each boy shows a clear growth pattern over time
-- **Baseline differences**: Starting heights vary across individuals
-- **Slope differences**: Growth rates (steepness of lines) vary across individuals
-  - Some boys have steeper trajectories (faster growth), others flatter (slower growth)
-
-**Measurement frequency**
-
-- Measurements are taken approximately weekly
-- Some variation in the exact timing of measurements
-- Most boys have complete follow-up across the study period
 
 ## Random intercept model
 
@@ -336,17 +262,11 @@ $$\text{ICC} = \frac{\sigma^2_{b0}}{\sigma^2_{b0} + \sigma^2_\epsilon} = \frac{`
 **Interpretation**
 
 - The ICC of `r round(icc, 2)` indicates that approximately `r round(icc * 100)`% of the total variance in height (at any particular age) is due to between-person differences
-- This high ICC confirms that repeated measurements within the same boy are strongly correlated
-- The remaining `r round((1 - icc) * 100)`% represents within-person variation (measurement occasion differences)
+- The remaining `r round((1 - icc) * 100)`% represents within-person variation: fluctuations around each subject's underlying growth trajectory (due to biological variation and measurement error)
 
 :::
 
 ## ICC in longitudinal versus cross-sectional data
-
-**Why do we include time when calculating the ICC?**
-
-- In longitudinal data, the mean of the outcome is itself a function of time
-- We therefore want to assess variation about the **time-specific mean**, not the overall mean
 
 **Cross-sectional multi-level data** (last week)
 
@@ -359,10 +279,9 @@ $$\text{ICC} = \frac{\sigma^2_{b0}}{\sigma^2_{b0} + \sigma^2_\epsilon} = \frac{`
 - ICC calculated from a model **with time as a fixed effect**
 - Focus: proportion of variance (after time trends) due to between-person differences
 - Time is the fundamental structure of the data
+  - We want to assess variation about the time-specific mean, not the overall mean
 
 ## Limitation of the random intercept model
-
-::: {style="font-size: 0.8em;"}
 
 **The assumption of parallel trajectories**
 
@@ -370,15 +289,7 @@ $$\text{ICC} = \frac{\sigma^2_{b0}}{\sigma^2_{b0} + \sigma^2_\epsilon} = \frac{`
 - Only the baseline (intercept) is allowed to vary between individuals
 - This results in **parallel lines** for all subjects
 
-**Is this realistic?**
-
-Looking at our spaghetti plot:
-
-- Some boys clearly grow faster than others
-- Trajectories are not perfectly parallel
-- The spread of trajectories increases over time
-
-**Consequence**
+**Possible drawbacks**
 
 - If individuals truly have different growth rates, the random intercept model is **misspecified**
 - We may be missing important individual variation
@@ -386,17 +297,10 @@ Looking at our spaghetti plot:
 
 **Solution**: Extend the model to include **random slopes**
 
-:::
+ - Fixed slope: "On average, boys grow X cm per week"
+ - Random slope: "Each boy has their own growth rate, which may be faster or slower than average"
 
 ## Random slopes model
-
-::: {style="font-size: 0.85em;"}
-
-- A random slope allows the effect of a predictor (here: age) to vary across individuals
-  - Fixed slope: "On average, boys grow X cm per week"
-  - Random slope: "Each boy has their own growth rate, which may be faster or slower than average"
-
-**Mathematical representation**
 
 $$\text{Height}_{ij} = \mu + \beta_1 \cdot \text{age_c}_{ij} + b_{0i} + b_{1i} \cdot \text{age_c}_{ij} + \epsilon_{ij}$$
 
@@ -411,8 +315,6 @@ Where:
 
 - Each subject has their own intercept: $\mu + b_{0i}$
 - Each subject has their own slope: $\beta_1 + b_{1i}$
-
-:::
 
 ```{r}
 #| include: false
@@ -483,12 +385,16 @@ $$\begin{pmatrix} b_{0i} \\ b_{1i} \end{pmatrix} \sim N\left(\begin{pmatrix} 0 \
 
 **Components**
 
+::: {.table-left style="margin-bottom:1.0em;"}
+
 | Parameter | Interpretation |
 |-----------|----------------|
 | $\sigma^2_{b0}$ | Variance of random intercepts (variability in baseline heights) |
 | $\sigma^2_{b1}$ | Variance of random slopes (variability in growth rates) |
 | $\sigma_{b01}$ | Covariance between intercepts and slopes |
 | $\rho = \frac{\sigma_{b01}}{\sigma_{b0} \sigma_{b1}}$ | Correlation between intercepts and slopes |
+
+:::
 
 **What does the correlation mean?**
 
@@ -500,13 +406,15 @@ $$\begin{pmatrix} b_{0i} \\ b_{1i} \end{pmatrix} \sim N\left(\begin{pmatrix} 0 \
 
 ## Results: variance components
 
+::: {.table-left style="margin-bottom:1.0em;"}
+
 ```{r}
 # Variance components table
 tidy(rs_model, effects = "ran_pars") |>
   kable(digits = 3)
 ```
 
-::: {style="margin-top: 1.0em; font-size: 0.9em;"}
+:::
 
 **Interpretation**
 
@@ -517,9 +425,9 @@ tidy(rs_model, effects = "ran_pars") |>
 
 **Note:** The random slope SD (`r round(sqrt(var_slope_rs), 3)` cm/week) is very small compared to the random intercept SD (`r round(sqrt(var_intercept_rs), 2)` cm) and residual SD (`r round(sqrt(var_residual_rs), 2)` cm). This means individual growth rates vary little around the average.
 
-:::
-
 ## Results: fixed effects
+
+::: {.table-left style="margin-bottom:1.0em;"}
 
 ```{r}
 # Fixed effects table
@@ -527,7 +435,7 @@ tidy(rs_model, effects = "fixed", conf.int = TRUE) |>
   kable(digits = 3)
 ```
 
-::: {style="margin-top: 1.5em; font-size: 0.92em;"}
+:::
 
 **Interpretation**
 
@@ -536,37 +444,30 @@ tidy(rs_model, effects = "fixed", conf.int = TRUE) |>
 
 **Note:** The fixed effects estimates (and their standard errors) are very similar to the random intercept model. This is because the random slope variance is small: adding random slopes does not substantially change the population-average estimates.
 
-:::
 
 ## ICC in the random slopes model
 
-::: {style="font-size: 0.85em;"}
+::: {style="font-size: 0.9em;"}
 
-**ICC is no longer constant**
+With random slopes, the marginal variance of $\text{Height}_{ij}$ depends on when the observation was taken:
 
-With random slopes, the between-person variance changes over time:
+$$\text{Var}(\text{Height}_{ij}) = \sigma^2_{b0} + 2 \cdot \text{age_c} \cdot \sigma_{b01} + \text{age_c}^2 \cdot \sigma^2_{b1} + \sigma^2_\epsilon$$
 
-$$\text{Var}(b_{0i} + b_{1i} \cdot \text{age_c}) = \sigma^2_{b0} + 2 \cdot \text{age_c} \cdot \sigma_{b01} + \text{age_c}^2 \cdot \sigma^2_{b1}$$
-
-The ICC at a given time point is:
+Because the total variance changes over time, the ICC is also no longer constant:
 
 $$\text{ICC}(\text{age_c}) = \frac{\sigma^2_{b0} + 2 \cdot \text{age_c} \cdot \sigma_{b01} + \text{age_c}^2 \cdot \sigma^2_{b1}}{\sigma^2_{b0} + 2 \cdot \text{age_c} \cdot \sigma_{b01} + \text{age_c}^2 \cdot \sigma^2_{b1} + \sigma^2_\epsilon}$$
 
 **Interpretation**
 
 - At mean age (age_c = 0): ICC = $\frac{\sigma^2_{b0}}{\sigma^2_{b0} + \sigma^2_\epsilon}$ (same as random intercept model)
-- As time moves away from the mean, the ICC changes depending on:
-  - The variance of random slopes ($\sigma^2_{b1}$)
-  - The covariance between intercepts and slopes ($\sigma_{b01}$)
 - If $\sigma_{b01} > 0$: trajectories diverge over time → ICC increases away from mean age
 - If $\sigma_{b01} < 0$: trajectories converge → ICC may decrease
+
+Because of this complexity, the ICC is typically calculated and reported based on the random intercept model, where it has a single, interpretable value.
 
 :::
 
 ## Residual diagnostics
-
-Before adding covariates, we should check whether the time trend is correctly specified.
-
 
 ```{r}
 # Extract conditional residuals
@@ -585,19 +486,13 @@ ggplot(growth, aes(x = fitted(rs_model), y = resid_rs)) +
   theme_minimal()
 ```
 
-**What to look for**
-
-- If the loess curve deviates systematically from zero → linear time trend may be inadequate
-  - U-shape suggests quadratic growth
-- If the spread of residuals changes with fitted values → heteroscedasticity
+The loess curve deviates systematically from zero → linear time trend may be inadequate
 
 ## Adding a quadratic time trend
 
 ::: {style="font-size: 0.92em;"}
 
 **Model specification**
-
-The U-shaped residual pattern suggests growth is not perfectly linear. We extend the model:
 
 $$\text{Height}_{ij} = \mu + \beta_1 \cdot \text{age_c}_{ij} + \beta_2 \cdot \text{age_c}^2_{ij} + b_{0i} + b_{1i} \cdot \text{age_c}_{ij} + \epsilon_{ij}$$
 
@@ -606,13 +501,9 @@ Where:
 - $\beta_2$ = quadratic effect of age (curvature in growth trajectory)
 - All other terms as before
 
-**Why fixed effect only?**
-
-- A random quadratic slope ($b_{2i}$) is possible in theory, but adds complexity:
-  - Three more parameters: $\sigma^2_{b2}$, $\text{Cov}(b_0, b_2)$, $\text{Cov}(b_1, b_2)$
-  - Risk of convergence problems and overfitting with limited data
-- Start simple: add quadratic as fixed, check if it resolves the residual pattern
-- Only add random quadratic if there's strong evidence of individual differences in curvature
+::: {.callout-note title="Why fixed effect only?"}
+A random quadratic slope is possible but adds complexity (three more parameters, convergence issues). Start simple: add quadratic as fixed, check if it resolves the residual pattern. Only add random quadratic if there's strong evidence of individual differences in curvature.
+:::
 
 :::
 
@@ -729,7 +620,7 @@ anova(ri_quad_model, rs_quad_model, refit = FALSE)
 **Step 2: Simplify the random effects structure**
 
 - Test whether random slopes are needed using LRT with `refit = FALSE` (REML)
-- If random slope variance is small / non-significant → simplify to random intercept only
+- If random slope variance is non-significant → simplify to random intercept only
 - Keep the fixed effects structure unchanged during this step
 
 **Step 3: Simplify the fixed effects structure**
@@ -753,18 +644,16 @@ anova(ri_quad_model, rs_quad_model, refit = FALSE)
 - Uses Satterthwaite or Kenward-Roger approximation for denominator df
 - Available via `anova()` on a single model (as we used last week)
 - Does **not** require refitting — retains REML estimation
-- Convenient for testing multiple fixed effects simultaneously
 
 **Approach 2: Likelihood ratio tests (LRTs)**
 
 - Compare nested models differing in one fixed effect
 - **Requires refitting with ML** (`refit = TRUE`) — REML not valid for comparing different fixed effects
-- More flexible: can compare any two nested models
 - Once final structure is determined, refit with REML for parameter estimation
 
 **Which to use?**
 
-- For simple tests (e.g., "is the quadratic term needed?"): either approach works
+- For model building (e.g., "is the quadratic term needed?"): either approach works
 - This week, we use LRTs so that you are familiar with both approaches
 
 :::
@@ -796,7 +685,7 @@ Do maternal factors (breastfeeding, smoking) influence infant growth patterns?
 
 :::
 
-## EDA: growth trajectories by breastfeeding status
+## [EDA: growth trajectories by breastfeeding status]{style="font-size: 0.9em;"}
 
 ```{r}
 #| fig-width: 10
@@ -935,7 +824,6 @@ tidy(reduced_model, effects = "fixed", conf.int = TRUE) |>
 
 - Statistical significance ≠ clinical significance
 - Always consider **effect sizes**, not just p-values
-- A 1 cm difference in height at 6 months is well within normal variation
 
 **Automated model selection**
 
@@ -944,3 +832,11 @@ tidy(reduced_model, effects = "fixed", conf.int = TRUE) |>
 - The final model is a starting point for interpretation, not the end
 
 :::
+
+## Lab 6: longitudinal data analysis
+
+![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
+
+## Final assignment
+
+TODO: add some information about the final assignment
