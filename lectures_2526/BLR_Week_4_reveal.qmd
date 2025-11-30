@@ -48,11 +48,88 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.
 - Subject characteristics are level-2 variables (vary across subjects)
 - **New element**: individuals may differ in their rate of change over time (subject × time interaction)
 
+## Assignment week 3: key findings
+
+::: {style="font-size: 0.85em;"}
+
+**Dataset**: ILEA school effectiveness data (15,362 students nested in 140 schools)
+
+**Variance partitioning**
+
+- ICC ≈ 12% — modest but non-trivial between-school variation
+- Multilevel approach ensures correct standard errors and enables school-level inference
+
+**Individual-level effects (Level 1)**
+
+- Gender and Verbal Reasoning Band (VRBand) significantly predict exam scores
+- Large effects: VRBand explains substantial variation in outcomes
+
+**Context-level effects (Level 2)**
+
+- Schools with higher % free school meals (PercentFSM) have lower average scores
+- School denomination also matters (though effect sizes are modest)
+
+**Cross-level interaction**
+
+- VRBand × PercentFSM statistically significant but practically modest
+- ~1.7 point difference in ability gap between low vs. high FSM schools
+
+:::
+
+## Assignment week 3: what went well
+
+::: {style="font-size: 0.8em;"}
+
+**Strong foundations**
+
+- Most submissions included good exploratory data analysis with appropriate visualizations
+- Nearly all correctly calculated and interpreted the ICC from the null model
+- Model building generally followed a logical sequence: null → L1 → L2 → interactions
+- Appropriate use of effects coding and centering of continuous predictors
+
+**Good modeling practices**
+
+- Correct specification of random effects structure
+- Proper use of `lmerTest` for obtaining p-values
+- Many submissions included thoughtful interpretation of fixed effects
+- Cross-level interactions were generally specified and interpreted correctly
+
+**Effective communication**
+
+- Clear narrative structure connecting research questions to model choices
+- Good use of `emmeans` for visualizing interactions
+- Tables and figures were generally well-formatted and informative
+
+:::
+
+## Assignment week 3: areas for improvement
+
+::: {style="font-size: 0.85em;"}
+
+**Model diagnostics**
+
+- Many submissions did not include residual diagnostics (residuals vs. fitted plot)
+- The data had a **floor effect** (many zero scores) causing heteroscedasticity
+  - This is detectable with a simple diagnostic plot — always check your assumptions!
+  - Transformations don't fully solve floor effects since both log(0+c) and sqrt(0) still cluster at the boundary
+
+**Statistical verus practical significance**
+
+- With n = 15,362, even tiny effects are statistically significant
+- Always consider effect sizes: a significant p-value does not mean the effect matters
+- Ask: "Is this difference meaningful in the real-world context?"
+
+**Other points of attention**
+
+- Some analyses were inadvertently run on a subset of the data (e.g., a sample created for EDA/plotting) rather than the full dataset: always verify your model uses the complete data
+
+:::
+
 ## Growth data example
 
 ```{r}
 # Load the growth data
-growth <- read_sav("/home/simalgo/BeyondMLR/data/growth.sav")
+growth <- read_sav("../data/growth.sav")
 
 # Convert labelled variables to factors
 growth <- growth |> mutate(across(where(is.labelled), as_factor))
@@ -101,7 +178,7 @@ mean_trajectory <- growth |>
 # Create spaghetti plot: individual trajectories + mean trajectory
 ggplot(growth, aes(x = age, y = height)) +
   geom_line(aes(group = id), alpha = 0.2, color = "gray60") +
-  geom_smooth(data = mean_trajectory, aes(x = age, y = mean_height), 
+  geom_smooth(data = mean_trajectory, aes(x = age, y = mean_height),
               method = "loess", se = FALSE, color = "steelblue", linewidth = 1.5) +
   labs(
     title = "Individual and Mean Growth Trajectories",
@@ -208,7 +285,7 @@ pred_data <- pred_data |>
 # Plot
 ggplot() +
   geom_line(data = pred_data, aes(x = age, y = height_pred, group = id, color = factor(id)), linewidth = 0.8) +
-  geom_abline(intercept = fixef_ri["(Intercept)"] - fixef_ri["age_c"] * mean(growth$age), 
+  geom_abline(intercept = fixef_ri["(Intercept)"] - fixef_ri["age_c"] * mean(growth$age),
               slope = fixef_ri["age_c"], linewidth = 1.5, linetype = "dashed") +
   labs(
     title = "Random Intercept Model: Parallel Growth Trajectories",
@@ -351,7 +428,7 @@ pred_data_rs$age <- pred_data_rs$age_c + mean(growth$age)
 
 # Add random effects
 pred_data_rs <- pred_data_rs |>
-  left_join(data.frame(id = as.numeric(rownames(ranef_rs)), 
+  left_join(data.frame(id = as.numeric(rownames(ranef_rs)),
                        u0 = ranef_rs$`(Intercept)`,
                        u1 = ranef_rs$age_c), by = "id") |>
   mutate(
@@ -361,7 +438,7 @@ pred_data_rs <- pred_data_rs |>
 # Plot
 ggplot() +
   geom_line(data = pred_data_rs, aes(x = age, y = height_pred, group = id, color = factor(id)), linewidth = 0.8) +
-  geom_abline(intercept = fixef_rs["(Intercept)"] - fixef_rs["age_c"] * mean(growth$age), 
+  geom_abline(intercept = fixef_rs["(Intercept)"] - fixef_rs["age_c"] * mean(growth$age),
               slope = fixef_rs["age_c"], linewidth = 1.5, linetype = "dashed") +
   labs(
     title = "Random Slopes Model: Individual Growth Rates",
@@ -515,7 +592,7 @@ growth <- growth |>
   mutate(age_c2 = age_c^2)
 
 # Fit model with quadratic fixed effect
-rs_quad_model <- lmer(height ~ age_c + age_c2 + (age_c | id), 
+rs_quad_model <- lmer(height ~ age_c + age_c2 + (age_c | id),
                       data = growth,
                       control = lmerControl(optimizer = "bobyqa"))
 ```
@@ -592,7 +669,7 @@ We compare a random intercept model (with quadratic time) to the random slopes m
 
 ```{r}
 # Fit random intercept model with quadratic time effect
-ri_quad_model <- lmer(height ~ age_c + age_c2 + (1 | id), 
+ri_quad_model <- lmer(height ~ age_c + age_c2 + (1 | id),
                       data = growth,
                       control = lmerControl(optimizer = "bobyqa"))
 
@@ -698,7 +775,7 @@ mean_by_bf <- growth |>
 
 ggplot(growth, aes(x = age, y = height, color = bf)) +
   geom_line(aes(group = id), alpha = 0.1) +
-  geom_smooth(data = mean_by_bf, aes(y = mean_height), 
+  geom_smooth(data = mean_by_bf, aes(y = mean_height),
               method = "loess", se = FALSE, linewidth = 1.5) +
   labs(
     title = "Growth Trajectories by Breastfeeding Status",
@@ -724,7 +801,7 @@ mean_by_sm <- growth |>
 
 ggplot(growth, aes(x = age, y = height, color = sm)) +
   geom_line(aes(group = id), alpha = 0.1) +
-  geom_smooth(data = mean_by_sm, aes(y = mean_height), 
+  geom_smooth(data = mean_by_sm, aes(y = mean_height),
               method = "loess", se = FALSE, linewidth = 1.5) +
   labs(
     title = "Growth Trajectories by Maternal Smoking Status",
@@ -750,7 +827,7 @@ We extend the quadratic growth model with maternal factors and their interaction
 
 # Full model with maternal factors and interactions
 full_model <- lmer(
-  height ~ age_c + age_c2 + bf + sm + 
+  height ~ age_c + age_c2 + bf + sm +
            bf:age_c + sm:age_c +
            bf:age_c2 + sm:age_c2 +
            (age_c | id),

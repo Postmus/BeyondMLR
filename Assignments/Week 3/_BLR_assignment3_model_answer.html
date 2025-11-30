@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Assignment 3: Multilevel Analysis of School Effectiveness</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="_BLR_assignment3_model_answer_files/libs/clipboard/clipboard.min.js"></script>
+<script src="_BLR_assignment3_model_answer_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="_BLR_assignment3_model_answer_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="_BLR_assignment3_model_answer_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="_BLR_assignment3_model_answer_files/libs/quarto-html/popper.min.js"></script>
+<script src="_BLR_assignment3_model_answer_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="_BLR_assignment3_model_answer_files/libs/quarto-html/anchor.min.js"></script>
+<link href="_BLR_assignment3_model_answer_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="_BLR_assignment3_model_answer_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="_BLR_assignment3_model_answer_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="_BLR_assignment3_model_answer_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="_BLR_assignment3_model_answer_files/libs/bootstrap/bootstrap-3db0125aafd63ffcd7574a689bf5132b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#ilea-school-effectiveness-data" id="toc-ilea-school-effectiveness-data" class="nav-link active" data-scroll-target="#ilea-school-effectiveness-data">ILEA School Effectiveness Data</a>
+  <ul class="collapse">
+  <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis">Exploratory Data Analysis</a>
+  <ul class="collapse">
+  <li><a href="#grouping-structure" id="toc-grouping-structure" class="nav-link" data-scroll-target="#grouping-structure">Grouping structure</a></li>
+  <li><a href="#outcome-variable" id="toc-outcome-variable" class="nav-link" data-scroll-target="#outcome-variable">Outcome variable</a></li>
+  <li><a href="#variance-components" id="toc-variance-components" class="nav-link" data-scroll-target="#variance-components">Variance components</a></li>
+  <li><a href="#covariate-effects" id="toc-covariate-effects" class="nav-link" data-scroll-target="#covariate-effects">Covariate effects</a></li>
+  </ul></li>
+  <li><a href="#random-intercept-model-null-model" id="toc-random-intercept-model-null-model" class="nav-link" data-scroll-target="#random-intercept-model-null-model">Random intercept model (null model)</a></li>
+  <li><a href="#extending-the-random-intercept-model-with-individual-level-variables" id="toc-extending-the-random-intercept-model-with-individual-level-variables" class="nav-link" data-scroll-target="#extending-the-random-intercept-model-with-individual-level-variables">Extending the random intercept model with individual-level variables</a></li>
+  <li><a href="#including-context-level-variables" id="toc-including-context-level-variables" class="nav-link" data-scroll-target="#including-context-level-variables">Including context-level variables</a>
+  <ul class="collapse">
+  <li><a href="#model-selection-using-stepwise-elimination" id="toc-model-selection-using-stepwise-elimination" class="nav-link" data-scroll-target="#model-selection-using-stepwise-elimination">Model selection using stepwise elimination</a></li>
+  </ul></li>
+  <li><a href="#exploring-cross-level-interactions" id="toc-exploring-cross-level-interactions" class="nav-link" data-scroll-target="#exploring-cross-level-interactions">Exploring cross-level interactions</a>
+  <ul class="collapse">
+  <li><a href="#interpreting-the-vrband-percentfsm-interaction" id="toc-interpreting-the-vrband-percentfsm-interaction" class="nav-link" data-scroll-target="#interpreting-the-vrband-percentfsm-interaction">Interpreting the VRBand × PercentFSM interaction</a></li>
+  </ul></li>
+  <li><a href="#model-diagnostics" id="toc-model-diagnostics" class="nav-link" data-scroll-target="#model-diagnostics">Model diagnostics</a>
+  <ul class="collapse">
+  <li><a href="#histogram-of-conditional-residuals" id="toc-histogram-of-conditional-residuals" class="nav-link" data-scroll-target="#histogram-of-conditional-residuals">Histogram of conditional residuals</a></li>
+  <li><a href="#residuals-vs.-fitted-values" id="toc-residuals-vs.-fitted-values" class="nav-link" data-scroll-target="#residuals-vs.-fitted-values">Residuals vs.&nbsp;fitted values</a></li>
+  </ul></li>
+  <li><a href="#summary-of-findings" id="toc-summary-of-findings" class="nav-link" data-scroll-target="#summary-of-findings">Summary of findings</a></li>
+  <li><a href="#sensitivity-analysis-log-transformed-outcome" id="toc-sensitivity-analysis-log-transformed-outcome" class="nav-link" data-scroll-target="#sensitivity-analysis-log-transformed-outcome">Sensitivity analysis: Log-transformed outcome</a>
+  <ul class="collapse">
+  <li><a href="#distribution-of-log-transformed-outcome" id="toc-distribution-of-log-transformed-outcome" class="nav-link" data-scroll-target="#distribution-of-log-transformed-outcome">Distribution of log-transformed outcome</a></li>
+  <li><a href="#fitting-the-model-with-log-transformed-outcome" id="toc-fitting-the-model-with-log-transformed-outcome" class="nav-link" data-scroll-target="#fitting-the-model-with-log-transformed-outcome">Fitting the model with log-transformed outcome</a></li>
+  <li><a href="#residuals-vs.-fitted-values-for-log-transformed-model" id="toc-residuals-vs.-fitted-values-for-log-transformed-model" class="nav-link" data-scroll-target="#residuals-vs.-fitted-values-for-log-transformed-model">Residuals vs.&nbsp;fitted values for log-transformed model</a></li>
+  <li><a href="#square-root-transformation" id="toc-square-root-transformation" class="nav-link" data-scroll-target="#square-root-transformation">Square root transformation</a></li>
+  <li><a href="#comparison-of-approaches" id="toc-comparison-of-approaches" class="nav-link" data-scroll-target="#comparison-of-approaches">Comparison of approaches</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Assignment 3: Multilevel Analysis of School Effectiveness</h1>
+<p class="subtitle lead">Model answer</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Preliminary setup">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Preliminary setup
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In this assignment, we will use the R packages <code>ggplot2</code>, <code>dplyr</code>, <code>emmeans</code>, <code>lmerTest</code>. You can use the script below to automatically install and load them using the <code>pacman</code> package.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check whether pacman is available and install if needed</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">repos =</span> <span class="fu">c</span>(<span class="at">CRAN =</span> <span class="st">"https://cloud.r-project.org"</span>))</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">"pacman"</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) <span class="fu">install.packages</span>(<span class="st">"pacman"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Use pacman to install (if needed) and load the required packages</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(dplyr, ggplot2, emmeans, lmerTest)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+<section id="ilea-school-effectiveness-data" class="level1">
+<h1>ILEA School Effectiveness Data</h1>
+<p>The Inner London Education Authority (ILEA) dataset contains examination records of 15,362 students from 140 secondary schools over the years 1985, 1986, and 1987. This dataset was sourced from the data library of the Centre for Multilevel Modelling at the University of Bristol and is used to examine school effectiveness and the factors that influence student exam scores.</p>
+<p>The dataset contains the following variables:</p>
+<ul>
+<li>School: A numeric variable representing the school identifier</li>
+<li>ExamScore: A numeric variable representing the exam score of each student</li>
+<li>PercentFSM: The percentage of students in the school eligible for free school meals (an indicator of socioeconomic status)</li>
+<li>Gender: A categorical variable representing the gender of the student</li>
+<li>VRBand: The verbal reasoning band of the student (VR1, VR2, or VR3)</li>
+<li>SchoolDenomination: The denomination of the school (Maintained, Church of England, Roman Catholic)</li>
+</ul>
+<section id="exploratory-data-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory Data Analysis</h2>
+<p>Let’s load the data and use the <code>str()</code> function to inspect the structure of the dataset.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the ILEA data</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>ilea_data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"/home/simalgo/projects/BeyondMLR/Assignments/Week 3/downloads/ilea_data.csv"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert all character variables into factors</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>ilea_data <span class="ot">&lt;-</span> ilea_data <span class="sc">%&gt;%</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.character), as.factor)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">School =</span> <span class="fu">as.factor</span>(School))</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect the structure of the dataset</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(ilea_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>'data.frame':   15362 obs. of  6 variables:
+ $ School            : Factor w/ 139 levels "1","2","3","4",..: 1 1 1 1 1 1 1 1 1 1 ...
+ $ ExamScore         : int  17 5 16 12 7 20 15 16 26 5 ...
+ $ PercentFSM        : int  24 24 24 24 24 24 24 24 24 24 ...
+ $ Gender            : Factor w/ 2 levels "Female","Male": 2 2 2 2 2 1 1 1 1 1 ...
+ $ VRBand            : Factor w/ 3 levels "VR1","VR2","VR3": 2 2 2 2 2 2 2 3 2 2 ...
+ $ SchoolDenomination: Factor w/ 3 levels "Church of England",..: 2 2 2 2 2 2 2 2 2 2 ...</code></pre>
+</div>
+</div>
+<p>This initial inspection makes clear that the ILEA dataset has a hierarchical structure: 15,362 individual students are nested within 140 schools. This is a two-level hierarchical structure with students (level 1) nested within schools (level 2).</p>
+<section id="grouping-structure" class="level3">
+<h3 class="anchored" data-anchor-id="grouping-structure">Grouping structure</h3>
+<p>To get a better feeling for the grouping structure, we create a summary table showing the number of students within each school and visualize it with a bar chart:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a summary table showing students per school</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>school_summary <span class="ot">&lt;-</span> ilea_data <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(School) <span class="sc">%&gt;%</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">num_students =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(num_students))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display summary statistics for the number of students per school</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(school_summary<span class="sc">$</span>num_students)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   22.0    64.5   103.0   110.5   150.5   251.0 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a histogram showing the distribution of school sizes</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(school_summary, <span class="fu">aes</span>(<span class="at">x =</span> num_students)) <span class="sc">+</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">20</span>, <span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of School Sizes"</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Number of Students"</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Frequency"</span>) <span class="sc">+</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The distribution shows substantial variation in school sizes, with most schools having between 50 and 150 students.</p>
+</section>
+<section id="outcome-variable" class="level3">
+<h3 class="anchored" data-anchor-id="outcome-variable">Outcome variable</h3>
+<p>Next, we create a histogram to visualize the distribution of the outcome variable <code>ExamScore</code>:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a histogram of ExamScore</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ilea_data, <span class="fu">aes</span>(<span class="at">x =</span> ExamScore)) <span class="sc">+</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">30</span>, <span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of Exam Scores"</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Exam Score"</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Frequency"</span>) <span class="sc">+</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The distribution of exam scores is right-skewed with a notable floor effect: a substantial number of students scored zero or near-zero on the exam. This floor effect occurs because exam scores are bounded at zero - students cannot score below this minimum. Such distributional characteristics may lead to heteroscedasticity in the residuals, which we will examine in the model diagnostics section.</p>
+</section>
+<section id="variance-components" class="level3">
+<h3 class="anchored" data-anchor-id="variance-components">Variance components</h3>
+<p>We also want to get a sense of the variability in exam scores within and between schools. For this, we are going to randomly select 10 schools and create a scatter plot with the exam score on the y-axis and the school on the x-axis:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set seed for reproducibility</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Randomly select 10 unique schools</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>random_schools <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">unique</span>(ilea_data<span class="sc">$</span>School), <span class="at">size =</span> <span class="dv">10</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter the data to include only the randomly selected schools</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>random_school_data <span class="ot">&lt;-</span> ilea_data <span class="sc">%&gt;%</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(School <span class="sc">%in%</span> random_schools)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the average ExamScore for each school</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>school_avg_score <span class="ot">&lt;-</span> random_school_data <span class="sc">%&gt;%</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(School) <span class="sc">%&gt;%</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">avg_exam_score =</span> <span class="fu">mean</span>(ExamScore, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the overall grand mean across all schools</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>grand_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(ilea_data<span class="sc">$</span>ExamScore, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Create scatter plot with jittered observations</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(random_school_data, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">reorder</span>(School, ExamScore, <span class="at">FUN =</span> mean), <span class="at">y =</span> ExamScore)) <span class="sc">+</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> grand_mean, <span class="at">linetype =</span> <span class="st">"solid"</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">width =</span> <span class="fl">0.2</span>, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">color =</span> <span class="st">"gray60"</span>) <span class="sc">+</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> school_avg_score, <span class="fu">aes</span>(<span class="at">x =</span> School, <span class="at">y =</span> avg_exam_score),</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>             <span class="at">size =</span> <span class="dv">4</span>, <span class="at">shape =</span> <span class="dv">18</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Variation in exam scores: within and between schools"</span>,</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Points = individual students; Diamonds = school means; Solid line = grand mean (all data)"</span>,</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"School (ordered by mean exam score)"</span>,</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Exam Score"</span>) <span class="sc">+</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This plot reveals both within-school variability (the spread of individual student scores around their school mean) and between-school variability (the differences in school means from the grand mean). The red diamonds show that schools differ in their average exam scores, suggesting that school-level factors may influence student performance.</p>
+</section>
+<section id="covariate-effects" class="level3">
+<h3 class="anchored" data-anchor-id="covariate-effects">Covariate effects</h3>
+<p>Before fitting models with covariates, it is useful to explore the relationships between potential predictors and the outcome variable.</p>
+<p>First, let’s examine how exam scores vary across different verbal reasoning bands:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Boxplot for VRBand vs ExamScore</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ilea_data, <span class="fu">aes</span>(<span class="at">x =</span> VRBand, <span class="at">y =</span> ExamScore, <span class="at">fill =</span> VRBand)) <span class="sc">+</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Exam scores by Verbal Reasoning Band"</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Verbal Reasoning Band"</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Exam Score"</span>) <span class="sc">+</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Note that the plot above includes an <code>NA</code> category for students with missing VRBand values. This is default <code>ggplot2</code> behavior. To exclude missing values from the plot, we can filter them out before plotting:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Boxplot for VRBand vs ExamScore (excluding missing values)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>ilea_data <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(VRBand)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> VRBand, <span class="at">y =</span> ExamScore, <span class="at">fill =</span> VRBand)) <span class="sc">+</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Exam scores by Verbal Reasoning Band"</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Verbal Reasoning Band"</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Exam Score"</span>) <span class="sc">+</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Next, let’s examine how exam scores differ by gender:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Boxplot for Gender vs ExamScore</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ilea_data, <span class="fu">aes</span>(<span class="at">x =</span> Gender, <span class="at">y =</span> ExamScore, <span class="at">fill =</span> Gender)) <span class="sc">+</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Exam scores by Gender"</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Gender"</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Exam Score"</span>) <span class="sc">+</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Now let’s explore the relationship between PercentFSM (school-level socioeconomic indicator) and exam scores:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a school-level summary with average exam scores and PercentFSM</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>school_level_data <span class="ot">&lt;-</span> ilea_data <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(School) <span class="sc">%&gt;%</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_exam_score =</span> <span class="fu">mean</span>(ExamScore, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">PercentFSM =</span> <span class="fu">first</span>(PercentFSM),</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">SchoolDenomination =</span> <span class="fu">first</span>(SchoolDenomination),</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Scatterplot of school average exam score vs PercentFSM</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(school_level_data, <span class="fu">aes</span>(<span class="at">x =</span> PercentFSM, <span class="at">y =</span> avg_exam_score)) <span class="sc">+</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"gray60"</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"steelblue"</span>, <span class="at">linewidth =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Relationship between School SES (PercentFSM) and Average Exam Score"</span>,</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Percentage of Students Eligible for Free School Meals"</span>,</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Average Exam Score"</span>) <span class="sc">+</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Finally, let’s examine exam scores by school denomination:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Boxplot for SchoolDenomination vs ExamScore (using school-level averages)</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(school_level_data, <span class="fu">aes</span>(<span class="at">x =</span> SchoolDenomination, <span class="at">y =</span> avg_exam_score, <span class="at">fill =</span> SchoolDenomination)) <span class="sc">+</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Average Exam Scores by School Denomination"</span>,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"School Denomination"</span>,</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Average Exam Score"</span>) <span class="sc">+</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="random-intercept-model-null-model" class="level2">
+<h2 class="anchored" data-anchor-id="random-intercept-model-null-model">Random intercept model (null model)</h2>
+<p>To partition the variance in exam scores between students and schools, we start by fitting a null model (random intercept model without any predictors):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the null model (random intercept only)</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>null_model <span class="ot">&lt;-</span> <span class="fu">lmer</span>(ExamScore <span class="sc">~</span> <span class="dv">1</span> <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> School), <span class="at">data =</span> ilea_data)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(null_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: ExamScore ~ 1 + (1 | School)
+   Data: ilea_data
+
+REML criterion at convergence: 120364.7
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.4962 -0.7550 -0.1073  0.6290  4.0683 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ School   (Intercept)  19.52    4.419  
+ Residual             144.53   12.022  
+Number of obs: 15362, groups:  School, 139
+
+Fixed effects:
+            Estimate Std. Error       df t value Pr(&gt;|t|)    
+(Intercept)  20.4527     0.3913 135.8938   52.27   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>From the variance components, we can calculate the Intraclass Correlation Coefficient (ICC):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract variance components</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>var_between <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">VarCorr</span>(null_model))<span class="sc">$</span>vcov[<span class="dv">1</span>]</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>var_within <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">VarCorr</span>(null_model))<span class="sc">$</span>vcov[<span class="dv">2</span>]</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate ICC</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>ICC <span class="ot">&lt;-</span> var_between <span class="sc">/</span> (var_between <span class="sc">+</span> var_within)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Between-school variance:"</span>, <span class="fu">round</span>(var_between, <span class="dv">2</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Between-school variance: 19.52 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Within-school variance:"</span>, <span class="fu">round</span>(var_within, <span class="dv">2</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Within-school variance: 144.53 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Intraclass Correlation Coefficient (ICC):"</span>, <span class="fu">round</span>(ICC, <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Intraclass Correlation Coefficient (ICC): 0.119 </code></pre>
+</div>
+</div>
+<p>The ICC indicates that approximately 11.9% of the total variability in exam scores can be attributed to differences between schools, while the remaining 88.1% is due to differences between students within schools. This suggests that while most of the variability in exam scores is at the student level, there is still meaningful variation between schools that warrants a multilevel approach.</p>
+</section>
+<section id="extending-the-random-intercept-model-with-individual-level-variables" class="level2">
+<h2 class="anchored" data-anchor-id="extending-the-random-intercept-model-with-individual-level-variables">Extending the random intercept model with individual-level variables</h2>
+<p>As a second step, we extend the random intercept model with individual-level variables (<code>Gender</code> and <code>VRBand</code>). To facilitate the interpretation of the model coefficients, we use effects coding for categorical variables:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use effects coding for the categorical variables</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">contrasts =</span> <span class="fu">c</span>(<span class="st">"contr.sum"</span>, <span class="st">"contr.poly"</span>))</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the random intercept model with individual-level variables</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>model_L1 <span class="ot">&lt;-</span> <span class="fu">lmer</span>(ExamScore <span class="sc">~</span> Gender <span class="sc">+</span> VRBand <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> School), <span class="at">data =</span> ilea_data)</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_L1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: ExamScore ~ Gender + VRBand + (1 | School)
+   Data: ilea_data
+
+REML criterion at convergence: 115230.3
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.2419 -0.6751 -0.0707  0.6204  4.6713 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ School   (Intercept)  12.1     3.479  
+ Residual             104.3    10.214  
+Number of obs: 15347, groups:  School, 139
+
+Fixed effects:
+              Estimate Std. Error         df t value Pr(&gt;|t|)    
+(Intercept)    20.1630     0.3123   138.0603  64.572   &lt;2e-16 ***
+Gender1         1.4029     0.1166  9890.3703  12.027   &lt;2e-16 ***
+VRBand1         9.7789     0.1309 15279.0725  74.689   &lt;2e-16 ***
+VRBand2        -1.0408     0.1116 15233.0240  -9.326   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Correlation of Fixed Effects:
+        (Intr) Gendr1 VRBnd1
+Gender1 -0.014              
+VRBand1  0.013  0.003       
+VRBand2 -0.114 -0.022 -0.316</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the coding scheme for the categorical variables</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Contrasts for Gender:</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Contrasts for Gender:</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">contrasts</span>(ilea_data<span class="sc">$</span>Gender)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       [,1]
+Female    1
+Male     -1</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Contrasts for VRBand:</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Contrasts for VRBand:</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">contrasts</span>(ilea_data<span class="sc">$</span>VRBand)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    [,1] [,2]
+VR1    1    0
+VR2    0    1
+VR3   -1   -1</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Obtain the ANOVA table for the individual-level variables</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model_L1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Type III Analysis of Variance Table with Satterthwaite's method
+       Sum Sq Mean Sq NumDF   DenDF F value    Pr(&gt;F)    
+Gender  15090   15090     1  9890.4  144.64 &lt; 2.2e-16 ***
+VRBand 605573  302786     2 15259.3 2902.24 &lt; 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>The results show that both <code>Gender</code> and <code>VRBand</code> are significant predictors of exam scores. With effects coding:</p>
+<ul>
+<li>The intercept represents the grand mean exam score across all groups</li>
+<li>The coefficient for Gender1 (Female = 1) indicates how much the mean for females differs from the grand mean; males differ by the same amount in the opposite direction</li>
+<li>The coefficients for VRBand indicate how much each verbal reasoning band differs from the grand mean</li>
+</ul>
+<p>Let’s examine how the variance components have changed:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract variance components from the model with L1 variables</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>var_between_L1 <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">VarCorr</span>(model_L1))<span class="sc">$</span>vcov[<span class="dv">1</span>]</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>var_within_L1 <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">VarCorr</span>(model_L1))<span class="sc">$</span>vcov[<span class="dv">2</span>]</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"After adding individual-level variables:</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>After adding individual-level variables:</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Between-school variance:"</span>, <span class="fu">round</span>(var_between_L1, <span class="dv">2</span>), <span class="st">"(was"</span>, <span class="fu">round</span>(var_between, <span class="dv">2</span>), <span class="st">")</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Between-school variance: 12.1 (was 19.52 )</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Within-school variance:"</span>, <span class="fu">round</span>(var_within_L1, <span class="dv">2</span>), <span class="st">"(was"</span>, <span class="fu">round</span>(var_within, <span class="dv">2</span>), <span class="st">")</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Within-school variance: 104.33 (was 144.53 )</code></pre>
+</div>
+</div>
+<p>The inclusion of individual-level variables primarily reduces the within-school variance because these variables (Gender and VRBand) explain differences between students within the same school.</p>
+</section>
+<section id="including-context-level-variables" class="level2">
+<h2 class="anchored" data-anchor-id="including-context-level-variables">Including context-level variables</h2>
+<p>As a third step, we extend the model with context-level variables (<code>PercentFSM</code> and <code>SchoolDenomination</code>). We start by centering the continuous context-level variable:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Center the context-level variable</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>ilea_data <span class="ot">&lt;-</span> ilea_data <span class="sc">%&gt;%</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">PercentFSM_c =</span> <span class="fu">scale</span>(PercentFSM, <span class="at">scale =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the random intercept model with individual-level and context-level variables</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>model_L1L2 <span class="ot">&lt;-</span> <span class="fu">lmer</span>(ExamScore <span class="sc">~</span> Gender <span class="sc">+</span> VRBand <span class="sc">+</span> PercentFSM_c <span class="sc">+</span> SchoolDenomination <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> School), <span class="at">data =</span> ilea_data)</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_L1L2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: ExamScore ~ Gender + VRBand + PercentFSM_c + SchoolDenomination +  
+    (1 | School)
+   Data: ilea_data
+
+REML criterion at convergence: 115220.6
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.2472 -0.6746 -0.0683  0.6213  4.6762 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ School   (Intercept)  10.83    3.291  
+ Residual             104.33   10.214  
+Number of obs: 15347, groups:  School, 139
+
+Fixed effects:
+                      Estimate Std. Error         df t value Pr(&gt;|t|)    
+(Intercept)          2.070e+01  3.676e-01  1.252e+02  56.293   &lt;2e-16 ***
+Gender1              1.398e+00  1.163e-01  8.937e+03  12.026   &lt;2e-16 ***
+VRBand1              9.772e+00  1.310e-01  1.526e+04  74.607   &lt;2e-16 ***
+VRBand2             -1.042e+00  1.116e-01  1.523e+04  -9.334   &lt;2e-16 ***
+PercentFSM_c         1.131e-03  1.082e-02  1.753e+03   0.105   0.9167    
+SchoolDenomination1 -1.215e-01  6.076e-01  1.215e+02  -0.200   0.8418    
+SchoolDenomination2 -1.389e+00  4.279e-01  1.260e+02  -3.246   0.0015 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Correlation of Fixed Effects:
+            (Intr) Gendr1 VRBnd1 VRBnd2 PrFSM_ SchlD1
+Gender1     -0.031                                   
+VRBand1      0.005  0.004                            
+VRBand2     -0.096 -0.023 -0.316                     
+PercntFSM_c  0.042  0.022  0.024 -0.001              
+SchlDnmntn1  0.456 -0.022  0.002  0.002  0.050       
+SchlDnmntn2 -0.565  0.033  0.013  0.000 -0.142 -0.573</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Obtain the ANOVA table</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model_L1L2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Type III Analysis of Variance Table with Satterthwaite's method
+                   Sum Sq Mean Sq NumDF   DenDF   F value    Pr(&gt;F)    
+Gender              15088   15088     1  8936.5  144.6163 &lt; 2.2e-16 ***
+VRBand             604156  302078     2 15244.0 2895.3715 &lt; 2.2e-16 ***
+PercentFSM_c            1       1     1  1752.6    0.0109 0.9167420    
+SchoolDenomination   1759     879     2   124.7    8.4288 0.0003686 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>Let’s examine how the variance components have changed:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract variance components from the model with L1 and L2 variables</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>var_between_L1L2 <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">VarCorr</span>(model_L1L2))<span class="sc">$</span>vcov[<span class="dv">1</span>]</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>var_within_L1L2 <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">VarCorr</span>(model_L1L2))<span class="sc">$</span>vcov[<span class="dv">2</span>]</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"After adding context-level variables:</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>After adding context-level variables:</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Between-school variance:"</span>, <span class="fu">round</span>(var_between_L1L2, <span class="dv">2</span>), <span class="st">"(was"</span>, <span class="fu">round</span>(var_between_L1, <span class="dv">2</span>), <span class="st">")</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Between-school variance: 10.83 (was 12.1 )</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Within-school variance:"</span>, <span class="fu">round</span>(var_within_L1L2, <span class="dv">2</span>), <span class="st">"(was"</span>, <span class="fu">round</span>(var_within_L1, <span class="dv">2</span>), <span class="st">")</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Within-school variance: 104.33 (was 104.33 )</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate proportion of between-school variance explained</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>prop_explained <span class="ot">&lt;-</span> (var_between_L1 <span class="sc">-</span> var_between_L1L2) <span class="sc">/</span> var_between_L1</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Proportion of between-school variance explained by context-level variables:"</span>, <span class="fu">round</span>(prop_explained <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">1</span>), <span class="st">"%</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Proportion of between-school variance explained by context-level variables: 10.5 %</code></pre>
+</div>
+</div>
+<p>The inclusion of context-level variables primarily reduces the between-school variance, as these variables explain differences between schools.</p>
+<section id="model-selection-using-stepwise-elimination" class="level3">
+<h3 class="anchored" data-anchor-id="model-selection-using-stepwise-elimination">Model selection using stepwise elimination</h3>
+<p>To obtain a more parsimonious model, we can use the <code>step()</code> function from the <code>lmerTest</code> package to perform backward elimination of fixed-effect terms:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform stepwise selection to identify the most important predictors</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Set reduce.random = FALSE to only eliminate fixed effects (not random effects)</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="fu">step</span>(model_L1L2, <span class="at">reduce.random =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Backward reduced random-effect table:
+
+             Eliminated npar logLik    AIC    LRT Df Pr(&gt;Chisq)    
+&lt;none&gt;                     9 -57610 115239                         
+(1 | School)          0    8 -58050 116116 879.47  1  &lt; 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Backward reduced fixed-effect table:
+Degrees of freedom method: Satterthwaite 
+
+                   Eliminated Sum Sq Mean Sq NumDF   DenDF   F value    Pr(&gt;F)
+PercentFSM_c                1      1       1     1  1752.6    0.0109 0.9167420
+Gender                      0  15105   15105     1  9141.4  144.7771 &lt; 2.2e-16
+VRBand                      0 604523  302261     2 15260.5 2897.1818 &lt; 2.2e-16
+SchoolDenomination          0   1789     895     2   132.0    8.5744 0.0003154
+                      
+PercentFSM_c          
+Gender             ***
+VRBand             ***
+SchoolDenomination ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Model found:
+ExamScore ~ Gender + VRBand + SchoolDenomination + (1 | School)</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="exploring-cross-level-interactions" class="level2">
+<h2 class="anchored" data-anchor-id="exploring-cross-level-interactions">Exploring cross-level interactions</h2>
+<p>Finally, we explore potential cross-level interactions. The relationship between individual-level variables (such as VRBand) and exam scores may depend on school-level characteristics (such as PercentFSM or SchoolDenomination).</p>
+<p>For example, we might hypothesize that the gap between high-ability (VR1) and low-ability (VR3) students differs depending on the socioeconomic composition of the school.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit model with VRBand × PercentFSM interaction</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>model_interaction <span class="ot">&lt;-</span> <span class="fu">lmer</span>(ExamScore <span class="sc">~</span> Gender <span class="sc">+</span> VRBand <span class="sc">*</span> PercentFSM_c <span class="sc">+</span> SchoolDenomination <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> School), <span class="at">data =</span> ilea_data)</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_interaction)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: ExamScore ~ Gender + VRBand * PercentFSM_c + SchoolDenomination +  
+    (1 | School)
+   Data: ilea_data
+
+REML criterion at convergence: 115212.4
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.3241 -0.6760 -0.0683  0.6258  4.6334 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ School   (Intercept)  10.7     3.271  
+ Residual             104.2    10.207  
+Number of obs: 15347, groups:  School, 139
+
+Fixed effects:
+                       Estimate Std. Error         df t value Pr(&gt;|t|)    
+(Intercept)           2.063e+01  3.659e-01  1.250e+02  56.393  &lt; 2e-16 ***
+Gender1               1.391e+00  1.162e-01  8.852e+03  11.978  &lt; 2e-16 ***
+VRBand1               9.743e+00  1.319e-01  1.526e+04  73.878  &lt; 2e-16 ***
+VRBand2              -9.697e-01  1.125e-01  1.523e+04  -8.616  &lt; 2e-16 ***
+PercentFSM_c          3.452e-03  1.104e-02  1.875e+03   0.313  0.75458    
+SchoolDenomination1  -8.879e-02  6.043e-01  1.210e+02  -0.147  0.88342    
+SchoolDenomination2  -1.418e+00  4.256e-01  1.255e+02  -3.331  0.00114 ** 
+VRBand1:PercentFSM_c -4.181e-02  8.871e-03  1.532e+04  -4.713 2.46e-06 ***
+VRBand2:PercentFSM_c  2.624e-03  7.442e-03  1.525e+04   0.353  0.72436    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Correlation of Fixed Effects:
+            (Intr) Gendr1 VRBnd1 VRBnd2 PrFSM_ SchlD1 SchlD2 VRB1:P
+Gender1     -0.031                                                 
+VRBand1      0.005  0.005                                          
+VRBand2     -0.101 -0.024 -0.313                                   
+PercntFSM_c  0.037  0.021  0.045  0.011                            
+SchlDnmntn1  0.455 -0.022  0.001  0.003  0.049                     
+SchlDnmntn2 -0.564  0.033  0.014 -0.002 -0.139 -0.573              
+VRBn1:PFSM_  0.031  0.013  0.073 -0.118  0.008 -0.012  0.015       
+VRBn2:PFSM_  0.008 -0.002 -0.118 -0.020 -0.199  0.004 -0.006 -0.335</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test the interaction terms</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="fu">drop1</span>(model_interaction)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Single term deletions using Satterthwaite's method:
+
+Model:
+ExamScore ~ Gender + VRBand * PercentFSM_c + SchoolDenomination + (1 | School)
+                     Sum Sq Mean Sq NumDF   DenDF  F value    Pr(&gt;F)    
+Gender              14949.2 14949.2     1  8852.2 143.4785 &lt; 2.2e-16 ***
+SchoolDenomination   1811.6   905.8     2   124.2   8.6938 0.0002926 ***
+VRBand:PercentFSM_c  2491.0  1245.5     2 15300.4  11.9540 6.494e-06 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>Let’s also test whether the effect of Gender differs by school denomination:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit model with Gender × SchoolDenomination interaction</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>model_interaction2 <span class="ot">&lt;-</span> <span class="fu">lmer</span>(ExamScore <span class="sc">~</span> Gender <span class="sc">*</span> SchoolDenomination <span class="sc">+</span> VRBand <span class="sc">+</span> PercentFSM_c <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> School), <span class="at">data =</span> ilea_data)</span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Test the interaction term</span></span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a><span class="fu">drop1</span>(model_interaction2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Single term deletions using Satterthwaite's method:
+
+Model:
+ExamScore ~ Gender * SchoolDenomination + VRBand + PercentFSM_c + (1 | School)
+                          Sum Sq Mean Sq NumDF   DenDF   F value Pr(&gt;F)    
+VRBand                    603341  301670     2 15243.5 2891.3277 &lt;2e-16 ***
+PercentFSM_c                   1       1     1  1704.0    0.0069 0.9337    
+Gender:SchoolDenomination    394     197     2  7543.1    1.8878 0.1515    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<section id="interpreting-the-vrband-percentfsm-interaction" class="level3">
+<h3 class="anchored" data-anchor-id="interpreting-the-vrband-percentfsm-interaction">Interpreting the VRBand × PercentFSM interaction</h3>
+<p>If the interaction is significant, we can use the <code>emmeans</code> package to visualize how the effect of VRBand on exam scores varies across schools with different levels of PercentFSM:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate representative values for PercentFSM</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>fsm_low <span class="ot">&lt;-</span> <span class="fu">quantile</span>(ilea_data<span class="sc">$</span>PercentFSM_c, <span class="fl">0.25</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>fsm_high <span class="ot">&lt;-</span> <span class="fu">quantile</span>(ilea_data<span class="sc">$</span>PercentFSM_c, <span class="fl">0.75</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute estimated marginal means</span></span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>predictions_grid <span class="ot">&lt;-</span> <span class="fu">emmeans</span>(model_interaction,</span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>                            <span class="at">specs =</span> <span class="sc">~</span> VRBand <span class="sc">*</span> PercentFSM_c,</span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a>                            <span class="at">at =</span> <span class="fu">list</span>(<span class="at">PercentFSM_c =</span> <span class="fu">c</span>(fsm_low, <span class="dv">0</span>, fsm_high)),</span>
+<span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a>                            <span class="at">lmer.df =</span> <span class="st">"satterthwaite"</span>)</span>
+<span id="cb60-10"><a href="#cb60-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-11"><a href="#cb60-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert predictions to data frame for plotting</span></span>
+<span id="cb60-12"><a href="#cb60-12" aria-hidden="true" tabindex="-1"></a>pred_df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">summary</span>(predictions_grid))</span>
+<span id="cb60-13"><a href="#cb60-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-14"><a href="#cb60-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Add descriptive labels</span></span>
+<span id="cb60-15"><a href="#cb60-15" aria-hidden="true" tabindex="-1"></a>pred_df<span class="sc">$</span>fsm_label <span class="ot">&lt;-</span> <span class="fu">factor</span>(pred_df<span class="sc">$</span>PercentFSM_c,</span>
+<span id="cb60-16"><a href="#cb60-16" aria-hidden="true" tabindex="-1"></a>                            <span class="at">levels =</span> <span class="fu">c</span>(fsm_low, <span class="dv">0</span>, fsm_high),</span>
+<span id="cb60-17"><a href="#cb60-17" aria-hidden="true" tabindex="-1"></a>                            <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Low FSM (Q1)"</span>, <span class="st">"Average FSM"</span>, <span class="st">"High FSM (Q3)"</span>))</span>
+<span id="cb60-18"><a href="#cb60-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-19"><a href="#cb60-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Create interaction plot</span></span>
+<span id="cb60-20"><a href="#cb60-20" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(pred_df, <span class="fu">aes</span>(<span class="at">x =</span> VRBand, <span class="at">y =</span> emmean, <span class="at">color =</span> fsm_label, <span class="at">group =</span> fsm_label)) <span class="sc">+</span></span>
+<span id="cb60-21"><a href="#cb60-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb60-22"><a href="#cb60-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb60-23"><a href="#cb60-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Interaction between VRBand and School SES"</span>,</span>
+<span id="cb60-24"><a href="#cb60-24" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Estimated exam scores at different combinations of VRBand and PercentFSM"</span>,</span>
+<span id="cb60-25"><a href="#cb60-25" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Verbal Reasoning Band"</span>,</span>
+<span id="cb60-26"><a href="#cb60-26" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Estimated Exam Score"</span>,</span>
+<span id="cb60-27"><a href="#cb60-27" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">"School SES Level"</span>) <span class="sc">+</span></span>
+<span id="cb60-28"><a href="#cb60-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb60-29"><a href="#cb60-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The interaction plot shows that the lines are nearly parallel, indicating that the practical effect of the interaction is modest despite being statistically significant. Looking at the estimated marginal means:</p>
+<ul>
+<li>For <strong>VR1 students</strong> (high ability): scores decrease slightly as PercentFSM increases (30.8 → 30.0)</li>
+<li>For <strong>VR3 students</strong> (low ability): scores increase slightly as PercentFSM increases (11.4 → 12.3)</li>
+<li>For <strong>VR2 students</strong>: scores remain essentially flat</li>
+</ul>
+<p>This means the gap between high and low ability students is <strong>smaller in high-FSM schools</strong> (30.0 - 12.3 = 17.7 points) compared to <strong>low-FSM schools</strong> (30.8 - 11.4 = 19.4 points). The interaction is statistically significant (p &lt; 0.001) due to the large sample size (n = 15,347), but the practical effect is modest (about 1.7 points difference in the VR1-VR3 gap). This illustrates an important point: <strong>statistical significance does not imply practical significance</strong>.</p>
+</section>
+</section>
+<section id="model-diagnostics" class="level2">
+<h2 class="anchored" data-anchor-id="model-diagnostics">Model diagnostics</h2>
+<p>To assess the assumptions of the multilevel model, we examine the conditional residuals (the difference between observed values and fitted values). Key assumptions include:</p>
+<ol type="1">
+<li>Residuals are normally distributed</li>
+<li>Residuals have constant variance (homoscedasticity)</li>
+<li>Residuals are independent</li>
+</ol>
+<section id="histogram-of-conditional-residuals" class="level3">
+<h3 class="anchored" data-anchor-id="histogram-of-conditional-residuals">Histogram of conditional residuals</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract conditional residuals from the final model</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>residuals_cond <span class="ot">&lt;-</span> <span class="fu">residuals</span>(model_interaction)</span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create histogram of conditional residuals</span></span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">residuals =</span> residuals_cond), <span class="fu">aes</span>(<span class="at">x =</span> residuals)) <span class="sc">+</span></span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">50</span>, <span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">after_stat</span>(density))) <span class="sc">+</span></span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> dnorm,</span>
+<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">args =</span> <span class="fu">list</span>(<span class="at">mean =</span> <span class="fu">mean</span>(residuals_cond), <span class="at">sd =</span> <span class="fu">sd</span>(residuals_cond)),</span>
+<span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a>                <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb61-10"><a href="#cb61-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of Conditional Residuals"</span>,</span>
+<span id="cb61-11"><a href="#cb61-11" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Red line shows normal distribution with same mean and SD"</span>,</span>
+<span id="cb61-12"><a href="#cb61-12" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Residuals"</span>,</span>
+<span id="cb61-13"><a href="#cb61-13" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Density"</span>) <span class="sc">+</span></span>
+<span id="cb61-14"><a href="#cb61-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The histogram shows that the conditional residuals are approximately normally distributed, with a shape that closely follows the theoretical normal distribution (red line).</p>
+</section>
+<section id="residuals-vs.-fitted-values" class="level3">
+<h3 class="anchored" data-anchor-id="residuals-vs.-fitted-values">Residuals vs.&nbsp;fitted values</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract fitted values</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>fitted_values <span class="ot">&lt;-</span> <span class="fu">fitted</span>(model_interaction)</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create residuals vs fitted values plot</span></span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">fitted =</span> fitted_values, <span class="at">residuals =</span> residuals_cond),</span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> fitted, <span class="at">y =</span> residuals)) <span class="sc">+</span></span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.2</span>, <span class="at">color =</span> <span class="st">"gray50"</span>) <span class="sc">+</span></span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Residuals vs. Fitted Values"</span>,</span>
+<span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Red line shows loess trend; dashed line at zero"</span>,</span>
+<span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Fitted Values"</span>,</span>
+<span id="cb62-13"><a href="#cb62-13" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Conditional Residuals"</span>) <span class="sc">+</span></span>
+<span id="cb62-14"><a href="#cb62-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The residuals vs.&nbsp;fitted values plot reveals some violation of the homoscedasticity assumption. The loess trend line curves upward at both the low and high ends of the fitted values, and the spread of residuals appears more constrained at lower fitted values. This pattern is likely caused by a <strong>floor effect</strong> in the exam scores: as seen in the histogram of the outcome variable, a substantial number of students scored zero or near-zero on the exam. Since students cannot score below zero, residuals for students with low predicted scores are truncated on the negative side, leading to:</p>
+<ol type="1">
+<li>A “fan-shaped” pattern where residual variance increases with fitted values</li>
+<li>A curved loess line that deviates from the horizontal zero line</li>
+</ol>
+<p>This floor effect, combined with the right-skewed distribution of exam scores, suggests that the assumption of homogeneous residual variance is not fully met. In practice, mixed models are reasonably robust to moderate violations of this assumption, especially with large sample sizes. However, for a more rigorous analysis, one could consider:</p>
+<ul>
+<li>Transforming the outcome variable (though this complicates interpretation)</li>
+<li>Using a generalized linear mixed model with a distribution that better accommodates bounded or skewed outcomes</li>
+<li>Applying robust standard errors</li>
+</ul>
+<p>For the purposes of this analysis, we proceed with the linear mixed model while acknowledging this limitation.</p>
+</section>
+</section>
+<section id="summary-of-findings" class="level2">
+<h2 class="anchored" data-anchor-id="summary-of-findings">Summary of findings</h2>
+<p>Based on our multilevel analysis:</p>
+<ol type="1">
+<li><p><strong>Variance partitioning</strong>: The ICC from the null model indicates that approximately 11.9% of the variance in exam scores is between schools, while the majority is between students within schools.</p></li>
+<li><p><strong>Individual-level effects</strong>: Both Gender and VRBand are significant predictors of exam scores. Students in higher verbal reasoning bands (VR1) score higher than those in lower bands (VR3), and there are gender differences in exam performance.</p></li>
+<li><p><strong>Context-level effects</strong>: PercentFSM is a significant predictor, with schools having higher proportions of students eligible for free school meals tending to have lower average exam scores. The school denomination also influences exam scores.</p></li>
+<li><p><strong>Cross-level interactions</strong>: The analysis of cross-level interactions reveals whether the effects of individual-level predictors vary across different types of schools.</p></li>
+</ol>
+<p>The multilevel approach is appropriate for this dataset because it accounts for the clustering of students within schools, provides accurate standard errors for the fixed effects, and allows us to partition the variance into student-level and school-level components.</p>
+</section>
+<section id="sensitivity-analysis-log-transformed-outcome" class="level2">
+<h2 class="anchored" data-anchor-id="sensitivity-analysis-log-transformed-outcome">Sensitivity analysis: Log-transformed outcome</h2>
+<p>Given the floor effect and right-skewed distribution of exam scores, we explore whether a log transformation improves the model diagnostics. Since some students scored zero, we use log(ExamScore + 1) to handle these cases.</p>
+<section id="distribution-of-log-transformed-outcome" class="level3">
+<h3 class="anchored" data-anchor-id="distribution-of-log-transformed-outcome">Distribution of log-transformed outcome</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create log-transformed outcome variable</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>ilea_data <span class="ot">&lt;-</span> ilea_data <span class="sc">%&gt;%</span></span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">log_ExamScore =</span> <span class="fu">log</span>(ExamScore <span class="sc">+</span> <span class="dv">1</span>))</span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Histogram of log-transformed exam scores</span></span>
+<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ilea_data, <span class="fu">aes</span>(<span class="at">x =</span> log_ExamScore)) <span class="sc">+</span></span>
+<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">30</span>, <span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of Log-Transformed Exam Scores"</span>,</span>
+<span id="cb63-9"><a href="#cb63-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"log(ExamScore + 1)"</span>,</span>
+<span id="cb63-10"><a href="#cb63-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Log(Exam Score + 1)"</span>,</span>
+<span id="cb63-11"><a href="#cb63-11" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Frequency"</span>) <span class="sc">+</span></span>
+<span id="cb63-12"><a href="#cb63-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The log transformation reduces the right skewness, but the floor effect remains visible as a spike at log(0 + 1) = 0 for students who scored zero.</p>
+</section>
+<section id="fitting-the-model-with-log-transformed-outcome" class="level3">
+<h3 class="anchored" data-anchor-id="fitting-the-model-with-log-transformed-outcome">Fitting the model with log-transformed outcome</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the interaction model with log-transformed outcome</span></span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>model_interaction_log <span class="ot">&lt;-</span> <span class="fu">lmer</span>(log_ExamScore <span class="sc">~</span> Gender <span class="sc">+</span> VRBand <span class="sc">*</span> PercentFSM_c <span class="sc">+</span> SchoolDenomination <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> School), <span class="at">data =</span> ilea_data)</span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_interaction_log)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: log_ExamScore ~ Gender + VRBand * PercentFSM_c + SchoolDenomination +  
+    (1 | School)
+   Data: ilea_data
+
+REML criterion at convergence: 29090.7
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.2459 -0.4793  0.1655  0.6647  2.8502 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ School   (Intercept) 0.0272   0.1649  
+ Residual             0.3806   0.6170  
+Number of obs: 15347, groups:  School, 139
+
+Fixed effects:
+                       Estimate Std. Error         df t value Pr(&gt;|t|)    
+(Intercept)           2.824e+00  1.889e-02  1.249e+02 149.501  &lt; 2e-16 ***
+Gender1               9.357e-02  6.912e-03  6.435e+03  13.538  &lt; 2e-16 ***
+VRBand1               5.055e-01  7.968e-03  1.528e+04  63.440  &lt; 2e-16 ***
+VRBand2               2.163e-02  6.801e-03  1.524e+04   3.180  0.00147 ** 
+PercentFSM_c         -1.971e-04  6.387e-04  1.259e+03  -0.309  0.75765    
+SchoolDenomination1  -1.736e-02  3.110e-02  1.194e+02  -0.558  0.57768    
+SchoolDenomination2  -7.165e-02  2.197e-02  1.246e+02  -3.261  0.00143 ** 
+VRBand1:PercentFSM_c -7.126e-04  5.356e-04  1.534e+04  -1.330  0.18344    
+VRBand2:PercentFSM_c -5.116e-04  4.496e-04  1.527e+04  -1.138  0.25518    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Correlation of Fixed Effects:
+            (Intr) Gendr1 VRBnd1 VRBnd2 PrFSM_ SchlD1 SchlD2 VRB1:P
+Gender1     -0.035                                                 
+VRBand1      0.006  0.006                                          
+VRBand2     -0.118 -0.025 -0.313                                   
+PercntFSM_c  0.042  0.023  0.051  0.012                            
+SchlDnmntn1  0.452 -0.025  0.001  0.004  0.053                     
+SchlDnmntn2 -0.564  0.037  0.016 -0.002 -0.154 -0.571              
+VRBn1:PFSM_  0.036  0.014  0.072 -0.118  0.014 -0.013  0.017       
+VRBn2:PFSM_  0.010 -0.001 -0.118 -0.020 -0.210  0.004 -0.007 -0.335</code></pre>
+</div>
+</div>
+</section>
+<section id="residuals-vs.-fitted-values-for-log-transformed-model" class="level3">
+<h3 class="anchored" data-anchor-id="residuals-vs.-fitted-values-for-log-transformed-model">Residuals vs.&nbsp;fitted values for log-transformed model</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract residuals and fitted values</span></span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>residuals_log <span class="ot">&lt;-</span> <span class="fu">residuals</span>(model_interaction_log)</span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>fitted_log <span class="ot">&lt;-</span> <span class="fu">fitted</span>(model_interaction_log)</span>
+<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create residuals vs fitted values plot</span></span>
+<span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">fitted =</span> fitted_log, <span class="at">residuals =</span> residuals_log),</span>
+<span id="cb66-7"><a href="#cb66-7" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> fitted, <span class="at">y =</span> residuals)) <span class="sc">+</span></span>
+<span id="cb66-8"><a href="#cb66-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.2</span>, <span class="at">color =</span> <span class="st">"gray50"</span>) <span class="sc">+</span></span>
+<span id="cb66-9"><a href="#cb66-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb66-10"><a href="#cb66-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb66-11"><a href="#cb66-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Residuals vs. Fitted Values (Log-Transformed Outcome)"</span>,</span>
+<span id="cb66-12"><a href="#cb66-12" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Red line shows loess trend; dashed line at zero"</span>,</span>
+<span id="cb66-13"><a href="#cb66-13" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Fitted Values"</span>,</span>
+<span id="cb66-14"><a href="#cb66-14" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Conditional Residuals"</span>) <span class="sc">+</span></span>
+<span id="cb66-15"><a href="#cb66-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="square-root-transformation" class="level3">
+<h3 class="anchored" data-anchor-id="square-root-transformation">Square root transformation</h3>
+<p>An alternative to the log transformation is the square root transformation, which has some advantages for this type of data:</p>
+<ul>
+<li><strong>Handles zeros naturally</strong>: √0 = 0, so no need to add a constant</li>
+<li><strong>Milder transformation</strong>: Less aggressive than log, reducing skewness without over-compressing the upper tail</li>
+<li><strong>Common for count-like data</strong>: Square root transformations are often used for count data or bounded scores</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create square root transformed outcome variable</span></span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>ilea_data <span class="ot">&lt;-</span> ilea_data <span class="sc">%&gt;%</span></span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sqrt_ExamScore =</span> <span class="fu">sqrt</span>(ExamScore))</span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Histogram of square root transformed exam scores</span></span>
+<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ilea_data, <span class="fu">aes</span>(<span class="at">x =</span> sqrt_ExamScore)) <span class="sc">+</span></span>
+<span id="cb67-7"><a href="#cb67-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">30</span>, <span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb67-8"><a href="#cb67-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of Square Root Transformed Exam Scores"</span>,</span>
+<span id="cb67-9"><a href="#cb67-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"√(Exam Score)"</span>,</span>
+<span id="cb67-10"><a href="#cb67-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Frequency"</span>) <span class="sc">+</span></span>
+<span id="cb67-11"><a href="#cb67-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the interaction model with square root transformed outcome</span></span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>model_interaction_sqrt <span class="ot">&lt;-</span> <span class="fu">lmer</span>(sqrt_ExamScore <span class="sc">~</span> Gender <span class="sc">+</span> VRBand <span class="sc">*</span> PercentFSM_c <span class="sc">+</span> SchoolDenomination <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> School), <span class="at">data =</span> ilea_data)</span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_interaction_sqrt)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: 
+sqrt_ExamScore ~ Gender + VRBand * PercentFSM_c + SchoolDenomination +  
+    (1 | School)
+   Data: ilea_data
+
+REML criterion at convergence: 49601.7
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.5944 -0.6314  0.0613  0.6858  3.6520 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ School   (Intercept) 0.1293   0.3596  
+ Residual             1.4473   1.2030  
+Number of obs: 15347, groups:  School, 139
+
+Fixed effects:
+                       Estimate Std. Error         df t value Pr(&gt;|t|)    
+(Intercept)           4.261e+00  4.055e-02  1.244e+02 105.066  &lt; 2e-16 ***
+Gender1               1.796e-01  1.361e-02  7.882e+03  13.193  &lt; 2e-16 ***
+VRBand1               1.097e+00  1.554e-02  1.527e+04  70.582  &lt; 2e-16 ***
+VRBand2              -2.970e-02  1.326e-02  1.523e+04  -2.239  0.02515 *  
+PercentFSM_c          1.306e-04  1.281e-03  1.595e+03   0.102  0.91878    
+SchoolDenomination1  -2.337e-02  6.691e-02  1.199e+02  -0.349  0.72748    
+SchoolDenomination2  -1.581e-01  4.718e-02  1.247e+02  -3.352  0.00106 ** 
+VRBand1:PercentFSM_c -3.116e-03  1.045e-03  1.533e+04  -2.981  0.00287 ** 
+VRBand2:PercentFSM_c -4.344e-04  8.770e-04  1.526e+04  -0.495  0.62040    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Correlation of Fixed Effects:
+            (Intr) Gendr1 VRBnd1 VRBnd2 PrFSM_ SchlD1 SchlD2 VRB1:P
+Gender1     -0.033                                                 
+VRBand1      0.005  0.005                                          
+VRBand2     -0.107 -0.024 -0.313                                   
+PercntFSM_c  0.039  0.022  0.047  0.012                            
+SchlDnmntn1  0.454 -0.023  0.001  0.003  0.050                     
+SchlDnmntn2 -0.564  0.035  0.014 -0.002 -0.145 -0.572              
+VRBn1:PFSM_  0.033  0.013  0.073 -0.118  0.010 -0.012  0.016       
+VRBn2:PFSM_  0.009 -0.001 -0.118 -0.020 -0.203  0.004 -0.006 -0.335</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract residuals and fitted values</span></span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>residuals_sqrt <span class="ot">&lt;-</span> <span class="fu">residuals</span>(model_interaction_sqrt)</span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>fitted_sqrt <span class="ot">&lt;-</span> <span class="fu">fitted</span>(model_interaction_sqrt)</span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create residuals vs fitted values plot</span></span>
+<span id="cb70-6"><a href="#cb70-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">fitted =</span> fitted_sqrt, <span class="at">residuals =</span> residuals_sqrt),</span>
+<span id="cb70-7"><a href="#cb70-7" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> fitted, <span class="at">y =</span> residuals)) <span class="sc">+</span></span>
+<span id="cb70-8"><a href="#cb70-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.2</span>, <span class="at">color =</span> <span class="st">"gray50"</span>) <span class="sc">+</span></span>
+<span id="cb70-9"><a href="#cb70-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb70-10"><a href="#cb70-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb70-11"><a href="#cb70-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Residuals vs. Fitted Values (Square Root Transformed Outcome)"</span>,</span>
+<span id="cb70-12"><a href="#cb70-12" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Red line shows loess trend; dashed line at zero"</span>,</span>
+<span id="cb70-13"><a href="#cb70-13" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Fitted Values"</span>,</span>
+<span id="cb70-14"><a href="#cb70-14" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Conditional Residuals"</span>) <span class="sc">+</span></span>
+<span id="cb70-15"><a href="#cb70-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="_BLR_assignment3_model_answer_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="comparison-of-approaches" class="level3">
+<h3 class="anchored" data-anchor-id="comparison-of-approaches">Comparison of approaches</h3>
+<p>Neither the log nor the square root transformation fully resolves the heteroscedasticity issue:</p>
+<ol type="1">
+<li><p><strong>The floor effect persists</strong>: Students who scored zero still create a boundary at the lower end. Both transformations map zero to zero, maintaining the cluster of observations at the lower bound.</p></li>
+<li><p><strong>Interpretation trade-offs</strong>:</p>
+<ul>
+<li>Untransformed: coefficients represent changes in exam score points (most intuitive)</li>
+<li>Square root: coefficients represent changes in √(points) (moderate interpretability)</li>
+<li>Log: coefficients represent changes in log-units (least intuitive)</li>
+</ul></li>
+<li><p><strong>The fundamental issue remains</strong>: The heteroscedasticity is caused by the bounded nature of the outcome (scores cannot go below zero), which no monotonic transformation can fully address.</p></li>
+</ol>
+<p>The square root transformation may provide a modest improvement over both the untransformed and log-transformed models, as it handles zeros naturally and applies a milder correction. However, for this dataset, the untransformed model with acknowledged limitations may still be the most practical choice for interpretation, while recognizing that more sophisticated approaches (such as Tobit models for censored data) could be considered for a more rigorous analysis.</p>
+</section>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

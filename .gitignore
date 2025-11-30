@@ -33,3 +33,6 @@ lectures_2526/_slides/**
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Student submissions (private, do not commit)
+Assignments/*/student_submissions/
