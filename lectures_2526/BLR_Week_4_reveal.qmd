@@ -48,34 +48,6 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.
 - Subject characteristics are level-2 variables (vary across subjects)
 - **New element**: individuals may differ in their rate of change over time (subject × time interaction)
 
-## Assignment week 3: key findings
-
-::: {style="font-size: 0.85em;"}
-
-**Dataset**: ILEA school effectiveness data (15,362 students nested in 140 schools)
-
-**Variance partitioning**
-
-- ICC ≈ 12% — modest but non-trivial between-school variation
-- Multilevel approach ensures correct standard errors and enables school-level inference
-
-**Individual-level effects (Level 1)**
-
-- Gender and Verbal Reasoning Band (VRBand) significantly predict exam scores
-- Large effects: VRBand explains substantial variation in outcomes
-
-**Context-level effects (Level 2)**
-
-- Schools with higher % free school meals (PercentFSM) have lower average scores
-- School denomination also matters (though effect sizes are modest)
-
-**Cross-level interaction**
-
-- VRBand × PercentFSM statistically significant but practically modest
-- ~1.7 point difference in ability gap between low vs. high FSM schools
-
-:::
-
 ## Assignment week 3: what went well
 
 ::: {style="font-size: 0.8em;"}
@@ -125,7 +97,147 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.
 
 :::
 
-## Growth data example
+## When to transform the outcome variable
+
+::: {style="font-size: 0.8em;"}
+
+**Common misconception**: "The outcome must be normally distributed, so I need to transform it"
+
+- Regression does **not** assume that the outcome is normally distributed; the assumption applies to the **residuals**
+- A skewed outcome can yield perfectly normal residuals if predictors explain the skewness
+
+**Let the diagnostics guide you**
+
+- Check residuals vs. fitted values plot for heteroscedasticity and non-linearity
+- If diagnostics look fine → no transformation needed, regardless of outcome distribution
+
+**When log-transformation may help**
+
+- Heteroscedasticity where variance increases with the mean
+- Especially likely when the underlying process is **multiplicative** (e.g., prices, incomes, concentrations)
+- Effects are naturally proportional: “a nice view adds 20%” not “adds €20”
+
+**When transformation will not help**
+
+- **Floor/ceiling effects** from measurement limits (e.g., many zero exam scores)
+- Boundary clustering persists because log(0+c) and sqrt(0) still map to (near) zero
+
+:::
+
+## Lab week 3: Airbnb listing prices
+
+```{r}
+#| fig-width: 10
+#| fig-height: 6
+
+# Load the Chicago Airbnb data
+chicago_airbnb <- read.csv("../data/airbnb.csv")
+chicago_airbnb <- chicago_airbnb |>
+  mutate(across(where(is.character), as.factor),
+         log_price = log(price))
+
+# Fit null models
+null_model_raw <- lmer(price ~ (1 | neighborhood), data = chicago_airbnb)
+null_model_log <- lmer(log_price ~ (1 | neighborhood), data = chicago_airbnb)
+
+# Create 2x3 grid
+p1 <- ggplot(chicago_airbnb, aes(x = price)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+  labs(title = "Untransformed price", x = "Price (USD)", y = "Frequency") +
+  theme_minimal()
+
+p2 <- ggplot(chicago_airbnb, aes(x = fitted(null_model_raw), y = residuals(null_model_raw))) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "loess", se = FALSE, color = "steelblue", linewidth = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Residuals vs. fitted", x = "Fitted values", y = "Residuals") +
+  theme_minimal()
+
+p3 <- ggplot(data.frame(resid = residuals(null_model_raw)), aes(x = resid)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+  labs(title = "Residual distribution", x = "Residuals", y = "Frequency") +
+  theme_minimal()
+
+p4 <- ggplot(chicago_airbnb, aes(x = log_price)) +
+  geom_histogram(bins = 30, fill = "lightgreen", color = "black") +
+  labs(title = "Log-transformed price", x = "Log(Price)", y = "Frequency") +
+  theme_minimal()
+
+p5 <- ggplot(chicago_airbnb, aes(x = fitted(null_model_log), y = residuals(null_model_log))) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "loess", se = FALSE, color = "steelblue", linewidth = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Residuals vs. fitted", x = "Fitted values", y = "Residuals") +
+  theme_minimal()
+
+p6 <- ggplot(data.frame(resid = residuals(null_model_log)), aes(x = resid)) +
+  geom_histogram(bins = 30, fill = "lightgreen", color = "black") +
+  labs(title = "Residual distribution", x = "Residuals", y = "Frequency") +
+  theme_minimal()
+
+gridExtra::grid.arrange(p1, p2, p3, p4, p5, p6, ncol = 3)
+```
+
+Log transformation stabilizes variance and improves residual normality
+
+## Assignment week 3: Exam scores
+
+```{r}
+#| fig-width: 10
+#| fig-height: 6
+
+# Load the ILEA data
+ilea_data <- read.csv("../Assignments/Week 3/downloads/ilea_data.csv")
+ilea_data <- ilea_data |>
+  mutate(across(where(is.character), as.factor),
+         School = as.factor(School),
+         log_exam = log(ExamScore + 1))
+
+# Fit null models
+null_model_raw <- lmer(ExamScore ~ (1 | School), data = ilea_data)
+null_model_log <- lmer(log_exam ~ (1 | School), data = ilea_data)
+
+# Create 2x3 grid
+p1 <- ggplot(ilea_data, aes(x = ExamScore)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+  labs(title = "Untransformed exam score", x = "Exam Score", y = "Frequency") +
+  theme_minimal()
+
+p2 <- ggplot(ilea_data, aes(x = fitted(null_model_raw), y = residuals(null_model_raw))) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "loess", se = FALSE, color = "steelblue", linewidth = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Residuals vs. fitted", x = "Fitted values", y = "Residuals") +
+  theme_minimal()
+
+p3 <- ggplot(data.frame(resid = residuals(null_model_raw)), aes(x = resid)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
+  labs(title = "Residual distribution", x = "Residuals", y = "Frequency") +
+  theme_minimal()
+
+p4 <- ggplot(ilea_data, aes(x = log_exam)) +
+  geom_histogram(bins = 30, fill = "lightsalmon", color = "black") +
+  labs(title = "Log-transformed", x = "log(Exam Score + 1)", y = "Frequency") +
+  theme_minimal()
+
+p5 <- ggplot(ilea_data, aes(x = fitted(null_model_log), y = residuals(null_model_log))) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "loess", se = FALSE, color = "steelblue", linewidth = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Residuals vs. fitted", x = "Fitted values", y = "Residuals") +
+  theme_minimal()
+
+p6 <- ggplot(data.frame(resid = residuals(null_model_log)), aes(x = resid)) +
+  geom_histogram(bins = 30, fill = "lightsalmon", color = "black") +
+  labs(title = "Residual distribution", x = "Residuals", y = "Frequency") +
+  theme_minimal()
+
+gridExtra::grid.arrange(p1, p2, p3, p4, p5, p6, ncol = 3)
+```
+
+Floor effect persists: boundary clustering remains visible in both residual plots after transformation
+
+## [Longitudinal data analysis: Growth curves example]{style="font-size: 0.9em;"}
 
 ```{r}
 # Load the growth data
@@ -825,6 +937,9 @@ We extend the quadratic growth model with maternal factors and their interaction
 ```{r}
 #| echo: true
 
+# Use effects coding for categorical predictors
+options(contrasts = c("contr.sum", "contr.poly"))
+
 # Full model with maternal factors and interactions
 full_model <- lmer(
   height ~ age_c + age_c2 + bf + sm +
@@ -849,6 +964,27 @@ full_model <- lmer(
 ```{r}
 anova(full_model)
 ```
+
+:::: {.columns}
+
+::: {.column style="width: 50%; font-size: 0.95em;"}
+
+**Coding scheme for bf:**
+```{r}
+contrasts(growth$bf)
+```
+:::
+
+::: {.column style="width: 50%; font-size: 0.95em;"}
+
+**Coding scheme for sm:**
+```{r}
+contrasts(growth$sm)
+```
+:::
+
+::::
+
 ## Reduced model
 
 ::: {style="font-size: 0.9em;"}
@@ -877,12 +1013,12 @@ tidy(reduced_model, effects = "fixed", conf.int = TRUE) |>
 
 ::: {style="font-size: 0.9em;"}
 
-**Interpretation**
+**Interpretation** (with effects coding)
 
 - Smoking (`sm`) was eliminated — no evidence that maternal smoking affects growth
 - Breastfeeding (`bf`) remains with a main effect and interaction with `age_c`:
-  - **Main effect**: Exclusively breastfed babies are ~1 cm shorter at mean age (p = 0.03)
-  - **Interaction**: Exclusively breastfed babies grow ~0.03 cm/week slower (p = 0.01)
+  - **Main effect**: Exclusively breastfed babies are ~0.5 cm below the grand mean at mean age
+  - **Interaction**: Exclusively breastfed babies grow ~0.015 cm/week slower than average
 - The quadratic term (`age_c2`) is negative: growth decelerates over time
 
 :::
