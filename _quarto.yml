@@ -29,6 +29,10 @@ website:
         menu:
           - text: "Lab 5"
             href: BLR_lab_MLA.qmd
+      - text: "Lab week 4"
+        menu:
+          - text: "Lab 6"
+            href: BLR_lab_longitudinal.qmd
       - text: "Assignments"
         menu:
           - text: "Week 1"
@@ -37,6 +41,8 @@ website:
             href: Assignments/Week 2/Assignment_week_2.qmd
           - text: "Week 3"
             href: Assignments/Week 3/Assignment_week_3.qmd
+          - text: "Week 4"
+            href: Assignments/Week 4/Assignment_week_4.qmd
 
 format:
   html:
