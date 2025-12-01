@@ -564,7 +564,7 @@ ggplot() +
 
 ## The variance-covariance structure
 
-::: {style="font-size: 0.80em;"}
+::: {style="font-size: 0.75em;"}
 
 **Random effects distribution**
 
@@ -574,7 +574,7 @@ $$\begin{pmatrix} b_{0i} \\ b_{1i} \end{pmatrix} \sim N\left(\begin{pmatrix} 0 \
 
 **Components**
 
-::: {.table-left style="margin-bottom:1.0em;"}
+::: {.table-left}
 
 | Parameter | Interpretation |
 |-----------|----------------|
@@ -592,6 +592,7 @@ $$\begin{pmatrix} b_{0i} \\ b_{1i} \end{pmatrix} \sim N\left(\begin{pmatrix} 0 \
 - $\rho = 0$: Starting height and growth rate are unrelated
 
 :::
+
 
 ## Results: variance components
 
@@ -1049,7 +1050,3 @@ tidy(reduced_model, effects = "fixed", conf.int = TRUE) |>
 ## Lab 6: longitudinal data analysis
 
 ![](/R-lab.png){width="60%"  fig-align="center" alt="Lab session"}
-
-## Final assignment
-
-TODO: add some information about the final assignment

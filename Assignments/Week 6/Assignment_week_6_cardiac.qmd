@@ -1,0 +1,250 @@
+---
+title: "Assignment Week 6: Longitudinal Analysis of Cardiac Recovery"
+subtitle: "Modeling Recovery Trajectories with Mixed Effects Models"
+format: html
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true
+---
+
+## Introduction
+
+In this assignment, you will analyze data from a study examining recovery trajectories in patients who underwent cardiac bypass surgery. The study followed 500 patients, measuring outcomes at baseline (pre-surgery) and at 4 follow-up visits over 6 months.
+
+This assignment will give you hands-on experience with:
+
+- Growth curve modeling for longitudinal data
+- Two-level hierarchical structures (repeated observations within patients)
+- Random intercepts and random slopes
+- Testing whether patient characteristics affect recovery trajectories
+- Model building, comparison, and interpretation
+
+## Your Personalized Assignment
+
+Each student receives a **unique subsample** of the data and a **specific research question**. This ensures that you engage independently with the analysis.
+
+### Step 1: Generate Your Personal Dataset
+
+Use your **student ID number** to generate your unique dataset:
+
+```{r}
+# Load required packages
+library(dplyr)
+
+# IMPORTANT: Replace 123456 with YOUR student ID number!
+student_id <- 123456
+
+# Load the master dataset
+master_data <- read.csv("downloads/cardiac_recovery_master.csv")
+
+# Load the research question lookup table
+lookup_table <- read.csv("downloads/research_questions_lookup.csv")
+
+# Generate your personal subsample
+set.seed(student_id)
+
+# Determine your research question (cycles through 9 questions)
+question_id <- ((student_id - 1) %% 9) + 1
+my_question <- lookup_table[question_id, ]
+
+# Sample 60% of patients
+sampled_patients <- sample(unique(master_data$patient_id),
+                            size = round(0.6 * length(unique(master_data$patient_id))))
+
+# Create your personal dataset
+my_data <- master_data %>%
+  filter(patient_id %in% sampled_patients)
+
+# Introduce some missing data (as in real studies)
+n_missing <- round(nrow(my_data) * 0.05)
+missing_idx <- sample(1:nrow(my_data), n_missing)
+my_data[missing_idx, my_question$outcome] <- NA
+
+# Display your assignment details
+cat(rep("=", 51), "\n", sep = "")
+cat("YOUR ASSIGNMENT DETAILS\n")
+cat(rep("=", 51), "\n", sep = "")
+cat("\nStudent ID:", student_id, "\n")
+cat("Number of patients:", n_distinct(my_data$patient_id), "\n")
+cat("Number of observations:", nrow(my_data), "\n")
+cat("\nOUTCOME VARIABLE:", my_question$outcome_label, "\n")
+cat("  Column name:", my_question$outcome, "\n")
+cat("\nMAIN PREDICTOR:", my_question$predictor_label, "\n")
+cat("  Column name:", my_question$main_predictor, "\n")
+cat("\n", rep("-", 51), "\n", sep = "")
+cat("RESEARCH QUESTION:\n")
+cat(strwrap(my_question$research_question, width = 50), sep = "\n")
+cat("\n", rep("=", 51), "\n", sep = "")
+```
+
+::: {.callout-important}
+Make sure to replace `123456` with your actual student ID number before running the code!
+:::
+
+### Step 2: Understand Your Variables
+
+After running the code above, you will know:
+
+- **Your outcome variable**: One of Quality of Life (0-100), 6-minute walk distance (meters), or Depression score (PHQ-9, 0-27)
+- **Your main predictor**: One of Sex, Diabetes status, or Surgery complexity
+
+All students will also examine whether the **rehabilitation program** (Standard vs Enhanced) moderates recovery trajectories.
+
+## Dataset Description
+
+The dataset contains the following variables:
+
+### Patient identifier
+- `patient_id`: Unique identifier for each patient
+
+### Time variables
+- `visit`: Visit label (Baseline, 2 weeks, 6 weeks, 3 months, 6 months)
+- `time_weeks`: Time in weeks (0, 2, 6, 12, 24)
+- `time_months`: Time in months (0, 0.5, 1.5, 3, 6)
+
+### Patient-level predictors (Level 2)
+- `age`: Patient age in years
+- `sex`: Patient sex (Male/Female)
+- `diabetes`: Diabetes status (Yes/No)
+- `surgery_type`: Type of surgery (CABG = bypass only, CABG+Valve = bypass plus valve repair)
+- `rehab_program`: Cardiac rehabilitation program type (Standard/Enhanced)
+
+### Outcome variables
+- `quality_of_life`: Quality of Life score (0-100, higher = better)
+- `walk_distance`: 6-minute walk test distance in meters (higher = better)
+- `depression_score`: PHQ-9 depression score (0-27, lower = better)
+
+## Objective
+
+Your goals are to:
+
+1. **Describe the recovery trajectory** for your assigned outcome variable
+2. **Assess the hierarchical structure** of the data (repeated measurements within patients)
+3. **Test your main predictor's effect** on recovery trajectories
+4. **Examine whether the rehabilitation program moderates** the recovery pattern (interaction with time)
+5. **Provide clinical interpretation** of your findings
+
+## Steps to Complete the Analysis
+
+### 1. Exploratory Data Analysis
+
+- Describe your sample (number of patients, observations per patient)
+- Explore the distribution of your outcome variable
+- Create spaghetti plots showing individual recovery trajectories
+- Examine trajectories by your main predictor and rehab program
+- Consider whether centering time might be useful
+
+::: {.callout-tip title="Centering time"}
+Consider centering time at baseline so the intercept represents the pre-surgery value:
+```{r}
+my_data <- my_data %>%
+  mutate(time_c = time_months - 0)  # Already at 0, but explicit
+```
+:::
+
+### 2. Build a Sequence of Models
+
+::: {.callout-note title="Two-level structure"}
+This dataset has a two-level hierarchical structure:
+
+- **Level 1**: Repeated measurements (time points)
+- **Level 2**: Patients
+
+The random effects syntax is straightforward:
+
+```{r}
+# Random intercepts for patients
+(1 | patient_id)
+
+# Random intercepts and slopes for patients
+(time_months | patient_id)
+```
+:::
+
+#### Model 1: Null model
+Fit a random intercept model to:
+
+- Estimate the ICC (proportion of variance between patients vs. within patients over time)
+- Understand how variance is partitioned across levels
+
+#### Model 2: Growth model
+Add time as a fixed effect to model the recovery trajectory:
+
+- Consider whether the trajectory is linear or shows diminishing returns
+- Allow random slopes for time (do patients differ in their recovery rates?)
+
+#### Model 3: Add your main predictor
+Include your assigned main predictor variable:
+
+- Test whether this variable affects baseline values
+- Test whether this variable affects recovery rates (interaction with time)
+
+#### Model 4: Add rehab program and test for moderation
+Include the rehabilitation program variable:
+
+- Test the main effect on outcomes
+- Test the interaction with time (does enhanced rehab accelerate recovery?)
+
+### 3. Model Comparison
+
+- Use likelihood ratio tests to compare nested models
+- Report AIC/BIC for model comparison
+- Justify your final model choice
+
+### 4. Model Diagnostics
+
+Check assumptions of your final model:
+
+- Residual plots (residuals vs. fitted values)
+- Normality of residuals
+- Normality of random effects
+
+### 5. Visualization
+
+Create publication-quality figures showing:
+
+- Predicted recovery trajectories by your main predictor
+- The moderating effect of the rehabilitation program (if significant)
+
+### 6. Interpretation and Conclusions
+
+Write a summary (300-500 words) addressing:
+
+- What is the average recovery trajectory for your outcome?
+- Does your main predictor affect recovery? How?
+- Does the rehabilitation program moderate recovery trajectories?
+- What are the clinical implications?
+- What are the limitations of your analysis?
+
+## Requirements for the Report
+
+Submit both the **Quarto source file (`.qmd`)** and the **rendered HTML file**.
+
+Your report should include:
+
+1. Your student ID number clearly stated at the top
+2. Code visibility enabled (`echo = TRUE`)
+3. All figures and tables properly labeled
+4. Clear interpretation of all model results
+5. A concluding summary with clinical implications
+
+## Downloads
+
+- [Master dataset](downloads/cardiac_recovery_master.csv)
+- [Research questions lookup table](downloads/research_questions_lookup.csv)
+
+## Grading Criteria
+
+| Component | Weight |
+|-----------|--------|
+| Exploratory data analysis | 15% |
+| Model building and comparison | 30% |
+| Model diagnostics | 15% |
+| Visualization | 15% |
+| Interpretation and conclusions | 25% |
+
+::: {.callout-note title="Academic integrity"}
+Because each student has a unique dataset and research question, your analysis and results should be your own. While you may discuss general approaches with classmates, your code, output, and interpretations must reflect your individual work on your specific assignment.
+:::

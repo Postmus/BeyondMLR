@@ -1,0 +1,120 @@
+---
+title: "Assignment Week 6: Longitudinal Analysis of Dental Growth"
+subtitle: "Modeling Growth Trajectories with Mixed Effects Models"
+format: html
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true
+---
+
+## Introduction
+
+In this assignment, you will analyze the Orthodont dataset, a classic longitudinal dataset from a dental study. The data come from a study of dental growth, where the distance (in mm) from the pituitary gland to the pterygomaxillary fissure was measured at ages 8, 10, 12, and 14 years for 27 children (16 boys and 11 girls).
+
+This dataset provides an excellent opportunity to apply growth curve modeling techniques to understand:
+
+1. How dental measurements change over time
+2. Whether children differ in their baseline measurements and growth rates
+3. Whether boys and girls show different growth patterns
+
+## Dataset Description
+
+The dataset is available in the `nlme` package and contains the following variables:
+
+- `distance`: The distance from the pituitary to the pterygomaxillary fissure (mm) - this is the outcome variable
+- `age`: Age of the child in years (8, 10, 12, or 14)
+- `Subject`: Unique identifier for each child
+- `Sex`: Sex of the child (Male or Female)
+
+## Objective
+
+Your goals are to:
+
+1. Explore individual growth trajectories and assess whether there is evidence for random intercepts and random slopes
+2. Build a series of growth curve models to determine:
+   - The average rate of dental growth
+   - Whether children differ in their baseline measurements (random intercepts)
+   - Whether children differ in their growth rates (random slopes)
+3. Investigate whether there are sex differences in:
+   - Baseline measurements
+   - Growth rates (cross-level interaction between Sex and age)
+4. Interpret your findings in the context of dental development
+
+## Steps to Complete the Analysis
+
+### Load the Dataset
+
+The data is available in the `nlme` package. Load it and convert to a regular data frame:
+
+```{r}
+library(nlme)
+data(Orthodont)
+
+# Convert to a regular data frame
+ortho_data <- as.data.frame(Orthodont)
+```
+
+### Exploratory Data Analysis (EDA)
+
+- Explore the distribution of the outcome variable (`distance`)
+- Create spaghetti plots showing individual growth trajectories
+- Explore trajectories separately by sex
+- Consider whether centering age might be useful for interpretation
+
+::: {.callout-tip icon=false title="Hint: Centering age"}
+The measurements start at age 8. Consider centering age at 8 so that the intercept represents the predicted distance at the first measurement occasion:
+
+```{r}
+ortho_data <- ortho_data %>%
+  mutate(age_c = age - 8)
+```
+:::
+
+### Growth Curve Modeling
+
+Build a sequence of models:
+
+1. **Null model**: Random intercept model without predictors - to calculate the ICC
+2. **Linear growth model**: Add age (or centered age) as a fixed effect with random intercepts only
+3. **Random slopes model**: Allow the effect of age to vary across children (random slopes)
+4. **Sex differences**: Add Sex as a predictor to test for baseline differences
+5. **Cross-level interaction**: Test whether growth rates differ by sex (Sex × age interaction)
+
+For each model:
+
+- Examine the fixed effects and interpret the coefficients
+- Examine the random effects variance components
+- Compare models using likelihood ratio tests where appropriate
+
+### Model Diagnostics
+
+Check the assumptions of your final model:
+
+- Examine residual plots (residuals vs. fitted, residual histogram)
+- Check for any patterns suggesting model misspecification
+
+### Visualization
+
+Create visualizations that show:
+
+- The fitted growth trajectories for boys and girls
+- Individual predicted trajectories overlaid on observed data
+
+### Interpret the Results
+
+Write a summary of your findings addressing:
+
+- What is the average rate of dental growth per year?
+- How much variability is there in baseline measurements and growth rates?
+- Is there evidence for sex differences in dental growth patterns?
+- What are the limitations of this analysis?
+
+## Requirements for the Report
+
+Submit both the **Quarto source file (`.qmd`)** and the **rendered HTML file**. The HTML file should be rendered with code visibility enabled (`echo = TRUE`).
+
+## Note
+
+This dataset is built into R (in the `nlme` package), so no separate download is required. Simply load it using the code provided above.

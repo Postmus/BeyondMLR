@@ -1,18 +1,18 @@
 ---
 title: "Assignment 4: longitudinal data analysis"
 subtitle: "Model answer"
-format: 
+format:
   html:
-    toc: true       
-    toc-depth: 3   
+    toc: true
+    toc-depth: 3
     toc-location: right
-    code-overflow: wrap 
+    code-overflow: wrap
     embed-resources: true
-execute:  
+execute:
   warning: false
   message: false
   eval: true
-  echo: true    
+  echo: true
 ---
 
 ## Step 1: Load and prepare the data
@@ -24,7 +24,7 @@ library(ggplot2)
 library(lmerTest)
 
 # Load the data
-asian_data <- read.csv("/home/simalgo/BeyondMLR/Assignments/Week 4/downloads/asian_data.csv")
+asian_data <- read.csv("Assignments/Week 4/downloads/asian_data.csv")
 
 # Convert all character variables into factors
 asian_data <- asian_data |>
@@ -117,7 +117,7 @@ We start with a model that includes linear, quadratic, and cubic terms for time,
 
 ```{r}
 # Fit the full time model with cubic polynomial and random slope
-time_model_full <- lmer(Weight ~ age_c + age_c2 + age_c3 + (age_c | ChildID), 
+time_model_full <- lmer(Weight ~ age_c + age_c2 + age_c3 + (age_c | ChildID),
                         data = asian_data,
                         control = lmerControl(optimizer = "bobyqa"))
 summary(time_model_full)
@@ -127,7 +127,7 @@ summary(time_model_full)
 
 ```{r}
 # Fit model with random intercept only
-time_model_ri <- lmer(Weight ~ age_c + age_c2 + age_c3 + (1 | ChildID), 
+time_model_ri <- lmer(Weight ~ age_c + age_c2 + age_c3 + (1 | ChildID),
                       data = asian_data,
                       control = lmerControl(optimizer = "bobyqa"))
 
@@ -160,7 +160,7 @@ We test the polynomial terms starting from the highest order, keeping the random
 
 ```{r}
 # Test cubic term
-time_model_quad <- lmer(Weight ~ age_c + age_c2 + (age_c | ChildID), 
+time_model_quad <- lmer(Weight ~ age_c + age_c2 + (age_c | ChildID),
                         data = asian_data,
                         control = lmerControl(optimizer = "bobyqa"))
 anova(time_model_quad, time_model_full, refit = TRUE)
@@ -220,7 +220,7 @@ ggplot(diag_data_quad, aes(x = fitted, y = residuals)) +
 
 ```{r}
 # Fit linear-only model
-time_model_linear <- lmer(Weight ~ age_c + (age_c | ChildID), 
+time_model_linear <- lmer(Weight ~ age_c + (age_c | ChildID),
                           data = asian_data,
                           control = lmerControl(optimizer = "bobyqa"))
 
@@ -297,6 +297,6 @@ Based on the final model:
 
 1. **Time trends:** The significant linear, quadratic, and cubic terms indicate that children's weight follows a curved growth trajectory. The positive linear term shows overall weight gain, while the negative quadratic term indicates deceleration of growth at older ages.
 
-2. **Gender effect:** The significant main effect of gender indicates that boys and girls differ in their weight. With effects coding, the coefficient represents the deviation from the grand mean. 
+2. **Gender effect:** The significant main effect of gender indicates that boys and girls differ in their weight. With effects coding, the coefficient represents the deviation from the grand mean.
 
 3. **Gender × time interaction:** If retained in the final model, this would indicate that boys and girls have different growth rates. If eliminated by `step()`, it suggests the trajectories are parallel (same growth pattern, different baseline).

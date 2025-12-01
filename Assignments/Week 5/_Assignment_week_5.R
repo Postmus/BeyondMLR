@@ -4,7 +4,7 @@ library(dplyr)
 library(ggplot2)
 library(lmerTest)
 
-jsp_data <- read.csv("downloads/jsp_data.csv")
+jsp_data <- read.csv("Assignments/Week 5/downloads/jsp_data.csv")
 
 # Convert all character variables into factors
 jsp_data <- jsp_data %>%
@@ -78,6 +78,10 @@ summary(full_model_eng)
 linear_model_eng <-lmer(English.test ~ Junior.school.year + Gender + Junior.school.year * Gender + (1 | School/Student.ID),data = jspr)
 anova(linear_model_eng, full_model_eng, refit = TRUE)
 
+linear_model_eng_2 <-lmer(English.test ~ Junior.school.year + Gender + Junior.school.year * Gender +
+  (1 | School) + (Junior.school.year | Student.ID:School), data = jspr)
+summary(linear_model_eng_2)
+
 ### Fit linear mixed effects models for the English test scores
 
 # Fit the random intercept model wih nesting of students within schools, ignoring classes
@@ -95,7 +99,7 @@ anova(model_ri_2, model_ri_3, refit=T) # Significant interaction between Junior.
 model_ri_4 <- lmer(English.test ~ Junior.school.year.factor*Gender + (1 + Junior.school.year.factor| School) + (1 | School:Student.ID), data = jsp_data)
 summary(model_ri_4)
 
-anova(model_ri_3, model_ri_4, refit=F) 
+anova(model_ri_3, model_ri_4, refit=F)
 
 ### Evaluate estimated marginal means
 

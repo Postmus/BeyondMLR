@@ -58,7 +58,7 @@ The time variable `Junior.school.year` is represented as a continuous variable i
 :::
 
 ::: {.callout-tip}
-While conceptually it is possible to also include a random slope for the time variable in your models, you are not required to do so for this assignment (depending on the coding of the time variable, there are either not sufficient degrees of freedom to fit this model or you may run into convergence/boundary fit issues. You may therefore focus on random intercepts to keep the analysis manageable.
+While conceptually it is possible to also include a random slope for the time variable in your models, you are not required to do so for this assignment (depending on the coding of the time variable, there are either not sufficient degrees of freedom to fit this model or you may run into convergence/boundary fit issues). You may therefore focus on random intercepts to keep the analysis manageable.
 :::
 
 ## Downloads

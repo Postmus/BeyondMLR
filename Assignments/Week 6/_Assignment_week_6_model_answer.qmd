@@ -1,0 +1,417 @@
+---
+title: "Assignment 6: Longitudinal Analysis of Dental Growth"
+subtitle: "Model answer"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    code-overflow: wrap
+execute:
+  warning: false
+  message: false
+  eval: true
+  echo: true
+---
+
+::: {.callout-note icon=false title="Preliminary setup"}
+In this assignment, we will use the R packages `ggplot2`, `dplyr`, `lmerTest`, and `nlme`. You can use the script below to automatically install and load them using the `pacman` package.
+
+```{r}
+# Check whether pacman is available and install if needed
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+
+# Use pacman to install (if needed) and load the required packages
+pacman::p_load(dplyr, ggplot2, lmerTest, nlme)
+```
+:::
+
+# Orthodont Data: Dental Growth Study
+
+The Orthodont dataset comes from a longitudinal study of dental growth. The distance (in mm) from the pituitary gland to the pterygomaxillary fissure was measured at ages 8, 10, 12, and 14 years for 27 children (16 boys and 11 girls). This is a classic dataset for demonstrating growth curve modeling.
+
+The dataset contains the following variables:
+
+* distance: The distance from the pituitary to the pterygomaxillary fissure (mm)
+* age: Age of the child in years (8, 10, 12, or 14)
+* Subject: Unique identifier for each child
+* Sex: Sex of the child (Male or Female)
+
+## Loading and Preparing the Data
+
+```{r}
+# Load the data from the nlme package
+data(Orthodont, package = "nlme")
+
+# Convert to a regular data frame
+ortho_data <- as.data.frame(Orthodont)
+
+# Inspect the structure
+str(ortho_data)
+
+# Summary statistics
+summary(ortho_data)
+
+# Check the number of subjects by sex
+ortho_data %>%
+  distinct(Subject, Sex) %>%
+  count(Sex)
+```
+
+We have a balanced design with 27 children (16 males, 11 females), each measured at 4 time points, giving us 108 observations in total.
+
+### Centering Age
+
+Since measurements start at age 8, we center age at 8 so that the intercept represents the predicted distance at age 8 (the first measurement occasion):
+
+```{r}
+ortho_data <- ortho_data %>%
+  mutate(age_c = age - 8)
+
+# Check the centering
+table(ortho_data$age_c)
+```
+
+## Exploratory Data Analysis
+
+### Distribution of the Outcome Variable
+
+```{r}
+ggplot(ortho_data, aes(x = distance)) +
+  geom_histogram(bins = 15, fill = "skyblue", color = "black") +
+  labs(title = "Distribution of Distance Measurements",
+       x = "Distance (mm)",
+       y = "Frequency") +
+  theme_minimal()
+```
+
+The distribution of distance measurements appears roughly normal, ranging from about 16.5 to 31.5 mm with a mean around 24 mm.
+
+### Individual Growth Trajectories (Spaghetti Plot)
+
+A spaghetti plot allows us to visualize individual growth trajectories and assess whether there is variability in both baseline values (intercepts) and growth rates (slopes):
+
+```{r}
+ggplot(ortho_data, aes(x = age, y = distance, group = Subject)) +
+  geom_line(alpha = 0.5, color = "gray50") +
+  geom_point(alpha = 0.5, size = 1.5) +
+  labs(title = "Individual Growth Trajectories",
+       subtitle = "Each line represents one child",
+       x = "Age (years)",
+       y = "Distance (mm)") +
+  theme_minimal()
+```
+
+This plot reveals several important features:
+
+1. **Positive growth trend**: All children show increasing distance measurements with age
+2. **Variability in intercepts**: Children start at different baseline values at age 8
+3. **Variability in slopes**: Some children grow faster than others (steeper lines)
+4. **Linear pattern**: The growth appears reasonably linear over this age range
+
+### Growth Trajectories by Sex
+
+```{r}
+ggplot(ortho_data, aes(x = age, y = distance, group = Subject, color = Sex)) +
+  geom_line(alpha = 0.6) +
+  geom_point(alpha = 0.6, size = 1.5) +
+  facet_wrap(~Sex) +
+  labs(title = "Individual Growth Trajectories by Sex",
+       x = "Age (years)",
+       y = "Distance (mm)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+Visual inspection suggests that:
+
+- Males may have larger baseline values than females
+- Males may also show steeper growth trajectories (faster growth)
+
+Let's also look at the mean trajectories by sex:
+
+```{r}
+# Calculate mean distance at each age by sex
+mean_trajectories <- ortho_data %>%
+  group_by(Sex, age) %>%
+  summarise(mean_distance = mean(distance), .groups = "drop")
+
+ggplot(ortho_data, aes(x = age, y = distance, color = Sex)) +
+  geom_line(aes(group = Subject), alpha = 0.3) +
+  geom_line(data = mean_trajectories, aes(y = mean_distance),
+            linewidth = 1.5) +
+  geom_point(data = mean_trajectories, aes(y = mean_distance),
+             size = 3) +
+  labs(title = "Growth Trajectories with Group Means",
+       subtitle = "Thick lines show mean trajectory for each sex",
+       x = "Age (years)",
+       y = "Distance (mm)") +
+  theme_minimal()
+```
+
+The mean trajectories confirm that males appear to have both higher baseline values and faster growth rates compared to females.
+
+## Growth Curve Modeling
+
+### Model 1: Null Model (Random Intercept Only)
+
+We start with a null model to calculate the ICC and understand how much variability is between vs. within children:
+
+```{r}
+# Fit the null model
+model_null <- lmer(distance ~ 1 + (1 | Subject), data = ortho_data)
+summary(model_null)
+
+# Calculate ICC
+var_components <- as.data.frame(VarCorr(model_null))
+var_between <- var_components$vcov[1]  # Between-subject variance
+var_within <- var_components$vcov[2]   # Within-subject variance
+
+ICC <- var_between / (var_between + var_within)
+cat("\nBetween-subject variance:", round(var_between, 3), "\n")
+cat("Within-subject variance:", round(var_within, 3), "\n")
+cat("ICC:", round(ICC, 3), "\n")
+```
+
+The ICC of approximately 0.65 indicates that about 65% of the total variability in distance measurements is due to differences between children, while 35% is due to within-child variation over time. This high ICC confirms the need for a multilevel approach.
+
+### Model 2: Linear Growth Model (Random Intercept)
+
+We add age (centered) as a fixed effect to model linear growth:
+
+```{r}
+model_growth <- lmer(distance ~ age_c + (1 | Subject), data = ortho_data)
+summary(model_growth)
+```
+
+Interpretation:
+
+- **Intercept (22.04)**: The average distance at age 8 is approximately 22 mm
+- **age_c (0.66)**: On average, the distance increases by 0.66 mm per year
+
+Let's check the variance components:
+
+```{r}
+var_comp_growth <- as.data.frame(VarCorr(model_growth))
+cat("Between-subject variance:", round(var_comp_growth$vcov[1], 3), "\n")
+cat("Residual variance:", round(var_comp_growth$vcov[2], 3), "\n")
+```
+
+### Model 3: Random Slopes Model
+
+The spaghetti plot suggested variability in growth rates. Let's test whether allowing random slopes improves the model:
+
+```{r}
+model_slopes <- lmer(distance ~ age_c + (age_c | Subject), data = ortho_data)
+summary(model_slopes)
+```
+
+```{r}
+# Compare models using likelihood ratio test
+anova(model_growth, model_slopes)
+```
+
+The likelihood ratio test shows that the random slopes model provides a significantly better fit (p < 0.001). This confirms that children differ not only in their baseline measurements but also in their growth rates.
+
+Let's examine the variance components:
+
+```{r}
+var_comp_slopes <- as.data.frame(VarCorr(model_slopes))
+print(var_comp_slopes)
+
+cat("\nInterpretation of random effects:\n")
+cat("SD of random intercepts:", round(var_comp_slopes$sdcor[1], 3),
+    "mm (variability in baseline distance at age 8)\n")
+cat("SD of random slopes:", round(var_comp_slopes$sdcor[2], 3),
+    "mm/year (variability in growth rates)\n")
+cat("Correlation between intercepts and slopes:", round(var_comp_slopes$sdcor[3], 3), "\n")
+```
+
+The positive correlation between random intercepts and slopes suggests that children who start with larger baseline distances also tend to grow faster.
+
+### Model 4: Adding Sex as a Predictor
+
+Now we add Sex to test for baseline differences between boys and girls:
+
+```{r}
+# Use effects coding for Sex
+options(contrasts = c("contr.sum", "contr.poly"))
+
+model_sex <- lmer(distance ~ age_c + Sex + (age_c | Subject), data = ortho_data)
+summary(model_sex)
+
+# Show the contrast coding
+cat("\nContrast for Sex (effects coding):\n")
+contrasts(ortho_data$Sex)
+```
+
+With effects coding:
+
+- **Intercept (23.76)**: The grand mean distance at age 8 across both sexes
+- **Sex1 (1.03)**: Males are about 1.03 mm above the grand mean at age 8; females are 1.03 mm below
+
+Let's test the significance of Sex:
+
+```{r}
+anova(model_slopes, model_sex)
+```
+
+The addition of Sex significantly improves the model (p < 0.05), indicating that boys and girls differ in their baseline measurements.
+
+### Model 5: Cross-Level Interaction (Sex × Age)
+
+Finally, we test whether growth rates differ by sex:
+
+```{r}
+model_interaction <- lmer(distance ~ age_c * Sex + (age_c | Subject), data = ortho_data)
+summary(model_interaction)
+```
+
+```{r}
+# Compare to model without interaction
+anova(model_sex, model_interaction)
+```
+
+The interaction is significant (p < 0.05), indicating that growth rates differ between boys and girls.
+
+Interpretation of the fixed effects:
+
+- **Intercept (23.76)**: Grand mean distance at age 8
+- **age_c (0.66)**: Average growth rate (mm per year) across both sexes
+- **Sex1 (1.03)**: Males are 1.03 mm above the grand mean at baseline; females are 1.03 mm below
+- **age_c:Sex1 (0.15)**: Males grow 0.15 mm/year faster than the average; females grow 0.15 mm/year slower
+
+Let's calculate the sex-specific effects:
+
+```{r}
+# Extract coefficients
+coefs <- fixef(model_interaction)
+
+cat("Males:\n")
+cat("  Baseline at age 8:", round(coefs["(Intercept)"] + coefs["Sex1"], 2), "mm\n")
+cat("  Growth rate:", round(coefs["age_c"] + coefs["age_c:Sex1"], 2), "mm/year\n")
+
+cat("\nFemales:\n")
+cat("  Baseline at age 8:", round(coefs["(Intercept)"] - coefs["Sex1"], 2), "mm\n")
+cat("  Growth rate:", round(coefs["age_c"] - coefs["age_c:Sex1"], 2), "mm/year\n")
+```
+
+## Model Diagnostics
+
+Let's check the assumptions of our final model:
+
+```{r}
+# Create diagnostic plots
+par(mfrow = c(2, 2))
+
+# Residuals vs fitted
+plot(fitted(model_interaction), residuals(model_interaction),
+     xlab = "Fitted values", ylab = "Residuals",
+     main = "Residuals vs Fitted")
+abline(h = 0, lty = 2, col = "red")
+
+# Normal Q-Q plot for residuals
+qqnorm(residuals(model_interaction), main = "Normal Q-Q Plot (Residuals)")
+qqline(residuals(model_interaction), col = "red")
+
+# Histogram of residuals
+hist(residuals(model_interaction), breaks = 15, main = "Histogram of Residuals",
+     xlab = "Residuals", col = "skyblue")
+
+# Normal Q-Q plot for random intercepts
+ranef_intercepts <- ranef(model_interaction)$Subject[, "(Intercept)"]
+qqnorm(ranef_intercepts, main = "Q-Q Plot (Random Intercepts)")
+qqline(ranef_intercepts, col = "red")
+```
+
+The diagnostic plots show:
+
+- Residuals appear reasonably homoscedastic (no obvious pattern in residuals vs. fitted)
+- Residuals appear approximately normally distributed
+- Random effects appear approximately normally distributed
+
+## Visualization of Final Model
+
+```{r}
+# Create predicted values
+ortho_data <- ortho_data %>%
+  mutate(fitted = fitted(model_interaction))
+
+# Plot with individual fitted trajectories and observed data
+ggplot(ortho_data, aes(x = age, y = distance, color = Sex)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(y = fitted, group = Subject), alpha = 0.5) +
+  facet_wrap(~Sex) +
+  labs(title = "Observed Data and Fitted Trajectories by Sex",
+       x = "Age (years)",
+       y = "Distance (mm)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r}
+# Plot showing the average fitted trajectories by sex
+# Create a new data frame for prediction at the population level
+pred_data <- expand.grid(
+  age_c = c(0, 2, 4, 6),
+  Sex = c("Male", "Female")
+) %>%
+  mutate(age = age_c + 8)
+
+# Get population-level predictions (fixed effects only)
+pred_data$predicted <- predict(model_interaction, newdata = pred_data, re.form = NA)
+
+ggplot(ortho_data, aes(x = age, y = distance, color = Sex)) +
+  geom_line(aes(group = Subject), alpha = 0.2) +
+  geom_line(data = pred_data, aes(y = predicted), linewidth = 1.5) +
+  geom_point(data = pred_data, aes(y = predicted), size = 3) +
+  labs(title = "Population-Average Growth Trajectories by Sex",
+       subtitle = "Thin lines = individual children; Thick lines = model predictions",
+       x = "Age (years)",
+       y = "Distance (mm)") +
+  theme_minimal()
+```
+
+## Summary and Conclusions
+
+### Key Findings
+
+1. **Average growth rate**: On average, the distance from the pituitary to the pterygomaxillary fissure increases by about 0.66 mm per year between ages 8 and 14.
+
+2. **Sex differences in baseline**: At age 8, males have an average distance of about 24.8 mm, compared to 22.7 mm for females - a difference of approximately 2.1 mm.
+
+3. **Sex differences in growth rate**: Males grow faster than females, at approximately 0.81 mm/year compared to 0.51 mm/year. This means the sex difference increases over time.
+
+4. **Individual variability**: There is substantial variability in both baseline measurements (SD ≈ 1.8 mm) and growth rates (SD ≈ 0.2 mm/year) between children.
+
+5. **Positive correlation**: Children who start with larger baseline distances tend to also grow faster (positive correlation between random intercepts and slopes).
+
+### Model Comparison Summary
+
+| Model | Description | AIC | Comparison |
+|-------|-------------|-----|------------|
+| 1 | Null model | - | Baseline |
+| 2 | Random intercept + age | - | - |
+| 3 | Random slopes | - | Better than model 2 (p < 0.001) |
+| 4 | + Sex | - | Better than model 3 (p < 0.05) |
+| 5 | + Sex × age interaction | - | Better than model 4 (p < 0.05) |
+
+```{r}
+# Print AIC values for all models
+cat("AIC comparison:\n")
+cat("Model 2 (random intercept + age):", round(AIC(model_growth), 1), "\n")
+cat("Model 3 (random slopes):", round(AIC(model_slopes), 1), "\n")
+cat("Model 4 (+ Sex):", round(AIC(model_sex), 1), "\n")
+cat("Model 5 (+ interaction):", round(AIC(model_interaction), 1), "\n")
+```
+
+### Limitations
+
+1. **Small sample size**: With only 27 children (16 males, 11 females), the power to detect effects and estimate variance components precisely is limited.
+
+2. **Age range**: The linear model assumes constant growth rates between ages 8-14. Growth patterns may differ outside this range.
+
+3. **Limited covariates**: Other factors that might influence dental growth (e.g., nutrition, genetics, socioeconomic factors) were not available in this dataset.
+
+4. **Balanced design**: All children have exactly 4 measurements - the methods generalize to unbalanced data, but this dataset doesn't allow us to demonstrate that.
