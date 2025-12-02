@@ -7,6 +7,7 @@ format:
     toc-depth: 3
     toc-location: right
     code-overflow: wrap
+    embed-resources: true
 execute:
   warning: false
   message: false
@@ -46,7 +47,7 @@ Let's load the data and use the `str()` function to inspect the structure of the
 
 ```{r}
 # Load the ILEA data
-ilea_data <- read.csv("/home/simalgo/projects/BeyondMLR/Assignments/Week 3/downloads/ilea_data.csv")
+ilea_data <- read.csv("downloads/ilea_data.csv")
 
 # Convert all character variables into factors
 ilea_data <- ilea_data %>%
@@ -124,13 +125,17 @@ school_avg_score <- random_school_data %>%
 grand_mean <- mean(ilea_data$ExamScore, na.rm = TRUE)
 
 # Create scatter plot with jittered observations
-ggplot(random_school_data, aes(x = reorder(School, ExamScore, FUN = mean), y = ExamScore)) +
-  geom_hline(yintercept = grand_mean, linetype = "solid", color = "black", linewidth = 1) +
+ggplot(random_school_data, 
+       aes(x = reorder(School, ExamScore, FUN = mean), 
+           y = ExamScore)) +
+  geom_hline(yintercept = grand_mean, 
+             linetype = "solid", color = "black", linewidth = 1) +
   geom_jitter(alpha = 0.3, width = 0.2, size = 1, color = "gray60") +
-  geom_point(data = school_avg_score, aes(x = School, y = avg_exam_score),
+  geom_point(data = school_avg_score, 
+             aes(x = School, y = avg_exam_score),
              size = 4, shape = 18, color = "red") +
-  labs(title = "Variation in exam scores: within and between schools",
-       subtitle = "Points = individual students; Diamonds = school means; Solid line = grand mean (all data)",
+  labs(title = "Variation in exam scores",
+       subtitle = "Points = students; Diamonds = school means; Line = grand mean",
        x = "School (ordered by mean exam score)",
        y = "Exam Score") +
   theme_minimal() +
@@ -184,38 +189,33 @@ ggplot(ilea_data, aes(x = Gender, y = ExamScore, fill = Gender)) +
   theme(legend.position = "none")
 ```
 
-Now let's explore the relationship between PercentFSM (school-level socioeconomic indicator) and exam scores:
+Now let's explore the relationship between PercentFSM (school-level socioeconomic indicator) and exam scores
 
 ```{r}
-# Create a school-level summary with average exam scores and PercentFSM
-school_level_data <- ilea_data %>%
-  group_by(School) %>%
-  summarise(
-    avg_exam_score = mean(ExamScore, na.rm = TRUE),
-    PercentFSM = first(PercentFSM),
-    SchoolDenomination = first(SchoolDenomination),
-    .groups = "drop"
-  )
-
-# Scatterplot of school average exam score vs PercentFSM
-ggplot(school_level_data, aes(x = PercentFSM, y = avg_exam_score)) +
-  geom_point(color = "gray60", size = 2) +
-  geom_smooth(method = "lm", se = FALSE, color = "steelblue", linewidth = 1.5) +
-  labs(title = "Relationship between School SES (PercentFSM) and Average Exam Score",
-       x = "Percentage of Students Eligible for Free School Meals",
-       y = "Average Exam Score") +
+# Scatterplot of individual exam scores vs PercentFSM
+ggplot(ilea_data, aes(x = PercentFSM, y = ExamScore)) +
+  geom_point(alpha = 0.1, color = "gray50") +
+  geom_smooth(method = "lm", se = FALSE, 
+              color = "steelblue", linewidth = 1.5) +
+  labs(title = "School SES (PercentFSM) and Exam Score",
+       x = "% Students Eligible for Free School Meals",
+       y = "Exam Score") +
   theme_minimal()
 ```
+
+The plot shows a weak negative relationship between school SES and individual exam scores. The large vertical spread of points at each %FSM value indicates that most of the variability in exam scores is at the individual level, not the school level. This is consistent with the variance components plot.
 
 Finally, let's examine exam scores by school denomination:
 
 ```{r}
-# Boxplot for SchoolDenomination vs ExamScore (using school-level averages)
-ggplot(school_level_data, aes(x = SchoolDenomination, y = avg_exam_score, fill = SchoolDenomination)) +
+# Boxplot for SchoolDenomination vs ExamScore (individual level)
+ggplot(ilea_data, 
+       aes(x = SchoolDenomination, y = ExamScore, 
+           fill = SchoolDenomination)) +
   geom_boxplot(alpha = 0.7) +
-  labs(title = "Average Exam Scores by School Denomination",
+  labs(title = "Exam Scores by School Denomination",
        x = "School Denomination",
-       y = "Average Exam Score") +
+       y = "Exam Score") +
   theme_minimal() +
   theme(legend.position = "none",
         axis.text.x = element_text(angle = 45, hjust = 1))
@@ -240,9 +240,7 @@ var_within <- as.data.frame(VarCorr(null_model))$vcov[2]
 
 # Calculate ICC
 ICC <- var_between / (var_between + var_within)
-cat("Between-school variance:", round(var_between, 2), "\n")
-cat("Within-school variance:", round(var_within, 2), "\n")
-cat("Intraclass Correlation Coefficient (ICC):", round(ICC, 3), "\n")
+ICC
 ```
 
 The ICC indicates that approximately `r round(ICC * 100, 1)`% of the total variability in exam scores can be attributed to differences between schools, while the remaining `r round((1-ICC) * 100, 1)`% is due to differences between students within schools. This suggests that while most of the variability in exam scores is at the student level, there is still meaningful variation between schools that warrants a multilevel approach.
@@ -275,20 +273,6 @@ The results show that both `Gender` and `VRBand` are significant predictors of e
 - The coefficient for Gender1 (Female = 1) indicates how much the mean for females differs from the grand mean; males differ by the same amount in the opposite direction
 - The coefficients for VRBand indicate how much each verbal reasoning band differs from the grand mean
 
-Let's examine how the variance components have changed:
-
-```{r}
-# Extract variance components from the model with L1 variables
-var_between_L1 <- as.data.frame(VarCorr(model_L1))$vcov[1]
-var_within_L1 <- as.data.frame(VarCorr(model_L1))$vcov[2]
-
-cat("After adding individual-level variables:\n")
-cat("Between-school variance:", round(var_between_L1, 2), "(was", round(var_between, 2), ")\n")
-cat("Within-school variance:", round(var_within_L1, 2), "(was", round(var_within, 2), ")\n")
-```
-
-The inclusion of individual-level variables primarily reduces the within-school variance because these variables (Gender and VRBand) explain differences between students within the same school.
-
 ## Including context-level variables
 
 As a third step, we extend the model with context-level variables (`PercentFSM` and `SchoolDenomination`). We start by centering the continuous context-level variable:
@@ -299,32 +283,14 @@ ilea_data <- ilea_data %>%
   mutate(PercentFSM_c = scale(PercentFSM, scale = FALSE))
 
 # Fit the random intercept model with individual-level and context-level variables
-model_L1L2 <- lmer(ExamScore ~ Gender + VRBand + PercentFSM_c + SchoolDenomination + (1 | School), data = ilea_data)
+model_L1L2 <- lmer(ExamScore ~ Gender + VRBand + PercentFSM_c + 
+                     SchoolDenomination + (1 | School), 
+                   data = ilea_data)
 summary(model_L1L2)
 
 # Obtain the ANOVA table
 anova(model_L1L2)
 ```
-
-Let's examine how the variance components have changed:
-
-```{r}
-# Extract variance components from the model with L1 and L2 variables
-var_between_L1L2 <- as.data.frame(VarCorr(model_L1L2))$vcov[1]
-var_within_L1L2 <- as.data.frame(VarCorr(model_L1L2))$vcov[2]
-
-cat("After adding context-level variables:\n")
-cat("Between-school variance:", round(var_between_L1L2, 2), "(was", round(var_between_L1, 2), ")\n")
-cat("Within-school variance:", round(var_within_L1L2, 2), "(was", round(var_within_L1, 2), ")\n")
-
-# Calculate proportion of between-school variance explained
-prop_explained <- (var_between_L1 - var_between_L1L2) / var_between_L1
-cat("\nProportion of between-school variance explained by context-level variables:", round(prop_explained * 100, 1), "%\n")
-```
-
-The inclusion of context-level variables primarily reduces the between-school variance, as these variables explain differences between schools.
-
-### Model selection using stepwise elimination
 
 To obtain a more parsimonious model, we can use the `step()` function from the `lmerTest` package to perform backward elimination of fixed-effect terms:
 
@@ -334,74 +300,92 @@ To obtain a more parsimonious model, we can use the `step()` function from the `
 step(model_L1L2, reduce.random = FALSE)
 ```
 
+### Understanding the non-significant PercentFSM effect
+
+An interesting observation from the model output is that `PercentFSM_c` is **not statistically significant** (p = 0.92). This might seem surprising given that school SES is often considered an important predictor of educational outcomes. However, this result illustrates an important principle in multi-level modeling: the effect of a context-level variable can be substantially reduced (or disappear entirely) when individual-level confounders are controlled for.
+
+::: {.callout-important title="Compositional Effects in Multilevel Data"}
+In our multi-level model, `PercentFSM_c` is estimated while controlling for individual-level predictors like `Gender` and `VRBand`. The key insight is that `VRBand` is doing most of the explanatory work. Students in higher verbal reasoning bands score much higher (VRBand1 effect ≈ +10 points), and these high-ability students are likely concentrated in schools with lower %FSM. Once we adjust for individual ability, the contextual effect of school SES largely disappears.
+:::
+
+To demonstrate this, let's fit a model **without** the `VRBand` predictor:
+
+```{r}
+# Model without VRBand - to demonstrate the effect
+model_no_vr <- lmer(ExamScore ~ Gender + PercentFSM_c + 
+                      SchoolDenomination + (1 | School), 
+                    data = ilea_data)
+summary(model_no_vr)
+```
+
+Without adjusting for individual verbal reasoning ability, `PercentFSM_c` shows a significant negative effect (β = -0.026, p = 0.04): for every 1 percentage point increase in the proportion of students eligible for free school meals, exam scores decrease by approximately 0.026 points.
+
 ## Exploring cross-level interactions
 
-Finally, we explore potential cross-level interactions. The relationship between individual-level variables (such as VRBand) and exam scores may depend on school-level characteristics (such as PercentFSM or SchoolDenomination).
-
-For example, we might hypothesize that the gap between high-ability (VR1) and low-ability (VR3) students differs depending on the socioeconomic composition of the school.
+Finally, we explore potential cross-level interactions. These are interactions between individual-level variables (`Gender`, `VRBand`) and context-level variables (`SchoolDenomination`). We fit a full model that includes both cross-level interactions, then use backward elimination to identify significant terms.
 
 ```{r}
-# Fit model with VRBand × PercentFSM interaction
-model_interaction <- lmer(ExamScore ~ Gender + VRBand * PercentFSM_c + SchoolDenomination + (1 | School), data = ilea_data)
-summary(model_interaction)
+# Fit full model with cross-level interactions 
+# (excluding PercentFSM which was not significant)
+model_full <- lmer(ExamScore ~ Gender * SchoolDenomination + 
+                     VRBand * SchoolDenomination + (1 | School), 
+                   data = ilea_data)
 
-# Test the interaction terms
-drop1(model_interaction)
+# Use step() to perform backward elimination
+step(model_full, reduce.random = FALSE)
 ```
 
-Let's also test whether the effect of Gender differs by school denomination:
+The stepwise selection eliminates the `Gender × SchoolDenomination` interaction (not significant) but retains the `VRBand × SchoolDenomination` interaction. This indicates that the effect of verbal reasoning band on exam scores differs across school denominations. Let's fit and examine the final model:
 
 ```{r}
-# Fit model with Gender × SchoolDenomination interaction
-model_interaction2 <- lmer(ExamScore ~ Gender * SchoolDenomination + VRBand + PercentFSM_c + (1 | School), data = ilea_data)
-
-# Test the interaction term
-drop1(model_interaction2)
+# Fit the final model with the significant interaction
+model_final <- lmer(ExamScore ~ Gender + VRBand * SchoolDenomination + 
+                      (1 | School), 
+                    data = ilea_data)
+summary(model_final)
 ```
 
-### Interpreting the VRBand × PercentFSM interaction
+### Visualizing the VRBand × SchoolDenomination interaction
 
-If the interaction is significant, we can use the `emmeans` package to visualize how the effect of VRBand on exam scores varies across schools with different levels of PercentFSM:
+We use the `emmeans` package to visualize how the effect of verbal reasoning band varies across school denominations:
 
 ```{r}
-# Calculate representative values for PercentFSM
-fsm_low <- quantile(ilea_data$PercentFSM_c, 0.25, na.rm = TRUE)
-fsm_high <- quantile(ilea_data$PercentFSM_c, 0.75, na.rm = TRUE)
+# Compute estimated marginal means for VRBand × SchoolDenomination
+emm_vr_denom <- emmeans(model_final,
+                        specs = ~ VRBand | SchoolDenomination,
+                        lmer.df = "satterthwaite")
 
-# Compute estimated marginal means
-predictions_grid <- emmeans(model_interaction,
-                            specs = ~ VRBand * PercentFSM_c,
-                            at = list(PercentFSM_c = c(fsm_low, 0, fsm_high)),
-                            lmer.df = "satterthwaite")
+# Convert to data frame for plotting
+pred_vr_denom <- as.data.frame(summary(emm_vr_denom))
 
-# Convert predictions to data frame for plotting
-pred_df <- as.data.frame(summary(predictions_grid))
-
-# Add descriptive labels
-pred_df$fsm_label <- factor(pred_df$PercentFSM_c,
-                            levels = c(fsm_low, 0, fsm_high),
-                            labels = c("Low FSM (Q1)", "Average FSM", "High FSM (Q3)"))
-
-# Create interaction plot
-ggplot(pred_df, aes(x = VRBand, y = emmean, color = fsm_label, group = fsm_label)) +
+# Create interaction plot for VRBand × SchoolDenomination
+ggplot(pred_vr_denom, 
+       aes(x = VRBand, y = emmean, 
+           color = SchoolDenomination, 
+           group = SchoolDenomination)) +
   geom_point(size = 3) +
   geom_line(linewidth = 1) +
-  labs(title = "Interaction between VRBand and School SES",
-       subtitle = "Estimated exam scores at different combinations of VRBand and PercentFSM",
+  geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE), 
+                width = 0.1) +
+  labs(title = "VRBand × School Denomination Interaction",
+       subtitle = "Estimated exam scores (± SE)",
        x = "Verbal Reasoning Band",
        y = "Estimated Exam Score",
-       color = "School SES Level") +
+       color = "School Denomination") +
   theme_minimal() +
   theme(legend.position = "bottom")
 ```
 
-The interaction plot shows that the lines are nearly parallel, indicating that the practical effect of the interaction is modest despite being statistically significant. Looking at the estimated marginal means:
+The interaction plot shows how the ability-achievement relationship differs across school types. Non-parallel lines indicate that the gap between high-ability (VR1) and low-ability (VR3) students varies depending on the school denomination.
 
-- For **VR1 students** (high ability): scores decrease slightly as PercentFSM increases (30.8 → 30.0)
-- For **VR3 students** (low ability): scores increase slightly as PercentFSM increases (11.4 → 12.3)
-- For **VR2 students**: scores remain essentially flat
+The plot reveals several key findings:
 
-This means the gap between high and low ability students is **smaller in high-FSM schools** (30.0 - 12.3 = 17.7 points) compared to **low-FSM schools** (30.8 - 11.4 = 19.4 points). The interaction is statistically significant (p < 0.001) due to the large sample size (n = 15,347), but the practical effect is modest (about 1.7 points difference in the VR1-VR3 gap). This illustrates an important point: **statistical significance does not imply practical significance**.
+- **Roman Catholic** and **Maintained** schools show relatively parallel lines, indicating a similar ability-achievement relationship in these school types
+- **Church of England schools** show a steeper slope, indicating a stronger effect of verbal reasoning band on exam scores
+- The **VR1-VR3 gap is largest in Church of England schools** (approximately 21 points: from ~31 at VR1 to ~10 at VR3)
+- In contrast, **Roman Catholic schools show a smaller ability gap** (approximately 18 points: from ~32 at VR1 to ~14 at VR3)
+
+This pattern suggests that Church of England schools show greater differentiation in exam performance between high- and low-ability students, while Roman Catholic schools show more similar outcomes across ability levels (with generally higher scores for lower-ability students compared to other denominations).
 
 ## Model diagnostics
 
@@ -415,16 +399,18 @@ To assess the assumptions of the multilevel model, we examine the conditional re
 
 ```{r}
 # Extract conditional residuals from the final model
-residuals_cond <- residuals(model_interaction)
+residuals_cond <- residuals(model_final)
 
 # Create histogram of conditional residuals
 ggplot(data.frame(residuals = residuals_cond), aes(x = residuals)) +
-  geom_histogram(bins = 50, fill = "skyblue", color = "black", aes(y = after_stat(density))) +
+  geom_histogram(bins = 50, fill = "skyblue", color = "black", 
+                 aes(y = after_stat(density))) +
   stat_function(fun = dnorm,
-                args = list(mean = mean(residuals_cond), sd = sd(residuals_cond)),
+                args = list(mean = mean(residuals_cond), 
+                            sd = sd(residuals_cond)),
                 color = "red", linewidth = 1) +
   labs(title = "Distribution of Conditional Residuals",
-       subtitle = "Red line shows normal distribution with same mean and SD",
+       subtitle = "Red line shows normal distribution",
        x = "Residuals",
        y = "Density") +
   theme_minimal()
@@ -436,16 +422,18 @@ The histogram shows that the conditional residuals are approximately normally di
 
 ```{r}
 # Extract fitted values
-fitted_values <- fitted(model_interaction)
+fitted_values <- fitted(model_final)
 
 # Create residuals vs fitted values plot
-ggplot(data.frame(fitted = fitted_values, residuals = residuals_cond),
+ggplot(data.frame(fitted = fitted_values, 
+                  residuals = residuals_cond),
        aes(x = fitted, y = residuals)) +
   geom_point(alpha = 0.2, color = "gray50") +
   geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
-  geom_smooth(method = "loess", se = FALSE, color = "red", linewidth = 1) +
+  geom_smooth(method = "loess", se = FALSE, 
+              color = "red", linewidth = 1) +
   labs(title = "Residuals vs. Fitted Values",
-       subtitle = "Red line shows loess trend; dashed line at zero",
+       subtitle = "Red = loess trend; dashed = zero",
        x = "Fitted Values",
        y = "Conditional Residuals") +
   theme_minimal()
@@ -458,135 +446,7 @@ The residuals vs. fitted values plot reveals some violation of the homoscedastic
 
 This floor effect, combined with the right-skewed distribution of exam scores, suggests that the assumption of homogeneous residual variance is not fully met. In practice, mixed models are reasonably robust to moderate violations of this assumption, especially with large sample sizes. However, for a more rigorous analysis, one could consider:
 
-- Transforming the outcome variable (though this complicates interpretation)
-- Using a generalized linear mixed model with a distribution that better accommodates bounded or skewed outcomes
+- Using a generalized linear mixed model with a distribution that better accommodates bounded outcomes
 - Applying robust standard errors
-
-For the purposes of this analysis, we proceed with the linear mixed model while acknowledging this limitation.
-
-## Summary of findings
-
-Based on our multilevel analysis:
-
-1. **Variance partitioning**: The ICC from the null model indicates that approximately `r round(ICC * 100, 1)`% of the variance in exam scores is between schools, while the majority is between students within schools.
-
-2. **Individual-level effects**: Both Gender and VRBand are significant predictors of exam scores. Students in higher verbal reasoning bands (VR1) score higher than those in lower bands (VR3), and there are gender differences in exam performance.
-
-3. **Context-level effects**: PercentFSM is a significant predictor, with schools having higher proportions of students eligible for free school meals tending to have lower average exam scores. The school denomination also influences exam scores.
-
-4. **Cross-level interactions**: The analysis of cross-level interactions reveals whether the effects of individual-level predictors vary across different types of schools.
-
-The multilevel approach is appropriate for this dataset because it accounts for the clustering of students within schools, provides accurate standard errors for the fixed effects, and allows us to partition the variance into student-level and school-level components.
-
-## Sensitivity analysis: Log-transformed outcome
-
-Given the floor effect and right-skewed distribution of exam scores, we explore whether a log transformation improves the model diagnostics. Since some students scored zero, we use log(ExamScore + 1) to handle these cases.
-
-### Distribution of log-transformed outcome
-
-```{r}
-# Create log-transformed outcome variable
-ilea_data <- ilea_data %>%
-  mutate(log_ExamScore = log(ExamScore + 1))
-
-# Histogram of log-transformed exam scores
-ggplot(ilea_data, aes(x = log_ExamScore)) +
-  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
-  labs(title = "Distribution of Log-Transformed Exam Scores",
-       subtitle = "log(ExamScore + 1)",
-       x = "Log(Exam Score + 1)",
-       y = "Frequency") +
-  theme_minimal()
-```
-
-The log transformation reduces the right skewness, but the floor effect remains visible as a spike at log(0 + 1) = 0 for students who scored zero.
-
-### Fitting the model with log-transformed outcome
-
-```{r}
-# Fit the interaction model with log-transformed outcome
-model_interaction_log <- lmer(log_ExamScore ~ Gender + VRBand * PercentFSM_c + SchoolDenomination + (1 | School), data = ilea_data)
-summary(model_interaction_log)
-```
-
-### Residuals vs. fitted values for log-transformed model
-
-```{r}
-# Extract residuals and fitted values
-residuals_log <- residuals(model_interaction_log)
-fitted_log <- fitted(model_interaction_log)
-
-# Create residuals vs fitted values plot
-ggplot(data.frame(fitted = fitted_log, residuals = residuals_log),
-       aes(x = fitted, y = residuals)) +
-  geom_point(alpha = 0.2, color = "gray50") +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
-  geom_smooth(method = "loess", se = FALSE, color = "red", linewidth = 1) +
-  labs(title = "Residuals vs. Fitted Values (Log-Transformed Outcome)",
-       subtitle = "Red line shows loess trend; dashed line at zero",
-       x = "Fitted Values",
-       y = "Conditional Residuals") +
-  theme_minimal()
-```
-
-### Square root transformation
-
-An alternative to the log transformation is the square root transformation, which has some advantages for this type of data:
-
-- **Handles zeros naturally**: √0 = 0, so no need to add a constant
-- **Milder transformation**: Less aggressive than log, reducing skewness without over-compressing the upper tail
-- **Common for count-like data**: Square root transformations are often used for count data or bounded scores
-
-```{r}
-# Create square root transformed outcome variable
-ilea_data <- ilea_data %>%
-  mutate(sqrt_ExamScore = sqrt(ExamScore))
-
-# Histogram of square root transformed exam scores
-ggplot(ilea_data, aes(x = sqrt_ExamScore)) +
-  geom_histogram(bins = 30, fill = "skyblue", color = "black") +
-  labs(title = "Distribution of Square Root Transformed Exam Scores",
-       x = "√(Exam Score)",
-       y = "Frequency") +
-  theme_minimal()
-```
-
-```{r}
-# Fit the interaction model with square root transformed outcome
-model_interaction_sqrt <- lmer(sqrt_ExamScore ~ Gender + VRBand * PercentFSM_c + SchoolDenomination + (1 | School), data = ilea_data)
-summary(model_interaction_sqrt)
-```
-
-```{r}
-# Extract residuals and fitted values
-residuals_sqrt <- residuals(model_interaction_sqrt)
-fitted_sqrt <- fitted(model_interaction_sqrt)
-
-# Create residuals vs fitted values plot
-ggplot(data.frame(fitted = fitted_sqrt, residuals = residuals_sqrt),
-       aes(x = fitted, y = residuals)) +
-  geom_point(alpha = 0.2, color = "gray50") +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
-  geom_smooth(method = "loess", se = FALSE, color = "red", linewidth = 1) +
-  labs(title = "Residuals vs. Fitted Values (Square Root Transformed Outcome)",
-       subtitle = "Red line shows loess trend; dashed line at zero",
-       x = "Fitted Values",
-       y = "Conditional Residuals") +
-  theme_minimal()
-```
-
-### Comparison of approaches
-
-Neither the log nor the square root transformation fully resolves the heteroscedasticity issue:
-
-1. **The floor effect persists**: Students who scored zero still create a boundary at the lower end. Both transformations map zero to zero, maintaining the cluster of observations at the lower bound.
-
-2. **Interpretation trade-offs**:
-   - Untransformed: coefficients represent changes in exam score points (most intuitive)
-   - Square root: coefficients represent changes in √(points) (moderate interpretability)
-   - Log: coefficients represent changes in log-units (least intuitive)
-
-3. **The fundamental issue remains**: The heteroscedasticity is caused by the bounded nature of the outcome (scores cannot go below zero), which no monotonic transformation can fully address.
-
-The square root transformation may provide a modest improvement over both the untransformed and log-transformed models, as it handles zeros naturally and applies a milder correction. However, for this dataset, the untransformed model with acknowledged limitations may still be the most practical choice for interpretation, while recognizing that more sophisticated approaches (such as Tobit models for censored data) could be considered for a more rigorous analysis.
+- Using bootstrapping to estimate standard errors
 
