@@ -1,0 +1,73 @@
+---
+title: "Final Assignment: Scoring Rubric"
+format:
+  html: default
+  docx: default
+---
+
+## Criterion 1: Introduction (10%)
+
+| Level | Score | Description |
+|-------|-------|-------------|
+| Insufficient | 3 | Clinical context is missing or irrelevant; research questions are unclear or not stated. |
+| Sufficient | 6 | Clinical context is briefly described; research questions are stated but may lack clarity. |
+| Good | 8 | Clinical context is well described; research questions are clearly stated and appropriate. |
+| Excellent | 10 | Clinical context is compellingly presented with clear motivation; research questions are precisely formulated and well-justified. |
+
+## Criterion 2: Exploratory Data Analysis (20%)
+
+| Level | Score | Description |
+|-------|-------|-------------|
+| Insufficient | 3 | EDA is missing or superficial; no spaghetti plots or inappropriate visualizations. |
+| Sufficient | 6 | Basic EDA present for both outcomes; spaghetti plots included but may lack clarity. |
+| Good | 8 | Comprehensive EDA with clear spaghetti plots for both outcomes; patterns by rehab program explored. |
+| Excellent | 10 | Excellent EDA with insightful visualizations for both outcomes; clear presentation of trajectory patterns; thoughtful summary of observed patterns informing subsequent analysis. |
+
+## Criterion 3: Unconditional Growth Models (30%)
+
+| Level | Score | Description |
+|-------|-------|-------------|
+| Insufficient | 3 | Models are incorrectly specified or missing for one or both outcomes; no interpretation of variance components or ICC. |
+| Sufficient | 6 | Models correctly specified for both outcomes; fixed and random effects reported but interpretation may be incomplete; ICC calculated but interpretation unclear. |
+| Good | 8 | Models correctly specified with random intercepts and slopes for both outcomes; variance components and ICC correctly interpreted; model assumptions checked. |
+| Excellent | 10 | Models correctly specified for both outcomes with clear justification; thorough interpretation of fixed effects, variance components, and ICC; comprehensive assumption checking with appropriate diagnostics. |
+
+## Criterion 4: Conditional Growth Models (30%)
+
+| Level | Score | Description |
+|-------|-------|-------------|
+| Insufficient | 3 | Models are incorrectly specified; rehab × time interactions missing or misunderstood; analysis incomplete for one or both outcomes. |
+| Sufficient | 6 | Models include rehab program for both outcomes; time interactions attempted but may be incomplete; basic interpretation present. |
+| Good | 8 | Models correctly include rehab program × time interaction for both outcomes; appropriate model comparison; coefficients correctly interpreted. |
+| Excellent | 10 | Systematic model building for both outcomes with clear rationale; rehab × time interactions correctly specified and tested; thorough interpretation with clinical meaning for the subpopulation. |
+
+## Criterion 5: Discussion and Conclusions (10%)
+
+| Level | Score | Description |
+|-------|-------|-------------|
+| Insufficient | 3 | Discussion is missing or does not address research questions; no limitations mentioned. |
+| Sufficient | 6 | Key findings summarized; some clinical interpretation; limitations briefly mentioned. |
+| Good | 8 | Findings clearly linked to each research question; meaningful clinical interpretation; thoughtful discussion of limitations. |
+| Excellent | 10 | Insightful synthesis of findings addressing all research questions; compelling clinical interpretation with practical implications; comprehensive discussion of limitations and their impact on conclusions. |
+
+## Grade Calculation
+
+| Criterion | Weight | Score | Weighted Score |
+|-----------|--------|-------|----------------|
+| Introduction | 10% | ___ | ___ |
+| Exploratory Data Analysis | 20% | ___ | ___ |
+| Unconditional Growth Models | 30% | ___ | ___ |
+| Conditional Growth Models | 30% | ___ | ___ |
+| Discussion and Conclusions | 10% | ___ | ___ |
+| **Final Grade** | **100%** | | **___** |
+
+### Example Calculation
+
+| Criterion | Weight | Score | Weighted Score |
+|-----------|--------|-------|----------------|
+| Introduction | 10% | 8 | 0.8 |
+| Exploratory Data Analysis | 20% | 8 | 1.6 |
+| Unconditional Growth Models | 30% | 6 | 1.8 |
+| Conditional Growth Models | 30% | 8 | 2.4 |
+| Discussion and Conclusions | 10% | 6 | 0.6 |
+| **Final Grade** | **100%** | | **7.2** |

@@ -1,0 +1,154 @@
+---
+title: "Final Assignment: Longitudinal Analysis of Cardiac Recovery"
+subtitle: "Modeling Recovery Trajectories with Mixed Effects Models"
+format: html
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true
+---
+
+## Assignment Overview
+
+For this final assignment, you will write a short research report analyzing recovery trajectories in cardiac surgery patients.
+
+## Study Background
+
+### Clinical Context
+
+Coronary artery bypass grafting (CABG) is one of the most common cardiac surgeries, performed to restore blood flow to the heart in patients with severe coronary artery disease. While the surgery itself is generally successful, recovery is a gradual process that varies considerably between patients. Understanding the factors that influence recovery trajectories is crucial for optimizing patient care and rehabilitation strategies.
+
+### The RECOVER Study
+
+The data for this assignment come from the **RECOVER study** (Recovery and Exercise after Cardiac Operation: Variability and Effectiveness Research), a randomized controlled trial that enrolled 500 patients undergoing CABG surgery (with or without valve repair). Patients were followed for 6 months post-surgery.
+
+**Study objectives:**
+
+- To characterize recovery trajectories in quality of life and physical function after cardiac surgery
+- To identify patient characteristics associated with different recovery patterns
+- To evaluate the effectiveness of an enhanced cardiac rehabilitation program compared to standard care
+
+**Study design:**
+
+- Patients were assessed at 5 time points: pre-surgery (baseline), 2 weeks, 6 weeks, 3 months, and 6 months post-surgery
+- Patients were randomized to receive either **Standard rehabilitation** (usual care with basic exercise guidance) or **Enhanced rehabilitation** (structured exercise program with additional psychological support and nutritional counseling)
+- Key outcomes included health-related quality of life and functional capacity (6-minute walk test)
+
+### Outcome Measures
+
+**Quality of Life** was assessed using a validated cardiac-specific quality of life questionnaire, yielding a score from 0 (worst) to 100 (best). This measure captures physical, emotional, and social aspects of health-related quality of life relevant to cardiac patients.
+
+**Walk Distance** was measured using the 6-minute walk test, a standardized assessment of functional capacity. Patients walk as far as possible in 6 minutes on a flat surface. The distance (in meters) reflects overall cardiopulmonary fitness and is a strong predictor of long-term outcomes in cardiac patients.
+
+## Your Assignment
+
+Use the lookup table below to determine your **subpopulation** based on the **last two digits** of your student or staff number. You will analyze **both outcomes** (Quality of Life and Walk Distance) within your assigned subpopulation.
+
+### Subpopulation Lookup Table
+
+| Last 2 digits | Subpopulation |
+|:-------------:|:--------------|
+| 00-24 | Female patients (`sex == "Female"`) |
+| 25-49 | Male patients (`sex == "Male"`) |
+| 50-74 | Patients with diabetes (`diabetes == "Yes"`) |
+| 75-99 | Patients without diabetes (`diabetes == "No"`) |
+
+For example, if your student/staff number is 12345**67**, your last two digits are **67**, so you analyze patients **with diabetes**.
+
+### Your Research Questions
+
+All students address the same two research questions within their assigned subpopulation:
+
+1. **Quality of Life**: Does the rehabilitation program (Standard vs Enhanced) affect the recovery trajectory of quality of life in [your subpopulation]?
+
+2. **Walk Distance**: Does the rehabilitation program (Standard vs Enhanced) affect the recovery trajectory of walk distance in [your subpopulation]?
+
+### Getting Started
+
+Download the template file and the dataset below. Place both files in the same folder, then open the template in RStudio.
+
+::: {.callout-important}
+In the template, replace `123456` with your actual student/staff number in the setup code chunk, and update the author field in the YAML header with your name and student ID.
+:::
+
+After running the setup code chunk, your personalized dataset will be stored in `my_data`. Use this dataset for all subsequent analyses.
+
+## Dataset Description
+
+The dataset contains the following variables:
+
+| Variable | Description |
+|:---------|:------------|
+| `patient_id` | Unique patient identifier |
+| `time_weeks` | Time in weeks (0, 2, 6, 12, 24) |
+| `sex` | Patient sex (Male/Female) |
+| `diabetes` | Diabetes status (Yes/No) |
+| `rehab_program` | Rehabilitation program (Standard/Enhanced) |
+| `quality_of_life` | Quality of Life score (0-100, higher = better) |
+| `walk_distance` | 6-minute walk test distance in meters (higher = better) |
+
+## Required Report Structure
+
+Your report must follow the structure outlined below.
+
+---
+
+### 1. Introduction
+
+*Brief introduction to the study and your research questions.*
+
+- Describe the clinical context (cardiac surgery recovery)
+- Introduce your assigned subpopulation and justify its clinical relevance
+- State your two research questions (one for each outcome)
+
+---
+
+### 2. Exploratory Data Analysis
+
+- Distribution of both outcome variables in your subpopulation
+- Individual recovery trajectories (spaghetti plots) for both outcomes
+- Patterns by rehabilitation program for each outcome
+
+---
+
+### 3. Unconditional Growth Models
+
+Fit unconditional growth models for both outcomes:
+
+- Report fixed effects (intercept and slope)
+- Report random effects (variance components)
+- Calculate and interpret the ICC for each outcome
+- Check model assumptions
+
+---
+
+### 4. Conditional Growth Models
+
+Build models addressing your research questions for both outcomes:
+
+- Add rehabilitation program and its interaction with time
+- Test whether the rehab effect is significant
+- Present your final models for quality of life and walk distance
+
+---
+
+### 5. Discussion and Conclusions
+
+- Summary of key findings
+- Clinical interpretation
+- Limitations
+
+---
+
+## Submission Requirements
+
+Submit both:
+
+1. **Quarto source file** (`.qmd`)
+2. **Rendered HTML file** (`.html`)
+
+## Downloads
+
+- [Report template](downloads/_Template_final_assignment.qmd)
+- [Dataset](downloads/cardiac_recovery_master.csv)

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Assignment Week 3: Multilevel Analysis of School Effectiveness – Beyond MLR</title>
+<title>Final Assignment: Longitudinal Analysis of Cardiac Recovery – Beyond MLR</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,41 +19,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -233,17 +198,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
-  <li><a href="#dataset-description" id="toc-dataset-description" class="nav-link" data-scroll-target="#dataset-description">Dataset Description</a></li>
-  <li><a href="#objective" id="toc-objective" class="nav-link" data-scroll-target="#objective">Objective</a></li>
-  <li><a href="#steps-to-complete-the-analysis" id="toc-steps-to-complete-the-analysis" class="nav-link" data-scroll-target="#steps-to-complete-the-analysis">Steps to Complete the Analysis</a>
+  <li><a href="#assignment-overview" id="toc-assignment-overview" class="nav-link active" data-scroll-target="#assignment-overview">Assignment Overview</a></li>
+  <li><a href="#study-background" id="toc-study-background" class="nav-link" data-scroll-target="#study-background">Study Background</a>
   <ul class="collapse">
-  <li><a href="#load-the-dataset" id="toc-load-the-dataset" class="nav-link" data-scroll-target="#load-the-dataset">Load the Dataset</a></li>
-  <li><a href="#exploratory-data-analysis-eda" id="toc-exploratory-data-analysis-eda" class="nav-link" data-scroll-target="#exploratory-data-analysis-eda">Exploratory Data Analysis (EDA):</a></li>
-  <li><a href="#multi-level-modeling" id="toc-multi-level-modeling" class="nav-link" data-scroll-target="#multi-level-modeling">Multi-Level Modeling</a></li>
-  <li><a href="#interpret-the-results" id="toc-interpret-the-results" class="nav-link" data-scroll-target="#interpret-the-results">Interpret the Results</a></li>
+  <li><a href="#clinical-context" id="toc-clinical-context" class="nav-link" data-scroll-target="#clinical-context">Clinical Context</a></li>
+  <li><a href="#the-recover-study" id="toc-the-recover-study" class="nav-link" data-scroll-target="#the-recover-study">The RECOVER Study</a></li>
+  <li><a href="#outcome-measures" id="toc-outcome-measures" class="nav-link" data-scroll-target="#outcome-measures">Outcome Measures</a></li>
   </ul></li>
-  <li><a href="#requirements-for-the-report" id="toc-requirements-for-the-report" class="nav-link" data-scroll-target="#requirements-for-the-report">Requirements for the Report</a></li>
+  <li><a href="#your-assignment" id="toc-your-assignment" class="nav-link" data-scroll-target="#your-assignment">Your Assignment</a>
+  <ul class="collapse">
+  <li><a href="#subpopulation-lookup-table" id="toc-subpopulation-lookup-table" class="nav-link" data-scroll-target="#subpopulation-lookup-table">Subpopulation Lookup Table</a></li>
+  <li><a href="#your-research-questions" id="toc-your-research-questions" class="nav-link" data-scroll-target="#your-research-questions">Your Research Questions</a></li>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started">Getting Started</a></li>
+  </ul></li>
+  <li><a href="#dataset-description" id="toc-dataset-description" class="nav-link" data-scroll-target="#dataset-description">Dataset Description</a></li>
+  <li><a href="#required-report-structure" id="toc-required-report-structure" class="nav-link" data-scroll-target="#required-report-structure">Required Report Structure</a>
+  <ul class="collapse">
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">1. Introduction</a></li>
+  <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis">2. Exploratory Data Analysis</a></li>
+  <li><a href="#unconditional-growth-models" id="toc-unconditional-growth-models" class="nav-link" data-scroll-target="#unconditional-growth-models">3. Unconditional Growth Models</a></li>
+  <li><a href="#conditional-growth-models" id="toc-conditional-growth-models" class="nav-link" data-scroll-target="#conditional-growth-models">4. Conditional Growth Models</a></li>
+  <li><a href="#discussion-and-conclusions" id="toc-discussion-and-conclusions" class="nav-link" data-scroll-target="#discussion-and-conclusions">5. Discussion and Conclusions</a></li>
+  </ul></li>
+  <li><a href="#submission-requirements" id="toc-submission-requirements" class="nav-link" data-scroll-target="#submission-requirements">Submission Requirements</a></li>
   <li><a href="#downloads" id="toc-downloads" class="nav-link" data-scroll-target="#downloads">Downloads</a></li>
   </ul>
 </nav>
@@ -253,8 +230,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Assignment Week 3: Multilevel Analysis of School Effectiveness</h1>
-<p class="subtitle lead">Examining Student and School-Level Factors in Inner London</p>
+<h1 class="title">Final Assignment: Longitudinal Analysis of Cardiac Recovery</h1>
+<p class="subtitle lead">Modeling Recovery Trajectories with Mixed Effects Models</p>
 </div>
 
 
@@ -271,92 +248,212 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="introduction" class="level2">
-<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>In this assignment, you will analyze a dataset collected by the Inner London Education Authority (ILEA) to examine the effectiveness of schools. The dataset consists of examination records of 15,362 students from 140 secondary schools over the years 1985, 1986, and 1987. This dataset was sourced from the data library of the Centre for Multilevel Modelling at the University of Bristol.</p>
+<section id="assignment-overview" class="level2">
+<h2 class="anchored" data-anchor-id="assignment-overview">Assignment Overview</h2>
+<p>For this final assignment, you will write a short research report analyzing recovery trajectories in cardiac surgery patients.</p>
 </section>
-<section id="dataset-description" class="level2">
-<h2 class="anchored" data-anchor-id="dataset-description">Dataset Description</h2>
-<p>The dataset consists of the following variables:</p>
+<section id="study-background" class="level2">
+<h2 class="anchored" data-anchor-id="study-background">Study Background</h2>
+<section id="clinical-context" class="level3">
+<h3 class="anchored" data-anchor-id="clinical-context">Clinical Context</h3>
+<p>Coronary artery bypass grafting (CABG) is one of the most common cardiac surgeries, performed to restore blood flow to the heart in patients with severe coronary artery disease. While the surgery itself is generally successful, recovery is a gradual process that varies considerably between patients. Understanding the factors that influence recovery trajectories is crucial for optimizing patient care and rehabilitation strategies.</p>
+</section>
+<section id="the-recover-study" class="level3">
+<h3 class="anchored" data-anchor-id="the-recover-study">The RECOVER Study</h3>
+<p>The data for this assignment come from the <strong>RECOVER study</strong> (Recovery and Exercise after Cardiac Operation: Variability and Effectiveness Research), a randomized controlled trial that enrolled 500 patients undergoing CABG surgery (with or without valve repair). Patients were followed for 6 months post-surgery.</p>
+<p><strong>Study objectives:</strong></p>
 <ul>
-<li><code>School</code>: A numeric variable representing the school identifier (codes 1 to 139)</li>
-<li><code>ExamScore</code>: A numeric variable representing the exam score of each student</li>
-<li><code>PercentFSM</code>: The percentage of students in the school eligible for free school meals (an indicator of socioeconomic status)</li>
-<li><code>Gender</code>: A categorical variable representing the gender of the student</li>
-<li><code>VRBand</code>: The verbal reasoning band of the student (VR1, VR2, or VR3). VR band is an indicator of the student’s assessed ability level, with VR1 typically representing the highest ability group, VR2 representing intermediate ability, and VR3 representing lower ability.</li>
-<li><code>SchoolDenomination</code>: The denomination of the school (Maintained, Church of England, Roman Catholic)</li>
+<li>To characterize recovery trajectories in quality of life and physical function after cardiac surgery</li>
+<li>To identify patient characteristics associated with different recovery patterns</li>
+<li>To evaluate the effectiveness of an enhanced cardiac rehabilitation program compared to standard care</li>
+</ul>
+<p><strong>Study design:</strong></p>
+<ul>
+<li>Patients were assessed at 5 time points: pre-surgery (baseline), 2 weeks, 6 weeks, 3 months, and 6 months post-surgery</li>
+<li>Patients were randomized to receive either <strong>Standard rehabilitation</strong> (usual care with basic exercise guidance) or <strong>Enhanced rehabilitation</strong> (structured exercise program with additional psychological support and nutritional counseling)</li>
+<li>Key outcomes included health-related quality of life and functional capacity (6-minute walk test)</li>
 </ul>
 </section>
-<section id="objective" class="level2">
-<h2 class="anchored" data-anchor-id="objective">Objective</h2>
-<p>Your goals are to determine:</p>
+<section id="outcome-measures" class="level3">
+<h3 class="anchored" data-anchor-id="outcome-measures">Outcome Measures</h3>
+<p><strong>Quality of Life</strong> was assessed using a validated cardiac-specific quality of life questionnaire, yielding a score from 0 (worst) to 100 (best). This measure captures physical, emotional, and social aspects of health-related quality of life relevant to cardiac patients.</p>
+<p><strong>Walk Distance</strong> was measured using the 6-minute walk test, a standardized assessment of functional capacity. Patients walk as far as possible in 6 minutes on a flat surface. The distance (in meters) reflects overall cardiopulmonary fitness and is a strong predictor of long-term outcomes in cardiac patients.</p>
+</section>
+</section>
+<section id="your-assignment" class="level2">
+<h2 class="anchored" data-anchor-id="your-assignment">Your Assignment</h2>
+<p>Use the lookup table below to determine your <strong>subpopulation</strong> based on the <strong>last two digits</strong> of your student or staff number. You will analyze <strong>both outcomes</strong> (Quality of Life and Walk Distance) within your assigned subpopulation.</p>
+<section id="subpopulation-lookup-table" class="level3">
+<h3 class="anchored" data-anchor-id="subpopulation-lookup-table">Subpopulation Lookup Table</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Last 2 digits</th>
+<th style="text-align: left;">Subpopulation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">00-24</td>
+<td style="text-align: left;">Female patients (<code>sex == "Female"</code>)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">25-49</td>
+<td style="text-align: left;">Male patients (<code>sex == "Male"</code>)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">50-74</td>
+<td style="text-align: left;">Patients with diabetes (<code>diabetes == "Yes"</code>)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">75-99</td>
+<td style="text-align: left;">Patients without diabetes (<code>diabetes == "No"</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>For example, if your student/staff number is 12345<strong>67</strong>, your last two digits are <strong>67</strong>, so you analyze patients <strong>with diabetes</strong>.</p>
+</section>
+<section id="your-research-questions" class="level3">
+<h3 class="anchored" data-anchor-id="your-research-questions">Your Research Questions</h3>
+<p>All students address the same two research questions within their assigned subpopulation:</p>
 <ol type="1">
-<li>How much of the variability in exam scores can be attributed to:
-<ul>
-<li>Differences between students</li>
-<li>Differences between schools</li>
-</ul></li>
-<li>Whether individual-level factors (e.g., <code>Gender</code>, <code>VRBand</code>) significantly influence student exam scores</li>
-<li>Whether school-level factors (e.g., <code>PercentFSM</code>) significantly influence student exam scores</li>
+<li><p><strong>Quality of Life</strong>: Does the rehabilitation program (Standard vs Enhanced) affect the recovery trajectory of quality of life in [your subpopulation]?</p></li>
+<li><p><strong>Walk Distance</strong>: Does the rehabilitation program (Standard vs Enhanced) affect the recovery trajectory of walk distance in [your subpopulation]?</p></li>
 </ol>
 </section>
-<section id="steps-to-complete-the-analysis" class="level2">
-<h2 class="anchored" data-anchor-id="steps-to-complete-the-analysis">Steps to Complete the Analysis</h2>
-<section id="load-the-dataset" class="level3">
-<h3 class="anchored" data-anchor-id="load-the-dataset">Load the Dataset</h3>
-<p>Download the dataset (see link in the Downloads section below) and read it into R. Make sure all character variables are correctly encoded as factors.</p>
-<div class="callout callout-style-default callout-tip no-icon callout-titled" title="Hint">
+<section id="getting-started" class="level3">
+<h3 class="anchored" data-anchor-id="getting-started">Getting Started</h3>
+<p>Download the template file and the dataset below. Place both files in the same folder, then open the template in RStudio.</p>
+<div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
+<i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>Hint
+Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>When loading the data, convert the <code>School</code> variable to a factor. This will make it easier to use <code>reorder()</code> in <code>ggplot2</code> when creating visualizations that order schools by their mean exam scores.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the data</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>ilea_data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"downloads/ilea_data.csv"</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert all character variables into factors</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>ilea_data <span class="ot">&lt;-</span> ilea_data <span class="sc">%&gt;%</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.character), as.factor)) <span class="sc">%&gt;%</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">School =</span> <span class="fu">as.factor</span>(School))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>In the template, replace <code>123456</code> with your actual student/staff number in the setup code chunk, and update the author field in the YAML header with your name and student ID.</p>
 </div>
 </div>
-</div>
+<p>After running the setup code chunk, your personalized dataset will be stored in <code>my_data</code>. Use this dataset for all subsequent analyses.</p>
 </section>
-<section id="exploratory-data-analysis-eda" class="level3">
-<h3 class="anchored" data-anchor-id="exploratory-data-analysis-eda">Exploratory Data Analysis (EDA):</h3>
+</section>
+<section id="dataset-description" class="level2">
+<h2 class="anchored" data-anchor-id="dataset-description">Dataset Description</h2>
+<p>The dataset contains the following variables:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 43%">
+<col style="width: 56%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>patient_id</code></td>
+<td style="text-align: left;">Unique patient identifier</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>time_weeks</code></td>
+<td style="text-align: left;">Time in weeks (0, 2, 6, 12, 24)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>sex</code></td>
+<td style="text-align: left;">Patient sex (Male/Female)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>diabetes</code></td>
+<td style="text-align: left;">Diabetes status (Yes/No)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>rehab_program</code></td>
+<td style="text-align: left;">Rehabilitation program (Standard/Enhanced)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>quality_of_life</code></td>
+<td style="text-align: left;">Quality of Life score (0-100, higher = better)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>walk_distance</code></td>
+<td style="text-align: left;">6-minute walk test distance in meters (higher = better)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="required-report-structure" class="level2">
+<h2 class="anchored" data-anchor-id="required-report-structure">Required Report Structure</h2>
+<p>Your report must follow the structure outlined below.</p>
+<hr>
+<section id="introduction" class="level3">
+<h3 class="anchored" data-anchor-id="introduction">1. Introduction</h3>
+<p><em>Brief introduction to the study and your research questions.</em></p>
 <ul>
-<li>Explore the distribution of the outcome variable (<code>ExamScore</code>)</li>
-<li>Explore the variance components (i.e., make a plot displaying the within- and between-school variation)</li>
-<li>Explore the relationships between fixed effects and the outcome variable</li>
+<li>Describe the clinical context (cardiac surgery recovery)</li>
+<li>Introduce your assigned subpopulation and justify its clinical relevance</li>
+<li>State your two research questions (one for each outcome)</li>
 </ul>
+<hr>
 </section>
-<section id="multi-level-modeling" class="level3">
-<h3 class="anchored" data-anchor-id="multi-level-modeling">Multi-Level Modeling</h3>
+<section id="exploratory-data-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="exploratory-data-analysis">2. Exploratory Data Analysis</h3>
 <ul>
-<li>Start by fitting a <strong>null model</strong> (i.e., a random intercept model without any predictors) to partition the variance in exam scores between students and schools. Assess how much of the variability in exam scores is due to differences between students and schools.</li>
-<li>Next, add <strong>individual-level variables</strong> (<code>Gender</code>, <code>VRBand</code>) to the model to explore how these factors influence exam scores.</li>
-<li>After that, add <strong>context-level variables</strong> (e.g., <code>PercentFSM</code>) to your model to understand how factors at the school level contribute to differences in exam scores.</li>
-<li>Finally, explore potential <strong>cross-level interactions</strong> between individual-level and context-level variables.</li>
+<li>Distribution of both outcome variables in your subpopulation</li>
+<li>Individual recovery trajectories (spaghetti plots) for both outcomes</li>
+<li>Patterns by rehabilitation program for each outcome</li>
 </ul>
+<hr>
 </section>
-<section id="interpret-the-results" class="level3">
-<h3 class="anchored" data-anchor-id="interpret-the-results">Interpret the Results</h3>
-<p>Interpret the findings from your analysis, focusing on the variance components and the effects of individual-level and context-level variables.</p>
+<section id="unconditional-growth-models" class="level3">
+<h3 class="anchored" data-anchor-id="unconditional-growth-models">3. Unconditional Growth Models</h3>
+<p>Fit unconditional growth models for both outcomes:</p>
+<ul>
+<li>Report fixed effects (intercept and slope)</li>
+<li>Report random effects (variance components)</li>
+<li>Calculate and interpret the ICC for each outcome</li>
+<li>Check model assumptions</li>
+</ul>
+<hr>
+</section>
+<section id="conditional-growth-models" class="level3">
+<h3 class="anchored" data-anchor-id="conditional-growth-models">4. Conditional Growth Models</h3>
+<p>Build models addressing your research questions for both outcomes:</p>
+<ul>
+<li>Add rehabilitation program and its interaction with time</li>
+<li>Test whether the rehab effect is significant</li>
+<li>Present your final models for quality of life and walk distance</li>
+</ul>
+<hr>
+</section>
+<section id="discussion-and-conclusions" class="level3">
+<h3 class="anchored" data-anchor-id="discussion-and-conclusions">5. Discussion and Conclusions</h3>
+<ul>
+<li>Summary of key findings</li>
+<li>Clinical interpretation</li>
+<li>Limitations</li>
+</ul>
+<hr>
 </section>
 </section>
-<section id="requirements-for-the-report" class="level2">
-<h2 class="anchored" data-anchor-id="requirements-for-the-report">Requirements for the Report</h2>
-<p>Submit both the <strong>Quarto source file (<code>.qmd</code>)</strong> and the <strong>rendered HTML file</strong>. The HTML file should be rendered with code visibility enabled (<code>echo = TRUE</code>).</p>
+<section id="submission-requirements" class="level2">
+<h2 class="anchored" data-anchor-id="submission-requirements">Submission Requirements</h2>
+<p>Submit both:</p>
+<ol type="1">
+<li><strong>Quarto source file</strong> (<code>.qmd</code>)</li>
+<li><strong>Rendered HTML file</strong> (<code>.html</code>)</li>
+</ol>
 </section>
 <section id="downloads" class="level2">
 <h2 class="anchored" data-anchor-id="downloads">Downloads</h2>
-<p><a href="downloads/ilea_data.csv">Download dataset</a></p>
+<ul>
+<li><a href="downloads/_Template_final_assignment.qmd">Report template</a></li>
+<li><a href="downloads/cardiac_recovery_master.csv">Dataset</a></li>
+</ul>
 
 
 </section>

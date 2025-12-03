@@ -1,0 +1,108 @@
+---
+title: "Final Assignment: Cardiac Recovery Analysis"
+author: "Your Name (Student ID: XXXXXX)"
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: true
+  eval: true
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: packages
+
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+
+# Use pacman to install (if needed) and load the required packages
+pacman::p_load(dplyr, ggplot2, emmeans, lmerTest)
+```
+
+```{r}
+#| label: setup
+
+# IMPORTANT: Replace 123456 with YOUR student/staff number!
+student_id <- 123456
+
+# Load the master dataset
+master_data <- read.csv("cardiac_recovery_master.csv")
+
+# Convert all character variables into factors
+master_data <- master_data |>
+  mutate(across(where(is.character), as.factor))
+
+# Determine your subpopulation based on last two digits
+last_two <- student_id %% 100
+
+if (last_two <= 24) {
+  my_subpop <- master_data[master_data$sex == "Female", ]
+  subpop_name <- "Female patients"
+} else if (last_two <= 49) {
+  my_subpop <- master_data[master_data$sex == "Male", ]
+  subpop_name <- "Male patients"
+} else if (last_two <= 74) {
+  my_subpop <- master_data[master_data$diabetes == "Yes", ]
+  subpop_name <- "Patients with diabetes"
+} else {
+  my_subpop <- master_data[master_data$diabetes == "No", ]
+  subpop_name <- "Patients without diabetes"
+}
+
+# Generate your personal subsample within the subpopulation
+set.seed(student_id)
+sampled_patients <- sample(unique(my_subpop$patient_id),
+                           size = round(0.7 * length(unique(my_subpop$patient_id))))
+
+# Create your personal dataset
+my_data <- my_subpop[my_subpop$patient_id %in% sampled_patients, ]
+
+# Display your dataset summary
+cat("Student ID:", student_id, "\n")
+cat("Subpopulation:", subpop_name, "\n")
+cat("Number of patients:", length(unique(my_data$patient_id)), "\n")
+cat("Number of observations:", nrow(my_data), "\n")
+```
+
+## 1. Introduction
+
+*Describe the clinical context of cardiac surgery recovery. Introduce your assigned subpopulation and explain why studying this group is clinically relevant. State your two research questions clearly.*
+
+## 2. Exploratory Data Analysis
+
+*Explore both outcome variables in your subpopulation. Include:*
+
+- *Descriptive statistics and distributions*
+- *Spaghetti plots showing individual trajectories*
+- *Mean trajectories by rehabilitation program*
+- *Brief interpretation of observed patterns*
+
+## 3. Unconditional Growth Models
+
+*Fit unconditional growth models (with time as the only predictor) for both outcomes.*
+
+### Quality of Life
+
+*Report the fixed effects (intercept and slope), random effects (variance components), and ICC. Check model assumptions using residual plots.*
+
+### Walk Distance
+
+*Report the fixed effects (intercept and slope), random effects (variance components), and ICC. Check model assumptions using residual plots.*
+
+## 4. Conditional Growth Models
+
+*Add rehabilitation program and its interaction with time to test your research questions.*
+
+### Quality of Life
+
+*Present your conditional model, interpret the fixed effects, and determine whether the rehabilitation program significantly affects the recovery trajectory.*
+
+### Walk Distance
+
+*Present your conditional model, interpret the fixed effects, and determine whether the rehabilitation program significantly affects the recovery trajectory.*
+
+## 5. Discussion and Conclusions
+
+*Summarize your key findings for both outcomes. Provide a clinical interpretation of the results—what do they mean for patients in your subpopulation? Discuss limitations of your analysis.*

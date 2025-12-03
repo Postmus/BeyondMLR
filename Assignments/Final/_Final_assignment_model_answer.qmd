@@ -1,0 +1,425 @@
+---
+title: "Final Assignment: Model Answer"
+subtitle: "All subpopulation combinations"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+execute:
+  warning: false
+  message: false
+  eval: true
+  echo: true
+---
+
+```{r}
+#| label: setup
+library(lmerTest)
+library(ggplot2)
+
+# Set optimizer
+ctrl <- lmerControl(optimizer = "bobyqa")
+
+master_data <- read.csv("downloads/cardiac_recovery_master.csv")
+master_data$sex <- factor(master_data$sex)
+master_data$diabetes <- factor(master_data$diabetes)
+master_data$rehab_program <- factor(master_data$rehab_program)
+```
+
+# Subpopulation 1: Female Patients
+
+```{r}
+my_data <- master_data[master_data$sex == "Female", ]
+cat("Number of patients:", length(unique(my_data$patient_id)), "\n")
+cat("Number of observations:", nrow(my_data), "\n")
+```
+
+## Quality of Life
+
+### EDA
+
+```{r}
+# Spaghetti plot
+set.seed(42)
+sample_ids <- sample(unique(my_data$patient_id), min(50, length(unique(my_data$patient_id))))
+ggplot(my_data[my_data$patient_id %in% sample_ids, ],
+       aes(x = time_weeks, y = quality_of_life, group = patient_id)) +
+  geom_line(alpha = 0.3) +
+  labs(title = "Quality of Life Trajectories - Female Patients") +
+  theme_minimal()
+```
+
+```{r}
+# Mean trajectories by rehab program
+agg <- aggregate(quality_of_life ~ time_weeks + rehab_program,
+                 data = my_data, FUN = mean)
+ggplot(agg, aes(x = time_weeks, y = quality_of_life, color = rehab_program)) +
+  geom_line(linewidth = 1) + geom_point() +
+  labs(title = "Mean Quality of Life by Rehab Program - Female Patients") +
+  theme_minimal()
+```
+
+### Unconditional Growth Model
+
+```{r}
+m0_qol <- lmer(quality_of_life ~ 1 + (1 | patient_id), data = my_data, control = ctrl)
+summary(m0_qol)
+```
+
+```{r}
+# ICC
+vc <- as.data.frame(VarCorr(m0_qol))
+ICC <- vc$vcov[1] / sum(vc$vcov)
+cat("ICC:", round(ICC, 3), "\n")
+```
+
+```{r}
+m1_qol <- lmer(quality_of_life ~ time_weeks + (time_weeks | patient_id),
+               data = my_data, control = ctrl)
+summary(m1_qol)
+```
+
+### Diagnostics
+
+```{r}
+par(mfrow = c(1, 3))
+plot(fitted(m1_qol), residuals(m1_qol), main = "Residuals vs Fitted")
+abline(h = 0, col = "red", lty = 2)
+qqnorm(residuals(m1_qol), main = "Q-Q Plot Residuals"); qqline(residuals(m1_qol), col = "red")
+hist(residuals(m1_qol), breaks = 30, main = "Histogram Residuals")
+```
+
+### Conditional Growth Model
+
+```{r}
+m2_qol <- lmer(quality_of_life ~ time_weeks * rehab_program +
+                 (time_weeks | patient_id), data = my_data, control = ctrl)
+summary(m2_qol)
+```
+
+```{r}
+# Backward elimination
+step(m2_qol)
+```
+
+```{r}
+anova(m1_qol, m2_qol)
+```
+
+### Predicted Trajectories
+
+```{r}
+pred_grid <- expand.grid(time_weeks = c(0, 2, 6, 12, 24),
+                         rehab_program = levels(my_data$rehab_program))
+pred_grid$pred <- predict(m2_qol, newdata = pred_grid, re.form = NA)
+
+ggplot(pred_grid, aes(x = time_weeks, y = pred, color = rehab_program)) +
+  geom_line(linewidth = 1) + geom_point() +
+  labs(y = "Predicted Quality of Life", title = "Female Patients") +
+  theme_minimal()
+```
+
+## Walk Distance
+
+### EDA
+
+```{r}
+# Spaghetti plot
+ggplot(my_data[my_data$patient_id %in% sample_ids, ],
+       aes(x = time_weeks, y = walk_distance, group = patient_id)) +
+  geom_line(alpha = 0.3) +
+  labs(title = "Walk Distance Trajectories - Female Patients") +
+  theme_minimal()
+```
+
+```{r}
+# Mean trajectories by rehab program
+agg <- aggregate(walk_distance ~ time_weeks + rehab_program,
+                 data = my_data, FUN = mean)
+ggplot(agg, aes(x = time_weeks, y = walk_distance, color = rehab_program)) +
+  geom_line(linewidth = 1) + geom_point() +
+  labs(title = "Mean Walk Distance by Rehab Program - Female Patients") +
+  theme_minimal()
+```
+
+### Unconditional Growth Model
+
+```{r}
+m0_walk <- lmer(walk_distance ~ 1 + (1 | patient_id), data = my_data, control = ctrl)
+summary(m0_walk)
+```
+
+```{r}
+# ICC
+vc <- as.data.frame(VarCorr(m0_walk))
+ICC <- vc$vcov[1] / sum(vc$vcov)
+cat("ICC:", round(ICC, 3), "\n")
+```
+
+```{r}
+m1_walk <- lmer(walk_distance ~ time_weeks + (time_weeks | patient_id),
+                data = my_data, control = ctrl)
+summary(m1_walk)
+```
+
+### Diagnostics
+
+```{r}
+par(mfrow = c(1, 3))
+plot(fitted(m1_walk), residuals(m1_walk), main = "Residuals vs Fitted")
+abline(h = 0, col = "red", lty = 2)
+qqnorm(residuals(m1_walk), main = "Q-Q Plot Residuals"); qqline(residuals(m1_walk), col = "red")
+hist(residuals(m1_walk), breaks = 30, main = "Histogram Residuals")
+```
+
+### Conditional Growth Model
+
+```{r}
+m2_walk <- lmer(walk_distance ~ time_weeks * rehab_program +
+                  (time_weeks | patient_id), data = my_data, control = ctrl)
+summary(m2_walk)
+```
+
+```{r}
+# Backward elimination
+step(m2_walk)
+```
+
+```{r}
+anova(m1_walk, m2_walk)
+```
+
+### Predicted Trajectories
+
+```{r}
+pred_grid <- expand.grid(time_weeks = c(0, 2, 6, 12, 24),
+                         rehab_program = levels(my_data$rehab_program))
+pred_grid$pred <- predict(m2_walk, newdata = pred_grid, re.form = NA)
+
+ggplot(pred_grid, aes(x = time_weeks, y = pred, color = rehab_program)) +
+  geom_line(linewidth = 1) + geom_point() +
+  labs(y = "Predicted Walk Distance", title = "Female Patients") +
+  theme_minimal()
+```
+
+---
+
+# Subpopulation 2: Male Patients
+
+```{r}
+my_data <- master_data[master_data$sex == "Male", ]
+cat("Number of patients:", length(unique(my_data$patient_id)), "\n")
+cat("Number of observations:", nrow(my_data), "\n")
+```
+
+## Quality of Life
+
+### EDA
+
+```{r}
+agg <- aggregate(quality_of_life ~ time_weeks + rehab_program,
+                 data = my_data, FUN = mean)
+ggplot(agg, aes(x = time_weeks, y = quality_of_life, color = rehab_program)) +
+  geom_line(linewidth = 1) + geom_point() +
+  labs(title = "Mean Quality of Life by Rehab Program - Male Patients") +
+  theme_minimal()
+```
+
+### Conditional Growth Model
+
+```{r}
+m1_qol <- lmer(quality_of_life ~ time_weeks + (time_weeks | patient_id),
+               data = my_data, control = ctrl)
+
+m2_qol <- lmer(quality_of_life ~ time_weeks * rehab_program +
+                 (time_weeks | patient_id), data = my_data, control = ctrl)
+summary(m2_qol)
+```
+
+```{r}
+step(m2_qol)
+```
+
+```{r}
+anova(m1_qol, m2_qol)
+```
+
+## Walk Distance
+
+### EDA
+
+```{r}
+agg <- aggregate(walk_distance ~ time_weeks + rehab_program,
+                 data = my_data, FUN = mean)
+ggplot(agg, aes(x = time_weeks, y = walk_distance, color = rehab_program)) +
+  geom_line(linewidth = 1) + geom_point() +
+  labs(title = "Mean Walk Distance by Rehab Program - Male Patients") +
+  theme_minimal()
+```
+
+### Conditional Growth Model
+
+```{r}
+m1_walk <- lmer(walk_distance ~ time_weeks + (time_weeks | patient_id),
+                data = my_data, control = ctrl)
+
+m2_walk <- lmer(walk_distance ~ time_weeks * rehab_program +
+                  (time_weeks | patient_id), data = my_data, control = ctrl)
+summary(m2_walk)
+```
+
+```{r}
+step(m2_walk)
+```
+
+```{r}
+anova(m1_walk, m2_walk)
+```
+
+---
+
+# Subpopulation 3: Patients with Diabetes
+
+```{r}
+my_data <- master_data[master_data$diabetes == "Yes", ]
+cat("Number of patients:", length(unique(my_data$patient_id)), "\n")
+cat("Number of observations:", nrow(my_data), "\n")
+```
+
+## Quality of Life
+
+### EDA
+
+```{r}
+agg <- aggregate(quality_of_life ~ time_weeks + rehab_program,
+                 data = my_data, FUN = mean)
+ggplot(agg, aes(x = time_weeks, y = quality_of_life, color = rehab_program)) +
+  geom_line(linewidth = 1) + geom_point() +
+  labs(title = "Mean Quality of Life by Rehab Program - Diabetes Patients") +
+  theme_minimal()
+```
+
+### Conditional Growth Model
+
+```{r}
+m1_qol <- lmer(quality_of_life ~ time_weeks + (time_weeks | patient_id),
+               data = my_data, control = ctrl)
+
+m2_qol <- lmer(quality_of_life ~ time_weeks * rehab_program +
+                 (time_weeks | patient_id), data = my_data, control = ctrl)
+summary(m2_qol)
+```
+
+```{r}
+step(m2_qol)
+```
+
+```{r}
+anova(m1_qol, m2_qol)
+```
+
+## Walk Distance
+
+### EDA
+
+```{r}
+agg <- aggregate(walk_distance ~ time_weeks + rehab_program,
+                 data = my_data, FUN = mean)
+ggplot(agg, aes(x = time_weeks, y = walk_distance, color = rehab_program)) +
+  geom_line(linewidth = 1) + geom_point() +
+  labs(title = "Mean Walk Distance by Rehab Program - Diabetes Patients") +
+  theme_minimal()
+```
+
+### Conditional Growth Model
+
+```{r}
+m1_walk <- lmer(walk_distance ~ time_weeks + (time_weeks | patient_id),
+                data = my_data, control = ctrl)
+
+m2_walk <- lmer(walk_distance ~ time_weeks * rehab_program +
+                  (time_weeks | patient_id), data = my_data, control = ctrl)
+summary(m2_walk)
+```
+
+```{r}
+step(m2_walk)
+```
+
+```{r}
+anova(m1_walk, m2_walk)
+```
+
+---
+
+# Subpopulation 4: Patients without Diabetes
+
+```{r}
+my_data <- master_data[master_data$diabetes == "No", ]
+cat("Number of patients:", length(unique(my_data$patient_id)), "\n")
+cat("Number of observations:", nrow(my_data), "\n")
+```
+
+## Quality of Life
+
+### EDA
+
+```{r}
+agg <- aggregate(quality_of_life ~ time_weeks + rehab_program,
+                 data = my_data, FUN = mean)
+ggplot(agg, aes(x = time_weeks, y = quality_of_life, color = rehab_program)) +
+  geom_line(linewidth = 1) + geom_point() +
+  labs(title = "Mean Quality of Life by Rehab Program - Non-Diabetes Patients") +
+  theme_minimal()
+```
+
+### Conditional Growth Model
+
+```{r}
+m1_qol <- lmer(quality_of_life ~ time_weeks + (time_weeks | patient_id),
+               data = my_data, control = ctrl)
+
+m2_qol <- lmer(quality_of_life ~ time_weeks * rehab_program +
+                 (time_weeks | patient_id), data = my_data, control = ctrl)
+summary(m2_qol)
+```
+
+```{r}
+step(m2_qol)
+```
+
+```{r}
+anova(m1_qol, m2_qol)
+```
+
+## Walk Distance
+
+### EDA
+
+```{r}
+agg <- aggregate(walk_distance ~ time_weeks + rehab_program,
+                 data = my_data, FUN = mean)
+ggplot(agg, aes(x = time_weeks, y = walk_distance, color = rehab_program)) +
+  geom_line(linewidth = 1) + geom_point() +
+  labs(title = "Mean Walk Distance by Rehab Program - Non-Diabetes Patients") +
+  theme_minimal()
+```
+
+### Conditional Growth Model
+
+```{r}
+m1_walk <- lmer(walk_distance ~ time_weeks + (time_weeks | patient_id),
+                data = my_data, control = ctrl)
+
+m2_walk <- lmer(walk_distance ~ time_weeks * rehab_program +
+                  (time_weeks | patient_id), data = my_data, control = ctrl)
+summary(m2_walk)
+```
+
+```{r}
+step(m2_walk)
+```
+
+```{r}
+anova(m1_walk, m2_walk)
+```

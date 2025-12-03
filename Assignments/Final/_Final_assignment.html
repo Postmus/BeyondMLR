@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>R labs for the Beyond MLR course – Beyond MLR</title>
+<title>Final Assignment: Longitudinal Analysis of Cardiac Recovery</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,185 +23,32 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-e28534083635e9d585c433950aea14cb.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
-<script id="quarto-search-options" type="application/json">{
-  "location": "navbar",
-  "copy-button": false,
-  "collapse-after": 3,
-  "panel-placement": "end",
-  "type": "overlay",
-  "limit": 50,
-  "keyboard-shortcut": [
-    "f",
-    "/",
-    "s"
-  ],
-  "show-item-context": false,
-  "language": {
-    "search-no-results-text": "No results",
-    "search-matching-documents-text": "matching documents",
-    "search-copy-link-title": "Copy link to search",
-    "search-hide-matches-text": "Hide additional matches",
-    "search-more-match-text": "more match in this document",
-    "search-more-matches-text": "more matches in this document",
-    "search-clear-button-title": "Clear",
-    "search-text-placeholder": "",
-    "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit",
-    "search-label": "Search"
-  }
-}</script>
+<script src="_Final_assignment_files/libs/clipboard/clipboard.min.js"></script>
+<script src="_Final_assignment_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="_Final_assignment_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="_Final_assignment_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="_Final_assignment_files/libs/quarto-html/popper.min.js"></script>
+<script src="_Final_assignment_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="_Final_assignment_files/libs/quarto-html/anchor.min.js"></script>
+<link href="_Final_assignment_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="_Final_assignment_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="_Final_assignment_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="_Final_assignment_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="_Final_assignment_files/libs/bootstrap/bootstrap-f04ba10fa9afc68adf907307a1481730.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
-<link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="nav-fixed quarto-light">
+<body class="fullcontent quarto-light">
 
-<div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
-      <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container mx-auto">
-    <a href="./index.html" class="navbar-brand navbar-brand-logo">
-    </a>
-    <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">Beyond MLR</span>
-    </a>
-  </div>
-            <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-  <span class="navbar-toggler-icon"></span>
-</button>
-          <div class="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="navbar-nav navbar-nav-scroll me-auto">
-  <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
-<span class="menu-text">Home</span></a>
-  </li>  
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-labs-week-1" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Labs week 1</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-labs-week-1">    
-        <li>
-    <a class="dropdown-item" href="./BLR_lab_FE_oneway.html">
- <span class="dropdown-text">Lab 1</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./BLR_lab_randomized_block.html">
- <span class="dropdown-text">Lab 2</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-labs-week-2" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Labs week 2</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-labs-week-2">    
-        <li>
-    <a class="dropdown-item" href="./BLR_lab_two_way_factorial.html">
- <span class="dropdown-text">Lab 3</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./BLR_lab_replicated_randomized_block.html">
- <span class="dropdown-text">Lab 4</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-lab-week-3" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Lab week 3</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-lab-week-3">    
-        <li>
-    <a class="dropdown-item" href="./BLR_lab_MLA.html">
- <span class="dropdown-text">Lab 5</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-lab-week-4" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Lab week 4</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-lab-week-4">    
-        <li>
-    <a class="dropdown-item" href="./BLR_lab_longitudinal.html">
- <span class="dropdown-text">Lab 6</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-assignments" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Assignments</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-assignments">    
-        <li>
-    <a class="dropdown-item" href="./Assignments/Week 1/Assignment_week_1.html">
- <span class="dropdown-text">Week 1</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./Assignments/Week 2/Assignment_week_2.html">
- <span class="dropdown-text">Week 2</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./Assignments/Week 3/Assignment_week_3.html">
- <span class="dropdown-text">Week 3</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./Assignments/Week 4/Assignment_week_4.html">
- <span class="dropdown-text">Week 4</span></a>
-  </li>  
-    </ul>
-  </li>
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-final-assignment" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Final Assignment</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-final-assignment">    
-        <li>
-    <a class="dropdown-item" href="./Assignments/Final/Final_assignment.html">
- <span class="dropdown-text">Final Assignment</span></a>
-  </li>  
-    </ul>
-  </li>
-</ul>
-          </div> <!-- /navcollapse -->
-            <div class="quarto-navbar-tools">
-</div>
-      </div> <!-- /container-fluid -->
-    </nav>
-</header>
-<!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
-<!-- sidebar -->
-<!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
-    </div>
-<!-- main -->
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">R labs for the Beyond MLR course</h1>
+<h1 class="title">Final Assignment: Longitudinal Analysis of Cardiac Recovery</h1>
+<p class="subtitle lead">Modeling Recovery Trajectories with Mixed Effects Models</p>
 </div>
 
 
@@ -218,11 +65,223 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>This website hosts the R labs for the beyond MLR course. You can navigate between the different labs using the menu above.</p>
+<section id="assignment-overview" class="level2">
+<h2 class="anchored" data-anchor-id="assignment-overview">Assignment Overview</h2>
+<p>For this final assignment, you will write a short research report analyzing recovery trajectories in cardiac surgery patients.</p>
+<p>Your report should demonstrate your ability to:</p>
+<ul>
+<li>Formulate and address research questions using multilevel models</li>
+<li>Apply growth curve modeling techniques appropriately</li>
+<li>Interpret and communicate statistical findings clearly</li>
+<li>Critically evaluate model assumptions and limitations</li>
+</ul>
+</section>
+<section id="study-background" class="level2">
+<h2 class="anchored" data-anchor-id="study-background">Study Background</h2>
+<section id="clinical-context" class="level3">
+<h3 class="anchored" data-anchor-id="clinical-context">Clinical Context</h3>
+<p>Coronary artery bypass grafting (CABG) is one of the most common cardiac surgeries, performed to restore blood flow to the heart in patients with severe coronary artery disease. While the surgery itself is generally successful, recovery is a gradual process that varies considerably between patients. Understanding the factors that influence recovery trajectories is crucial for optimizing patient care and rehabilitation strategies.</p>
+</section>
+<section id="the-recover-study" class="level3">
+<h3 class="anchored" data-anchor-id="the-recover-study">The RECOVER Study</h3>
+<p>The data for this assignment come from the <strong>RECOVER study</strong> (Recovery and Exercise after Cardiac Operation: Variability and Effectiveness Research), a randomized controlled trial that enrolled 500 patients undergoing CABG surgery (with or without valve repair). Patients were followed for 6 months post-surgery.</p>
+<p><strong>Study objectives:</strong></p>
+<ul>
+<li>To characterize recovery trajectories in quality of life and physical function after cardiac surgery</li>
+<li>To identify patient characteristics associated with different recovery patterns</li>
+<li>To evaluate the effectiveness of an enhanced cardiac rehabilitation program compared to standard care</li>
+</ul>
+<p><strong>Study design:</strong></p>
+<ul>
+<li>Patients were assessed at 5 time points: pre-surgery (baseline), 2 weeks, 6 weeks, 3 months, and 6 months post-surgery</li>
+<li>Patients were randomized to receive either <strong>Standard rehabilitation</strong> (usual care with basic exercise guidance) or <strong>Enhanced rehabilitation</strong> (structured exercise program with additional psychological support and nutritional counseling)</li>
+<li>Key outcomes included health-related quality of life and functional capacity (6-minute walk test)</li>
+</ul>
+</section>
+<section id="outcome-measures" class="level3">
+<h3 class="anchored" data-anchor-id="outcome-measures">Outcome Measures</h3>
+<p><strong>Quality of Life</strong> was assessed using a validated cardiac-specific quality of life questionnaire, yielding a score from 0 (worst) to 100 (best). This measure captures physical, emotional, and social aspects of health-related quality of life relevant to cardiac patients.</p>
+<p><strong>Walk Distance</strong> was measured using the 6-minute walk test, a standardized assessment of functional capacity. Patients walk as far as possible in 6 minutes on a flat surface. The distance (in meters) reflects overall cardiopulmonary fitness and is a strong predictor of long-term outcomes in cardiac patients.</p>
+</section>
+</section>
+<section id="your-assignment" class="level2">
+<h2 class="anchored" data-anchor-id="your-assignment">Your Assignment</h2>
+<p>Use the lookup table below to determine your <strong>subpopulation</strong> based on the <strong>last two digits</strong> of your student or staff number. You will analyze <strong>both outcomes</strong> (Quality of Life and Walk Distance) within your assigned subpopulation.</p>
+<section id="subpopulation-lookup-table" class="level3">
+<h3 class="anchored" data-anchor-id="subpopulation-lookup-table">Subpopulation Lookup Table</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Last 2 digits</th>
+<th style="text-align: left;">Subpopulation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">00-24</td>
+<td style="text-align: left;">Female patients (<code>sex == "Female"</code>)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">25-49</td>
+<td style="text-align: left;">Male patients (<code>sex == "Male"</code>)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">50-74</td>
+<td style="text-align: left;">Patients with diabetes (<code>diabetes == "Yes"</code>)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">75-99</td>
+<td style="text-align: left;">Patients without diabetes (<code>diabetes == "No"</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>For example, if your student/staff number is 12345<strong>67</strong>, your last two digits are <strong>67</strong>, so you analyze patients <strong>with diabetes</strong>.</p>
+</section>
+<section id="your-research-questions" class="level3">
+<h3 class="anchored" data-anchor-id="your-research-questions">Your Research Questions</h3>
+<p>All students address the same two research questions within their assigned subpopulation:</p>
+<ol type="1">
+<li><p><strong>Quality of Life</strong>: Does the rehabilitation program (Standard vs Enhanced) affect the recovery trajectory of quality of life in [your subpopulation]?</p></li>
+<li><p><strong>Walk Distance</strong>: Does the rehabilitation program (Standard vs Enhanced) affect the recovery trajectory of walk distance in [your subpopulation]?</p></li>
+</ol>
+</section>
+<section id="getting-started" class="level3">
+<h3 class="anchored" data-anchor-id="getting-started">Getting Started</h3>
+<p>Download the template file and the dataset below. Place both files in the same folder, then open the template in RStudio.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In the template, replace <code>123456</code> with your actual student/staff number in the setup code chunk, and update the author field in the YAML header with your name and student ID.</p>
+</div>
+</div>
+<p>After running the setup code chunk, your personalized dataset will be stored in <code>my_data</code>. Use this dataset for all subsequent analyses.</p>
+</section>
+</section>
+<section id="dataset-description" class="level2">
+<h2 class="anchored" data-anchor-id="dataset-description">Dataset Description</h2>
+<p>The dataset contains the following variables:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 43%">
+<col style="width: 56%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>patient_id</code></td>
+<td style="text-align: left;">Unique patient identifier</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>time_weeks</code></td>
+<td style="text-align: left;">Time in weeks (0, 2, 6, 12, 24)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>sex</code></td>
+<td style="text-align: left;">Patient sex (Male/Female)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>diabetes</code></td>
+<td style="text-align: left;">Diabetes status (Yes/No)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>rehab_program</code></td>
+<td style="text-align: left;">Rehabilitation program (Standard/Enhanced)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>quality_of_life</code></td>
+<td style="text-align: left;">Quality of Life score (0-100, higher = better)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>walk_distance</code></td>
+<td style="text-align: left;">6-minute walk test distance in meters (higher = better)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="required-report-structure" class="level2">
+<h2 class="anchored" data-anchor-id="required-report-structure">Required Report Structure</h2>
+<p>Your report must follow the structure outlined below.</p>
+<hr>
+<section id="introduction" class="level3">
+<h3 class="anchored" data-anchor-id="introduction">1. Introduction</h3>
+<p><em>Brief introduction to the study and your research questions.</em></p>
+<ul>
+<li>Describe the clinical context (cardiac surgery recovery)</li>
+<li>Introduce your assigned subpopulation and justify its clinical relevance</li>
+<li>State your two research questions (one for each outcome)</li>
+</ul>
+<hr>
+</section>
+<section id="exploratory-data-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="exploratory-data-analysis">2. Exploratory Data Analysis</h3>
+<ul>
+<li>Distribution of both outcome variables in your subpopulation</li>
+<li>Individual recovery trajectories (spaghetti plots) for both outcomes</li>
+<li>Patterns by rehabilitation program for each outcome</li>
+</ul>
+<hr>
+</section>
+<section id="unconditional-growth-models" class="level3">
+<h3 class="anchored" data-anchor-id="unconditional-growth-models">3. Unconditional Growth Models</h3>
+<p>Fit unconditional growth models for both outcomes:</p>
+<ul>
+<li>Report fixed effects (intercept and slope)</li>
+<li>Report random effects (variance components)</li>
+<li>Calculate and interpret the ICC for each outcome</li>
+<li>Check model assumptions</li>
+</ul>
+<hr>
+</section>
+<section id="conditional-growth-models" class="level3">
+<h3 class="anchored" data-anchor-id="conditional-growth-models">4. Conditional Growth Models</h3>
+<p>Build models addressing your research questions for both outcomes:</p>
+<ul>
+<li>Add rehabilitation program and its interaction with time</li>
+<li>Test whether the rehab effect is significant</li>
+<li>Present your final models for quality of life and walk distance</li>
+</ul>
+<hr>
+</section>
+<section id="discussion-and-conclusions" class="level3">
+<h3 class="anchored" data-anchor-id="discussion-and-conclusions">5. Discussion and Conclusions</h3>
+<ul>
+<li>Summary of key findings</li>
+<li>Clinical interpretation</li>
+<li>Limitations</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="submission-requirements" class="level2">
+<h2 class="anchored" data-anchor-id="submission-requirements">Submission Requirements</h2>
+<p>Submit both:</p>
+<ol type="1">
+<li><strong>Quarto source file</strong> (<code>.qmd</code>)</li>
+<li><strong>Rendered HTML file</strong> (<code>.html</code>)</li>
+</ol>
+</section>
+<section id="downloads" class="level2">
+<h2 class="anchored" data-anchor-id="downloads">Downloads</h2>
+<ul>
+<li><a href="downloads/_Template_final_assignment.qmd">Report template</a></li>
+<li><a href="downloads/cardiac_recovery_master.csv">Dataset</a></li>
+</ul>
+</section>
 
-
-
-</main> <!-- /main -->
+</main>
+<!-- /main column -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

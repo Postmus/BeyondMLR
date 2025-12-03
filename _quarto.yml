@@ -43,6 +43,10 @@ website:
             href: Assignments/Week 3/Assignment_week_3.qmd
           - text: "Week 4"
             href: Assignments/Week 4/Assignment_week_4.qmd
+      - text: "Final Assignment"
+        menu:
+          - text: "Final Assignment"
+            href: Assignments/Final/Final_assignment.qmd
 
 format:
   html:

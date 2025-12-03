@@ -49,13 +49,10 @@ patient_data <- data.frame(
 ) %>%
   mutate(
     # Demographics
-    age = round(rnorm(n_patients, mean = 65, sd = 10)),
-    age_c = age - 65,  # centered at 65
-    sex = sample(c("Male", "Female"), n_patients, replace = TRUE, prob = c(0.65, 0.35)),
+    sex = sample(c("Male", "Female"), n_patients, replace = TRUE, prob = c(0.5, 0.5)),
 
     # Clinical characteristics
-    diabetes = sample(c("No", "Yes"), n_patients, replace = TRUE, prob = c(0.7, 0.3)),
-    surgery_type = sample(c("CABG", "CABG+Valve"), n_patients, replace = TRUE, prob = c(0.75, 0.25)),
+    diabetes = sample(c("No", "Yes"), n_patients, replace = TRUE, prob = c(0.5, 0.5)),
     rehab_program = sample(c("Standard", "Enhanced"), n_patients, replace = TRUE, prob = c(0.5, 0.5)),
 
     # Baseline severity (latent, affects outcomes)
@@ -106,10 +103,8 @@ long_data <- patient_data %>%
 beta_qol <- list(
   intercept = 45,
   time = 1,                 # base improvement per week
-  age = -0.2,               # older patients have slightly lower QoL
   sex_male = 3,             # males report slightly higher QoL
   diabetes = -5,            # diabetes associated with lower QoL
-  surgery_complex = -4,     # complex surgery = worse initial QoL
   enhanced_rehab = 4,       # enhanced rehab improves outcomes
   enhanced_rehab_x_time = 0.2,  # enhanced rehab has greater improvement over time
   severity = -6             # baseline severity effect
@@ -119,10 +114,8 @@ long_data <- long_data %>%
   mutate(
     qol_fixed = beta_qol$intercept +
       beta_qol$time * time_weeks +
-      beta_qol$age * age_c +
       beta_qol$sex_male * (sex == "Male") +
       beta_qol$diabetes * (diabetes == "Yes") +
-      beta_qol$surgery_complex * (surgery_type == "CABG+Valve") +
       beta_qol$enhanced_rehab * (rehab_program == "Enhanced") +
       beta_qol$enhanced_rehab_x_time * (rehab_program == "Enhanced") * time_weeks +
       beta_qol$severity * baseline_severity,
@@ -140,10 +133,8 @@ long_data <- long_data %>%
 beta_walk <- list(
   intercept = 280,
   time = 5,                 # improvement per week
-  age = -3,                 # older patients walk less
   sex_male = 35,            # males walk further
   diabetes = -30,           # diabetes associated with lower walk distance
-  surgery_complex = -25,
   enhanced_rehab = 25,
   enhanced_rehab_x_time = 1,
   severity = -35
@@ -153,10 +144,8 @@ long_data <- long_data %>%
   mutate(
     walk_fixed = beta_walk$intercept +
       beta_walk$time * time_weeks +
-      beta_walk$age * age_c +
       beta_walk$sex_male * (sex == "Male") +
       beta_walk$diabetes * (diabetes == "Yes") +
-      beta_walk$surgery_complex * (surgery_type == "CABG+Valve") +
       beta_walk$enhanced_rehab * (rehab_program == "Enhanced") +
       beta_walk$enhanced_rehab_x_time * (rehab_program == "Enhanced") * time_weeks +
       beta_walk$severity * baseline_severity,
@@ -178,9 +167,9 @@ cardiac_recovery_data <- long_data %>%
     # Time variable
     time_weeks,
     # Patient characteristics
-    age, sex,
+    sex,
     # Clinical variables
-    diabetes, surgery_type, rehab_program,
+    diabetes, rehab_program,
     # Outcomes
     quality_of_life, walk_distance
   ) %>%
