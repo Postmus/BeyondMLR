@@ -1,6 +1,6 @@
 ---
-title: "Assignment 6: Cardiac Recovery Analysis"
-subtitle: "Model answer (Example: QoL ~ Diabetes × Time, moderated by Rehab Program)"
+title: "Final Assignment: Cardiac Recovery Analysis"
+subtitle: "Model answer (Example: Quality of Life with Diabetes as moderator)"
 format:
   html:
     toc: true
@@ -24,24 +24,26 @@ pacman::p_load(dplyr, ggplot2, lmerTest, emmeans)
 
 # Example Analysis
 
-This model answer demonstrates the analysis for **Question ID 4**:
+This model answer demonstrates the analysis for a student with last two digits **25-49**:
 
 - **Outcome**: Quality of Life (0-100)
-- **Main predictor**: Diabetes status
-- **Research question**: Does diabetes affect QoL recovery, and does the rehab program moderate recovery trajectories?
+- **Predictor**: Diabetes status
+
+**Research questions**:
+
+1. Does the rehabilitation program (Standard vs Enhanced) affect the recovery trajectory of Quality of Life?
+2. Does diabetes affect the recovery trajectory of Quality of Life?
+3. Is there an interaction between the rehabilitation program and diabetes in their effect on Quality of Life trajectory?
 
 ## Generate the Example Dataset
 
 ```{r}
 # Simulate the same process students would use
-student_id <- 999904  # Example ID that maps to question 4
+student_id <- 999937  # Example ID with last two digits in 25-49 range
 
 master_data <- read.csv("downloads/cardiac_recovery_master.csv")
-lookup_table <- read.csv("downloads/research_questions_lookup.csv")
 
 set.seed(student_id)
-question_id <- ((student_id - 1) %% 9) + 1
-my_question <- lookup_table[question_id, ]
 
 # Sample 60% of patients
 sampled_patients <- sample(unique(master_data$patient_id),
@@ -50,9 +52,9 @@ sampled_patients <- sample(unique(master_data$patient_id),
 my_data <- master_data %>%
   filter(patient_id %in% sampled_patients)
 
-# Show assignment details
-cat("Outcome:", my_question$outcome_label, "\n")
-cat("Main predictor:", my_question$predictor_label, "\n")
+# Show dataset summary
+cat("Student ID:", student_id, "\n")
+cat("Last two digits: 37 -> Quality of Life + Diabetes\n")
 cat("N patients:", n_distinct(my_data$patient_id), "\n")
 cat("N observations:", nrow(my_data), "\n")
 ```

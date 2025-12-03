@@ -1,0 +1,189 @@
+---
+title: "Final Assignment: Longitudinal Analysis of Cardiac Recovery"
+subtitle: "Modeling Recovery Trajectories with Mixed Effects Models"
+format: html
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true
+---
+
+## Assignment Overview
+
+For this final assignment, you will write a short research report analyzing recovery trajectories in cardiac surgery patients. Each student works with a unique subsample of the data and specific research questions, ensuring independent work.
+
+Your report should demonstrate your ability to:
+
+- Formulate and address research questions using multilevel models
+- Apply growth curve modeling techniques appropriately
+- Interpret and communicate statistical findings clearly
+- Critically evaluate model assumptions and limitations
+
+## Study Background
+
+### Clinical Context
+
+Coronary artery bypass grafting (CABG) is one of the most common cardiac surgeries, performed to restore blood flow to the heart in patients with severe coronary artery disease. While the surgery itself is generally successful, recovery is a gradual process that varies considerably between patients. Understanding the factors that influence recovery trajectories is crucial for optimizing patient care and rehabilitation strategies.
+
+### The RECOVER Study
+
+The data for this assignment come from the **RECOVER study** (Recovery and Exercise after Cardiac Operation: Variability and Effectiveness Research), a randomized controlled trial that enrolled 500 patients undergoing CABG surgery (with or without valve repair). Patients were followed for 6 months post-surgery.
+
+**Study objectives:**
+
+- To characterize recovery trajectories in quality of life and physical function after cardiac surgery
+- To identify patient characteristics associated with different recovery patterns
+- To evaluate the effectiveness of an enhanced cardiac rehabilitation program compared to standard care
+
+**Study design:**
+
+- Patients were assessed at 5 time points: pre-surgery (baseline), 2 weeks, 6 weeks, 3 months, and 6 months post-surgery
+- Patients were randomized to receive either **Standard rehabilitation** (usual care with basic exercise guidance) or **Enhanced rehabilitation** (structured exercise program with additional psychological support and nutritional counseling)
+- Key outcomes included health-related quality of life and functional capacity (6-minute walk test)
+
+### Outcome Measures
+
+**Quality of Life** was assessed using a validated cardiac-specific quality of life questionnaire, yielding a score from 0 (worst) to 100 (best). This measure captures physical, emotional, and social aspects of health-related quality of life relevant to cardiac patients.
+
+**Walk Distance** was measured using the 6-minute walk test, a standardized assessment of functional capacity. Patients walk as far as possible in 6 minutes on a flat surface. The distance (in meters) reflects overall cardiopulmonary fitness and is a strong predictor of long-term outcomes in cardiac patients.
+
+## Your Assignment
+
+Use the lookup table below to determine your **outcome variable** and **predictor variable** based on the **last two digits** of your student or staff number.
+
+### Research Question Lookup Table
+
+| Last 2 digits | Outcome | Predictor |
+|:-------------:|:--------|:----------|
+| 00-24 | Quality of Life (`quality_of_life`) | Sex (`sex`) |
+| 25-49 | Quality of Life (`quality_of_life`) | Diabetes (`diabetes`) |
+| 50-74 | Walk Distance (`walk_distance`) | Sex (`sex`) |
+| 75-99 | Walk Distance (`walk_distance`) | Diabetes (`diabetes`) |
+
+For example, if your student number is 12345**67**, your last two digits are **67**, so you analyze **Walk Distance** with **Sex** as your predictor.
+
+### Your Research Questions
+
+All students address the same three research questions, but with their assigned outcome and predictor:
+
+1. **Effect of rehabilitation program**: Does the rehabilitation program (Standard vs Enhanced) affect the recovery trajectory of [your outcome]?
+
+2. **Effect of [your predictor]**: Does [your predictor] affect the recovery trajectory of [your outcome]?
+
+3. **Interaction effect**: Is there an interaction between the rehabilitation program and [your predictor] in their effect on [your outcome] trajectory?
+
+### Generate Your Personal Dataset
+
+Use your student number to generate your unique subsample:
+
+```{r}
+# IMPORTANT: Replace 123456 with YOUR student number!
+student_id <- 123456
+
+# Load the master dataset
+master_data <- read.csv("downloads/cardiac_recovery_master.csv")
+
+# Generate your personal subsample
+set.seed(student_id)
+
+# Sample 60% of patients
+sampled_patients <- sample(unique(master_data$patient_id),
+                            size = round(0.6 * length(unique(master_data$patient_id))))
+
+# Create your personal dataset
+my_data <- master_data[master_data$patient_id %in% sampled_patients, ]
+
+# Display your dataset summary
+cat("Student ID:", student_id, "\n")
+cat("Number of patients:", length(unique(my_data$patient_id)), "\n")
+cat("Number of observations:", nrow(my_data), "\n")
+```
+
+::: {.callout-important}
+Make sure to replace `123456` with your actual student number before running the code!
+:::
+
+## Dataset Description
+
+The dataset contains the following variables:
+
+| Variable | Description |
+|:---------|:------------|
+| `patient_id` | Unique patient identifier |
+| `time_weeks` | Time in weeks (0, 2, 6, 12, 24) |
+| `age` | Patient age in years (mean ≈ 65) |
+| `sex` | Patient sex (Male/Female) |
+| `diabetes` | Diabetes status (Yes/No) |
+| `surgery_type` | Type of surgery (CABG = bypass only, CABG+Valve = bypass plus valve repair) |
+| `rehab_program` | Rehabilitation program (Standard/Enhanced) |
+| `quality_of_life` | Quality of Life score (0-100, higher = better) |
+| `walk_distance` | 6-minute walk test distance in meters (higher = better) |
+
+## Required Report Structure
+
+Your report must follow the structure outlined below.
+
+---
+
+### 1. Introduction
+
+*Brief introduction to the study and your research questions.*
+
+- Describe the clinical context (cardiac surgery recovery)
+- Introduce your assigned outcome variable and predictor
+- State your three research questions
+
+---
+
+### 2. Exploratory Data Analysis
+
+- Distribution of your outcome variable
+- Individual recovery trajectories (spaghetti plots)
+- Patterns by rehabilitation program and your assigned predictor
+
+---
+
+### 3. Unconditional Growth Model
+
+Fit an unconditional growth model (time as only predictor):
+
+- Report fixed effects (intercept and slope)
+- Report random effects (variance components)
+- Calculate and interpret the ICC
+- Check model assumptions
+
+---
+
+### 4. Conditional Growth Models
+
+Build models addressing your research questions:
+
+- Add rehabilitation program and its interaction with time
+- Add your assigned predictor and test for an interaction with rehabilitation program
+- Compare models and present your final model
+
+---
+
+### 5. Discussion and Conclusions
+
+- Summary of key findings
+- Clinical interpretation
+- Limitations
+
+---
+
+## Submission Requirements
+
+Submit both:
+
+1. **Quarto source file** (`.qmd`)
+2. **Rendered HTML file** (`.html`)
+
+## Downloads
+
+- [Master dataset](downloads/cardiac_recovery_master.csv)
+
+::: {.callout-note title="Academic integrity"}
+Because each student has a unique dataset, your analysis and results should be your own.
+:::

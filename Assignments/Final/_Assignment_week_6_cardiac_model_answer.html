@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Assignment 6: Cardiac Recovery Analysis</title>
+<title>Final Assignment: Cardiac Recovery Analysis</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -119,8 +119,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Assignment 6: Cardiac Recovery Analysis</h1>
-<p class="subtitle lead">Model answer (Example: QoL ~ Diabetes × Time, moderated by Rehab Program)</p>
+<h1 class="title">Final Assignment: Cardiac Recovery Analysis</h1>
+<p class="subtitle lead">Model answer (Example: Quality of Life with Diabetes as moderator)</p>
 </div>
 
 
@@ -156,40 +156,41 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <section id="example-analysis" class="level1">
 <h1>Example Analysis</h1>
-<p>This model answer demonstrates the analysis for <strong>Question ID 4</strong>:</p>
+<p>This model answer demonstrates the analysis for a student with last two digits <strong>25-49</strong>:</p>
 <ul>
 <li><strong>Outcome</strong>: Quality of Life (0-100)</li>
-<li><strong>Main predictor</strong>: Diabetes status</li>
-<li><strong>Research question</strong>: Does diabetes affect QoL recovery, and does the rehab program moderate recovery trajectories?</li>
+<li><strong>Predictor</strong>: Diabetes status</li>
 </ul>
+<p><strong>Research questions</strong>:</p>
+<ol type="1">
+<li>Does the rehabilitation program (Standard vs Enhanced) affect the recovery trajectory of Quality of Life?</li>
+<li>Does diabetes moderate the effect of the rehabilitation program on Quality of Life trajectory?</li>
+</ol>
 <section id="generate-the-example-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="generate-the-example-dataset">Generate the Example Dataset</h2>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate the same process students would use</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>student_id <span class="ot">&lt;-</span> <span class="dv">999904</span>  <span class="co"># Example ID that maps to question 4</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>student_id <span class="ot">&lt;-</span> <span class="dv">999937</span>  <span class="co"># Example ID with last two digits in 25-49 range</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>master_data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"downloads/cardiac_recovery_master.csv"</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>lookup_table <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"downloads/research_questions_lookup.csv"</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(student_id)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>question_id <span class="ot">&lt;-</span> ((student_id <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">%%</span> <span class="dv">9</span>) <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>my_question <span class="ot">&lt;-</span> lookup_table[question_id, ]</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample 60% of patients</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>sampled_patients <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">unique</span>(master_data<span class="sc">$</span>patient_id), </span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>                            <span class="at">size =</span> <span class="fu">round</span>(<span class="fl">0.6</span> <span class="sc">*</span> <span class="fu">length</span>(<span class="fu">unique</span>(master_data<span class="sc">$</span>patient_id))))</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(student_id)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample 60% of patients</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>sampled_patients <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">unique</span>(master_data<span class="sc">$</span>patient_id),</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                            <span class="at">size =</span> <span class="fu">round</span>(<span class="fl">0.6</span> <span class="sc">*</span> <span class="fu">length</span>(<span class="fu">unique</span>(master_data<span class="sc">$</span>patient_id))))</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>my_data <span class="ot">&lt;-</span> master_data <span class="sc">%&gt;%</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(patient_id <span class="sc">%in%</span> sampled_patients)</span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>my_data <span class="ot">&lt;-</span> master_data <span class="sc">%&gt;%</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(patient_id <span class="sc">%in%</span> sampled_patients)</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Show assignment details</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Outcome:"</span>, my_question<span class="sc">$</span>outcome_label, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Show dataset summary</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Student ID:"</span>, student_id, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Outcome: Quality of Life </code></pre>
+<pre><code>Student ID: 999937 </code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Main predictor:"</span>, my_question<span class="sc">$</span>predictor_label, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Last two digits: 37 -&gt; Quality of Life + Diabetes</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Main predictor: Diabetes status </code></pre>
+<pre><code>Last two digits: 37 -&gt; Quality of Life + Diabetes</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"N patients:"</span>, <span class="fu">n_distinct</span>(my_data<span class="sc">$</span>patient_id), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -218,19 +219,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(my_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>'data.frame':   1500 obs. of  12 variables:
- $ patient_id      : int  1 1 1 1 1 2 2 2 2 2 ...
- $ visit           : Factor w/ 5 levels "Baseline","2 weeks",..: 1 2 3 4 5 1 2 3 4 5 ...
- $ time_weeks      : int  0 2 6 12 24 0 2 6 12 24 ...
- $ time_months     : num  0 0.5 1.5 3 6 0 0.5 1.5 3 6 ...
- $ age             : int  79 79 79 79 79 59 59 59 59 59 ...
- $ sex             : Factor w/ 2 levels "Female","Male": 1 1 1 1 1 2 2 2 2 2 ...
- $ diabetes        : Factor w/ 2 levels "No","Yes": 1 1 1 1 1 2 2 2 2 2 ...
- $ surgery_type    : Factor w/ 2 levels "CABG","CABG+Valve": 2 2 2 2 2 1 1 1 1 1 ...
- $ rehab_program   : Factor w/ 2 levels "Enhanced","Standard": 1 1 1 1 1 2 2 2 2 2 ...
- $ quality_of_life : int  40 41 47 50 73 43 56 46 64 68 ...
- $ walk_distance   : int  276 327 273 291 401 308 346 296 390 496 ...
- $ depression_score: int  9 8 4 6 0 14 11 10 9 5 ...</code></pre>
+<pre><code>'data.frame':   1500 obs. of  11 variables:
+ $ patient_id     : int  1 1 1 1 1 2 2 2 2 2 ...
+ $ visit          : Factor w/ 5 levels "Baseline","2 weeks",..: 1 2 3 4 5 1 2 3 4 5 ...
+ $ time_weeks     : int  0 2 6 12 24 0 2 6 12 24 ...
+ $ time_months    : num  0 0.5 1.5 3 6 0 0.5 1.5 3 6 ...
+ $ age            : int  79 79 79 79 79 59 59 59 59 59 ...
+ $ sex            : Factor w/ 2 levels "Female","Male": 1 1 1 1 1 2 2 2 2 2 ...
+ $ diabetes       : Factor w/ 2 levels "No","Yes": 1 1 1 1 1 2 2 2 2 2 ...
+ $ surgery_type   : Factor w/ 2 levels "CABG","CABG+Valve": 2 2 2 2 2 1 1 1 1 1 ...
+ $ rehab_program  : Factor w/ 2 levels "Enhanced","Standard": 1 1 1 1 1 2 2 2 2 2 ...
+ $ quality_of_life: int  40 41 47 50 73 43 56 46 64 68 ...
+ $ walk_distance  : int  276 327 273 291 401 308 346 296 390 496 ...</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -338,7 +338,7 @@ Patients by rehab program:</code></pre>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(diabetes, rehab_program, time_months) <span class="sc">%&gt;%</span></span>
 <span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_qol =</span> <span class="fu">mean</span>(quality_of_life, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
 <span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mean_trajectories, <span class="fu">aes</span>(<span class="at">x =</span> time_months, <span class="at">y =</span> mean_qol, </span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(mean_trajectories, <span class="fu">aes</span>(<span class="at">x =</span> time_months, <span class="at">y =</span> mean_qol,</span>
 <span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>                               <span class="at">color =</span> diabetes, <span class="at">linetype =</span> rehab_program)) <span class="sc">+</span></span>
 <span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
 <span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
@@ -378,21 +378,21 @@ lmerModLmerTest]
 Formula: quality_of_life ~ 1 + (1 | patient_id)
    Data: my_data
 
-REML criterion at convergence: 12276.1
+REML criterion at convergence: 12326.6
 
 Scaled residuals: 
     Min      1Q  Median      3Q     Max 
--2.3081 -0.6683 -0.1403  0.5028  3.3084 
+-2.2311 -0.6715 -0.1368  0.5030  3.2650 
 
 Random effects:
  Groups     Name        Variance Std.Dev.
- patient_id (Intercept) 109.6    10.47   
- Residual               155.3    12.46   
+ patient_id (Intercept) 116.4    10.79   
+ Residual               159.9    12.64   
 Number of obs: 1500, groups:  patient_id, 300
 
 Fixed effects:
             Estimate Std. Error       df t value Pr(&gt;|t|)    
-(Intercept)  55.8860     0.6847 299.0000   81.63   &lt;2e-16 ***
+(Intercept)  55.7953     0.7033 299.0000   79.33   &lt;2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
@@ -406,15 +406,15 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>ICC <span class="ot">&lt;-</span> var_between <span class="sc">/</span> (var_between <span class="sc">+</span> var_within)</span>
 <span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Between-patient variance:"</span>, <span class="fu">round</span>(var_between, <span class="dv">2</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Between-patient variance: 109.56 </code></pre>
+<pre><code>Between-patient variance: 116.42 </code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Within-patient variance:"</span>, <span class="fu">round</span>(var_within, <span class="dv">2</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Within-patient variance: 155.33 </code></pre>
+<pre><code>Within-patient variance: 159.85 </code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"ICC:"</span>, <span class="fu">round</span>(ICC, <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>ICC: 0.414 </code></pre>
+<pre><code>ICC: 0.421 </code></pre>
 </div>
 </div>
 <p>The ICC indicates that a substantial proportion of the variability in QoL is due to stable differences between patients, while the rest is due to within-patient variation over time. This confirms the need for a multilevel approach.</p>
@@ -424,7 +424,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <p>We add time as a fixed effect and allow patients to have different growth rates:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Growth model with random intercepts and slopes</span></span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>model_growth <span class="ot">&lt;-</span> <span class="fu">lmer</span>(quality_of_life <span class="sc">~</span> time_months <span class="sc">+</span> (time_months <span class="sc">|</span> patient_id), </span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>model_growth <span class="ot">&lt;-</span> <span class="fu">lmer</span>(quality_of_life <span class="sc">~</span> time_months <span class="sc">+</span> (time_months <span class="sc">|</span> patient_id),</span>
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> my_data)</span>
 <span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_growth)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -433,29 +433,29 @@ lmerModLmerTest]
 Formula: quality_of_life ~ time_months + (time_months | patient_id)
    Data: my_data
 
-REML criterion at convergence: 10480.7
+REML criterion at convergence: 10484.1
 
 Scaled residuals: 
      Min       1Q   Median       3Q      Max 
--2.74293 -0.53936  0.01799  0.55673  2.61184 
+-2.72412 -0.54083  0.00357  0.54046  3.02913 
 
 Random effects:
  Groups     Name        Variance Std.Dev. Corr 
- patient_id (Intercept) 142.090  11.920        
-            time_months   3.024   1.739   -0.23
- Residual                24.873   4.987        
+ patient_id (Intercept) 152.844  12.363        
+            time_months   2.887   1.699   -0.25
+ Residual                24.779   4.978        
 Number of obs: 1500, groups:  patient_id, 300
 
 Fixed effects:
             Estimate Std. Error       df t value Pr(&gt;|t|)    
-(Intercept)  46.1998     0.7123 299.0184   64.86   &lt;2e-16 ***
-time_months   4.4028     0.1168 299.0142   37.70   &lt;2e-16 ***
+(Intercept)  45.8795     0.7370 299.0188   62.25   &lt;2e-16 ***
+time_months   4.5072     0.1147 299.0097   39.28   &lt;2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Correlation of Fixed Effects:
             (Intr)
-time_months -0.286</code></pre>
+time_months -0.302</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -466,9 +466,9 @@ time_months -0.286</code></pre>
 Models:
 model_null: quality_of_life ~ 1 + (1 | patient_id)
 model_growth: quality_of_life ~ time_months + (time_months | patient_id)
-             npar   AIC   BIC  logLik -2*log(L)  Chisq Df Pr(&gt;Chisq)    
-model_null      3 12283 12299 -6138.6     12277                         
-model_growth    6 10491 10523 -5239.7     10479 1797.8  3  &lt; 2.2e-16 ***
+             npar   AIC   BIC  logLik -2*log(L) Chisq Df Pr(&gt;Chisq)    
+model_null      3 12334 12350 -6163.9     12328                        
+model_growth    6 10495 10527 -5241.3     10483  1845  3  &lt; 2.2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
@@ -478,15 +478,15 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>var_comp <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">VarCorr</span>(model_growth))</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Random intercept SD:"</span>, <span class="fu">round</span>(var_comp<span class="sc">$</span>sdcor[<span class="dv">1</span>], <span class="dv">2</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Random intercept SD: 11.92 </code></pre>
+<pre><code>Random intercept SD: 12.36 </code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Random slope SD:"</span>, <span class="fu">round</span>(var_comp<span class="sc">$</span>sdcor[<span class="dv">2</span>], <span class="dv">2</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Random slope SD: 1.74 </code></pre>
+<pre><code>Random slope SD: 1.7 </code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Intercept-slope correlation:"</span>, <span class="fu">round</span>(var_comp<span class="sc">$</span>sdcor[<span class="dv">3</span>], <span class="dv">2</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Intercept-slope correlation: -0.23 </code></pre>
+<pre><code>Intercept-slope correlation: -0.25 </code></pre>
 </div>
 </div>
 </section>
@@ -497,8 +497,8 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">contrasts =</span> <span class="fu">c</span>(<span class="st">"contr.sum"</span>, <span class="st">"contr.poly"</span>))</span>
 <span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Main effect and interaction with time</span></span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>model_diabetes <span class="ot">&lt;-</span> <span class="fu">lmer</span>(quality_of_life <span class="sc">~</span> time_months <span class="sc">*</span> diabetes <span class="sc">+</span> </span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>                         (time_months <span class="sc">|</span> patient_id), </span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>model_diabetes <span class="ot">&lt;-</span> <span class="fu">lmer</span>(quality_of_life <span class="sc">~</span> time_months <span class="sc">*</span> diabetes <span class="sc">+</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>                         (time_months <span class="sc">|</span> patient_id),</span>
 <span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>                       <span class="at">data =</span> my_data)</span>
 <span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_diabetes)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -507,35 +507,33 @@ lmerModLmerTest]
 Formula: quality_of_life ~ time_months * diabetes + (time_months | patient_id)
    Data: my_data
 
-REML criterion at convergence: 10471.9
+REML criterion at convergence: 10468.2
 
 Scaled residuals: 
     Min      1Q  Median      3Q     Max 
--2.7019 -0.5467  0.0143  0.5555  2.6583 
+-2.6713 -0.5505  0.0013  0.5375  3.0823 
 
 Random effects:
  Groups     Name        Variance Std.Dev. Corr 
- patient_id (Intercept) 137.679  11.734        
-            time_months   3.011   1.735   -0.22
- Residual                24.876   4.988        
+ patient_id (Intercept) 144.611  12.025        
+            time_months   2.852   1.689   -0.23
+ Residual                24.778   4.978        
 Number of obs: 1500, groups:  patient_id, 300
 
 Fixed effects:
                       Estimate Std. Error       df t value Pr(&gt;|t|)    
-(Intercept)            45.4391     0.7427 298.1470  61.181  &lt; 2e-16 ***
-time_months             4.4588     0.1234 298.0521  36.142  &lt; 2e-16 ***
-diabetes1               2.3287     0.7427 298.1470   3.135  0.00189 ** 
-time_months:diabetes1  -0.1715     0.1234 298.0521  -1.390  0.16560    
+(Intercept)            44.8583     0.7598 297.9971  59.038  &lt; 2e-16 ***
+time_months             4.5827     0.1209 298.0039  37.913  &lt; 2e-16 ***
+diabetes1               3.1260     0.7598 297.9971   4.114 5.03e-05 ***
+time_months:diabetes1  -0.2311     0.1209 298.0039  -1.912   0.0568 .  
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Correlation of Fixed Effects:
             (Intr) tm_mnt dibts1
-time_months -0.277              
-diabetes1   -0.327  0.091       
-tm_mnths:d1  0.091 -0.327 -0.277
-optimizer (nloptwrap) convergence code: 0 (OK)
-Model failed to converge with max|grad| = 0.00933423 (tol = 0.002, component 1)</code></pre>
+time_months -0.286              
+diabetes1   -0.327  0.093       
+tm_mnths:d1  0.093 -0.327 -0.286</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -546,9 +544,9 @@ Model failed to converge with max|grad| = 0.00933423 (tol = 0.002, component 1)<
 Models:
 model_growth: quality_of_life ~ time_months + (time_months | patient_id)
 model_diabetes: quality_of_life ~ time_months * diabetes + (time_months | patient_id)
-               npar   AIC   BIC  logLik -2*log(L)  Chisq Df Pr(&gt;Chisq)   
-model_growth      6 10491 10523 -5239.7     10479                        
-model_diabetes    8 10485 10528 -5234.6     10469 10.021  2   0.006668 **
+               npar   AIC   BIC  logLik -2*log(L)  Chisq Df Pr(&gt;Chisq)    
+model_growth      6 10495 10527 -5241.3     10483                         
+model_diabetes    8 10482 10524 -5232.8     10466 17.136  2  0.0001901 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
@@ -558,9 +556,9 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <h3 class="anchored" data-anchor-id="model-4-add-rehab-program-with-interaction">Model 4: Add Rehab Program with Interaction</h3>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Full model</span></span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>model_full <span class="ot">&lt;-</span> <span class="fu">lmer</span>(quality_of_life <span class="sc">~</span> time_months <span class="sc">*</span> diabetes <span class="sc">+</span> </span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>model_full <span class="ot">&lt;-</span> <span class="fu">lmer</span>(quality_of_life <span class="sc">~</span> time_months <span class="sc">*</span> diabetes <span class="sc">+</span></span>
 <span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>                     time_months <span class="sc">*</span> rehab_program <span class="sc">+</span></span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>                     (time_months <span class="sc">|</span> patient_id), </span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>                     (time_months <span class="sc">|</span> patient_id),</span>
 <span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data =</span> my_data)</span>
 <span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_full)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -571,37 +569,37 @@ quality_of_life ~ time_months * diabetes + time_months * rehab_program +
     (time_months | patient_id)
    Data: my_data
 
-REML criterion at convergence: 10452.2
+REML criterion at convergence: 10451.3
 
 Scaled residuals: 
      Min       1Q   Median       3Q      Max 
--2.72567 -0.54570  0.00319  0.55133  2.65517 
+-2.67437 -0.54969 -0.00238  0.54049  3.07937 
 
 Random effects:
  Groups     Name        Variance Std.Dev. Corr 
- patient_id (Intercept) 137.75   11.737        
-            time_months   2.81    1.676   -0.24
- Residual                24.87    4.987        
+ patient_id (Intercept) 140.886  11.870        
+            time_months   2.803   1.674   -0.26
+ Residual                24.779   4.978        
 Number of obs: 1500, groups:  patient_id, 300
 
 Fixed effects:
                            Estimate Std. Error       df t value Pr(&gt;|t|)    
-(Intercept)                 45.4100     0.7435 296.9999  61.079  &lt; 2e-16 ***
-time_months                  4.4393     0.1204 297.0001  36.879  &lt; 2e-16 ***
-diabetes1                    2.3474     0.7431 296.9999   3.159  0.00175 ** 
-rehab_program1               0.6896     0.7027 296.9999   0.981  0.32727    
-time_months:diabetes1       -0.1589     0.1203 297.0001  -1.321  0.18758    
-time_months:rehab_program1   0.4630     0.1138 297.0001   4.069 6.06e-05 ***
+(Intercept)                 44.7313     0.7519 296.9995  59.491  &lt; 2e-16 ***
+time_months                  4.5674     0.1203 297.0021  37.958  &lt; 2e-16 ***
+diabetes1                    3.3047     0.7532 296.9995   4.388 1.59e-05 ***
+rehab_program1               2.0582     0.7122 296.9995   2.890  0.00414 ** 
+time_months:diabetes1       -0.2096     0.1205 297.0021  -1.739  0.08310 .  
+time_months:rehab_program1   0.2482     0.1140 297.0021   2.178  0.03022 *  
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Correlation of Fixed Effects:
             (Intr) tm_mnt dibts1 rhb_p1 tm_m:1
-time_months -0.299                            
-diabetes1   -0.327  0.098                     
-rehb_prgrm1 -0.040  0.012  0.026              
-tm_mnths:d1  0.098 -0.327 -0.299 -0.008       
-tm_mnths:_1  0.012 -0.040 -0.008 -0.299  0.026</code></pre>
+time_months -0.313                            
+diabetes1   -0.330  0.103                     
+rehb_prgrm1 -0.058  0.018  0.082              
+tm_mnths:d1  0.103 -0.330 -0.313 -0.026       
+tm_mnths:_1  0.018 -0.058 -0.026 -0.313  0.082</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -613,8 +611,8 @@ Models:
 model_diabetes: quality_of_life ~ time_months * diabetes + (time_months | patient_id)
 model_full: quality_of_life ~ time_months * diabetes + time_months * rehab_program + (time_months | patient_id)
                npar   AIC   BIC  logLik -2*log(L)  Chisq Df Pr(&gt;Chisq)    
-model_diabetes    8 10485 10528 -5234.6     10469                         
-model_full       10 10468 10521 -5224.0     10448 21.297  2  2.373e-05 ***
+model_diabetes    8 10482 10524 -5232.8     10466                         
+model_full       10 10467 10520 -5223.5     10447 18.494  2  9.641e-05 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
@@ -627,19 +625,19 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Null model:"</span>, <span class="fu">round</span>(<span class="fu">AIC</span>(model_null), <span class="dv">1</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  Null model: 12282.1 </code></pre>
+<pre><code>  Null model: 12332.6 </code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Growth model:"</span>, <span class="fu">round</span>(<span class="fu">AIC</span>(model_growth), <span class="dv">1</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  Growth model: 10492.7 </code></pre>
+<pre><code>  Growth model: 10496.1 </code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  + Diabetes:"</span>, <span class="fu">round</span>(<span class="fu">AIC</span>(model_diabetes), <span class="dv">1</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  + Diabetes: 10487.9 </code></pre>
+<pre><code>  + Diabetes: 10484.2 </code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  + Rehab program:"</span>, <span class="fu">round</span>(<span class="fu">AIC</span>(model_full), <span class="dv">1</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  + Rehab program: 10472.2 </code></pre>
+<pre><code>  + Rehab program: 10471.3 </code></pre>
 </div>
 </div>
 </section>
@@ -691,7 +689,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>pred_grid<span class="sc">$</span>predicted <span class="ot">&lt;-</span> <span class="fu">predict</span>(model_full, <span class="at">newdata =</span> pred_grid, <span class="at">re.form =</span> <span class="cn">NA</span>)</span>
 <span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot</span></span>
-<span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(pred_grid, <span class="fu">aes</span>(<span class="at">x =</span> time_months, <span class="at">y =</span> predicted, </span>
+<span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(pred_grid, <span class="fu">aes</span>(<span class="at">x =</span> time_months, <span class="at">y =</span> predicted,</span>
 <span id="cb62-13"><a href="#cb62-13" aria-hidden="true" tabindex="-1"></a>                       <span class="at">color =</span> diabetes, <span class="at">linetype =</span> rehab_program)) <span class="sc">+</span></span>
 <span id="cb62-14"><a href="#cb62-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
 <span id="cb62-15"><a href="#cb62-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Predicted Recovery Trajectories"</span>,</span>
@@ -739,11 +737,11 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(coefs, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               (Intercept)                time_months 
-                    45.410                      4.439 
+                    44.731                      4.567 
                  diabetes1             rehab_program1 
-                     2.347                      0.690 
+                     3.305                      2.058 
      time_months:diabetes1 time_months:rehab_program1 
-                    -0.159                      0.463 </code></pre>
+                    -0.210                      0.248 </code></pre>
 </div>
 </div>
 <p>With effects coding:</p>
@@ -762,10 +760,10 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a><span class="fu">emmeans</span>(model_full, <span class="sc">~</span> diabetes <span class="sc">*</span> rehab_program, <span class="at">at =</span> <span class="fu">list</span>(<span class="at">time_months =</span> <span class="dv">6</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> diabetes rehab_program emmean   SE  df lower.CL upper.CL
- No       Enhanced        76.9 1.29 297     74.4     79.4
- Yes      Enhanced        74.1 1.61 297     71.0     77.3
- No       Standard        70.0 1.31 297     67.4     72.5
- Yes      Standard        67.2 1.66 297     63.9     70.5
+ No       Enhanced        77.7 1.31 297     75.2     80.3
+ Yes      Enhanced        73.6 1.57 297     70.5     76.7
+ No       Standard        70.6 1.28 297     68.1     73.2
+ Yes      Standard        66.5 1.69 297     63.2     69.9
 
 Degrees-of-freedom method: kenward-roger 
 Confidence level used: 0.95 </code></pre>
@@ -776,10 +774,10 @@ Confidence level used: 0.95 </code></pre>
 <span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a><span class="fu">emtrends</span>(model_full, <span class="sc">~</span> diabetes <span class="sc">*</span> rehab_program, <span class="at">var =</span> <span class="st">"time_months"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> diabetes rehab_program time_months.trend    SE  df lower.CL upper.CL
- No       Enhanced                   4.74 0.179 297     4.39     5.10
- Yes      Enhanced                   5.06 0.223 297     4.62     5.50
- No       Standard                   3.82 0.181 297     3.46     4.17
- Yes      Standard                   4.14 0.231 297     3.68     4.59
+ No       Enhanced                   4.61 0.182 297     4.25     4.96
+ Yes      Enhanced                   5.03 0.218 297     4.60     5.46
+ No       Standard                   4.11 0.178 297     3.76     4.46
+ Yes      Standard                   4.53 0.235 297     4.07     4.99
 
 Degrees-of-freedom method: kenward-roger 
 Confidence level used: 0.95 </code></pre>
