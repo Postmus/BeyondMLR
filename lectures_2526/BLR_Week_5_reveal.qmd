@@ -1,0 +1,693 @@
+---
+title: "Beyond MLR - Week 5"
+subtitle: "Generalized Linear Models"
+author: "Dr. Douwe Postmus"
+format:
+  revealjs:
+    theme: [default, custom-reveal.scss]
+    slide-number: true
+    toc: false
+    slide-level: 2
+    incremental: false
+    code-overflow: wrap
+    scrollable: true
+    smaller: true
+    width: 1280
+    height: 720
+    margin: 0.06
+    max-scale: 2
+    footer: "Beyond multiple linear regression - week 5"
+    logo: UMCG-logo.png
+execute:
+  warning: false
+  message: false
+  eval: true
+  echo: false
+---
+
+```{r}
+#| include: false
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, tidyr, car)
+```
+
+# Extending the linear model
+
+## Linear regression: what does it really say?
+
+```{r}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 6
+
+library(gridExtra)
+library(grid)
+
+# Simulate simple linear regression data
+set.seed(42)
+n <- 200
+x <- runif(n, 0, 10)
+y <- 2 + 1.5 * x + rnorm(n, 0, 2)
+sim_data <- data.frame(x = x, y = y)
+
+# Two specific x values for histograms
+x_low <- 2
+x_high <- 8
+
+# Get observations near these x values
+tol <- 0.8
+data_low <- sim_data[abs(sim_data$x - x_low) < tol, ]
+data_high <- sim_data[abs(sim_data$x - x_high) < tol, ]
+
+# Expected means
+mu_low <- 2 + 1.5 * x_low
+mu_high <- 2 + 1.5 * x_high
+
+# Main scatter plot with regression line
+p_main <- ggplot(sim_data, aes(x = x, y = y)) +
+  geom_point(alpha = 0.4, color = "gray50") +
+  geom_smooth(method = "lm", se = FALSE, color = "steelblue", linewidth = 1.2) +
+  geom_vline(xintercept = x_low, linetype = "dashed", color = "#E69F00", linewidth = 0.8) +
+  geom_vline(xintercept = x_high, linetype = "dashed", color = "#56B4E9", linewidth = 0.8) +
+  geom_point(data = data_low, aes(x = x, y = y), color = "#E69F00", size = 2) +
+  geom_point(data = data_high, aes(x = x, y = y), color = "#56B4E9", size = 2) +
+  labs(x = "X", y = "Y", title = "Linear regression: Y = β₀ + β₁X + ε") +
+  annotate("text", x = x_low, y = max(y) - 1, label = paste0("X = ", x_low), color = "#E69F00", fontface = "bold", hjust = -0.1) +
+  annotate("text", x = x_high, y = max(y) - 1, label = paste0("X = ", x_high), color = "#56B4E9", fontface = "bold", hjust = -0.1) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 14, face = "bold"))
+
+# Histogram for X = 2
+p_hist_low <- ggplot(data_low, aes(x = y)) +
+  geom_histogram(binwidth = 1, fill = "#E69F00", color = "white", alpha = 0.7) +
+  geom_vline(xintercept = mu_low, linetype = "dashed", color = "black", linewidth = 1) +
+  xlim(range(y)) +
+  labs(x = "Y", y = "Count", title = paste0("Distribution of Y | X = ", x_low)) +
+  annotate("text", x = mu_low + 0.5, y = Inf, label = paste0("μ = ", mu_low), vjust = 2, hjust = 0, fontface = "italic") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 11, face = "bold", color = "#E69F00"))
+
+# Histogram for X = 8
+p_hist_high <- ggplot(data_high, aes(x = y)) +
+  geom_histogram(binwidth = 1, fill = "#56B4E9", color = "white", alpha = 0.7) +
+  geom_vline(xintercept = mu_high, linetype = "dashed", color = "black", linewidth = 1) +
+  xlim(range(y)) +
+  labs(x = "Y", y = "Count", title = paste0("Distribution of Y | X = ", x_high)) +
+  annotate("text", x = mu_high + 0.5, y = Inf, label = paste0("μ = ", mu_high), vjust = 2, hjust = 0, fontface = "italic") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 11, face = "bold", color = "#56B4E9"))
+
+# Arrange plots
+grid.arrange(p_main, p_hist_low, p_hist_high,
+             layout_matrix = rbind(c(1, 1), c(2, 3)),
+             heights = c(2, 1))
+```
+
+## Linear regression in GLM notation
+
+**What the picture shows:**
+
+- The regression line gives the **conditional mean**: $\mu_i = E[Y_i | X_i] = \beta_0 + \beta_1 X_i$
+- At each value of X, observations are **normally distributed** around this mean
+- The spread (variance $\sigma^2$) is the same at every X
+
+**Writing this as a distributional model:**
+
+$$Y_i | X_i \sim N(\mu_i, \sigma^2) \quad \text{where} \quad \mu_i = \beta_0 + \beta_1 X_i$$
+
+::: {style="margin-top: 0.8em;"}
+**This is a Generalized Linear Model (GLM):**
+
+- A GLM specifies a **distribution** for observations around their mean
+- The **mean** is modeled as a **linear** function of predictors (hence "linear" in GLM)
+
+Linear regression is a GLM with a normal distribution. But we can generalize this to other distributions for different types of outcomes.
+:::
+
+## Logistic regression as a GLM
+
+**You already know logistic regression for binary outcomes** (e.g., disease yes/no)
+
+**Distribution:** Individual outcomes follow a Bernoulli distribution:
+$$Y_i | X_i \sim \text{Bernoulli}(\pi_i)$$
+
+**Mean:** The expected value is the probability of success: $E[Y_i] = \pi_i$
+
+**The problem:** We want to model $\pi_i$ as a linear function of predictors, but:
+
+- The linear predictor $\eta_i = \beta_0 + \beta_1 X_i$ can be any real number
+- The probability $\pi_i$ must be between 0 and 1
+
+**The solution — a link function:**
+$$\text{logit}(\pi_i) = \log\left(\frac{\pi_i}{1 - \pi_i}\right) = \beta_0 + \beta_1 X_i$$
+
+The logit link transforms probabilities (0, 1) to the real line ($-\infty$, $+\infty$)
+
+
+## Generalized linear models: the framework
+
+**Three components define a GLM:**
+
+1. **Random component:** Distribution of $Y_i$ from the **exponential family** (normal, binomial, Poisson, gamma, ...)
+
+2. **Systematic component:** Linear predictor $\eta_i = \beta_0 + \beta_1 X_{1i} + \cdots + \beta_p X_{pi}$
+
+3. **Link function:** $g(\mu_i) = \eta_i$ connects the mean $\mu_i = E[Y_i]$ to the linear predictor
+
+**Common GLMs:**
+
+| Model | Distribution | Link | $g(\mu)$ | Constraint solved |
+|:------|:-------------|:-----|:---------|:------------------|
+| Linear regression | Normal | Identity | $\mu$ | None needed |
+| Logistic regression | Bernoulli/Binomial | Logit | $\log(\frac{\mu}{1-\mu})$ | $\mu \in (0,1)$ |
+| Poisson regression | Poisson | Log | $\log(\mu)$ | $\mu > 0$ |
+
+# Poisson Regression for Count Data
+
+## The Poisson distribution
+
+**The Poisson distribution models count data** (e.g., number of events in a fixed period)
+
+**Its probability mass function:**
+
+$$P(Y = k) = \frac{\lambda^k e^{-\lambda}}{k!} \quad \text{for } k = 0, 1, 2, \ldots$$
+
+where $\lambda$ is the average number of events (rate parameter)
+
+**Key properties:**
+
+- $E[Y] = \lambda$
+- $\text{Var}[Y] = \lambda$ (mean equals variance!)
+- Assumes counts are independent and occur at a constant rate
+
+## Visualizing the Poisson distribution
+
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+
+# Create data for different lambda values
+lambda_values <- c(1, 3, 5, 10)
+x_range <- 0:20
+
+poisson_data <- expand.grid(x = x_range, lambda = lambda_values) |>
+  mutate(probability = dpois(x, lambda),
+         lambda_label = paste0("λ = ", lambda))
+
+ggplot(poisson_data, aes(x = x, y = probability, fill = factor(lambda))) +
+  geom_col(position = "dodge", width = 0.7) +
+  scale_fill_brewer(palette = "Set2", name = "Rate parameter") +
+  labs(
+    title = "Poisson Distribution for Different Values of λ",
+    x = "Number of events (k)",
+    y = "Probability P(Y = k)"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+As $\lambda$ increases, the distribution shifts right and becomes more symmetric.
+
+## Poisson regression as a GLM
+
+**Poisson regression models count outcomes as a function of covariates:**
+
+$$Y_i | X_i \sim \text{Poisson}(\lambda_i)$$
+
+**The mean $\lambda_i$ must be positive**, so we use the **log link**:
+
+$$\log(\lambda_i) = \beta_0 + \beta_1 X_{1i} + \cdots + \beta_p X_{pi}$$
+
+Or equivalently:
+
+$$\lambda_i = \exp(\beta_0 + \beta_1 X_{1i} + \cdots + \beta_p X_{pi})$$
+
+**Key assumption:** Mean equals variance ($E[Y] = \text{Var}[Y] = \lambda$)
+
+## Case study: Heart failure hospitalizations
+
+**Research questions:**
+
+- How does age influence the number of hospitalizations for heart failure?
+- What is the impact of comorbidities on hospitalization rates?
+
+**Data description:**
+
+- Simulated dataset of 1,000 individuals
+- Variables:
+  - Age (in years)
+  - Comorbidity status (binary: yes/no)
+  - Number of hospitalizations for heart failure (count outcome)
+
+```{r}
+# Set seed for reproducibility
+set.seed(123)
+
+# Simulate data
+n <- 1000
+heart_failure_data <- data.frame(
+  age = round(rnorm(n, mean = 65, sd = 10)),
+  comorbidity = rbinom(n, 1, 0.4)
+)
+
+# True model: log(lambda) = -2.1 + 0.033*age + 0.375*comorbidity
+heart_failure_data$lambda <- exp(-2.1 + 0.033 * heart_failure_data$age +
+                                   0.375 * heart_failure_data$comorbidity)
+heart_failure_data$hospitalizations <- rpois(n, heart_failure_data$lambda)
+
+# Center age for interpretation
+heart_failure_data$age_c <- heart_failure_data$age - mean(heart_failure_data$age)
+
+# Create age groups for visualization
+heart_failure_data$Age_Group <- cut(heart_failure_data$age,
+                                     breaks = c(-Inf, 60, 70, Inf),
+                                     labels = c("<60", "60-70", ">70"))
+```
+
+## Exploratory data analysis
+
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+
+heart_failure_data$comorbidity_label <- factor(heart_failure_data$comorbidity,
+                                                labels = c("No comorbidity", "Comorbidity"))
+
+p1 <- ggplot(heart_failure_data, aes(x = hospitalizations)) +
+  geom_histogram(binwidth = 1, fill = "steelblue", color = "white") +
+  labs(title = "Distribution of Hospitalizations",
+       x = "Number of Hospitalizations",
+       y = "Frequency") +
+  theme_minimal()
+
+p2 <- ggplot(heart_failure_data, aes(x = age, y = hospitalizations)) +
+  geom_jitter(alpha = 0.3, width = 0.3, height = 0.2) +
+  geom_smooth(method = "loess", se = TRUE, color = "steelblue") +
+  labs(title = "Hospitalizations vs Age",
+       x = "Age (years)",
+       y = "Number of Hospitalizations") +
+  theme_minimal()
+
+p3 <- ggplot(heart_failure_data, aes(x = hospitalizations, fill = comorbidity_label)) +
+  geom_histogram(binwidth = 1, position = "dodge", color = "white") +
+  scale_fill_brewer(palette = "Set2", name = "") +
+  labs(title = "By Comorbidity Status",
+       x = "Number of Hospitalizations",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "top")
+
+gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
+```
+
+## Fitting the Poisson regression model
+
+```{r}
+# Fit Poisson regression model (age centered, comorbidity dummy coded 0/1)
+poisson_model <- glm(hospitalizations ~ age_c + comorbidity,
+                     family = poisson(link = "log"),
+                     data = heart_failure_data)
+
+summary(poisson_model)
+```
+
+## Interpreting Poisson regression coefficients
+
+```{r}
+#| echo: false
+# Extract coefficients and calculate rate ratios
+coefs <- coef(poisson_model)
+b0 <- coefs["(Intercept)"]
+b1 <- coefs["age_c"]
+b2 <- coefs["comorbidity"]
+
+rate_intercept <- exp(b0)
+rr_age <- exp(b1)
+rr_comorbidity <- exp(b2)
+```
+
+**Fitted Poisson regression model** (with centered age, dummy-coded comorbidity):
+
+$$\log(\lambda) = \beta_0 + \beta_1 \cdot \text{Age}_c + \beta_2 \cdot \text{Comorbidity}$$
+
+**Interpretation of coefficients:**
+
+- **Intercept ($\beta_0$ = `r round(b0, 3)`):** Log rate for an individual of average age **without comorbidity**
+  - Rate: $\exp(\beta_0)$ = `r round(rate_intercept, 2)` hospitalizations per year
+
+- **Age ($\beta_1$ = `r round(b1, 3)`):** Log rate increases by `r round(b1, 3)` for each additional year of age
+  - Rate ratio: $\exp(\beta_1)$ = `r round(rr_age, 3)`; for every additional year of age, the hospitalization rate is multiplied by `r round(rr_age, 3)`
+
+- **Comorbidity ($\beta_2$ = `r round(b2, 3)`):** Difference in log rate between those with and without comorbidity
+  - Rate ratio: $\exp(\beta_2)$ = `r round(rr_comorbidity, 2)`; patients with comorbidity have `r round(rr_comorbidity, 2)` times the hospitalization rate of those without
+
+## Model diagnostics
+
+**Pearson residuals:** measure the standardized difference between observed and expected counts:
+
+$$r_i = \frac{Y_i - \hat{\lambda}_i}{\sqrt{\hat{\lambda}_i}}$$
+
+where $Y_i$ is the observed count and $\hat{\lambda}_i$ is the expected count (mean)
+
+**Chi-square goodness-of-fit test:**
+
+- Test statistic: $\chi^2 = \sum r_i^2 = \sum \frac{(Y_i - \hat{\lambda}_i)^2}{\hat{\lambda}_i}$
+- Degrees of freedom: $n - p$ (observations minus parameters)
+- Interpretation: $p > 0.05 \Rightarrow$ Model fits the data well
+
+**Dispersion parameter:** $\hat{\phi} = \chi^2 / (n - p)$
+
+- $\hat{\phi} \approx 1$: Poisson assumption (mean = variance) holds
+- $\hat{\phi} > 1$: Overdispersion (variance > mean)
+- $\hat{\phi} < 1$: Underdispersion (rare)
+
+## Model diagnostics for our model
+
+```{r}
+#| echo: false
+
+# Calculate Pearson residuals and fitted values
+heart_failure_data$Pearson_Residuals <- residuals(poisson_model, type = "pearson")
+heart_failure_data$fitted <- fitted(poisson_model)
+
+# Chi-square test statistic
+chisq_test <- sum(heart_failure_data$Pearson_Residuals^2)
+df <- nrow(heart_failure_data) - length(coef(poisson_model))
+p_value <- 1 - pchisq(chisq_test, df)
+dispersion <- chisq_test / df
+```
+
+:::: {.columns}
+
+::: {.column width="55%"}
+```{r}
+#| echo: false
+#| fig-width: 5.5
+#| fig-height: 4.5
+
+ggplot(heart_failure_data, aes(x = fitted, y = Pearson_Residuals)) +
+  geom_point(alpha = 0.4) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  geom_smooth(method = "loess", se = TRUE, color = "steelblue") +
+  labs(title = "Pearson Residuals vs Fitted",
+       x = expression(paste("Fitted values (", hat(lambda), ")")),
+       y = "Pearson residuals") +
+  theme_minimal()
+```
+:::
+
+::: {.column width="45%"}
+| Diagnostic | Value |
+|:-----------|------:|
+| Chi-square statistic | `r round(chisq_test, 2)` |
+| Degrees of freedom | `r df` |
+| p-value | `r round(p_value, 4)` |
+| **Dispersion parameter** | **`r round(dispersion, 2)`** |
+
+**Interpretation:**
+
+- p-value > 0.05: no evidence of lack of fit
+- $\hat{\phi} \approx 1$: mean = variance assumption holds
+- Residuals scatter randomly around 0
+:::
+
+::::
+
+## Dealing with overdispersion
+
+**Overdispersion** ($\hat{\phi} > 1$) means variance exceeds the mean, violating the Poisson assumption.
+
+**Consequences if ignored:**
+
+- Standard errors are **underestimated**
+- p-values are too small → inflated Type I error
+- Confidence intervals are too narrow
+
+**Quasi-Poisson model:**
+
+- Assumes $\text{Var}(Y) = \phi \cdot \mu$ instead of $\text{Var}(Y) = \mu$
+- Estimates $\phi$ from the data (the dispersion parameter we calculated)
+- **Adjusts standard errors** by multiplying by $\sqrt{\hat{\phi}}$
+- Coefficient estimates remain unchanged; only inference is corrected
+
+```r
+# Fitting a quasi-Poisson model in R
+glm(y ~ x, family = quasipoisson(link = "log"), data = mydata)
+```
+
+# Lab 7 – Poisson Regression
+
+## Two dimensions of grouped data
+
+When working with grouped data, we need to consider two things:
+
+**1. What does the group represent?**
+
+- **Heterogeneous clusters**: Natural units (hospitals, schools) where individuals *differ* within groups
+- **Homogeneous strata**: Groups defined by covariate values where individuals *share* the same characteristics
+
+**2. At what level is the data?**
+
+- **Individual-level**: One row per person
+- **Aggregated**: One row per group (summaries like counts, means, proportions)
+
+These two dimensions are independent — giving us four possible scenarios.
+
+## The 2 × 2 framework
+
+|  | **Homogeneous strata** | **Heterogeneous clusters** |
+|:--|:--|:--|
+| **Individual data** | Treatment arm: 100 patients, each with outcome 0/1 | Hospital: 100 patients varying in age, sex, comorbidities |
+| **Aggregated data** | Treatment arm: 23 events out of 100 patients | Hospital: mean BP = 141.2 mmHg |
+
+## Homogeneous strata: when is aggregation lossless?
+
+**It depends on the outcome type!**
+
+:::: {.columns}
+
+::: {.column width="50%"}
+**Count/Binary outcomes:** ✓ Lossless
+
+- Binomial(n, π) = sum of n Bernoulli(π)
+- Poisson(λ₁) + Poisson(λ₂) = Poisson(λ₁ + λ₂)
+- Sufficient statistics preserved
+- Individual and aggregated analyses give **identical results**
+:::
+
+::: {.column width="50%"}
+**Continuous outcomes:** ✗ Information loss
+
+- Group mean is an *estimate* with SE
+- Ignoring SE → biased inference
+- Use individual data with fixed effects for strata (i.e., ANOVA)
+:::
+
+::::
+
+::: {style="margin-top: 1em;"}
+This is why Poisson/logistic regression on aggregated data is common, but you rarely see linear regression on group means.
+:::
+
+## Heterogeneous clusters: aggregation loses information
+
+When individuals within a group differ in their characteristics:
+
+**Individual-level analysis (preferred):**
+```r
+lmer(BP ~ age + sex + (1|hospital), data = individual_data)
+# Models within-cluster variation explicitly
+```
+
+**Aggregated analysis (problematic):**
+```r
+lm(mean_BP ~ hospital_size, data = aggregated_data)
+# Treats means as known → ignores estimation uncertainty
+# Fewer observations → loss of power
+```
+
+**Recommendation:** Use mixed effects models on individual data when groups are heterogeneous clusters.
+
+## Summary: choosing your approach
+
+| Group type | Outcome | Data level | Recommendation |
+|:-----------|:--------|:-----------|:---------------|
+| Homogeneous strata | Count/Binary | Individual | ✓ GLM (fixed effects) |
+| Homogeneous strata | Count/Binary | Aggregated | ✓ Aggregated GLM (equivalent) |
+| Homogeneous strata | Continuous | Individual | ✓ Linear model / ANOVA |
+| Homogeneous strata | Continuous | Aggregated | ⚠️ Weighted regression (less ideal) |
+| Heterogeneous clusters | Any | Individual | ✓ Mixed effects model |
+| Heterogeneous clusters | Any | Aggregated | ❌ Avoid — information loss |
+
+**Today's focus:** Poisson regression for aggregated count data from homogeneous strata
+
+## Case study: Cardiovascular disease events
+
+**Research questions:**
+
+- How does age affect the rate of cardiovascular events?
+- How is smoking status associated with the rate of events?
+
+**Data description:**
+
+- Aggregated cohort data with groups defined by age and smoking status
+- Variables:
+  - Outcome: Number of cardiovascular events (count)
+  - Exposure: Total person-years of follow-up per group
+  - Predictors:
+    - Age group: Young (18–40), Middle-aged (40–60), Older (60–75), Elderly (>75)
+    - Smoking status: Non-smokers, light smokers (<10 pack-years), moderate smokers (10-20 pack-years), heavy smokers (>20 pack-years)
+
+## Simulating cardiovascular data
+
+```{r}
+#| echo: true
+
+# Create aggregated cardiovascular data
+set.seed(456)
+
+cardio_data <- expand.grid(
+  Age_Group = factor(c("18-40", "40-60", "60-75", ">75"),
+                     levels = c("18-40", "40-60", "60-75", ">75")),
+  Smoking_Status = factor(c("Non-smoker", "Light smoker", "Moderate smoker", "Heavy smoker"),
+                          levels = c("Heavy smoker", "Moderate smoker", "Light smoker", "Non-smoker"))
+)
+
+# Simulate person-years and events
+cardio_data$Person_Years <- round(runif(16, 500, 2000))
+
+# True rates based on age and smoking
+base_rate <- 0.03
+age_effects <- c(1, 3.2, 4.7, 9.5)  # Relative to youngest
+smoking_effects <- c(1, 0.67, 0.57, 0.57)  # Heavy smoker as reference
+
+cardio_data$rate <- base_rate *
+  age_effects[as.numeric(cardio_data$Age_Group)] *
+  smoking_effects[as.numeric(cardio_data$Smoking_Status)]
+
+cardio_data$Events <- rpois(16, cardio_data$rate * cardio_data$Person_Years)
+```
+
+## Exploratory data analysis
+
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+
+cardio_data$Event_Rate <- cardio_data$Events / cardio_data$Person_Years * 1000
+
+ggplot(cardio_data, aes(x = Age_Group, y = Event_Rate, fill = Smoking_Status)) +
+  geom_col(position = "dodge") +
+  scale_fill_brewer(palette = "Set2", name = "Smoking Status") +
+  labs(
+    title = "Cardiovascular Event Rates by Age Group and Smoking Status",
+    x = "Age Group",
+    y = "Event Rate (per 1000 person-years)"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+## Poisson regression model for aggregated data
+
+**The Poisson regression model expresses the log event rate (per unit of exposure) as a linear function of the predictors:**
+
+$$\log(\lambda_j) = \beta_0 + \beta_1 \cdot \text{Smoking Status}_j + \beta_2 \cdot \text{Age Group}_j$$
+
+where $\lambda_j$ is the event rate (per person-year) for group $j$
+
+**Expected number of events at the aggregated level:**
+
+$$\mu_j = \text{Exposure}_j \cdot \lambda_j$$
+
+where Exposure is the total person-years of follow-up for group $j$
+
+## Incorporating log(exposure) as offset
+
+**Taking the log transformation of $\mu_j = \text{Exposure}_j \cdot \lambda_j$:**
+
+$$\log(\mu_j) = \log(\text{Exposure}_j) + \log(\lambda_j)$$
+
+**Substituting the Poisson regression equation for $\log(\lambda_j)$:**
+
+$$\log(\mu_j) = \log(\text{Exposure}_j) + \beta_0 + \beta_1 \cdot \text{Smoking Status}_j + \beta_2 \cdot \text{Age Group}_j$$
+
+**Key features of the offset:**
+
+- The term $\log(\text{Exposure})$ is added as an **offset** in the model
+- The offset has a fixed regression coefficient of 1 to scale the expected counts by exposure
+
+## Fitting the Poisson regression model with offset
+
+```{r}
+#| echo: true
+
+# Fit Poisson model with offset
+poisson_cardio <- glm(Events ~ Age_Group + Smoking_Status + offset(log(Person_Years)),
+                      family = poisson(link = "log"),
+                      data = cardio_data)
+
+summary(poisson_cardio)
+```
+
+## ANOVA table for the model
+
+```{r}
+#| echo: true
+
+# Type III ANOVA using car package
+car::Anova(poisson_cardio, type = "III", test.statistic = "LR")
+```
+
+## Analysis of aggregated data vs multilevel models
+
+**Poisson models for aggregated data and multilevel models address grouped data**
+
+- Both include group-level covariates to explain between-group differences
+
+**Key difference: treatment of within-group variability**
+
+- Poisson models collapse data to group-level counts and exposure
+- Multilevel models retain individual-level data and model variability explicitly
+
+**Group-level covariates in Poisson models play the same role as context-level variables in multilevel models**
+
+## Example: Hospital infection rates
+
+**Poisson model for aggregated data:**
+
+- Outcome: Number of infections per hospital
+- Exposure: Total patient-days per hospital
+- Covariates: Staffing ratios, ICU bed availability, proportion of ICU patients
+- Focus: Infection rates explained by group characteristics
+
+**Multilevel model for individual data:**
+
+- Outcome: Infection status for each patient (yes/no)
+- Predictors:
+  - Individual: Age, comorbidities
+  - Context-level: Staffing ratios, ICU bed availability
+- Focus: Both within- and between-hospital variation
+
+## Generalized Linear Mixed Effects Models (GLMMs)
+
+**GLMMs extend GLMs to account for grouped or clustered data**
+
+- Incorporate random effects to model within-group correlations
+
+**Example: binary outcome (hospital infection status)**
+
+- Outcome: Infection status ($Y_{ij} \in \{0, 1\}$) for patient $i$ in hospital $j$
+- Fixed effects: Age, comorbidities (individual-level) and staffing ratios (context-level)
+- Random effects: Hospital-specific effects ($u_j$)
+
+**Model specification:**
+
+$$\text{logit}(\pi_{ij}) = \beta_0 + \beta_1 \cdot \text{Age}_{ij} + \beta_2 \cdot \text{Staffing}_j + u_j$$
+
+$$u_j \sim N(0, \sigma_u^2)$$
+
