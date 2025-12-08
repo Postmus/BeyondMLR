@@ -32,9 +32,274 @@ if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, tidyr, car)
 ```
 
+## Assignment week 4: what went well
+
+::: {style="font-size: 0.9em;"}
+
+**Time structure modeling**
+
+- Most submissions correctly followed the "time structure first" approach
+- Polynomial terms (quadratic and/or cubic) were appropriately tested using likelihood ratio tests
+- Random slope testing was generally done correctly with `refit = FALSE`
+- ICC calculations and interpretations were accurate
+
+**Adding covariates**
+
+- Good use of `step()` for backward elimination of fixed effects
+- Most correctly identified significant Gender × time interactions
+- Interpretation of interaction effects was generally clear and meaningful
+
+**Diagnostics and interpretation**
+
+- Residuals vs. fitted plots were included in most submissions
+- Interpretation of the diagnostic plots generally correct but be wary of overinterpretation: minor deviations in the loess curve at the extremes are normal, especially where data is sparse
+
+:::
+
+## [Residual diagnostics: linear vs quadratic vs cubic]{style="font-size: 0.9em;"}
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 4.5
+
+# Load the growth data
+asian_data <- read.csv("../data/asian_data.csv")
+asian_data <- asian_data |>
+  mutate(across(where(is.character), as.factor))
+asian_data$age_c <- asian_data$Age - mean(asian_data$Age)
+
+library(lme4)
+library(lmerTest)
+library(gridExtra)
+
+# Fit three models
+model_linear <- lmer(Weight ~ age_c + (age_c | ChildID),
+                     data = asian_data,
+                     control = lmerControl(optimizer = "bobyqa"))
+
+model_quad <- lmer(Weight ~ poly(age_c, 2, raw = TRUE) + (age_c | ChildID),
+                   data = asian_data,
+                   control = lmerControl(optimizer = "bobyqa"))
+
+model_cubic <- lmer(Weight ~ poly(age_c, 3, raw = TRUE) + (age_c | ChildID),
+                    data = asian_data,
+                    control = lmerControl(optimizer = "bobyqa"))
+
+# Create diagnostic data frames
+diag_linear <- data.frame(fitted = fitted(model_linear), residuals = resid(model_linear))
+diag_quad <- data.frame(fitted = fitted(model_quad), residuals = resid(model_quad))
+diag_cubic <- data.frame(fitted = fitted(model_cubic), residuals = resid(model_cubic))
+
+# Create plots
+p1 <- ggplot(diag_linear, aes(x = fitted, y = residuals)) +
+  geom_point(alpha = 0.3, size = 0.8) +
+  geom_hline(yintercept = 0, color = "red", linewidth = 0.8) +
+  geom_smooth(method = "loess", se = TRUE, color = "blue", fill = "lightblue", linewidth = 0.8) +
+  labs(title = "Linear model", x = "Fitted values", y = "Residuals") +
+  theme_minimal(base_size = 11)
+
+p2 <- ggplot(diag_quad, aes(x = fitted, y = residuals)) +
+  geom_point(alpha = 0.3, size = 0.8) +
+  geom_hline(yintercept = 0, color = "red", linewidth = 0.8) +
+  geom_smooth(method = "loess", se = TRUE, color = "blue", fill = "lightblue", linewidth = 0.8) +
+  labs(title = "Quadratic model", x = "Fitted values", y = "Residuals") +
+  theme_minimal(base_size = 11)
+
+p3 <- ggplot(diag_cubic, aes(x = fitted, y = residuals)) +
+  geom_point(alpha = 0.3, size = 0.8) +
+  geom_hline(yintercept = 0, color = "red", linewidth = 0.8) +
+  geom_smooth(method = "loess", se = TRUE, color = "blue", fill = "lightblue", linewidth = 0.8) +
+  labs(title = "Cubic model", x = "Fitted values", y = "Residuals") +
+  theme_minimal(base_size = 11)
+
+grid.arrange(p1, p2, p3, ncol = 3)
+```
+
+- **Linear model**: Clear curvature in the loess line — time trend not adequately captured
+- **Quadratic & cubic models**: Loess line close to zero throughout — both are adequate fits
+- Minor deviations at the extremes (where data is sparse) are **not** evidence of model misfit
+
+## Assignment week 4: areas for improvement
+
+::: {style="font-size: 0.9em;"}
+
+**Time trend specification**
+
+- A few submissions used only linear time despite the quadratic term being significant
+  - Always carry forward the time structure you established when adding covariates
+- When adding Gender, include interactions with **all** polynomial terms you retained
+
+**The marginality principle**
+
+- Some students correctly questioned whether polynomial terms should be treated as a unit
+- Good practice: if you include Age³, you should generally keep Age² and Age even if not individually significant
+- This also applies to testing interactions: test Gender × time as a block, not term-by-term
+
+**Plotting mean trajectories**
+
+- Several submissions produced jagged "mean trajectory" plots (see next slide)
+- This happens when using `geom_line()` on means computed at each unique (unrounded) age
+- **Solution**: Use `geom_smooth()` or round ages to whole months before computing means
+
+:::
+
+## Plotting mean trajectories: a common mistake
+
+::: {.columns style="font-size: 0.9em;"}
+
+::: {.column width="50%"}
+
+**Problematic approach**
+
+```r
+# Computing means at each exact age
+mean_traj <- data |>
+  group_by(Age) |>
+  summarise(mean_wt = mean(Weight))
+
+# Produces jagged line!
+geom_line(data = mean_traj, 
+          aes(Age, mean_wt))
+```
+
+- Ages are measured precisely (6.2, 6.3, 6.5 months...)
+- Often only 1-2 observations per exact age value
+- "Mean" at each point is very noisy
+
+:::
+
+::: {.column width="50%"}
+
+**Better approaches**
+
+```r
+# Option 1: Use geom_smooth()
+geom_smooth(aes(x = Age, y = Weight), 
+            method = "loess", se = FALSE)
+
+# Option 2: Round ages first
+mean_traj <- data |>
+  mutate(Age_rounded = round(Age)) |>
+  group_by(Age_rounded) |>
+  summarise(mean_wt = mean(Weight))
+
+# Option 3: Use stat_summary()
+stat_summary(aes(x = Age, y = Weight),
+             fun = mean, geom = "line")
+```
+
+- Smoothing or binning produces interpretable trajectories
+- Always consider: do my time points align across individuals?
+
+:::
+
+:::
+
+## Mean trajectories: incorrect vs correct
+
+```{r}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 5
+
+# Incorrect: means at each exact age with geom_line
+mean_traj_exact <- asian_data |>
+  group_by(Age) |>
+  summarise(mean_wt = mean(Weight, na.rm = TRUE), .groups = "drop")
+
+p_incorrect <- ggplot(asian_data, aes(x = Age, y = Weight)) +
+  geom_line(aes(group = ChildID), alpha = 0.1, color = "grey60") +
+  geom_line(data = mean_traj_exact, aes(x = Age, y = mean_wt),
+            color = "steelblue", linewidth = 1.2) +
+  geom_point(data = mean_traj_exact, aes(x = Age, y = mean_wt),
+             color = "steelblue", size = 1.5) +
+  labs(title = "Incorrect: geom_line() on exact age means",
+       subtitle = "Jagged line due to few observations per exact age",
+       x = "Age (months)", y = "Weight (grams)") +
+  theme_minimal(base_size = 11)
+
+# Correct: using geom_smooth
+p_correct <- ggplot(asian_data, aes(x = Age, y = Weight)) +
+  geom_line(aes(group = ChildID), alpha = 0.1, color = "grey60") +
+  geom_smooth(method = "loess", se = FALSE, color = "steelblue", linewidth = 1.2) +
+  labs(title = "Correct: geom_smooth() with loess",
+       subtitle = "Smooth trajectory captures the underlying trend",
+       x = "Age (months)", y = "Weight (grams)") +
+  theme_minimal(base_size = 11)
+
+grid.arrange(p_incorrect, p_correct, ncol = 2)
+```
+
+## Using `poly()` for polynomial terms
+
+::: {style="font-size: 0.9em;"}
+
+**Manual polynomial terms** (what most of you used)
+
+```r
+data$age_c2 <- data$age_c^2
+data$age_c3 <- data$age_c^3
+model <- lmer(Weight ~ age_c + age_c2 + age_c3 + (age_c | ChildID), data = data)
+```
+
+**Using `poly()` instead** (cleaner approach)
+
+```r
+model <- lmer(Weight ~ poly(age_c, 3, raw = TRUE) + (age_c | ChildID), data = data)
+```
+
+**Advantages of `poly()`**
+
+1. **Cleaner code**: No need to create separate squared/cubic variables
+2. **Correct `step()` behavior**: Tests Gender × poly() interaction as a block, respecting marginality
+3. **Easier `emmeans`**: Works seamlessly without duplicated factor level errors
+
+**Note**: Use `raw = TRUE` for interpretable coefficients. Without it, `poly()` creates orthogonal polynomials (useful for reducing collinearity but coefficients are harder to interpret).
+
+:::
+
+## Using `emmeans` to interpret interactions
+
+::: {style="font-size: 0.85em;"}
+
+**Why use `emmeans`?**
+
+- Raw coefficients in models with interactions are conditional effects (e.g., effect of Gender when Age = 0)
+- These conditional effects are often not meaningful or interpretable
+- `emmeans` (estimated marginal means) lets you probe the interaction at meaningful values
+
+**Example: probing a Gender × Age interaction**
+
+```r
+library(emmeans)
+
+# Estimated marginal means at specific ages
+emmeans(model, ~ Gender | Age, at = list(Age = c(6, 12, 18, 24)))
+
+# Pairwise comparisons at each age
+emmeans(model, pairwise ~ Gender | Age, at = list(Age = c(6, 12, 18, 24)))
+```
+
+**Interpretation approach**
+
+1. First establish that the interaction is significant (use `anova()` or `step()`)
+2. Then use `emmeans` to understand **where** and **how much** the effect differs
+3. Report the estimated means and/or pairwise differences at clinically relevant time points
+
+:::
+
+## Today's lecture
+
+- Extending the linear model: the Generalized Linear Model (GLM) framework
+- Poisson regression for count data
+- Model diagnostics and dealing with overdispersion
+- Poisson regression for aggregated data with offsets
+- Comparison with multilevel models for grouped data
+
 # Extending the linear model
 
-## Linear regression: what does it really say?
+## [Linear regression as a conditional distribution model]{style="font-size: 0.85em;"}
 
 ```{r}
 #| echo: false
@@ -106,23 +371,21 @@ grid.arrange(p_main, p_hist_low, p_hist_high,
 
 ## Linear regression in GLM notation
 
-**What the picture shows:**
-
-- The regression line gives the **conditional mean**: $\mu_i = E[Y_i | X_i] = \beta_0 + \beta_1 X_i$
-- At each value of X, observations are **normally distributed** around this mean
-- The spread (variance $\sigma^2$) is the same at every X
-
-**Writing this as a distributional model:**
+Linear regression is really a model for **conditional distributions**: it assumes that $Y|X$ follows a normal distribution with mean determined by the regression line:
 
 $$Y_i | X_i \sim N(\mu_i, \sigma^2) \quad \text{where} \quad \mu_i = \beta_0 + \beta_1 X_i$$
+
+- The regression line gives the **conditional mean**: $E[Y_i | X_i] = \beta_0 + \beta_1 X_i$
+- At each value of $X$, observations are **normally distributed** around this mean
+- The variance $\sigma^2$ is constant across all values of $X$
 
 ::: {style="margin-top: 0.8em;"}
 **This is a Generalized Linear Model (GLM):**
 
-- A GLM specifies a **distribution** for observations around their mean
-- The **mean** is modeled as a **linear** function of predictors (hence "linear" in GLM)
+- A GLM specifies a **distribution** for $Y|X$
+- The **mean** of this distribution is modeled as a function of predictors
 
-Linear regression is a GLM with a normal distribution. But we can generalize this to other distributions for different types of outcomes.
+Linear regression is a GLM with a normal distribution. We can generalize to other distributions for different outcome types.
 :::
 
 ## Logistic regression as a GLM
@@ -139,7 +402,7 @@ $$Y_i | X_i \sim \text{Bernoulli}(\pi_i)$$
 - The linear predictor $\eta_i = \beta_0 + \beta_1 X_i$ can be any real number
 - The probability $\pi_i$ must be between 0 and 1
 
-**The solution — a link function:**
+**The solution: a link function:**
 $$\text{logit}(\pi_i) = \log\left(\frac{\pi_i}{1 - \pi_i}\right) = \beta_0 + \beta_1 X_i$$
 
 The logit link transforms probabilities (0, 1) to the real line ($-\infty$, $+\infty$)
@@ -149,11 +412,11 @@ The logit link transforms probabilities (0, 1) to the real line ($-\infty$, $+\i
 
 **Three components define a GLM:**
 
-1. **Random component:** Distribution of $Y_i$ from the **exponential family** (normal, binomial, Poisson, gamma, ...)
+1. **Random component:** Distribution of $Y_i | X_i$ from the **exponential family** (normal, binomial, Poisson, ...)
 
 2. **Systematic component:** Linear predictor $\eta_i = \beta_0 + \beta_1 X_{1i} + \cdots + \beta_p X_{pi}$
 
-3. **Link function:** $g(\mu_i) = \eta_i$ connects the mean $\mu_i = E[Y_i]$ to the linear predictor
+3. **Link function:** $g(\mu_i) = \eta_i$ connects the mean $\mu_i = E[Y_i | X_i]$ to the linear predictor
 
 **Common GLMs:**
 
