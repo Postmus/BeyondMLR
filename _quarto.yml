@@ -5,6 +5,7 @@ project:
     - index.qmd
     - BLR_lab_*.qmd
     - Assignments/**/*.qmd
+    - "!Assignments/**/student_submissions/**"
     - "!lectures_2526/**"
 
 website:

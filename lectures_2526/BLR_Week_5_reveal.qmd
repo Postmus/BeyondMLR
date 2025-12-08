@@ -72,6 +72,7 @@ asian_data$age_c <- asian_data$Age - mean(asian_data$Age)
 library(lme4)
 library(lmerTest)
 library(gridExtra)
+library(emmeans)
 
 # Fit three models
 model_linear <- lmer(Weight ~ age_c + (age_c | ChildID),
@@ -295,9 +296,7 @@ emmeans(model, pairwise ~ Gender | Age, at = list(Age = c(6, 12, 18, 24)))
 - Poisson regression for count data
 - Model diagnostics and dealing with overdispersion
 - Poisson regression for aggregated data with offsets
-- Comparison with multilevel models for grouped data
-
-# Extending the linear model
+- Comparison with multi-level models for grouped data
 
 ## [Linear regression as a conditional distribution model]{style="font-size: 0.85em;"}
 
@@ -420,13 +419,15 @@ The logit link transforms probabilities (0, 1) to the real line ($-\infty$, $+\i
 
 **Common GLMs:**
 
+:::{style="font-size: 0.8em;"}
+
 | Model | Distribution | Link | $g(\mu)$ | Constraint solved |
 |:------|:-------------|:-----|:---------|:------------------|
 | Linear regression | Normal | Identity | $\mu$ | None needed |
 | Logistic regression | Bernoulli/Binomial | Logit | $\log(\frac{\mu}{1-\mu})$ | $\mu \in (0,1)$ |
 | Poisson regression | Poisson | Log | $\log(\mu)$ | $\mu > 0$ |
 
-# Poisson Regression for Count Data
+:::
 
 ## The Poisson distribution
 
@@ -523,6 +524,12 @@ heart_failure_data$hospitalizations <- rpois(n, heart_failure_data$lambda)
 # Center age for interpretation
 heart_failure_data$age_c <- heart_failure_data$age - mean(heart_failure_data$age)
 
+# Convert comorbidity to factor with effect coding
+heart_failure_data$comorbidity_f <- factor(heart_failure_data$comorbidity,
+                                            levels = c(0, 1),
+                                            labels = c("No", "Yes"))
+contrasts(heart_failure_data$comorbidity_f) <- contr.sum(2)
+
 # Create age groups for visualization
 heart_failure_data$Age_Group <- cut(heart_failure_data$age,
                                      breaks = c(-Inf, 60, 70, Inf),
@@ -568,46 +575,70 @@ gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 
 ## Fitting the Poisson regression model
 
+::: {style="font-size: 0.7em;"}
+
 ```{r}
-# Fit Poisson regression model (age centered, comorbidity dummy coded 0/1)
-poisson_model <- glm(hospitalizations ~ age_c + comorbidity,
+# Fit Poisson regression model (age centered, comorbidity with effect coding)
+poisson_model <- glm(hospitalizations ~ age_c + comorbidity_f,
                      family = poisson(link = "log"),
                      data = heart_failure_data)
 
 summary(poisson_model)
 ```
 
+:::
+
 ## Interpreting Poisson regression coefficients
 
 ```{r}
 #| echo: false
-# Extract coefficients and calculate rate ratios
+# Extract coefficients
 coefs <- coef(poisson_model)
 b0 <- coefs["(Intercept)"]
 b1 <- coefs["age_c"]
-b2 <- coefs["comorbidity"]
+b2 <- coefs["comorbidity_f1"]
 
 rate_intercept <- exp(b0)
 rr_age <- exp(b1)
-rr_comorbidity <- exp(b2)
 ```
 
-**Fitted Poisson regression model** (with centered age, dummy-coded comorbidity):
+**Fitted Poisson regression model:**
 
 $$\log(\lambda) = \beta_0 + \beta_1 \cdot \text{Age}_c + \beta_2 \cdot \text{Comorbidity}$$
 
-**Interpretation of coefficients:**
+**The log link means coefficients represent multiplicative effects on rates:**
 
-- **Intercept ($\beta_0$ = `r round(b0, 3)`):** Log rate for an individual of average age **without comorbidity**
-  - Rate: $\exp(\beta_0)$ = `r round(rate_intercept, 2)` hospitalizations per year
+- **Intercept ($\beta_0$ = `r round(b0, 3)`):** The log of the baseline rate
+  - Back-transform to get rate: $\exp(\beta_0)$ = `r round(rate_intercept, 2)` hospitalizations per year
 
-- **Age ($\beta_1$ = `r round(b1, 3)`):** Log rate increases by `r round(b1, 3)` for each additional year of age
-  - Rate ratio: $\exp(\beta_1)$ = `r round(rr_age, 3)`; for every additional year of age, the hospitalization rate is multiplied by `r round(rr_age, 3)`
+- **Age ($\beta_1$ = `r round(b1, 3)`):** For each 1-year increase in age, the log rate increases by `r round(b1, 3)`
+  - **Rate ratio**: $\exp(\beta_1)$ = `r round(rr_age, 3)` — each additional year multiplies the rate by `r round(rr_age, 3)`
 
-- **Comorbidity ($\beta_2$ = `r round(b2, 3)`):** Difference in log rate between those with and without comorbidity
-  - Rate ratio: $\exp(\beta_2)$ = `r round(rr_comorbidity, 2)`; patients with comorbidity have `r round(rr_comorbidity, 2)` times the hospitalization rate of those without
+- **Comorbidity:** Comparing groups requires estimating group-specific rates → Use `emmeans`!
+
+## Using `emmeans` for rate ratios
+
+::: {style="font-size: 0.9em;"}
+
+```{r}
+#| echo: true
+# Estimated rates for each comorbidity group (back-transformed)
+emmeans(poisson_model, ~ comorbidity_f, type = "response")
+```
+
+```{r}
+#| echo: true
+# Rate ratio comparing comorbidity groups
+pairs(emmeans(poisson_model, ~ comorbidity_f), type = "response")
+```
+
+**Note:** The infinite df reflects that GLMs use asymptotic (large-sample) inference based on the normal distribution, rather than the t-distribution.
+
+:::
 
 ## Model diagnostics
+
+::: {style="font-size: 0.85em;"}
 
 **Pearson residuals:** measure the standardized difference between observed and expected counts:
 
@@ -627,6 +658,8 @@ where $Y_i$ is the observed count and $\hat{\lambda}_i$ is the expected count (m
 - $\hat{\phi} > 1$: Overdispersion (variance > mean)
 - $\hat{\phi} < 1$: Underdispersion (rare)
 
+:::
+
 ## Model diagnostics for our model
 
 ```{r}
@@ -643,26 +676,6 @@ p_value <- 1 - pchisq(chisq_test, df)
 dispersion <- chisq_test / df
 ```
 
-:::: {.columns}
-
-::: {.column width="55%"}
-```{r}
-#| echo: false
-#| fig-width: 5.5
-#| fig-height: 4.5
-
-ggplot(heart_failure_data, aes(x = fitted, y = Pearson_Residuals)) +
-  geom_point(alpha = 0.4) +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  geom_smooth(method = "loess", se = TRUE, color = "steelblue") +
-  labs(title = "Pearson Residuals vs Fitted",
-       x = expression(paste("Fitted values (", hat(lambda), ")")),
-       y = "Pearson residuals") +
-  theme_minimal()
-```
-:::
-
-::: {.column width="45%"}
 | Diagnostic | Value |
 |:-----------|------:|
 | Chi-square statistic | `r round(chisq_test, 2)` |
@@ -674,10 +687,6 @@ ggplot(heart_failure_data, aes(x = fitted, y = Pearson_Residuals)) +
 
 - p-value > 0.05: no evidence of lack of fit
 - $\hat{\phi} \approx 1$: mean = variance assumption holds
-- Residuals scatter randomly around 0
-:::
-
-::::
 
 ## Dealing with overdispersion
 
@@ -696,96 +705,42 @@ ggplot(heart_failure_data, aes(x = fitted, y = Pearson_Residuals)) +
 - **Adjusts standard errors** by multiplying by $\sqrt{\hat{\phi}}$
 - Coefficient estimates remain unchanged; only inference is corrected
 
-```r
-# Fitting a quasi-Poisson model in R
-glm(y ~ x, family = quasipoisson(link = "log"), data = mydata)
-```
 
 # Lab 7 – Poisson Regression
 
-## Two dimensions of grouped data
+## Poisson regression with aggregated count data
 
-When working with grouped data, we need to consider two things:
+**So far:** Poisson regression on individual-level data
 
-**1. What does the group represent?**
+- One row per person
+- Outcome: number of asthma exacerbations per individual
+- Predictors: age, smoking status
 
-- **Heterogeneous clusters**: Natural units (hospitals, schools) where individuals *differ* within groups
-- **Homogeneous strata**: Groups defined by covariate values where individuals *share* the same characteristics
+**Now:** Poisson regression on aggregated count data
 
-**2. At what level is the data?**
+- One row per group (defined by covariate combinations)
+- Outcome: total events within each group
+- Challenge: groups have different amounts of **exposure time**
 
-- **Individual-level**: One row per person
-- **Aggregated**: One row per group (summaries like counts, means, proportions)
+**Key concept:** The **offset** term accounts for varying exposure
 
-These two dimensions are independent — giving us four possible scenarios.
+## Why work with aggregated count data?
 
-## The 2 × 2 framework
+**Practical reasons:**
 
-|  | **Homogeneous strata** | **Heterogeneous clusters** |
-|:--|:--|:--|
-| **Individual data** | Treatment arm: 100 patients, each with outcome 0/1 | Hospital: 100 patients varying in age, sex, comorbidities |
-| **Aggregated data** | Treatment arm: 23 events out of 100 patients | Hospital: mean BP = 141.2 mmHg |
+- **Cohort studies**: Data naturally collected as event counts per person-years of follow-up
+- **Administrative data**: Hospital infection counts per patient-days
+- **Privacy**: Individual data not available, only group-level summaries
 
-## Homogeneous strata: when is aggregation lossless?
+**Statistical validity:**
 
-**It depends on the outcome type!**
+- For count data, aggregation preserves sufficient statistics
+- Poisson regression on aggregated data gives identical results to individual-level analysis (when all relevant covariates define the groups)
 
-:::: {.columns}
+**Connection to multilevel models:**
 
-::: {.column width="50%"}
-**Count/Binary outcomes:** ✓ Lossless
-
-- Binomial(n, π) = sum of n Bernoulli(π)
-- Poisson(λ₁) + Poisson(λ₂) = Poisson(λ₁ + λ₂)
-- Sufficient statistics preserved
-- Individual and aggregated analyses give **identical results**
-:::
-
-::: {.column width="50%"}
-**Continuous outcomes:** ✗ Information loss
-
-- Group mean is an *estimate* with SE
-- Ignoring SE → biased inference
-- Use individual data with fixed effects for strata (i.e., ANOVA)
-:::
-
-::::
-
-::: {style="margin-top: 1em;"}
-This is why Poisson/logistic regression on aggregated data is common, but you rarely see linear regression on group means.
-:::
-
-## Heterogeneous clusters: aggregation loses information
-
-When individuals within a group differ in their characteristics:
-
-**Individual-level analysis (preferred):**
-```r
-lmer(BP ~ age + sex + (1|hospital), data = individual_data)
-# Models within-cluster variation explicitly
-```
-
-**Aggregated analysis (problematic):**
-```r
-lm(mean_BP ~ hospital_size, data = aggregated_data)
-# Treats means as known → ignores estimation uncertainty
-# Fewer observations → loss of power
-```
-
-**Recommendation:** Use mixed effects models on individual data when groups are heterogeneous clusters.
-
-## Summary: choosing your approach
-
-| Group type | Outcome | Data level | Recommendation |
-|:-----------|:--------|:-----------|:---------------|
-| Homogeneous strata | Count/Binary | Individual | ✓ GLM (fixed effects) |
-| Homogeneous strata | Count/Binary | Aggregated | ✓ Aggregated GLM (equivalent) |
-| Homogeneous strata | Continuous | Individual | ✓ Linear model / ANOVA |
-| Homogeneous strata | Continuous | Aggregated | ⚠️ Weighted regression (less ideal) |
-| Heterogeneous clusters | Any | Individual | ✓ Mixed effects model |
-| Heterogeneous clusters | Any | Aggregated | ❌ Avoid — information loss |
-
-**Today's focus:** Poisson regression for aggregated count data from homogeneous strata
+- Aggregated Poisson models use group-level covariates (like context-level variables in multilevel models)
+- Unlike multilevel models, aggregation doesn't model within-group heterogeneity
 
 ## Case study: Cardiovascular disease events
 
@@ -804,11 +759,7 @@ lm(mean_BP ~ hospital_size, data = aggregated_data)
     - Age group: Young (18–40), Middle-aged (40–60), Older (60–75), Elderly (>75)
     - Smoking status: Non-smokers, light smokers (<10 pack-years), moderate smokers (10-20 pack-years), heavy smokers (>20 pack-years)
 
-## Simulating cardiovascular data
-
 ```{r}
-#| echo: true
-
 # Create aggregated cardiovascular data
 set.seed(456)
 
@@ -838,105 +789,210 @@ cardio_data$Events <- rpois(16, cardio_data$rate * cardio_data$Person_Years)
 
 ```{r}
 #| echo: false
-#| fig-width: 10
+#| fig-width: 16
 #| fig-height: 5
+
+library(gridExtra)
 
 cardio_data$Event_Rate <- cardio_data$Events / cardio_data$Person_Years * 1000
 
-ggplot(cardio_data, aes(x = Age_Group, y = Event_Rate, fill = Smoking_Status)) +
-  geom_col(position = "dodge") +
-  scale_fill_brewer(palette = "Set2", name = "Smoking Status") +
+# Plot 1: Event rates
+p1 <- ggplot(cardio_data, aes(x = Age_Group, y = Event_Rate, 
+                        color = Smoking_Status, group = Smoking_Status)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 3) +
+  scale_color_brewer(palette = "Set2", name = "Smoking Status") +
   labs(
-    title = "Cardiovascular Event Rates by Age Group and Smoking Status",
+    title = "Event Rates",
     x = "Age Group",
-    y = "Event Rate (per 1000 person-years)"
+    y = "Rate (per 1000 person-years)"
   ) +
   theme_minimal() +
   theme(legend.position = "top")
+
+# Plot 2: Person-years (exposure)
+p2 <- ggplot(cardio_data, aes(x = Age_Group, y = Person_Years, 
+                        color = Smoking_Status, group = Smoking_Status)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 3) +
+  scale_color_brewer(palette = "Set2", name = "Smoking Status") +
+  labs(
+    title = "Exposure Time",
+    x = "Age Group",
+    y = "Person-Years of Follow-up"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+
+grid.arrange(p1, p2, ncol = 2)
 ```
 
-## Poisson regression model for aggregated data
+**Key observations:** 
 
-**The Poisson regression model expresses the log event rate (per unit of exposure) as a linear function of the predictors:**
+- Event rates increase with age and differ by smoking status
+- Groups have **different amounts of exposure time** (person-years)
+- We need to account for this variation in our model
 
-$$\log(\lambda_j) = \beta_0 + \beta_1 \cdot \text{Smoking Status}_j + \beta_2 \cdot \text{Age Group}_j$$
+## The challenge: varying exposure time
 
-where $\lambda_j$ is the event rate (per person-year) for group $j$
+::: {style="font-size: 0.90em;"}
 
-**Expected number of events at the aggregated level:**
+**Our data structure:**
 
-$$\mu_j = \text{Exposure}_j \cdot \lambda_j$$
+- 16 groups (4 age categories × 4 smoking levels)
+- Each group has:
+  - **Events**: Count of cardiovascular events
+  - **Person_Years**: Total follow-up time (exposure)
+  - **Rate**: Events / Person_Years
 
-where Exposure is the total person-years of follow-up for group $j$
+**The problem:**
 
-## Incorporating log(exposure) as offset
+- We want to model **counts** (Events), not rates
+- But groups with more person-years naturally have more events
+- Simply modeling counts would bias toward high-exposure groups
 
-**Taking the log transformation of $\mu_j = \text{Exposure}_j \cdot \lambda_j$:**
+**The solution: offset term**
 
-$$\log(\mu_j) = \log(\text{Exposure}_j) + \log(\lambda_j)$$
+- $\log(\text{Expected Events}) = \log(\text{Person Years}) + \beta_0 + \beta_1 \cdot \text{Age} + \beta_2 \cdot \text{Smoking}$
+- The $\log(\text{Person Years})$ term has a fixed coefficient of 1
 
-**Substituting the Poisson regression equation for $\log(\lambda_j)$:**
+:::
 
-$$\log(\mu_j) = \log(\text{Exposure}_j) + \beta_0 + \beta_1 \cdot \text{Smoking Status}_j + \beta_2 \cdot \text{Age Group}_j$$
+## Statistical model specification
 
-**Key features of the offset:**
+::: {style="font-size: 0.90em;"}
 
-- The term $\log(\text{Exposure})$ is added as an **offset** in the model
-- The offset has a fixed regression coefficient of 1 to scale the expected counts by exposure
+**What we're actually modeling:**
 
-## Fitting the Poisson regression model with offset
+$$\text{Events}_j \sim \text{Poisson}(\mu_j)$$
+
+where the expected count $\mu_j$ depends on exposure and covariates:
+
+$$\mu_j = \text{Person_Years}_j \times \lambda_j$$
+
+**Taking logs:**
+
+$$\log(\mu_j) = \log(\text{Person_Years}_j) + \log(\lambda_j)$$
+
+**The Poisson regression equation:**
+
+$$\log(\lambda_j) = \beta_0 + \beta_1 \cdot \text{Age Group}_j + \beta_2 \cdot \text{Smoking Status}_j$$
+
+**Putting it together:**
+
+$$\log(\mu_j) = \underbrace{\log(\text{Person_Years}_j)}_{\text{offset}} + \beta_0 + \beta_1 \cdot \text{Age}_j + \beta_2 \cdot \text{Smoking}_j$$
+
+:::
+
+## [Fitting the Poisson regression model with offset]{style="font-size: 0.90em;"}
 
 ```{r}
 #| echo: true
 
-# Fit Poisson model with offset
+# Fit Poisson model with offset and interaction
 poisson_cardio <- glm(Events ~ Age_Group + Smoking_Status + offset(log(Person_Years)),
                       family = poisson(link = "log"),
                       data = cardio_data)
-
-summary(poisson_cardio)
-```
-
-## ANOVA table for the model
-
-```{r}
-#| echo: true
 
 # Type III ANOVA using car package
 car::Anova(poisson_cardio, type = "III", test.statistic = "LR")
 ```
 
-## Analysis of aggregated data vs multilevel models
+## Aggregated Poisson vs multi-level models
 
-**Poisson models for aggregated data and multilevel models address grouped data**
+**The key question: Do you have individual-level data?**
 
-- Both include group-level covariates to explain between-group differences
+:::: {.columns}
 
-**Key difference: treatment of within-group variability**
+::: {.column width="50%"}
+**Aggregated Poisson**
 
-- Poisson models collapse data to group-level counts and exposure
-- Multilevel models retain individual-level data and model variability explicitly
+- Data: One row per **group**
+- Example: 16 rows (4 age groups × 4 smoking levels)
+- Can only use group-level predictors
+- No individual variation modeled
 
-**Group-level covariates in Poisson models play the same role as context-level variables in multilevel models**
+**When to use:**
+
+- Only group summaries available
+- All relevant predictors are categorical
+- Research focus on group comparisons
+:::
+
+::: {.column width="50%"}
+**Multi-level models**
+
+- Data: One row per **individual**
+- Example: 5,000 rows (patients in hospitals)
+- Can use both individual and group predictors
+- Models within-group variation with random effects
+
+**When to use:**
+
+- Individual data available
+- Want to adjust for individual characteristics
+- Natural clusters (hospitals, schools)
+:::
+
+::::
 
 ## Example: Hospital infection rates
 
-**Poisson model for aggregated data:**
+**Research question:** How do staffing levels affect infection rates?
 
-- Outcome: Number of infections per hospital
-- Exposure: Total patient-days per hospital
-- Covariates: Staffing ratios, ICU bed availability, proportion of ICU patients
-- Focus: Infection rates explained by group characteristics
+:::: {.columns style="font-size: 0.85em;"}
 
-**Multilevel model for individual data:**
+::: {.column width="50%"}
+**Aggregated approach:**
 
-- Outcome: Infection status for each patient (yes/no)
-- Predictors:
-  - Individual: Age, comorbidities
-  - Context-level: Staffing ratios, ICU bed availability
-- Focus: Both within- and between-hospital variation
+```r
+# Data: 20 rows (one per hospital)
+hospital_data
+# Hospital  Infections  Patient_Days  Staffing
+# 1         45          2500          0.8
+# 2         32          2100          1.2
+# ...
 
-## Generalized Linear Mixed Effects Models (GLMMs)
+glm(Infections ~ Staffing + 
+    offset(log(Patient_Days)),
+    family = poisson)
+```
+
+**What you can answer:**
+
+- Do hospitals with better staffing have lower infection rates?
+
+**What you cannot answer:**
+
+- Does patient age affect infection risk?
+:::
+
+::: {.column width="50%"}
+**Multi-level approach:**
+
+```r
+# Data: 50,000 rows (one per patient)
+patient_data
+# PatientID  Hospital  Infected  Age  Staffing
+# 1          1         0         45   0.8
+# 2          1         1         72   0.8
+# ...
+
+glmer(Infected ~ Age + Staffing + 
+      (1|Hospital),
+      family = binomial)
+```
+
+**What you can answer:**
+
+- How does patient age affect infection risk?
+- Do hospitals with better staffing have lower rates?
+- How much variation exists between hospitals?
+:::
+
+::::
+
+## [Generalized Linear Mixed Effects Models (GLMMs)]{style="font-size: 0.9em;"}
 
 **GLMMs extend GLMs to account for grouped or clustered data**
 
@@ -954,3 +1010,12 @@ $$\text{logit}(\pi_{ij}) = \beta_0 + \beta_1 \cdot \text{Age}_{ij} + \beta_2 \cd
 
 $$u_j \sim N(0, \sigma_u^2)$$
 
+## Final assignment
+
+- For RM students and PhD students requiring a grade, the final assignment in now available on Brightspace 
+  - Longitudinal data analaysis based on a personalized dataset and research question
+  - Deadline: 7 January 2026
+
+- For PhD students not requiring a grade, please make sure that you have completed and submitted all four regular assignments (weeks 1 to 4) before the Christmas break as this is a requirement for receiving the course certificate 
+
+- There is no assignment for this week

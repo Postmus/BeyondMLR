@@ -1,0 +1,301 @@
+---
+title: "Beyond MLR Lab 7: Poisson regression models"
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+  pdf:
+    toc: false
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true
+---
+
+# Case study: Asthma exacerbations
+
+Asthma exacerbations represent sudden worsening of asthma symptoms, often requiring urgent medical attention. Understanding the factors that increase the frequency of exacerbations can aid in risk assessment and prevention strategies. This case study focuses on analyzing individual-level data to explore how demographic and lifestyle factors contribute to asthma exacerbation rates.
+
+### Dataset
+
+- The dataset `asthma_data.csv` contains information for 500 individuals.
+- The columns in the dataset are:
+  - `ID`: Unique identifier for each individual.
+  - `Age`: Age of the individual in years.
+  - `Smoking_Status`: Smoking status (1 = smoker, 0 = non-smoker).
+  - `Exacerbations`: Number of asthma exacerbations experienced in one year.
+- The dataset is available for download from Brightspace.
+
+## Exploratory Data Analysis
+
+```{r}
+# Load required packages
+library(ggplot2)
+library(dplyr)
+library(emmeans)
+```
+
+We begin by loading the dataset and examining its structure:
+
+```{r}
+#| eval: false
+options(contrasts = c("contr.sum", "contr.poly")) # Effects coding
+
+# Load the dataset
+asthma_data <- read.csv("data/asthma_data.csv")
+
+# Convert Smoking_Status to a factor
+asthma_data$Smoking_Status <- factor(asthma_data$Smoking_Status)
+levels(asthma_data$Smoking_Status) <- c("Non-Smoker", "Smoker")
+
+# Center age for interpretability
+asthma_data$Age_c <- asthma_data$Age - mean(asthma_data$Age)
+# Inspect the structure of the dataset
+str(asthma_data)
+```
+
+```{r}
+#| echo: false
+options(contrasts = c("contr.sum", "contr.poly")) # Effects coding
+
+# Load the dataset
+asthma_data <- read.csv("data/asthma_data.csv")
+
+# Convert Smoking_Status to a factor
+asthma_data$Smoking_Status <- factor(asthma_data$Smoking_Status)
+levels(asthma_data$Smoking_Status) <- c("Non-Smoker", "Smoker")
+
+# Center age for interpretability
+asthma_data$Age_c <- asthma_data$Age - mean(asthma_data$Age)
+
+# Inspect the structure of the dataset
+str(asthma_data)
+```
+
+Next, we calculate summary statistics and create a bar chart to visualize the distribution of asthma exacerbations in the population:
+
+```{r}
+# Summary statistics
+asthma_data |>
+  summarize(
+    Mean_Exacerbations = mean(Exacerbations),
+    Variance_Exacerbations = var(Exacerbations)
+  )
+
+# Bar chart of overall exacerbation counts
+ggplot(asthma_data, aes(x = Exacerbations)) +
+  geom_bar(fill = "steelblue", color = "white") +
+  labs(
+    title = "Distribution of Asthma Exacerbations",
+    x = "Number of Exacerbations",
+    y = "Count of Individuals"
+  ) +
+  theme_minimal()
+```
+
+::: {.callout-important icon=false title="Question"}
+Based on the bar chart and the summary statistics, describe the distribution of asthma exacerbations in the population. Does the distribution look consistent with a Poisson distribution?
+:::
+
+::: {.callout-important icon=false title="Question"}
+Compare the mean and variance of exacerbations. What does this comparison tell you about potential overdispersion in the data?
+:::
+
+To better understand the factors influencing exacerbation rates, we now explore differences across subgroups:
+
+```{r}
+# Colored bar chart of exacerbation counts by smoking status
+ggplot(asthma_data, aes(x = Exacerbations, fill = Smoking_Status)) +
+  geom_bar(position = "dodge", color = "white") +
+  scale_fill_brewer(palette = "Set2", name = "Smoking Status") +
+  labs(
+    title = "Distribution of Asthma Exacerbations by Smoking Status",
+    x = "Number of Exacerbations",
+    y = "Count of Individuals"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+::: {.callout-important icon=false title="Question"}
+What differences do you notice between smokers and non-smokers in terms of exacerbation patterns?
+:::
+
+::: {.callout-important icon=false title="Exercise"}
+Create a similar colored bar chart showing the distribution of asthma exacerbations stratified by **age groups**.
+
+**Hint**: First create age categories using the `cut()` function:
+```{r}
+asthma_data <- asthma_data |>
+  mutate(Age_Group = cut(Age, breaks = c(-Inf, 40, 60, Inf), 
+    labels = c("<40", "40-60", ">60")))
+```
+
+Then create a bar chart with `fill = Age_Group` similar to the smoking status example above.
+:::
+
+::: {.callout-important icon=false title="Question"}
+What do the facetted bar charts reveal about differences in the distribution of exacerbations across smoking and age groups?
+:::
+
+## Fitting a Poisson Regression Model
+
+The syntax in the code chunk below fits a Poisson regression model to investigate the relationship between asthma exacerbation rates and age and smoking status:
+
+```{r}
+# Fit the Poisson regression model
+poisson_model <- glm(
+  Exacerbations ~ Age_c + Smoking_Status,
+  family = poisson(link = "log"),
+  data = asthma_data
+)
+
+# View the model summary
+summary(poisson_model)
+```
+
+**Explanation of the code**:
+
+- `glm()` function: Fits a generalized linear model (GLM) to the data.
+- `Exacerbations ~ Age_c + Smoking_Status`: Specifies the outcome (`Exacerbations`) and predictors (centered age and smoking status).
+- `family = poisson(link = "log")`: Indicates that the model uses the Poisson distribution with a log link function.
+- We use **effect coding** for `Smoking_Status`, consistent with the approach used throughout this course.
+- We use **centered age** (`Age_c`), which makes the intercept interpretable as the rate at the average age.
+
+::: {.callout-important icon=false title="Question"}
+With centered age and effect coding, what does the intercept of the model represent in this context?
+:::
+
+::: {.callout-important icon=false title="Question"}
+Interpret the coefficient for Age_c as a **rate ratio**. How does an increase in age affect the exacerbation rate?
+:::
+
+## Using `emmeans` to Estimate Rates and Rate Ratios
+
+While we can interpret the coefficient for age directly (as a continuous predictor), comparing smoking groups requires estimating group-specific rates. We use `emmeans` for this purpose:
+
+```{r}
+# Estimated exacerbation rates for each smoking group (back-transformed)
+emmeans(poisson_model, ~ Smoking_Status, type = "response")
+```
+
+The `type = "response"` argument back-transforms from the log scale to give actual rates (expected number of exacerbations per year).
+
+To compare the two groups, we can compute the **rate ratio**:
+
+```{r}
+# Rate ratio comparing smoking groups
+pairs(emmeans(poisson_model, ~ Smoking_Status), type = "response")
+```
+
+::: {.callout-important icon=false title="Question"}
+Based on the `emmeans` output, what is the estimated exacerbation rate for non-smokers? For smokers?
+:::
+
+::: {.callout-important icon=false title="Question"}
+Interpret the rate ratio from the `pairs()` output. How much higher (or lower) is the exacerbation rate for smokers compared to non-smokers?
+:::
+
+::: {.callout-note}
+**Why use `emmeans`?**
+
+- Works regardless of the contrast coding scheme (effect coding, dummy coding, etc.)
+- Provides rates and rate ratios directly with confidence intervals
+- Consistent with the approach used for mixed models earlier in this course
+- The infinite df in the output reflects that GLMs use asymptotic (large-sample) inference based on the normal distribution
+:::
+
+## Evaluating Model Fit: Pearson Residuals and Goodness-of-Fit
+
+To evaluate the model fit, we calculate the **Pearson residuals**. These residuals measure the standardized difference between observed and predicted counts:
+
+- Formula: $r_i = \frac{Y_i - \hat{\lambda}_i}{\sqrt{\hat{\lambda}_i}}$, where:
+  - $Y_i$: Observed counts
+  - $\hat{\lambda}_i$: Predicted counts
+
+```{r}
+# Calculate Pearson residuals
+asthma_data$Pearson_Residuals <- residuals(poisson_model, type = "pearson")
+```
+
+Next, we assess the goodness-of-fit using the **chi-square test**:
+
+- Test statistic: $\chi^2 = \sum r_i^2 = \sum \frac{(Y_i - \hat{\lambda}_i)^2}{\hat{\lambda}_i}$
+- Degrees of freedom: $\text{df} = n - p$, where:
+  - $n$: Number of observations.
+  - $p$: Number of model parameters (including intercept).
+
+```{r}
+# Calculate chi-square test statistic
+chisq_test <- sum(asthma_data$Pearson_Residuals^2)
+
+# Degrees of freedom (from the fitted model)
+df <- df.residual(poisson_model)
+
+# p-value
+p_value <- 1 - pchisq(chisq_test, df)
+
+# Calculate dispersion parameter
+dispersion <- chisq_test / df
+
+# Display results
+list(Chi_Square_Statistic = chisq_test, 
+     Degrees_of_Freedom = df, 
+     P_Value = p_value,
+     Dispersion_Parameter = dispersion)
+```
+
+::: {.callout-important icon=false title="Question"}
+What does the chi-square test tell us about the goodness-of-fit of the Poisson regression model?
+:::
+
+::: {.callout-important icon=false title="Question"}
+Examine the **dispersion parameter** ($\hat{\phi} = \chi^2 / \text{df}$). 
+
+- If $\hat{\phi} \approx 1$: The Poisson assumption (mean = variance) holds.
+- If $\hat{\phi} > 1$: **Overdispersion** — variance exceeds the mean.
+- If $\hat{\phi} < 1$: Underdispersion (rare).
+
+What does the dispersion parameter suggest about our model?
+:::
+
+## Addressing Overdispersion: Quasi-Poisson Model
+
+If the dispersion parameter is substantially greater than 1, we have **overdispersion**, meaning the variance exceeds what the Poisson model assumes. This violates the Poisson assumption that mean equals variance.
+
+**Consequences of ignoring overdispersion:**
+
+- Standard errors are **underestimated**
+- p-values are too small → inflated Type I error rate
+- Confidence intervals are too narrow
+
+**Solution: Quasi-Poisson model**
+
+The quasi-Poisson model relaxes the mean = variance assumption:
+
+- Assumes $\text{Var}(Y) = \phi \cdot \mu$ instead of $\text{Var}(Y) = \mu$
+- Estimates $\phi$ from the data (the dispersion parameter we calculated)
+- Adjusts standard errors by multiplying by $\sqrt{\hat{\phi}}$
+- Coefficient estimates remain the same; only inference is corrected
+
+```{r}
+# Fit quasi-Poisson model
+quasipoisson_model <- glm(
+  Exacerbations ~ Age_c + Smoking_Status,
+  family = quasipoisson(link = "log"),
+  data = asthma_data
+)
+
+# View the model summary
+summary(quasipoisson_model)
+```
+
+::: {.callout-important icon=false title="Question"}
+Compare the standard errors and p-values between the Poisson model and the quasi-Poisson model. How do they differ?
+:::
+
+::: {.callout-important icon=false title="Question"}
+Do the conclusions about the significance of age and smoking status change when using the quasi-Poisson model?
+:::
