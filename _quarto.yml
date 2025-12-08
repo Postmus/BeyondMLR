@@ -34,6 +34,10 @@ website:
         menu:
           - text: "Lab 6"
             href: BLR_lab_longitudinal.qmd
+      - text: "Lab week 5"
+        menu:
+          - text: "Lab 7"
+            href: BLR_lab_Poisson.qmd      
       - text: "Assignments"
         menu:
           - text: "Week 1"
