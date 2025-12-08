@@ -389,6 +389,8 @@ Linear regression is a GLM with a normal distribution. We can generalize to othe
 
 ## Logistic regression as a GLM
 
+:::{style="font-size: 0.85em;"}
+
 **You already know logistic regression for binary outcomes** (e.g., disease yes/no)
 
 **Distribution:** Individual outcomes follow a Bernoulli distribution:
@@ -406,6 +408,7 @@ $$\text{logit}(\pi_i) = \log\left(\frac{\pi_i}{1 - \pi_i}\right) = \beta_0 + \be
 
 The logit link transforms probabilities (0, 1) to the real line ($-\infty$, $+\infty$)
 
+:::
 
 ## Generalized linear models: the framework
 
@@ -419,7 +422,7 @@ The logit link transforms probabilities (0, 1) to the real line ($-\infty$, $+\i
 
 **Common GLMs:**
 
-:::{style="font-size: 0.8em;"}
+:::{style="font-size: 0.85em;"}
 
 | Model | Distribution | Link | $g(\mu)$ | Constraint solved |
 |:------|:-------------|:-----|:---------|:------------------|
@@ -638,7 +641,7 @@ pairs(emmeans(poisson_model, ~ comorbidity_f), type = "response")
 
 ## Model diagnostics
 
-::: {style="font-size: 0.85em;"}
+::: {style="font-size: 0.8em;"}
 
 **Pearson residuals:** measure the standardized difference between observed and expected counts:
 
@@ -708,7 +711,7 @@ dispersion <- chisq_test / df
 
 # Lab 7 – Poisson Regression
 
-## Poisson regression with aggregated count data
+## [Poisson regression with aggregated count data]{style="font-size: 0.90em;"}
 
 **So far:** Poisson regression on individual-level data
 
@@ -736,11 +739,6 @@ dispersion <- chisq_test / df
 
 - For count data, aggregation preserves sufficient statistics
 - Poisson regression on aggregated data gives identical results to individual-level analysis (when all relevant covariates define the groups)
-
-**Connection to multilevel models:**
-
-- Aggregated Poisson models use group-level covariates (like context-level variables in multilevel models)
-- Unlike multilevel models, aggregation doesn't model within-group heterogeneity
 
 ## Case study: Cardiovascular disease events
 
@@ -1013,7 +1011,7 @@ $$u_j \sim N(0, \sigma_u^2)$$
 ## Final assignment
 
 - For RM students and PhD students requiring a grade, the final assignment in now available on Brightspace 
-  - Longitudinal data analaysis based on a personalized dataset and research question
+  - Longitudinal data analysis based on a personalized dataset and research question
   - Deadline: 7 January 2026
 
 - For PhD students not requiring a grade, please make sure that you have completed and submitted all four regular assignments (weeks 1 to 4) before the Christmas break as this is a requirement for receiving the course certificate 
