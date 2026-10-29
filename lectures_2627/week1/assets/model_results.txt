@@ -1,0 +1,5 @@
+single means 338.9 352.7
+single contrast 13.76 se 5.87
+pooled 23.63 se 2.76 resid_sd 30.27
+fixed 23.63 se 2.26 resid_sd 24.71
+random 23.63 se 2.26 center_var 365.5 resid_var 610.57

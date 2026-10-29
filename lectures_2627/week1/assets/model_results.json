@@ -1,0 +1,40 @@
+{
+  "patients_per_arm": 40,
+  "centers": 6,
+  "total": 480,
+  "single": {
+    "standard_mean": 338.9375,
+    "enhanced_mean": 352.6975,
+    "standard_sd": 29.5045471289,
+    "enhanced_sd": 22.5621590108,
+    "estimate": 13.76,
+    "lower": 2.0682460204,
+    "upper": 25.4517539796,
+    "t": 2.3430236143,
+    "p": 0.021677609457,
+    "df": 78
+  },
+  "pooled": {
+    "estimate": 23.62625,
+    "se": 2.7635004745,
+    "lower": 18.1961393904,
+    "upper": 29.0563606096,
+    "residual_sd": 30.2726309513
+  },
+  "fixed": {
+    "estimate": 23.62625,
+    "se": 2.2556835055,
+    "lower": 19.193849964,
+    "upper": 28.058650036,
+    "residual_sd": 24.7097747706
+  },
+  "random": {
+    "estimate": 23.62625,
+    "se": 2.2556835055,
+    "lower": 19.193849964,
+    "upper": 28.058650036,
+    "center_var": 365.5018,
+    "patient_var": 610.573,
+    "icc": 0.37446085075
+  }
+}
