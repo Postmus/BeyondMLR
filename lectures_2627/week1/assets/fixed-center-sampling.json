@@ -1,0 +1,69 @@
+{
+  "seed": 20261103,
+  "repetitions": 10000,
+  "baseline": 100,
+  "treatment_effect": 5,
+  "individual_error_sd": 5,
+  "stages": [20, 10000],
+  "positions": [
+    {
+      "center": 1,
+      "treatment": "Standard",
+      "center_effect": -10,
+      "treatment_component": 100,
+      "first_error": -10.74448916,
+      "first_outcome": 89.25551084,
+      "expected_error": -10,
+      "empirical_mean": -10.03401523,
+      "empirical_variance": 25.20773322
+    },
+    {
+      "center": 1,
+      "treatment": "Enhanced",
+      "center_effect": -10,
+      "treatment_component": 105,
+      "first_error": -5.57625531,
+      "first_outcome": 99.42374469,
+      "expected_error": -10,
+      "empirical_mean": -9.9946022,
+      "empirical_variance": 25.12976265
+    },
+    {
+      "center": 2,
+      "treatment": "Standard",
+      "center_effect": 10,
+      "treatment_component": 100,
+      "first_error": 17.3849334,
+      "first_outcome": 117.3849334,
+      "expected_error": 10,
+      "empirical_mean": 10.05779458,
+      "empirical_variance": 24.49708788
+    },
+    {
+      "center": 2,
+      "treatment": "Enhanced",
+      "center_effect": 10,
+      "treatment_component": 105,
+      "first_error": 3.24135699,
+      "first_outcome": 108.24135699,
+      "expected_error": 10,
+      "empirical_mean": 9.99065144,
+      "empirical_variance": 24.57852636
+    }
+  ],
+  "pooled_expected_error": 0,
+  "theoretical_pair_covariance": 0,
+  "empirical_covariances": [
+    [25.20773322, -0.32966683, 0.20942097, -0.11388813],
+    [-0.32966683, 25.12976265, -0.10287562, 0.01708907],
+    [0.20942097, -0.10287562, 24.49708788, -0.40608356],
+    [-0.11388813, 0.01708907, -0.40608356, 24.57852636]
+  ],
+  "empirical_correlations": [
+    [1, -0.01309828, 0.00842745, -0.00457545],
+    [-0.01309828, 1, -0.0041463, 0.00068762],
+    [0.00842745, -0.0041463, 1, -0.01654932],
+    [-0.00457545, 0.00068762, -0.01654932, 1]
+  ],
+  "plot_y_max": 0.12
+}

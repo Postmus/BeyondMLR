@@ -3,11 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "figures": "Rscript generate_data.R",
+    "figures": "Rscript generate_data.R && Rscript generate_initial_analysis.R && Rscript generate_interlude_figure.R && Rscript generate_fixed_center_sampling.R",
+    "fixed-center-simulation": "Rscript generate_fixed_center_sampling.R",
+    "initial-analysis": "Rscript generate_initial_analysis.R",
+    "interlude-equations": "node generate_interlude_equations.js",
     "slides": "node build_week1.js",
     "build": "npm run figures && npm run slides"
   },
   "dependencies": {
+    "jszip": "3.10.1",
     "pptxgenjs": "4.0.1",
     "mathjax-full": "3.2.1",
     "skia-canvas": "3.0.8",

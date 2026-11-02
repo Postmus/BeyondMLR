@@ -329,7 +329,7 @@ function addAssetFrame(slide, {
   slide.addImage({ path: assetPath, ...placement });
 }
 
-function addCaption(slide, { box, text = "" } = {}) {
+function addCaption(slide, { box, text = "", fontSize = TYPOGRAPHY.caption.fontSize, minFontSize = 9 } = {}) {
   const textBox = {
     x: box.x + 0.08,
     y: box.y + 0.04,
@@ -338,8 +338,8 @@ function addCaption(slide, { box, text = "" } = {}) {
   };
   slide.addText(text, autoFontSize(text, TYPOGRAPHY.caption.fontFace, {
     ...textBox,
-    minFontSize: 9,
-    maxFontSize: TYPOGRAPHY.caption.fontSize,
+    minFontSize,
+    maxFontSize: fontSize,
     mode: "auto",
     italic: true,
     color: COLORS.muted,
@@ -615,6 +615,8 @@ function addFigureSlide(pptx, {
   title,
   assetPath,
   caption = "",
+  captionFontSize = TYPOGRAPHY.caption.fontSize,
+  captionMinFontSize = 9,
   footerShortTitle = "",
   fit = "contain",
 } = {}) {
@@ -636,6 +638,8 @@ function addFigureSlide(pptx, {
         h: captionHeight,
       },
       text: caption,
+      fontSize: captionFontSize,
+      minFontSize: captionMinFontSize,
     });
   }
   addFooter(slide, footerShortTitle);
