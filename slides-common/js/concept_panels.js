@@ -2,6 +2,7 @@
 const { COLORS, FONT_FAMILIES, LAYOUT, SPACING, STROKES, RADII } = require('./blr_theme');
 const { addBase, addSlideTitle, addFooter, addNoteBox, addAssetFrame } = require('./pptx_layout_primitives');
 const { calcTextBox } = require('../../lectures_2627/week1/pptxgenjs_helpers/text');
+const { addTeachingTable } = require('./teaching_table');
 
 function addConceptPanelsSlide(pptx, { title, intro, lead, panels, takeaway, drawEquation }) {
   const slide = pptx.addSlide();
@@ -41,6 +42,7 @@ function addConceptPanelsSlide(pptx, { title, intro, lead, panels, takeaway, dra
         calcTextBox(block.fontSize || 21, { text: block.text, w, fontFace: FONT_FAMILIES.sans,
           margin: 0, padding: .04 }).h + .07);
       if (block.equation) drawEquation(slide, block.equation, x, y, w, h);
+      else if (block.table) addTeachingTable(slide, { ...block.table, box: { x, y, w, h } });
       else if (block.image) addAssetFrame(slide, { box: { x, y, w, h }, assetPath: block.image, framed: false });
       else slide.addText(block.text, { x, y, w, h, fontFace: FONT_FAMILIES.sans,
         fontSize: block.fontSize || 21, color: block.muted ? COLORS.muted : COLORS.text,

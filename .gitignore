@@ -28,6 +28,18 @@ lectures_2526/*.html
 lectures_2526/_slides/
 lectures_2526/_slides/**
 
+# Generated equation intermediates; definitions live in the slide JavaScript.
+# Keep equation PNGs tracked so decks build without a local TeX installation.
+lectures_*/**/assets/equations/*.tex
+lectures_*/**/assets/equations/*.svg
+lectures_*/**/assets/equations/*.aux
+lectures_*/**/assets/equations/*.log
+lectures_*/**/assets/equations/*.out
+lectures_*/**/assets/equations/*.pdf
+lectures_*/**/assets/equations/*.fls
+lectures_*/**/assets/equations/*.fdb_latexmk
+lectures_*/**/assets/equations/*.synctex.gz
+
 # Editor / OS
 .Rproj.user/
 .vscode/

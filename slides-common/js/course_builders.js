@@ -18,12 +18,13 @@ function addStudyOverviewSlide(pptx, { title, studyTitle, bullets, groupsTitle, 
 function addConditionalModelSlide(pptx, {
   title, assetPath, equation, drawEquation, bullets, note,
   modelLabel = 'CONDITIONAL MODEL', coding = '', assumptionEquation = '', noteHeight = 0.9, noteFontSize = 14,
+  modelHeight, interpretationTitle = 'INTERPRETATION', bulletFontSize = 19, bulletMinFontSize = 17,
 }) {
   const slide = pptx.addSlide();
   const slots = getSlots({ noteHeight });
   addBase(slide);
   addSlideTitle(slide, title);
-  const top = { ...slots.text, h: assumptionEquation ? 1.93 : (coding ? 1.80 : 1.50) };
+  const top = { ...slots.text, h: modelHeight ?? (assumptionEquation ? 1.93 : (coding ? 1.80 : 1.50)) };
   const bottom = { x: slots.text.x, y: top.y + top.h + 0.12, w: slots.text.w, h: slots.text.h - top.h - 0.12 };
   // The card intentionally contains its title and the equation image.
   slide.addShape('roundRect', { ...top, rectRadius: RADII.card, fill: { color: COLORS.card }, line: STROKES.card });
@@ -34,7 +35,7 @@ function addConditionalModelSlide(pptx, {
     x: top.x + 0.24, y: top.y + (assumptionEquation ? 1.48 : 1.29), w: top.w - 0.48, h: 0.30,
     ...TYPOGRAPHY.bodySmall, fontSize: 15, color: COLORS.muted, margin: 0,
   });
-  addBulletBox(slide, { box: bottom, title: 'INTERPRETATION', bullets, fontSize: 19, minFontSize: 17 });
+  addBulletBox(slide, { box: bottom, title: interpretationTitle, bullets, fontSize: bulletFontSize, minFontSize: bulletMinFontSize });
   addAssetFrame(slide, { box: slots.visual, assetPath });
   addNoteBox(slide, { box: slots.note, text: note, fontSize: noteFontSize, minFontSize: noteFontSize - 1 });
   addFooter(slide);

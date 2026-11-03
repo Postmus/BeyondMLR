@@ -8,12 +8,16 @@ const {autoFontSize}=require('./pptxgenjs_helpers/text');
 const {COLORS, FONT_FAMILIES}=require('../../slides-common/js/blr_theme');
 const primitives=require('../../slides-common/js/pptx_layout_primitives');
 const {writePresentation}=require('../../slides-common/js/write_presentation');
-const {addOmittedCenterSlide,addErrorInterlude}=require('./error_interlude');
-const {addFixedCenterSection}=require('./fixed_center');
+const {addOmittedCenterSlide,addFixedRandomPerspectiveSlide}=require('./error_interlude');
+const {addFixedCenterSection,addCenterDistributionBridge}=require('./fixed_center');
+const {addRandomCenterSampling}=require('./random_center_sampling');
+const {addLab2Debrief}=require('./lab2_debrief');
+const {addCourseIntroduction}=require('./course_introduction');
 const {addMeanModelSlide,addErrorRecap}=require('./error_recap');
-const {addStudyOverviewSlide,addDiagnosticsInterpretationSlide}=require('../../slides-common/js/course_builders');
+const {treatmentOnlyModel,treatmentOnlyAssumption}=require('./initial_model');
+const {addStudyOverviewSlide,addConditionalModelSlide,addDiagnosticsInterpretationSlide}=require('../../slides-common/js/course_builders');
 const {defineTemplateMasters,addBase,addSlideTitle,addTextBox,addAssetFrame,addNoteBox,addBrandedTitleSlide,addSectionSlide,addBulletVisualSlide,addComparisonSlide,addFigureSlide}=primitives;
-const pptx=new pptxgen(); pptx.layout='LAYOUT_WIDE'; pptx.author='Beyond MLR';pptx.subject='Week 1: a multicenter trial, treatment-only analysis and shared center contributions';pptx.title='Beyond MLR | Week 1';pptx.lang='en-GB';pptx.theme={headFontFace:FONT_FAMILIES.sans,bodyFontFace:FONT_FAMILIES.sans,lang:'en-GB'};defineTemplateMasters(pptx);
+const pptx=new pptxgen(); pptx.layout='LAYOUT_WIDE'; pptx.author='Beyond MLR';pptx.subject='Modeling center effects and comparing treatments';pptx.title='Randomized block designs | Beyond MLR — Week 1';pptx.lang='en-GB';pptx.theme={headFontFace:FONT_FAMILIES.sans,bodyFontFace:FONT_FAMILIES.sans,lang:'en-GB'};defineTemplateMasters(pptx);
 const C={navy:COLORS.primary,teal:COLORS.primary,orange:COLORS.accent,ink:COLORS.text,muted:COLORS.muted,pale:COLORS.surfaceMuted,line:COLORS.cardLine,white:COLORS.card,gray:COLORS.background};
 const W=13.333,H=7.5;
 const R=JSON.parse(fs.readFileSync(path.join('assets','model_results.json'),'utf8'));
@@ -45,9 +49,9 @@ function takeaway(s,text,x,y,w,h=.48){/* Filled panel intentionally contains the
 function note(s,_text=''){s.addNotes('');}
 let s;
 // 1
-s=addBrandedTitleSlide(pptx,{courseLabel:'BEYOND MULTIPLE LINEAR REGRESSION',mainTitle:'Treatment comparisons and shared centers',author:'Dr Douwe Postmus',affiliation:'UMCG · Department of Epidemiology',badge:'BLR'});note(s,'The rehabilitation data in this lecture are simulated teaching data.');
-// 2
-s=slide('Today’s questions');panelText(s,'01  INITIAL ANALYSIS','How do we estimate and interpret the treatment difference?',.7,1.75,5.6);panelText(s,'02  MODEL AND STUDY','Does the treatment-only model adequately represent the study?',6.85,1.75,5.6);panelText(s,'03  SHARED CENTERS','What does an omitted center contribution mean for the errors?',.7,3.7,5.6);panelText(s,'04  MODEL COMPARISON','How does center adjustment change uncertainty?',6.85,3.7,5.6);
+s=addBrandedTitleSlide(pptx,{courseLabel:'BEYOND MULTIPLE LINEAR REGRESSION',mainTitle:'Randomized block designs',subtitle:'Modeling center effects and comparing treatments',author:'Dr Douwe Postmus',affiliation:'UMCG · Department of Epidemiology',badge:'BLR'});note(s,'The rehabilitation data in this lecture are simulated teaching data.');
+// Course-wide introduction precedes Part 1.
+addCourseIntroduction(pptx);
 //3
 s=addSectionSlide(pptx,{sectionLabel:'PART 1',sectionTitle:'A multicenter trial: initial analysis'});
 // Start with the full trial and its treatment-only analysis. Center-specific
@@ -56,7 +60,7 @@ s=addStudyOverviewSlide(pptx,{
   title:'A multicenter rehabilitation trial',studyTitle:'DESIGN AND OUTCOME',
   bullets:[
     `Simulated trial: ${initial.n} patients after knee replacement at ${initial.centers} centers.`,
-    `Within each center, ${R.patients_per_arm} patients are randomized to each program.`,
+    `Randomized block design: centers are the blocks. Within each center, ${R.patients_per_arm} patients are randomized to each treatment.`,
     'Standard care: weekly physiotherapy and home exercises.',
     'Enhanced care: standard care plus a weekly supervised session.',
     'Outcome: six-minute walk distance at 12 weeks.'
@@ -71,24 +75,28 @@ s=addFigureSlide(pptx,{
   caption:`${initial.patients_per_arm} patients per program across all ${initial.centers} centers. Each point represents one patient.`
 });
 
-// Introduce the proposed expected outcomes and zero-mean error together.
+// Introduce model-predicted outcomes and errors before specifying error assumptions.
 s=addMeanModelSlide(pptx,equation);
 addErrorRecap(pptx,equation);
 
 // Complete the distributional specification before showing model estimates.
-s=addBulletVisualSlide(pptx,{
+s=addConditionalModelSlide(pptx,{
   title:'Completing the statistical model',
-  bulletTitle:'FOUR ASSUMPTIONS ABOUT THE ERRORS',
+  modelLabel:'TREATMENT-ONLY MODEL',
+  equation:treatmentOnlyModel,
+  assumptionEquation:treatmentOnlyAssumption,
+  drawEquation:equation,
+  modelHeight:1.58,
+  interpretationTitle:'READING THE NOTATION',
   bullets:[
-    'Zero mean: each patient’s expected error is zero.',
-    'Equal variance: error variance is the same for every patient.',
-    'Independence: errors are independent across patients.',
-    'Normality: the errors have Normal distributions.'
+    '∼ means “is distributed as”.',
+    'N(0, σᵤ²): a Normal distribution with mean zero and variance σᵤ².',
+    'iid means “independent and identically distributed”: errors are independent across patients and follow the same distribution.'
   ],
-  bulletFontSize:21,bulletMinFontSize:21,
+  bulletFontSize:20,bulletMinFontSize:20,
   assetPath:path.join('assets','conditional-distributions.png'),
-  note:'These assumptions describe the error distribution and the relationships between patients’ errors.',
-  noteHeight:1.05,noteFontSize:18
+  note:'Errors share one distribution. Treatment changes the mean outcome.',
+  noteHeight:.9,noteFontSize:19
 });
 note(s,'');
 
@@ -117,61 +125,37 @@ s=addDiagnosticsInterpretationSlide(pptx,{
       purpose:'Assess whether the residual distribution is approximately Normal.'
     }
   ],
-  takeaway:'These plots summarize residuals pooled across centers. They can look reassuring even when the model does not adequately represent differences between centers.'
+  takeaway:'The residual plots do not suggest clear violations of the Normality or equal-variance assumptions.'
 });
 note(s,'');
-// End Part 1 with the omitted-center contribution to the error.
+// End Part 1 by connecting study design, omitted center effects and sampling perspectives.
+s=addBulletVisualSlide(pptx,{
+  title:'Does the model reflect the study design?',
+  bulletTitle:'OUR MODEL AND OUR STUDY',
+  bullets:[
+    'Our model gives the same predicted outcome to patients receiving the same treatment.',
+    'Patients were recruited from six centers.',
+    'Patient populations and care settings may differ between centers.',
+    'Patients receiving the same treatment may therefore have different expected outcomes across centers.'
+  ],
+  bulletFontSize:21,bulletMinFontSize:21,
+  assetPath:path.join('assets','center-summary.png'),
+  note:'If centers differ in their expected outcomes, where do those differences enter our treatment-only model?',
+  noteHeight:1.35,noteFontSize:20
+});
 addOmittedCenterSlide(pptx,equation);
+addFixedRandomPerspectiveSlide(pptx);
 
-s=addSectionSlide(pptx,{sectionLabel:'PART 2',sectionTitle:'Repeated sampling with the same centers'});
+s=addSectionSlide(pptx,{sectionLabel:'PART 2',sectionTitle:'Modeling center as a fixed effect'});
 addFixedCenterSection(pptx,equation,R);
 
-// Existing randomized-block material retained for subsequent refinement.
-s=addSectionSlide(pptx,{sectionLabel:'PART 3',sectionTitle:'Randomized blocks: treatment within centers'});
-s=slide('The same trial across six centers','RANDOMIZED BLOCKS');bullet(s,['Six centers recruit patients from their local populations.',`In every center, ${R.patients_per_arm} patients receive each treatment.`,'Each patient has one 12-week walking-distance outcome.','Treatment is randomized within each center.'],.85,1.65,11.7,21,.85);txt(s,'What does a patient share with others in the same center?',.85,5.55,11.7,.65,{fontSize:23,bold:true,color:C.navy});
-//14
-s=slide('Outcomes differ across centers','RANDOMIZED BLOCKS');fig(s,'centers.png',.62,1.47,9.0,4.95);panelText(s,'GROUPING STRUCTURE','Each patient belongs to one center.',9.9,1.9,2.7);panelText(s,'TREATMENT','Both treatments are represented within every center.',9.9,3.7,2.7);note(s,'Points are simulated patient outcomes. Diamonds show observed treatment means within each center. Center differences here are teaching assumptions, not empirical findings.');
-//15
-s=slide('Within-center treatment comparisons','RANDOMIZED BLOCKS');fig(s,'center-means.png',.62,1.47,9.0,4.95);panelText(s,'EACH CENTER','Compare enhanced with standard in the same center.',9.85,1.95,2.8);panelText(s,'COMMON EFFECT','The model assumes a common treatment difference.',9.85,3.9,2.8);note(s,'Each line connects the standard and enhanced treatment means within one center. Horizontal separation represents the observed treatment contrast. These observed contrasts differ because of sampling variation, even though the data-generating model has the same underlying treatment effect in every center.');
-//16
-s=slide('A model with a center contribution','RANDOMIZED BLOCKS');
-equation(s,'Y_{ij}=\\beta_0+\\beta_1T_{ij}+c_j+\\varepsilon_{ij}',.8,1.62,10.6,.8);
-txt(s,'Patient i belongs to center j.',.9,2.51,11.6,.27,{fontSize:17,align:'center',color:C.muted});
-panelText(s,'CENTER DIFFERENCES','cⱼ shifts both treatment means up or down within center j.',.9,3.02,5.4);
-panelText(s,'COMMON TREATMENT DIFFERENCE','β₁ is the enhanced-versus-standard mean difference in every center.',6.75,3.02,5.5);
-takeaway(s,'Centers can have different mean walking distances under standard care.\nThe enhanced-versus-standard mean difference is the same in every center.',.9,5.5,11.6,.8);
-note(s,'The model allows centers to have different mean walking distances under standard care and assumes the same enhanced-versus-standard difference in every center. The center contribution shifts both treatment means by the same amount. Patients also have individual deviations around their center-and-treatment mean. These are outcomes at 12 weeks, not measurements taken before treatment. If center is omitted, its contribution remains in the error.');
-//17
-s=slide('Three analyses of the same trial','MODEL COMPARISON');table(s,[['Model','Treatment','Center'],['Treatment only','Fixed effect','Omitted'],['Fixed-center model','Fixed effect','Fixed effect'],['Random-intercept model','Fixed effect','Random effect']],.8,1.75,[4.6,3.3,3.9],.7);txt(s,'Compare the treatment estimate, standard error and remaining variation.',.9,5.45,11.6,.65,{fontSize:21,color:C.navy});
-//18
-s=addComparisonSlide(pptx,{title:'Fixed and random center effects',leftTitle:'FIXED CENTER',leftText:'Each center has its own mean adjustment.\n\nThe model estimates these adjustments separately.\n\nThe treatment difference is the same in every center.',rightTitle:'RANDOM CENTER',rightText:'Each center has a shift shared by its patients.\n\nThese shifts vary around zero with an estimated variance.\n\nThe treatment difference is the same in every center.'});note(s,'Both models allow centers to differ in their mean walking distance under standard care and assume the same treatment difference in every center. The fixed-center model estimates separate center parameters. The random-intercept model describes center shifts using a distribution with mean zero and variance sigma_c squared. The patient residual variance describes remaining within-center variation after accounting for treatment. The fixed and random models imply different assumptions and inferential frameworks. Avoid portraying the fixed/random choice solely as whether the specific groups are interesting.');
-// Compare expected errors and covariance after introducing both formulations.
-addErrorInterlude(pptx,equation);
-//19
-s=slide('Treatment estimate and uncertainty','MODEL COMPARISON');table(s,[['Analysis','Contrast','SE','95% CI'],...[["Treatment only",R.pooled],["Center fixed",R.fixed],["Center random",R.random]].map(([name,v])=>[name,`${fmt(v.estimate)} m`,`${fmt(v.se,2)} m`,ci(v)])],.9,1.65,[3.5,2.3,2.2,3.7],.73);takeaway(s,'Exact within-center balance gives the same treatment estimate.',.9,5.3,11.6,.6);txt(s,'Simulated trial; enhanced minus standard.',.9,6.0,11.5,.38,{fontSize:15,color:C.muted});note(s,'Numerical results calculated from the included simulated dataset. Equality of fixed and mixed standard errors applies to this balanced additive case with an interior random-effect variance estimate; it is not a general rule.');
-//19b
-s=slide('Why does center adjustment change precision?','MODEL COMPARISON');panelText(s,'TREATMENT ONLY',`Residual SD: ${fmt(R.pooled.residual_sd)} m\nCenter differences remain among the residuals.`,.85,1.7,5.45);panelText(s,'CENTER ADJUSTED',`Residual SD: ${fmt(R.fixed.residual_sd)} m\nThe comparison uses differences within centers.`,6.8,1.7,5.45);takeaway(s,`The treatment contrast remains ${fmt(R.fixed.estimate)} m in this balanced trial.`,.85,5.4,11.6,.6);note(s,'These SDs are the estimates from the actual simulated treatment-only and fixed-center linear models. Lower residual variance and balanced design reduce the standard error in this example; this is not guaranteed for every dataset.');
-//19c
-s=addFigureSlide(pptx,{title:'Residual variation with and without center',assetPath:path.join('assets','residual-variation.png'),caption:`Same ${R.total} patients and same treatment contrast. The estimated residual SD accounts for model degrees of freedom.`});note(s,'Histograms use the ordinary linear-model residuals. In this balanced simulated dataset, accounting for centers reduces residual spread. The residual SD printed is sigma(model), using the correct residual degrees of freedom.');
-//20
-s=slide('Where does unexplained variation go?','MODEL COMPARISON');panelText(s,'TREATMENT ONLY','One residual term contains patient differences and center-related differences.',.85,1.8,5.5);panelText(s,'RANDOM INTERCEPT','Variation is separated into a center component and a patient component.',6.8,1.8,5.5);equation(s,'\\operatorname{Var}(Y_{ij}\\mid T_{ij})=\\sigma^2_c+\\sigma^2',1.1,4.85,10.4,.67);txt(s,'After accounting for treatment, variation comes from differences between centers and differences within centers.',.9,5.85,11.6,.7,{fontSize:20,align:'center'});note(s,'The random intercept and residual are independent in this model; the formula applies to the marginal conditional variance given treatment, not a residual conditional on the center effect. Estimates from different models need not sum exactly.');
-//21
-s=slide('Intraclass correlation','MODEL COMPARISON');equation(s,'\\mathrm{ICC}=\\frac{\\sigma_c^2}{\\sigma_c^2+\\sigma^2}',.95,1.6,6.6,1);txt(s,'Estimated center variance',7.7,1.62,4.4,.32,{fontSize:17,color:C.muted});txt(s,`${fmt(R.random.center_var,0)} m²`,7.7,2.0,4.0,.45,{fontSize:25,bold:true});txt(s,'Estimated patient variance',7.7,2.85,4.4,.32,{fontSize:17,color:C.muted});txt(s,`${fmt(R.random.patient_var,0)} m²`,7.7,3.23,4.0,.45,{fontSize:25,bold:true});txt(s,`After accounting for treatment, about ${fmt(100*R.random.icc,0)}% of the remaining variation is between centers.`,.95,3.15,6.3,1.1,{fontSize:20});txt(s,`ICC ≈ ${fmt(R.random.icc,2)} in this simulated trial`,.95,5.25,11,.55,{fontSize:22,bold:true,color:C.teal});txt(s,'Patients in the same center have correlated outcomes after accounting for treatment.',.95,6.0,11.4,.65,{fontSize:19});note(s,'Here the ICC is both the proportion of marginal unexplained variance attributable to the random center intercept and the model-implied correlation of two distinct patients in the same center, conditional on their treatments.');
-//22
-s=slide('One trial and repeated trials','SIMULATOR DISCUSSION');bullet(s,['Start with one randomized-block trial: compare model estimates and intervals.','Repeat under no treatment effect: examine rejection frequency and coverage.','Repeat with a specified treatment effect: examine power.'],.9,1.68,11.6,21,1.0);txt(s,'Sampling Simulator: Clustered data → Randomised blocks',.9,5.5,11.6,.62,{fontSize:19,bold:true,color:C.teal});note(s,'Use the separate sampling-simulator application, route #/concepts/randomized-block-design. Its current analyses are ordinary regression and random-intercept REML; a separate fixed-center panel is not currently implemented. Each repetition draws new hospital effects and patients, and treatment is exactly balanced within hospitals.');
-//23
-s=slide('What changes across repeated trials?','SIMULATOR DISCUSSION');panelText(s,'NO TREATMENT EFFECT','Compare the rejection rate with the 5% reference level.',.85,1.85,5.5);panelText(s,'SPECIFIED EFFECT','Compare power alongside Type I error and interval coverage.',6.8,1.85,5.5);takeaway(s,'A larger rejection rate is not automatically better.',.85,5.35,11.6,.6);note(s,'Balanced blocked design under the specified random-intercept simulation: ordinary analysis can be conservative, while the random-intercept method is calibrated under its assumptions. Do not generalize direction to cluster-randomized designs.');
-//24
-s=slide('Lab 2: treatment within centers','LAB');bullet(s,['Visualize treatment outcomes and mean differences by center.','Fit the treatment-only and center-adjusted models.','Compare the treatment estimate and its uncertainty.','Interpret center and patient variance in the random-intercept model.'],.85,1.7,11.7,20,.85);txt(s,'Explain the analysis and interpretation.',.85,5.65,11.5,.55,{fontSize:21,bold:true,color:C.teal});
-// Summary and transition to the Week 2 starter.
-s=slide('Key ideas','SUMMARY');
-bullet(s,[
-  'A treatment regression model describes outcomes in each treatment group.',
-  'Patients in the same center share a center contribution.',
-  'Randomization within centers makes within-center treatment comparisons possible.',
-  'Accounting for center can change uncertainty even when the treatment estimate is unchanged.'
-],.85,1.65,11.7,20,.9);
-txt(s,'Next: treatment assigned to whole centers.',.85,6.0,11.4,.5,{fontSize:21,bold:true,color:C.teal});
+// Random-center simulation precedes the later trial/model-comparison material.
+s=addSectionSlide(pptx,{sectionLabel:'PART 3',sectionTitle:'Modeling center as a random effect'});
+addCenterDistributionBridge(pptx,equation);
+addRandomCenterSampling(pptx,equation);
+addLab2Debrief(pptx,equation,R);
+// Close with questions after the two lab debriefs.
+s=addSectionSlide(pptx,{sectionLabel:'The End',sectionTitle:'Questions'});
 // Footer and layout checks.
 pptx._slides.forEach((sl,i)=>{if(i>0)warnIfSlideHasOverlaps(sl,pptx,{ignoreLines:true});warnIfSlideElementsOutOfBounds(sl,pptx)});
 writePresentation(pptx,'Beyond_MLR_Week_1.pptx').catch(error=>{console.error(error);process.exitCode=1;});

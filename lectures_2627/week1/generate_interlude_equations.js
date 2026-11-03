@@ -10,6 +10,8 @@ const initialModelEquations = require('./initial_model');
 const { equations: recapEquations } = require('./error_recap');
 const { equations: fixedCenterEquations } = require('./fixed_center');
 const { equations: samplingEquations } = require('./fixed_center_sampling');
+const { equations: randomSamplingEquations } = require('./random_center_sampling');
+const { equations: lab2Equations } = require('./lab2_debrief');
 const { latexToSvgDataUri } = require('./pptxgenjs_helpers/latex');
 const dir = path.join(__dirname, 'assets', 'equations');
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'blr-interlude-equations-'));
@@ -21,6 +23,8 @@ try {
   recapEquations.forEach(tex => equations.add(tex));
   fixedCenterEquations.forEach(tex => equations.add(tex));
   samplingEquations.forEach(tex => equations.add(tex));
+  randomSamplingEquations.forEach(tex => equations.add(tex));
+  lab2Equations.forEach(tex => equations.add(tex));
   for (const tex of equations) {
     const hash = crypto.createHash('sha1').update(tex).digest('hex').slice(0,12);
     const stem = 'eq_' + hash;

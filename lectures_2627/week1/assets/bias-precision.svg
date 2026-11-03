@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1464" height="718" viewBox="0 0 1464 718">
+<rect width="1464" height="718" fill="#FFFFFF"/>
+<g font-family="Liberation Sans" fill="#19343B">
+<text x="28" y="36" font-size="30" font-weight="400" text-anchor="start">Bullseye: true treatment effect</text>
+<text x="700" y="36" font-size="30" font-weight="400" text-anchor="start">Each dart: estimate from one simulated study</text>
+<text x="580" y="102" font-size="35" font-weight="700" text-anchor="middle">High precision</text>
+<text x="1110" y="102" font-size="35" font-weight="700" text-anchor="middle">Low precision</text>
+<text x="206" y="256" font-size="35" font-weight="700" text-anchor="middle">No bias</text>
+<text x="206" y="505" font-size="35" font-weight="700" text-anchor="middle">Bias</text>
+<circle cx="580" cy="244" r="108" fill="#FFFFFF" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="580" cy="244" r="81" fill="#E2EEF0" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="580" cy="244" r="54" fill="#FFFFFF" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="580" cy="244" r="27" fill="#E2EEF0" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="580" cy="244" r="7" fill="#173F48" stroke="#173F48" stroke-width="2"/>
+<path d="M 593.6 241.6 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 558.4 238.4 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 586.4 253.60000000000002 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 565.6 226.4 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 572.8 260 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 579.2 220 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 561.6 249.6 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 590.4 230.4 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<circle cx="1110" cy="244" r="108" fill="#FFFFFF" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="1110" cy="244" r="81" fill="#E2EEF0" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="1110" cy="244" r="54" fill="#FFFFFF" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="1110" cy="244" r="27" fill="#E2EEF0" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="1110" cy="244" r="7" fill="#173F48" stroke="#173F48" stroke-width="2"/>
+<path d="M 1148.9 243.9 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 1063.1 236.1 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 1131.35 273.15 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 1080.65 206.85 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 1098.2 288.75 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 1113.8 191.25 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 1070.9 263.4 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 1141.1 216.6 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<circle cx="580" cy="493" r="108" fill="#FFFFFF" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="580" cy="493" r="81" fill="#E2EEF0" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="580" cy="493" r="54" fill="#FFFFFF" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="580" cy="493" r="27" fill="#E2EEF0" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="580" cy="493" r="7" fill="#173F48" stroke="#173F48" stroke-width="2"/>
+<path d="M 639.6 461.6 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 604.4 458.4 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 632.4 473.6 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 611.6 446.4 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 618.8 480 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 625.2 440 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 607.6 469.6 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 636.4 450.4 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<circle cx="1110" cy="493" r="108" fill="#FFFFFF" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="1110" cy="493" r="81" fill="#E2EEF0" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="1110" cy="493" r="54" fill="#FFFFFF" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="1110" cy="493" r="27" fill="#E2EEF0" stroke="#D3DDD6" stroke-width="2.5"/>
+<circle cx="1110" cy="493" r="7" fill="#173F48" stroke="#173F48" stroke-width="2"/>
+<path d="M 1194.9 463.9 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 1109.1 456.1 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 1177.35 493.15 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 1126.65 426.85 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 1144.2 508.75 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 1159.8 411.25 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 1116.9 483.4 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<path d="M 1187.1 436.6 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
+<text x="28" y="652" font-size="32" font-weight="400" text-anchor="start">Bias: difference between the average estimate and the true treatment effect.</text>
+<text x="28" y="697" font-size="32" font-weight="400" text-anchor="start">Precision: how tightly the estimates cluster across repeated studies.</text>
+</g></svg>

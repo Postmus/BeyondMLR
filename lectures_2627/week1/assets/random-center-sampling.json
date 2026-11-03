@@ -1,0 +1,81 @@
+{
+  "seed": 20261104,
+  "repetitions": 10000,
+  "baseline": 100,
+  "treatment_effect": 5,
+  "individual_error_sd": 5,
+  "center_effect_sd": 10,
+  "stages": [20, 10000],
+  "positions": [
+    {
+      "center": 1,
+      "treatment": "Standard",
+      "center_effect": 15.84289077,
+      "individual_error": -0.42425921,
+      "treatment_component": 100,
+      "first_error": 15.41863156,
+      "first_outcome": 115.41863156,
+      "expected_error": 0,
+      "empirical_mean": -0.17656381,
+      "empirical_variance": 126.04223101
+    },
+    {
+      "center": 1,
+      "treatment": "Enhanced",
+      "center_effect": 15.84289077,
+      "individual_error": 3.54216463,
+      "treatment_component": 105,
+      "first_error": 19.3850554,
+      "first_outcome": 124.3850554,
+      "expected_error": 0,
+      "empirical_mean": -0.07564657,
+      "empirical_variance": 125.2824305
+    },
+    {
+      "center": 2,
+      "treatment": "Standard",
+      "center_effect": -8.16502311,
+      "individual_error": -1.66801634,
+      "treatment_component": 100,
+      "first_error": -9.83303945,
+      "first_outcome": 90.16696055,
+      "expected_error": 0,
+      "empirical_mean": -0.24306989,
+      "empirical_variance": 122.45683059
+    },
+    {
+      "center": 2,
+      "treatment": "Enhanced",
+      "center_effect": -8.16502311,
+      "individual_error": 4.01451649,
+      "treatment_component": 105,
+      "first_error": -4.15050662,
+      "first_outcome": 100.84949338,
+      "expected_error": 0,
+      "empirical_mean": -0.23070925,
+      "empirical_variance": 123.07671857
+    }
+  ],
+  "pooled_expected_error": 0,
+  "theoretical_within_center_covariance": 100,
+  "theoretical_between_center_covariance": 0,
+  "theoretical_error_variance": 125,
+  "theoretical_treatment_variance": 25,
+  "empirical_treatment_mean": 5.05663894,
+  "empirical_treatment_sd": 4.95507405,
+  "mean_reported_se": 9.42624769,
+  "mean_reported_se_squared": 125.0477956,
+  "empirical_covariances": [
+    [126.04223101, 100.67561606, -1.07123131, -0.26639957],
+    [100.67561606, 125.2824305, -0.83772615, -0.60603144],
+    [-1.07123131, -0.83772615, 122.45683059, 98.07483466],
+    [-0.26639957, -0.60603144, 98.07483466, 123.07671857]
+  ],
+  "empirical_correlations": [
+    [1, 0.80116353, -0.00862251, -0.00213889],
+    [0.80116353, 1, -0.00676341, -0.00488048],
+    [-0.00862251, -0.00676341, 1, 0.7988737],
+    [-0.00213889, -0.00488048, 0.7988737, 1]
+  ],
+  "plot_y_max": 0.08
+}

@@ -32,7 +32,8 @@ function latexToSvgDataUri(latex, display = true) {
   ensureMathJax();
   const html = _adaptor.outerHTML(_doc.convert(latex, { display }));
   const a = html.indexOf("<svg");
-  const b = html.indexOf("</svg>");
+  // Stretchy braces can contain nested SVGs; retain the outer closing tag.
+  const b = html.lastIndexOf("</svg>");
   let svg = a !== -1 && b !== -1 ? html.slice(a, b + 6) : html;
   svg = svg.replace(/<\?xml[^>]*>/g, "");
   if (!/xmlns=\"http:\/\/www\.w3\.org\/2000\/svg\"/.test(svg)) {

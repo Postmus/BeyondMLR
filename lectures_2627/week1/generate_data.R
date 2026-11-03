@@ -3,17 +3,21 @@ library(nlme)
 source('../../slides-common/R/common_fig.R')
 set.seed(158)
 centers <- paste('Center', LETTERS[1:6])
-center_effects <- c(-29, -17, -5, 8, 16, 27)
+# Permute labels while retaining the original patient draws and treatment allocation.
+# Original A–F cohorts are now D, A, F, C, B, E; display levels remain alphabetical.
+generation_centers <- centers[c(4, 1, 6, 3, 2, 5)]
+center_effects <- setNames(c(-29, -17, -5, 8, 16, 27), generation_centers)
 patients_per_arm <- 40
 dat <- do.call(rbind, lapply(seq_along(centers), function(j) {
   treatment <- sample(rep(c('Standard','Enhanced'), each=patients_per_arm))
-  data.frame(center=centers[j], treatment=treatment,
-    distance=round(360 + center_effects[j] + 24*(treatment=='Enhanced') + rnorm(2*patients_per_arm,0,24), 1))
+  data.frame(center=generation_centers[j], treatment=treatment,
+    distance=round(360 + center_effects[[generation_centers[j]]] + 24*(treatment=='Enhanced') + rnorm(2*patients_per_arm,0,24), 1))
 }))
 dat$center <- factor(dat$center, levels=centers)
 dat$treatment <- factor(dat$treatment, levels=c('Standard','Enhanced'))
 write.csv(dat,'assets/rehabilitation_data.csv',row.names=FALSE)
-single <- subset(dat, center=='Center A')
+# Preserve the original single-center teaching cohort, now labelled Center D.
+single <- subset(dat, center==generation_centers[1])
 base <- theme_minimal(base_size=16)+theme(panel.grid.minor=element_blank(),panel.grid.major.x=element_blank(),plot.title=element_text(face='bold'),legend.position='none',plot.margin=margin(10,16,10,10))
 cols <- c(Standard=color_primary,Enhanced=color_accent)
 p1 <- ggplot(single,aes(treatment,distance,fill=treatment))+geom_boxplot(width=.48,alpha=.5,outlier.shape=NA)+geom_jitter(aes(color=treatment),width=.14,height=0,size=2.1,alpha=.65)+scale_fill_manual(values=cols)+scale_color_manual(values=cols)+labs(x=NULL,y='6-minute walk distance (m)')+base

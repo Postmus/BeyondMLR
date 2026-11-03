@@ -371,6 +371,7 @@ function addFooter(slide, _shortTitle = "") {
 function addBrandedTitleSlide(pptx, {
   courseLabel = "PRINCIPLES OF LABORATORY ANIMAL SCIENCE",
   mainTitle = "Methodological and statistical aspects",
+  subtitle = "",
   author = "Dr Douwe Postmus",
   affiliation = "UMCG · Department of Epidemiology",
   badge = "LAS",
@@ -468,7 +469,7 @@ function addBrandedTitleSlide(pptx, {
     x: 0.78,
     y: 1.44,
     w: 6.12,
-    h: 2.15,
+    h: subtitle ? 1.5 : 2.15,
     minFontSize: 29,
     maxFontSize: TYPOGRAPHY.heroTitle.fontSize,
     mode: "auto",
@@ -478,6 +479,12 @@ function addBrandedTitleSlide(pptx, {
     valign: "mid",
     breakLine: true,
   }));
+
+  if (subtitle) slide.addText(subtitle, {
+    x: 0.78, y: 3.02, w: 6.12, h: .84,
+    fontFace: TYPOGRAPHY.heroMeta.fontFace, fontSize: 23,
+    color: COLORS.primary, margin: 0, valign: 'top',
+  });
 
   slide.addShape("line", {
     x: 0.78,
@@ -617,14 +624,17 @@ function addFigureSlide(pptx, {
   caption = "",
   captionFontSize = TYPOGRAPHY.caption.fontSize,
   captionMinFontSize = 9,
+  takeaway = "",
   footerShortTitle = "",
   fit = "contain",
 } = {}) {
   const captionHeight = caption ? 0.48 : 0;
+  const noteHeight = takeaway ? 0.82 : 0;
+  const noteSpace = takeaway ? noteHeight + 0.16 : 0;
   const slide = pptx.addSlide({ masterName: MASTERS.content });
   const figureBox = {
     ...LAYOUT.body,
-    h: LAYOUT.body.h - captionHeight,
+    h: LAYOUT.body.h - captionHeight - noteSpace,
   };
   addBase(slide);
   addSlideTitle(slide, title);
@@ -633,7 +643,7 @@ function addFigureSlide(pptx, {
     addCaption(slide, {
       box: {
         x: LAYOUT.body.x,
-        y: LAYOUT.body.y + LAYOUT.body.h - captionHeight,
+        y: LAYOUT.body.y + LAYOUT.body.h - captionHeight - noteSpace,
         w: LAYOUT.body.w,
         h: captionHeight,
       },
@@ -642,6 +652,11 @@ function addFigureSlide(pptx, {
       minFontSize: captionMinFontSize,
     });
   }
+  if (takeaway) addNoteBox(slide, {
+    box: { x: LAYOUT.body.x, y: LAYOUT.body.y + LAYOUT.body.h - noteHeight,
+      w: LAYOUT.body.w, h: noteHeight },
+    text: takeaway, fontSize: 20, minFontSize: 20,
+  });
   addFooter(slide, footerShortTitle);
   return slide;
 }

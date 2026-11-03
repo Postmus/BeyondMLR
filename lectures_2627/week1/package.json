@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "figures": "Rscript generate_data.R && Rscript generate_initial_analysis.R && Rscript generate_interlude_figure.R && Rscript generate_fixed_center_sampling.R",
+    "figures": "Rscript generate_data.R && Rscript generate_initial_analysis.R && Rscript generate_center_summary.R && Rscript generate_interlude_figure.R && Rscript generate_fixed_center_sampling.R && Rscript generate_random_center_sampling.R && node generate_bias_precision.js",
+    "center-summary": "Rscript generate_center_summary.R",
     "fixed-center-simulation": "Rscript generate_fixed_center_sampling.R",
     "initial-analysis": "Rscript generate_initial_analysis.R",
     "interlude-equations": "node generate_interlude_equations.js",
     "slides": "node build_week1.js",
-    "build": "npm run figures && npm run slides"
+    "build": "npm run figures && npm run slides",
+    "bias-precision": "node generate_bias_precision.js",
+    "random-center-simulation": "Rscript generate_random_center_sampling.R"
   },
   "dependencies": {
     "jszip": "3.10.1",
