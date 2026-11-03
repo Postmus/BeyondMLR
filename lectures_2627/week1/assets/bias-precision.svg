@@ -60,5 +60,5 @@
 <path d="M 1116.9 483.4 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
 <path d="M 1187.1 436.6 l 8 8 m -8 0 l 8 -8" stroke="#D58A3D" stroke-width="4" stroke-linecap="round"/>
 <text x="28" y="652" font-size="32" font-weight="400" text-anchor="start">Bias: difference between the average estimate and the true treatment effect.</text>
-<text x="28" y="697" font-size="32" font-weight="400" text-anchor="start">Precision: how tightly the estimates cluster across repeated studies.</text>
+<text x="28" y="697" font-size="32" font-weight="400" text-anchor="start">Precision: spread of estimates across repeated studies, measured by the standard error.</text>
 </g></svg>

@@ -45,7 +45,7 @@ async function main() {
     }
   }
   text(28, 652, 'Bias: difference between the average estimate and the true treatment effect.', { size: 32 });
-  text(28, 697, 'Precision: how tightly the estimates cluster across repeated studies.', { size: 32 });
+  text(28, 697, 'Precision: spread of estimates across repeated studies, measured by the standard error.', { size: 32 });
   svg.push('</g></svg>');
   const out = path.join(__dirname, 'assets', 'bias-precision');
   const source = svg.join('\n');

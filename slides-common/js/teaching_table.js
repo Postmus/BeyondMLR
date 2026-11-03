@@ -2,7 +2,7 @@ const { COLORS, FONT_FAMILIES, LAYOUT, STROKES } = require('./blr_theme');
 const { addBase, addSlideTitle, addFooter, addNoteBox } = require('./pptx_layout_primitives');
 
 // Shared editable table for full slides and smaller conceptual panels.
-function addTeachingTable(slide, { box, columns, rows, fontSize = 21, headerFontSize = 16, headerHeight = .55 }) {
+function addTeachingTable(slide, { box, columns, rows, fontSize = 21, headerFontSize = 16, headerHeight = .55, firstColumnBold = true }) {
   const rowH = (box.h - headerHeight) / rows.length;
   const totalWeight = columns.reduce((sum, column) => sum + column.weight, 0);
   const widths = columns.map(column => box.w * column.weight / totalWeight);
@@ -14,7 +14,7 @@ function addTeachingTable(slide, { box, columns, rows, fontSize = 21, headerFont
     values.forEach((value, i) => {
       slide.addText(String(value), { x: x + .18, y: y + .10, w: widths[i] - .36, h: h - .20,
         fontFace: FONT_FAMILIES.sans, fontSize: header ? headerFontSize : fontSize,
-        bold: header || i === 0, color: header ? COLORS.onPrimary : COLORS.text,
+        bold: header || (firstColumnBold && i === 0), color: header ? COLORS.onPrimary : COLORS.text,
         align: columns[i].align || 'left', margin: 0, valign: 'mid' });
       x += widths[i];
     });

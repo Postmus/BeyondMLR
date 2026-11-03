@@ -26,9 +26,13 @@ function addConceptPanelsSlide(pptx, { title, intro, lead, panels, takeaway, dra
   }
   const noteH = takeaway ? .82 : 0;
   const panelH = body.h - (takeaway ? noteH + .16 : 0);
-  const panelW = (body.w - SPACING.gutter * (panels.length - 1)) / panels.length;
+  const availableW = body.w - SPACING.gutter * (panels.length - 1);
+  const totalWeight = panels.reduce((sum, panel) => sum + (panel.weight || 1), 0);
+  let panelX = body.x;
   panels.forEach((panel, index) => {
-    const box = { x: body.x + index * (panelW + SPACING.gutter), y: body.y, w: panelW, h: panelH };
+    const panelW = availableW * (panel.weight || 1) / totalWeight;
+    const box = { x: panelX, y: body.y, w: panelW, h: panelH };
+    panelX += panelW + SPACING.gutter;
     // Backgrounds intentionally contain all panel content.
     slide.addShape('roundRect', { ...box, rectRadius: RADII.card,
       fill: { color: COLORS.card }, line: STROKES.card });

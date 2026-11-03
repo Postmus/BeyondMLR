@@ -3,6 +3,7 @@ const path = require('path');
 const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels');
 const { addTeachingTableSlide } = require('../../slides-common/js/teaching_table');
 const { addFigureSlide } = require('../../slides-common/js/pptx_layout_primitives');
+const { consequences: sharedConsequences } = require('./omitted_center_consequences');
 
 const setup = {
   title: 'Step 1: Specify the data-generating model',
@@ -26,21 +27,8 @@ const setup = {
 
 const treatmentOnlyError = String.raw`u_{ij}=Y_{ij}-(100+5T_{ij})=c_j+\varepsilon_{ij}`;
 const consequences = {
-  title: 'What are the consequences of omitting center?',
-  panels: [
-    { title: 'BIAS', blocks: [
-      { text: 'Both treatment groups contain the same centers with the same weights.', h: .85 },
-      { text: 'Center effects cancel in the treatment comparison, even when they vary across studies.', h: 1.05 },
-      { equation: String.raw`E[\widehat{\beta}_1]=\beta_1=5`, h: .5 },
-      { text: 'The treatment estimate remains unbiased.', h: .7 }
-    ] },
-    { title: 'PRECISION AND REPORTED UNCERTAINTY', blocks: [
-      { text: 'Only individual errors make the treatment estimate vary. Its sampling SD is still 5.', h: 1.0 },
-      { text: 'Center differences also contribute to the treatment-only residual spread.', h: 1.0 },
-      { text: 'The usual standard error is too large on average in this balanced design.', h: .85 }
-    ] }
-  ],
-  takeaway: 'Shared center effects create dependent errors, but cancel in the balanced treatment comparison.'
+  ...sharedConsequences,
+  takeaway: 'Different error structure, same consequences: fixed center effects give center-specific error means; random center effects create dependence within centers.'
 };
 
 function addRandomCenterSampling(pptx, drawEquation) {

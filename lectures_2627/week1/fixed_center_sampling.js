@@ -4,6 +4,7 @@ const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels
 const { addTeachingTableSlide } = require('../../slides-common/js/teaching_table');
 const { addAssumptionFocusSlide } = require('../../slides-common/js/course_builders');
 const { addFigureSlide } = require('../../slides-common/js/pptx_layout_primitives');
+const { consequences } = require('./omitted_center_consequences');
 
 const simulationIntroduction = {
   title: 'Using simulation to study model misspecification',
@@ -45,27 +46,6 @@ const setup = {
 };
 
 const treatmentOnlyError = String.raw`u_{ij}=Y_{ij}-(100+5T_{ij})=c_j+\varepsilon_{ij}`;
-
-const consequences = {
-  title: 'What are the consequences of omitting center?',
-  lead: {
-    equation: String.raw`E[\widehat{\beta}_1]=\beta_1+\bar c_{\text{enhanced}}-\bar c_{\text{standard}}`,
-    text: 'Expected estimate = true treatment effect + difference in average center contributions.'
-  },
-  panels: [
-    { title: 'WHERE IS THE ESTIMATE CENTERED?', blocks: [
-      { text: 'Balanced allocation within each center gives both groups the same average center contribution.', fontSize: 20, h: .95 },
-      { equation: String.raw`E[\widehat{\beta}_1]=\beta_1`, h: .4 },
-      { text: 'The treatment estimate is unbiased.', fontSize: 20, h: .4 }
-    ] },
-    { title: 'HOW MUCH DOES THE ESTIMATE VARY?', blocks: [
-      { text: 'Center contributions cancel in every repetition with new patients.', fontSize: 20, h: .65 },
-      { text: 'Only the individual patient errors make the estimate vary.', fontSize: 20, h: .65 },
-      { text: 'The residual spread also contains center differences, so the usual standard error is too large on average.', fontSize: 20, h: 1.0 }
-    ] }
-  ],
-  takeaway: 'Here, balanced allocation gives an unbiased treatment estimate, but its standard error is too large on average.'
-};
 
 function addFixedCenterSampling(pptx, drawEquation) {
   addAssumptionFocusSlide(pptx, simulationIntroduction);

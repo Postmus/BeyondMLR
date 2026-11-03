@@ -12,6 +12,7 @@ const {addOmittedCenterSlide,addFixedRandomPerspectiveSlide}=require('./error_in
 const {addFixedCenterSection,addCenterDistributionBridge}=require('./fixed_center');
 const {addRandomCenterSampling}=require('./random_center_sampling');
 const {addLab2Debrief}=require('./lab2_debrief');
+const {addDesignConclusion}=require('./design_conclusion');
 const {addCourseIntroduction}=require('./course_introduction');
 const {addMeanModelSlide,addErrorRecap}=require('./error_recap');
 const {treatmentOnlyModel,treatmentOnlyAssumption}=require('./initial_model');
@@ -154,7 +155,8 @@ s=addSectionSlide(pptx,{sectionLabel:'PART 3',sectionTitle:'Modeling center as a
 addCenterDistributionBridge(pptx,equation);
 addRandomCenterSampling(pptx,equation);
 addLab2Debrief(pptx,equation,R);
-// Close with questions after the two lab debriefs.
+// Connect the examples through their design before opening the discussion.
+addDesignConclusion(pptx);
 s=addSectionSlide(pptx,{sectionLabel:'The End',sectionTitle:'Questions'});
 // Footer and layout checks.
 pptx._slides.forEach((sl,i)=>{if(i>0)warnIfSlideHasOverlaps(sl,pptx,{ignoreLines:true});warnIfSlideElementsOutOfBounds(sl,pptx)});
