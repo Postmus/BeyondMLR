@@ -4,7 +4,7 @@
 .Ruserdata
 
 # Quarto project cache (do not commit)
-/.quarto/
+**/.quarto/
 project-cache/
 preview/
 
@@ -46,6 +46,7 @@ lectures_*/**/assets/equations/*.synctex.gz
 .DS_Store
 Thumbs.db
 
-# Student submissions (private, do not commit)
-Assignments/*/student_submissions/
-Assignments/Final/Final_assignment_submissions/
+# Edition-specific preview builds and private submission folders
+**/_site/
+**/student_submissions/
+**/Final_assignment_submissions/

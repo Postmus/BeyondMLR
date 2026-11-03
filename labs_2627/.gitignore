@@ -1,0 +1,22 @@
+/.quarto/
+**/*.quarto_ipynb
+
+# Local document renders and their supporting files.
+# Published HTML and PDFs are tracked separately in ../docs/.
+**/*.html
+**/*.pdf
+**/*_files/
+**/*_cache/
+**/*.knit.md
+**/*.utf8.md
+**/*.tex
+**/*.aux
+**/*.log
+**/*.out
+**/*.fls
+**/*.fdb_latexmk
+**/*.synctex.gz
+
+# Keep intentionally supplied downloads as source assets.
+!**/downloads/*.html
+!**/downloads/*.pdf

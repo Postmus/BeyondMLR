@@ -1,0 +1,289 @@
+---
+title: "Beyond MLR Lab 2: Modeling center as a random effect"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+  pdf:
+    toc: false
+format-links: [pdf]
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true
+---
+
+# The same trial, a different model for center
+
+In [Lab 1](BLR_lab_center_fixed.html), we analyzed a simulated rehabilitation trial involving 480 patients after knee replacement in six centers. Each center assigned 40 patients to standard care and 40 to enhanced rehabilitation. We compared a treatment-only model with a model containing separate fixed center effects.
+
+We now keep the same randomized block design and the same question: **What is the difference in expected six-minute walk distance at 12 weeks between enhanced and standard care, and how precisely is it estimated?** Instead of estimating separate fixed center parameters, we describe center contributions using a distribution. This also allows us to quantify variation between centers.
+
+By the end of this lab, you should be able to fit a random-intercept model, compare its treatment estimate and uncertainty with the earlier analyses, and interpret its variance components and intraclass correlation coefficient (ICC).
+
+# Setup and data
+
+We use `lmerTest` to fit the mixed model, `emmeans` for treatment comparisons, and `dplyr` to assemble a results table. `lmerTest` uses the mixed-model machinery from `lme4` and adds approximate degrees of freedom and tests for the fixed effects.
+
+```{r}
+#| label: setup
+packages <- c("dplyr", "emmeans", "lmerTest")
+missing_packages <- packages[
+  !vapply(packages, requireNamespace, logical(1), quietly = TRUE)
+]
+if (length(missing_packages) > 0) {
+  install.packages(missing_packages, repos = "https://cloud.r-project.org")
+}
+
+library(dplyr)
+library(emmeans)
+library(lmerTest)
+```
+
+The following code makes this lab runnable in a new R session. Use the [same dataset as Lab 1](data/rehabilitation_week1.csv), saved in a `data` folder inside your working directory. Each row is one patient; `distance` is the six-minute walk distance in meters. These are simulated teaching data.
+
+```{r}
+#| label: read-data
+rehab <- read.csv("data/rehabilitation_week1.csv")
+rehab$treatment <- factor(rehab$treatment,
+                          levels = c("Standard", "Enhanced"))
+rehab$center <- factor(rehab$center,
+                       levels = paste("Center", LETTERS[1:6]))
+contrasts(rehab$treatment) <- contr.treatment(levels(rehab$treatment))
+# Retain the effects coding used for the fixed-center model in Lab 1.
+contrasts(rehab$center) <- contr.sum(levels(rehab$center))
+
+table(rehab$center, rehab$treatment)
+
+# Refit the two models from Lab 1 for the later comparison.
+model_pooled <- lm(distance ~ treatment, data = rehab)
+model_fixed <- lm(distance ~ treatment + center, data = rehab)
+```
+
+Run the chunks in order and record your interpretations. As in Lab 1, the lab page supplies code for you to run, rather than displaying its output.
+
+# Specify the random-intercept model
+
+Let $Y_{ij}$ be the outcome for patient $i$ in center $j$, with $T_{ij}=0$ for standard care and $T_{ij}=1$ for enhanced care. We specify
+
+$$
+Y_{ij} = \beta_0 + \beta_1 T_{ij} + c_j + \varepsilon_{ij},
+$$
+
+$$
+c_j \overset{\mathrm{iid}}{\sim} N(0,\sigma_c^2),
+\qquad
+\varepsilon_{ij} \overset{\mathrm{iid}}{\sim} N(0,\sigma^2),
+$$
+
+with the center effects independent of the individual errors.
+
+- $\beta_0$ is the expected standard-care outcome for a center with $c_j=0$. It is also the expected standard-care outcome averaged over the modeled population of centers.
+- $\beta_1$ is the enhanced-minus-standard difference, assumed to be common to all centers.
+- $c_j$ is the contribution shared by patients in center $j$. Its variance, $\sigma_c^2$, describes variation between center-specific expected outcomes after accounting for treatment.
+- $\varepsilon_{ij}$ is the remaining individual error. Its variance, $\sigma^2$, describes variation among patients receiving the same treatment within the same center.
+
+This is a **mixed-effects model** because it combines fixed treatment coefficients with random center effects. It is a **random-intercept model** because each center has its own intercept, $\beta_0+c_j$, while the treatment difference remains common.
+
+In Lab 1, the center contributions were fixed parameters for the six centers. Here, they are modeled as draws from a population distribution. Modeling center as random changes how we represent variation; it does not change how patients were assigned to treatment.
+
+::: {.callout-important icon=false title="Question 1"}
+Explain what a positive $c_j$ means for patients in that center. Which part of the model allows centers to have different expected outcomes? Which part assumes that the expected treatment difference is the same across centers?
+:::
+
+# Fit the model and read its output
+
+```{r}
+#| label: random-model
+model_random <- lmer(
+  distance ~ treatment + (1 | center),
+  data = rehab,
+  REML = TRUE
+)
+summary(model_random)
+```
+
+The formula has two parts:
+
+- `distance ~ treatment` specifies the fixed intercept and treatment difference, using the same dummy coding as Lab 1.
+- `(1 | center)` adds a random intercept for each center. The `1` denotes an intercept and the grouping variable follows the vertical bar.
+
+We use restricted maximum likelihood (`REML = TRUE`, the default) to estimate the variance components. This is appropriate here because we have specified the model and want to estimate the treatment effect and its uncertainty. The estimated variance components are used when calculating the standard error and confidence interval for this fixed effect.
+
+The summary separates **fixed effects** from **random effects**. The fixed-effect table contains the intercept, treatment difference and their standard errors. The random-effect table contains the estimated center and residual variances and their standard deviations. Standard deviations are in meters; variances are in squared meters.
+
+::: {.callout-important icon=false title="Question 2"}
+Interpret the fixed intercept and treatment coefficient. Identify the estimated center variance and residual variance. What distinct sources of variation do they describe?
+:::
+
+# Estimate the treatment difference
+
+We use the same approach as in Lab 1: calculate the predicted treatment means from the estimated regression coefficients, then compare them using `pairs()`. In `emmeans()`, `~ treatment` requests one mean per treatment. In `pairs()`, `reverse = TRUE` gives enhanced minus standard care.
+
+```{r}
+#| label: random-contrast
+means_random <- emmeans(
+  model_random, ~ treatment,
+  lmer.df = "satterthwaite"
+)
+means_random
+
+difference_random <- pairs(means_random, reverse = TRUE)
+summary(difference_random, infer = c(TRUE, TRUE))
+```
+
+These treatment means describe expected outcomes averaged over the modeled distribution of center effects.
+
+`lmer.df = "satterthwaite"` selects an approximation for the degrees of freedom used in confidence intervals and tests. Specifying it explicitly keeps the method consistent across computers. Focus on the estimated treatment difference, its standard error and its confidence interval.
+
+::: {.callout-important icon=false title="Question 3"}
+Report the enhanced-minus-standard difference with its standard error and 95% confidence interval. Why should you use the standard error of the contrast rather than either of the standard errors printed beside the treatment means?
+:::
+
+# Compare all three analyses
+
+First reproduce the treatment comparisons from the two `lm()` models. We request the same enhanced-minus-standard difference in all three analyses.
+
+```{r}
+#| label: earlier-contrasts
+means_pooled <- emmeans(model_pooled, ~ treatment)
+means_fixed <- emmeans(model_fixed, ~ treatment)
+
+difference_pooled <- pairs(means_pooled, reverse = TRUE)
+difference_fixed <- pairs(means_fixed, reverse = TRUE)
+```
+
+Combine the estimates and confidence intervals in one table.
+
+```{r}
+#| label: comparison-table
+comparison <- bind_rows(
+  "Treatment only" = as.data.frame(confint(difference_pooled)),
+  "Center fixed" = as.data.frame(confint(difference_fixed)),
+  "Center random" = as.data.frame(confint(difference_random)),
+  .id = "model"
+) |>
+  select(model, estimate, SE, lower.CL, upper.CL)
+comparison
+```
+
+::: {.callout-important icon=false title="Question 4"}
+Compare the treatment estimates, standard errors and confidence intervals across the three models. Relate the results to the balanced treatment allocation. Does agreement between the two center-adjusted analyses imply that fixed and random center effects have the same interpretation?
+:::
+
+A center contribution is shared by both treatments within that center. With balanced allocation and a common treatment effect, it cancels from the within-center treatment comparison. This is why a substantial center variance need not imply a large standard error for the treatment difference. The two center-adjusted analyses should give the same treatment estimate and essentially the same standard error here. This agreement need not hold in other designs or datasets.
+
+# Variance components and the intraclass correlation coefficient
+
+## Extract the variances
+
+`VarCorr()` returns the estimated variance components. Converting its output to a data frame makes it straightforward to use the values in a calculation.
+
+```{r}
+#| label: variance-components
+variance_components <- as.data.frame(VarCorr(model_random))
+variance_components
+
+center_variance <- variance_components$vcov[
+  variance_components$grp == "center"
+]
+patient_variance <- variance_components$vcov[
+  variance_components$grp == "Residual"
+]
+
+c(center_variance = center_variance,
+  patient_variance = patient_variance)
+```
+
+The `vcov` column contains variances; the `sdcor` column contains their standard deviations for this model. Use the **variances**, not the standard deviations, in the intraclass correlation coefficient calculation.
+
+## Introduce the intraclass correlation
+
+After accounting for treatment, the remaining outcome variation consists of the shared center contribution and the individual error:
+
+$$
+u_{ij}=c_j+\varepsilon_{ij},
+\qquad \operatorname{Var}(u_{ij})=\sigma_c^2+\sigma^2.
+$$
+
+For two different patients in the same center, the shared center contribution gives
+
+$$
+\operatorname{Cov}(u_{ij},u_{kj})=\sigma_c^2 \quad (i\ne k).
+$$
+
+Dividing this covariance by the common variance gives the **intraclass correlation coefficient**:
+
+$$
+\mathrm{ICC}=\frac{\sigma_c^2}{\sigma_c^2+\sigma^2}.
+$$
+
+This has two connected interpretations:
+
+1. The proportion of outcome variance **remaining after accounting for treatment** that is attributable to differences between centers.
+2. The correlation between outcomes of two different patients in the same center, after accounting for their treatments and averaging over the modeled center distribution.
+
+If we condition on a particular center effect as well as treatment, only the independent individual errors remain. The within-center correlation above arises because patients share a random center contribution.
+
+```{r}
+#| label: icc
+icc <- center_variance / (center_variance + patient_variance)
+icc
+```
+
+::: {.callout-important icon=false title="Question 5"}
+Calculate the intraclass correlation coefficient. Interpret it both as a variance proportion and as a within-center correlation. What correlation does the model assume for patients in different centers, after accounting for treatment?
+:::
+
+::: {.callout-important icon=false title="Question 6"}
+Why is the intraclass correlation coefficient not the proportion of outcome variation explained by treatment? Why does a positive intraclass correlation coefficient not contradict the smaller treatment-effect standard error obtained after accounting for center in this trial?
+:::
+
+The intraclass correlation coefficient describes the grouping of the remaining variation, while the treatment standard error describes uncertainty about a particular contrast. Only six centers inform the between-center variance estimate, even though the dataset contains 480 patients; the estimated intraclass correlation coefficient should not be treated as an exact population quantity.
+
+# Check the remaining errors
+
+For a mixed model, fitted values can include both the fixed effects and the estimated center contributions. The associated **conditional residuals** are the observed outcomes minus these fitted values. They help assess the distribution and spread of the individual errors $\varepsilon_{ij}$.
+
+```{r}
+#| label: random-diagnostics
+conditional_residuals <- resid(model_random)
+conditional_fitted <- fitted(model_random)
+
+plot(conditional_fitted, conditional_residuals,
+     xlab = "Conditional fitted walk distance (m)",
+     ylab = "Conditional residual (m)")
+abline(h = 0, lty = 2, col = "grey50")
+
+qqnorm(conditional_residuals,
+       main = "Normal Q-Q plot of conditional residuals")
+qqline(conditional_residuals, col = "grey50")
+```
+
+The residual-versus-fitted plot can reveal patterns or changing spread. The Q-Q plot helps assess the Normality assumption for the individual errors. These plots do not directly check the assumed distribution of the center effects, and reassuring residual plots do not establish independence or prove the model is adequate.
+
+::: {.callout-important icon=false title="Question 7"}
+Do these plots suggest clear violations of the individual-error assumptions? Explain why conditional residuals differ from the treatment-only errors $u_{ij}=c_j+\varepsilon_{ij}$ used in the lecture simulation.
+:::
+
+# Report the analysis
+
+::: {.callout-important icon=false title="Question 8"}
+Write a short results paragraph describing the random-intercept model and reporting the treatment difference with its 95% confidence interval. Add the two estimated variance components and interpret the intraclass correlation coefficient. Conclude by explaining what changed, and what stayed the same, relative to the treatment-only analysis.
+:::
+
+Bring your comparison table and intraclass correlation coefficient interpretation to the lecture debrief.
+
+# Further help
+
+For explanations of R syntax and data-handling commands used in the labs, see the [“Whole game” section of *R for Data Science* (2nd edition)](https://r4ds.hadley.nz/whole-game.html) by Hadley Wickham, Mine Çetinkaya-Rundel, and Garrett Grolemund. It provides a reference for the pipe (`|>`), data preparation, summary statistics and plotting.
+
+The [bind_rows() documentation](https://dplyr.tidyverse.org/reference/bind_rows.html) explains how to combine results into one table, including the `.id` argument used to identify the models in our comparison table.
+
+For help with the model-fitting and interpretation steps:
+
+- The [lmer documentation](https://lme4.github.io/lme4/reference/lmer.html) explains the model formula and fitting options.
+- The [emmeans mixed-model guide](https://rvlenth.github.io/emmeans/articles/sophisticated.html) describes degrees-of-freedom methods.
+- The [VarCorr documentation](https://lme4.github.io/lme4/reference/VarCorr.html) explains the variance-component output.

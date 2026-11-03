@@ -892,7 +892,7 @@ kable(
 ## Three-level hierarchical model
 
 ```{r}
-chicago_airbnb <- read.csv("../data/airbnb.csv")
+chicago_airbnb <- read.csv("../labs_2526/data/airbnb.csv")
 
 chicago_airbnb <- chicago_airbnb |>
   mutate(across(where(is.character), as.factor))

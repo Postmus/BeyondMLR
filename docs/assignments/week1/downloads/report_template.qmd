@@ -1,0 +1,116 @@
+---
+title: "Comparing protein extraction protocols"
+author: "Your name"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    embed-resources: true
+execute:
+  eval: true
+  echo: true
+  message: false
+---
+
+::: {.callout-note title="Using this template"}
+Replace `Your name` at the top of the file and save this template in the same folder as `protein_yield.csv`.
+
+Write your explanations as ordinary text and place your R code inside the code chunks provided below. Run chunks in order using the editor's Run button beside each chunk. You can add further chunks where needed.
+
+To create your HTML report, select **Render** in RStudio or **Quarto: Preview** in VS Code. Rendering executes the document from beginning to end in a fresh R session, so include all package-loading and data-preparation steps in the document. The settings above keep your code visible and embed figures and other report resources in the HTML file.
+
+Replace the italic prompts with your own writing, remove this instruction box when finished, and submit both this `.qmd` file and the resulting `.html` file.
+:::
+
+# Introduction
+
+*Briefly describe the study and the research question. Identify the experimental unit and blocking variable, and explain how the protocols were assigned.*
+
+# Data exploration
+
+```{r}
+#| label: setup
+# Load the packages needed for your analysis.
+```
+
+```{r}
+#| label: prepare-data
+# Read protein_yield.csv and prepare the variables for analysis.
+# Set the factor levels and coding needed for the models.
+```
+
+```{r}
+#| label: explore-data
+# Produce suitable descriptive summaries and plots.
+```
+
+*Describe the patterns in protein yield across protocols and donors.*
+
+# Model fitting
+
+## Protocol only
+
+```{r}
+#| label: protocol-only
+# Fit and inspect the protocol-only model.
+```
+
+*Interpret the intercept and protocol coefficient in the context of the study.*
+
+## Donor as a fixed effect
+
+```{r}
+#| label: donor-fixed
+# Fit and inspect the model with donor as a fixed effect.
+```
+
+*Interpret the intercept, protocol coefficient and one donor coefficient, taking account of the chosen coding schemes.*
+
+## Donor as a random effect
+
+```{r}
+#| label: donor-random
+# Fit and inspect the model with a random donor intercept.
+```
+
+*Interpret the fixed intercept and protocol coefficient.*
+
+# Comparison and interpretation
+
+## Protocol difference
+
+```{r}
+#| label: compare-protocols
+# Obtain the modified-minus-standard difference from each model.
+# Assemble a table of estimates, standard errors and 95% confidence intervals.
+```
+
+*Compare the three analyses and explain the findings using the study design.*
+
+## Variance components
+
+```{r}
+#| label: variance-components
+# Obtain the donor and residual variances from the random-intercept model.
+# Calculate the intraclass correlation coefficient.
+```
+
+*Report and interpret the variance components and intraclass correlation coefficient.*
+
+# Model diagnostics
+
+```{r}
+#| label: fixed-model-diagnostics
+# Produce diagnostic plots for the fixed-donor model.
+```
+
+```{r}
+#| label: random-model-diagnostics
+# Produce diagnostic plots for the random-intercept model.
+```
+
+*Describe what the plots suggest about the model assumptions.*
+
+# Conclusion
+
+*Write a short conclusion answering the laboratory's question. Include the estimated protocol difference, its uncertainty and the units, and identify the model used for the reported result.*

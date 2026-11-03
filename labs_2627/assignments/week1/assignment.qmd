@@ -1,0 +1,47 @@
+---
+title: "Week 1 assignment: Comparing protein extraction protocols"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Study description
+
+A laboratory wants to compare a standard protein extraction protocol with a modified protocol. The aim is to determine whether the modified protocol increases protein yield while accounting for differences between tissue donors.
+
+Tissue from each of **ten donors** is divided into eight aliquots. Within each donor, four aliquots are randomly assigned to the standard protocol and four to the modified protocol. Each aliquot undergoes its assigned extraction protocol and is measured once, giving **80 observations**.
+
+The outcome is protein yield, measured in **micrograms of extracted protein per milligram of tissue (µg/mg)**. Larger values indicate a higher yield. These are simulated teaching data.
+
+# Dataset
+
+Each row represents one tissue aliquot.
+
+| Variable | Description |
+| --- | --- |
+| `aliquot` | Unique identifier for the aliquot |
+| `donor` | Tissue donor, labelled Donor 01 to Donor 10 |
+| `protocol` | Extraction protocol: Standard or Modified |
+| `protein_yield` | Protein yield in µg/mg |
+
+# Analysis tasks
+
+1. **Describe and explore the study.** Identify the experimental unit and blocking variable. Use suitable summaries and plots to explore protein yield by protocol and donor.
+2. **Fit three models:** a protocol-only model, a model with donor as a fixed effect, and a model with a random donor intercept. Use dummy coding for protocol, with Standard as the reference, and effects coding for donor in the fixed-donor model. Interpret the intercept and protocol coefficient in each model, and one donor coefficient in the fixed-donor model.
+3. **Compare the protocol estimates.** Obtain the modified-minus-standard difference, its standard error and its 95% confidence interval from each model. Present these results in one table and explain the similarities and differences using the study design.
+4. **Interpret the variance components.** Report the estimated donor and residual variances from the random-intercept model. Calculate and interpret the intraclass correlation coefficient.
+5. **Assess and report the findings.** Examine diagnostic plots for the donor-adjusted models and comment on their assumptions. Write a short conclusion answering the laboratory's question, including the estimated protocol difference and its uncertainty.
+
+Use the Week 1 labs as references when constructing your analysis. Explain your findings in the context of protein extraction and include units where appropriate.
+
+# Report and submission
+
+Use the report template below to organize your analysis. Save the template and dataset in the same working folder, replace the author placeholder with your name, and complete the text and code sections. Brief instructions for running code and rendering the report are included in the template.
+
+Submit both the completed **Quarto source file (`.qmd`)** and the **rendered HTML report**. Keep the code, results and figures visible in the report, and accompany them with your interpretations.
+
+# Downloads
+
+- [Download the dataset](downloads/protein_yield.csv){download="protein_yield.csv"}
+- [Download the report template](downloads/report_template.qmd){download="report_template.qmd"}

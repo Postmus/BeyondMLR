@@ -1,0 +1,27 @@
+/* Course colors shared with the revised lecture materials. */
+h1, h2, h3 {
+  color: #173b44;
+}
+
+a {
+  color: #0c5964;
+}
+
+a:hover {
+  color: #157c80;
+}
+
+.quarto-title .subtitle {
+  color: #52686b;
+}
+
+main table {
+  margin-top: 1rem;
+}
+
+/* Let long equations scroll within the page on narrow screens. */
+.math.display {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}

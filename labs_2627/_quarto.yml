@@ -1,0 +1,35 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - index.qmd
+    - BLR_lab_*.qmd
+    - assignments/**/assignment.qmd
+    - "!assignments/**/downloads/**"
+  resources:
+    - data/*.csv
+    - assignments/**/downloads/*.csv
+    - assignments/**/downloads/*.qmd
+
+website:
+  title: "Beyond MLR · 2026–2027"
+  navbar:
+    background: "#0C5964"
+    foreground: white
+    left:
+      - text: Week 1
+        menu:
+          - text: "Lab 1: Center as a fixed effect"
+            href: BLR_lab_center_fixed.qmd
+          - text: "Lab 2: Center as a random effect"
+            href: BLR_lab_center_random.qmd
+          - text: "Assignment: Protein extraction protocols"
+            href: assignments/week1/assignment.qmd
+  search: true
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+    embed-resources: true

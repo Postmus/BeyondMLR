@@ -131,7 +131,7 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, emmeans, lme4, lmerTest, broom.
 #| fig-height: 6
 
 # Load the Chicago Airbnb data
-chicago_airbnb <- read.csv("../data/airbnb.csv")
+chicago_airbnb <- read.csv("../labs_2526/data/airbnb.csv")
 chicago_airbnb <- chicago_airbnb |>
   mutate(across(where(is.character), as.factor),
          log_price = log(price))
@@ -187,7 +187,7 @@ Log transformation stabilizes variance and improves residual normality
 #| fig-height: 6
 
 # Load the ILEA data
-ilea_data <- read.csv("../Assignments/Week 3/downloads/ilea_data.csv")
+ilea_data <- read.csv("../labs_2526/Assignments/Week 3/downloads/ilea_data.csv")
 ilea_data <- ilea_data |>
   mutate(across(where(is.character), as.factor),
          School = as.factor(School),
@@ -241,7 +241,7 @@ Floor effect persists: boundary clustering remains visible in both residual plot
 
 ```{r}
 # Load the growth data
-growth <- read_sav("../data/growth.sav")
+growth <- read_sav("../labs_2526/data/growth.sav")
 
 # Convert labelled variables to factors
 growth <- growth |> mutate(across(where(is.labelled), as_factor))

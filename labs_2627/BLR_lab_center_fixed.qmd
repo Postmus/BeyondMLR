@@ -1,0 +1,396 @@
+---
+title: "Beyond MLR Lab 1: Modeling center as a fixed effect"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+  pdf:
+    toc: false
+format-links: [pdf]
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true
+---
+
+# A multicenter rehabilitation trial
+
+We return to the rehabilitation trial from the lecture. In this simulated study, 480 patients recovering from knee replacement receive either **standard care** or an **enhanced rehabilitation program**. Standard care consists of weekly physiotherapy and home exercises; enhanced care adds a weekly supervised session. The outcome is the distance walked during a six-minute walk test at 12 weeks, measured in meters. A larger distance indicates better walking performance.
+
+The study includes six centers. Within each center, 40 patients are randomly assigned to standard care and 40 to enhanced care. This is a **randomized block design**, with center as the blocking factor. These are simulated teaching data, not observations from an actual clinical trial.
+
+Our question is: **What is the estimated difference in expected walking distance between enhanced and standard care, and how precisely is it estimated?** We will compare an analysis that ignores center with an analysis that includes center as a fixed effect.
+
+By the end of this lab, you should be able to specify and fit both models, interpret their coefficients, and use `emmeans` to obtain the treatment difference and its standard error and confidence interval.
+
+::: {.callout-note icon=false title="Working through the lab"}
+Run the code in order in an R script, and record your answers to the questions. The lab page shows the code; you generate the results yourself.
+:::
+
+# Setup and data
+
+We use `ggplot2` for figures, `dplyr` for summaries, and `emmeans` for model-based treatment comparisons. The following code installs any missing packages and loads them.
+
+```{r}
+#| label: setup
+packages <- c("ggplot2", "dplyr", "emmeans")
+missing_packages <- packages[
+  !vapply(packages, requireNamespace, logical(1), quietly = TRUE)
+]
+if (length(missing_packages) > 0) {
+  install.packages(missing_packages, repos = "https://cloud.r-project.org")
+}
+
+library(ggplot2)
+library(dplyr)
+library(emmeans)
+```
+
+[Download the rehabilitation dataset](data/rehabilitation_week1.csv). Save it in a folder named `data` inside your working directory. Keep your R script in that working directory. You can use `getwd()` to check where R is looking for files.
+
+```{r}
+#| label: read-data
+rehab <- read.csv("data/rehabilitation_week1.csv")
+
+# Specify the order of the categories explicitly.
+rehab$treatment <- factor(rehab$treatment,
+                          levels = c("Standard", "Enhanced"))
+rehab$center <- factor(rehab$center,
+                       levels = paste("Center", LETTERS[1:6]))
+
+head(rehab)
+str(rehab)
+table(rehab$center, rehab$treatment)
+```
+
+Each row represents one patient. The variables are `center`, `treatment`, and `distance` (six-minute walk distance in meters). A **factor** tells R that a variable represents categories rather than a continuous measurement. The order of the factor levels will matter when we choose how to represent these categories in the model.
+
+::: {.callout-important icon=false title="Question 1"}
+Check the allocation table. How many patients are in each treatment group within each center? Why is this allocation useful when comparing the treatments?
+:::
+
+# Explore treatment and center differences
+
+First summarize the outcomes by treatment, pooling patients across centers.
+
+```{r}
+#| label: treatment-summary
+rehab |>
+  group_by(treatment) |>
+  summarise(n = n(), mean_distance = mean(distance),
+            sd_distance = sd(distance), .groups = "drop")
+
+ggplot(rehab, aes(x = treatment, y = distance, fill = treatment)) +
+  geom_boxplot() +
+  labs(x = "Treatment", y = "Six-minute walk distance (m)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+Next calculate the treatment-specific means within centers and the overall mean for each center. The plot shows means only, with centers on the vertical axis. The black diamond summarizes each center across both treatments.
+
+```{r}
+#| label: center-means
+center_treatment_means <- rehab |>
+  group_by(center, treatment) |>
+  summarise(mean_distance = mean(distance), .groups = "drop")
+
+center_means <- rehab |>
+  group_by(center) |>
+  summarise(mean_distance = mean(distance), .groups = "drop")
+
+ggplot(center_treatment_means,
+       aes(x = mean_distance, y = center, color = treatment)) +
+  geom_point(size = 3) +
+  geom_point(data = center_means,
+             aes(x = mean_distance, y = center),
+             inherit.aes = FALSE, shape = 18, size = 3, color = "black") +
+  labs(x = "Mean six-minute walk distance (m)", y = "Center",
+       color = "Treatment",
+       caption = "Black diamonds: overall center means") +
+  theme_minimal()
+```
+
+::: {.callout-important icon=false title="Question 2"}
+Describe the treatment difference and the differences between centers. What feature of the study design would a treatment-only analysis leave out?
+:::
+
+# Choose how to code the factors
+
+A regression model represents a categorical variable using numerical columns. The **coding scheme** determines what the intercept and factor coefficients mean. We will use two schemes in the same model: dummy coding for treatment and effects coding for center. These choices make the coefficients useful for our research question.
+
+## Dummy coding for treatment
+
+With **dummy coding**, one category is the reference. For our two treatments, we use standard care as the reference and represent treatment by a single indicator:
+
+| Treatment | Indicator $T_{ij}$ |
+| --- | ---: |
+| Standard | 0 |
+| Enhanced | 1 |
+
+In a model containing $\beta_0+\beta_1T_{ij}$, the predicted standard-care outcome is $\beta_0$, and the predicted enhanced-care outcome is $\beta_0+\beta_1$. The treatment coefficient therefore directly answers our question: it is the enhanced-minus-standard difference.
+
+```{r}
+#| label: treatment-coding
+# The first factor level, Standard, is the reference.
+contrasts(rehab$treatment) <- contr.treatment(levels(rehab$treatment))
+contrasts(rehab$treatment)
+```
+
+`contr.treatment()` creates the dummy-coding matrix. Assigning it with `contrasts()` tells R to use this coding when fitting a model with the treatment factor. Printing the matrix shows how each treatment is represented.
+
+## Effects coding for center
+
+We could also use dummy coding for center. With Center A as the reference, the model intercept would then describe standard care specifically in Center A, and the center coefficients would compare the other centers with Center A.
+
+Instead, we use **effects coding** for center. This describes each center contribution as a deviation from the equally weighted average across centers. The six center contributions sum to zero:
+
+$$
+c_A+c_B+c_C+c_D+c_E+c_F=0.
+$$
+
+Combined with dummy coding for treatment, this gives the intercept a useful interpretation: **the expected standard-care outcome averaged equally across the six centers**. Each center contribution describes how much higher or lower its expected outcome is than that average, comparing patients receiving the same treatment. The treatment coefficient still gives the enhanced-minus-standard difference.
+
+```{r}
+#| label: center-coding
+contrasts(rehab$center) <- contr.sum(levels(rehab$center))
+contrasts(rehab$center)
+```
+
+`contr.sum()` creates the effects-coding matrix. Inspect the result: there are six rows, one per center, but only five columns. Centers A–E each have a 1 in their own column and 0 in the others. Center F has $-1$ in all five columns. Its contribution is therefore minus the sum of the other five contributions; it is not set to zero.
+
+R labels the five columns `1` to `5`, so the fitted center coefficients will be called `center1` to `center5`, corresponding to Centers A–E. Only five center coefficients are needed because the sum-to-zero constraint determines the sixth.
+
+| Factor | Coding | Interpretation of its coefficients |
+| --- | --- | --- |
+| Treatment | Dummy coding | Enhanced minus standard care |
+| Center | Effects coding | Each center's deviation from the equally weighted center average |
+
+The intercept is a mean for **standard care**, because standard care is coded 0. Averaging over centers does not also average over treatments. In this balanced trial, all centers contribute the same number of patients, so equal weighting of centers also agrees with weighting by their patient counts.
+
+These coding choices change how we express the model, but do not change its fitted outcomes or the estimated treatment difference and its standard error. We set the coding on each factor explicitly, so the analysis does not depend on previously changed global R options.
+
+# Start with a treatment-only model
+
+## Specify and fit the model
+
+Using the lecture notation, let $Y_{ij}$ be the outcome for patient $i$ in center $j$, and let $T_{ij}$ equal 0 for standard care and 1 for enhanced care. The treatment-only model is
+
+$$
+Y_{ij} = \beta_0 + \beta_1 T_{ij} + u_{ij},
+\qquad u_{ij} \overset{\mathrm{iid}}{\sim} N(0,\sigma_u^2).
+$$
+
+Here, $\beta_0$ is the model-predicted outcome under standard care and $\beta_1$ is the enhanced-minus-standard difference. The error $u_{ij}$ is the difference between the outcome and its model prediction. The model assumes independent, normally distributed errors with mean zero and common variance.
+
+```{r}
+#| label: pooled-model
+model_pooled <- lm(distance ~ treatment, data = rehab)
+summary(model_pooled)
+```
+
+In an R model formula, the outcome is on the left of `~`, and predictors are on the right. An intercept is included automatically. With our dummy coding, the treatment coefficient gives the difference between enhanced and standard care.
+
+::: {.callout-important icon=false title="Question 3"}
+Interpret the intercept and treatment coefficient in meters. Which number in the coefficient table is the standard error of the treatment difference? How does this differ from the residual standard error at the bottom of the output?
+:::
+
+## Obtain the treatment comparison with emmeans
+
+### Calculate the predicted treatment means
+
+The estimated regression coefficients allow us to calculate the **predicted mean outcome** for each treatment group. With our dummy coding, the predicted mean for standard care is $\hat{\beta}_0$, and the predicted mean for enhanced care is $\hat{\beta}_0+\hat{\beta}_1$. The hats indicate estimated coefficients.
+
+To calculate these means, we first specify the predictor values for which we want predictions. `emmeans` calls this the **reference grid**. In the treatment-only model, the grid contains just two rows:
+
+| Treatment | Indicator $T_{ij}$ | Predicted mean outcome |
+| --- | ---: | --- |
+| Standard | 0 | $\hat{\beta}_0$ |
+| Enhanced | 1 | $\hat{\beta}_0+\hat{\beta}_1$ |
+
+For each row, `emmeans()` calculates the predicted mean outcome from the estimated regression coefficients, together with its standard error and confidence interval. The resulting means are called **estimated marginal means**. In this treatment-only model, they equal the observed treatment-group means. When we add center later, we will see how the same function averages predictions across centers.
+
+```{r}
+#| label: pooled-means
+means_pooled <- emmeans(model_pooled, ~ treatment)
+means_pooled
+```
+
+The command has three parts:
+
+- `model_pooled` supplies the fitted model, including the estimated coefficients and the information needed to calculate uncertainty.
+- `~ treatment` requests a separate estimated mean for each treatment level. It specifies which means we want; it does not fit a new regression model.
+- `means_pooled <-` saves the results so that we can inspect them and then compare the treatment means. Typing `means_pooled` displays the output.
+
+In the output, `emmean` is the predicted mean outcome, `SE` is its standard error, and `lower.CL` and `upper.CL` are the limits of its 95% confidence interval.
+
+### Compare the predicted treatment means
+
+Our research question concerns the difference between these means. The `pairs()` function calculates pairwise differences. Because our treatment levels are ordered Standard, Enhanced, `reverse = TRUE` gives **enhanced minus standard care**. There is only one pairwise comparison when there are two treatments.
+
+```{r}
+#| label: pooled-contrast
+difference_pooled <- pairs(means_pooled, reverse = TRUE)
+summary(difference_pooled, infer = c(TRUE, TRUE))
+```
+
+We save the difference as `difference_pooled`. In `summary()`, `infer = c(TRUE, TRUE)` requests both a confidence interval (the first `TRUE`) and a test against a zero difference (the second `TRUE`). The output reports the estimated difference, its standard error, and its 95% confidence interval. The difference is also called a **contrast** in the output.
+
+The standard error printed beside each estimated marginal mean describes uncertainty about that **mean**. To answer our question, use the standard error printed for the **difference**. It accounts for the covariance between the two estimated means.
+
+# Include center as a fixed effect
+
+## Specify the model
+
+Centers may differ in their expected outcomes. We can represent these differences by adding a separate center contribution:
+
+$$
+Y_{ij} = \beta_0 + \beta_1 T_{ij} + c_j + \varepsilon_{ij},
+\qquad \varepsilon_{ij} \overset{\mathrm{iid}}{\sim} N(0,\sigma^2).
+$$
+
+With effects coding for center, we impose $\sum_{j=1}^{6}c_j=0$. The intercept represents the expected outcome under standard care, averaged equally across the six centers. Each $c_j$ is a fixed parameter describing that center's deviation from the average, comparing patients receiving the same treatment. We estimate five center contributions directly and recover the sixth from the sum-to-zero constraint.
+
+The treatment coefficient remains the enhanced-minus-standard difference. This model assumes that the expected treatment difference is the same in every center: it contains no treatment-by-center interaction. The remaining errors are assumed to be iid Normal with mean zero and common variance, after accounting for treatment and center.
+
+## Connect the model to the design matrix
+
+The equation above describes the center contribution directly. To fit the model, we represent that contribution using the five effects-coded predictors introduced earlier. Written in terms of those predictors, the same model is
+
+$$
+Y_{ij}=\beta_0+\beta_1T_{ij}
++c_AZ_{Aj}+c_BZ_{Bj}+c_CZ_{Cj}+c_DZ_{Dj}+c_EZ_{Ej}
++\varepsilon_{ij}.
+$$
+
+Here, $Z_{Aj},\ldots,Z_{Ej}$ are the numerical values assigned to center $j$ by the coding scheme:
+
+| Center | $Z_A$ | $Z_B$ | $Z_C$ | $Z_D$ | $Z_E$ |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| A | 1 | 0 | 0 | 0 | 0 |
+| B | 0 | 1 | 0 | 0 | 0 |
+| C | 0 | 0 | 1 | 0 | 0 |
+| D | 0 | 0 | 0 | 1 | 0 |
+| E | 0 | 0 | 0 | 0 | 1 |
+| F | −1 | −1 | −1 | −1 | −1 |
+
+For a patient in Center A, the five center terms reduce to $c_A$. For a patient in Center F, they reduce to
+
+$$
+c_F=-c_A-c_B-c_C-c_D-c_E.
+$$
+
+This is how the coding makes the six center contributions sum to zero. It also explains why the intercept represents the expected standard-care outcome averaged equally across centers.
+
+The **design matrix** collects the numerical predictor values used to fit the model. Each row represents one patient and contains seven entries: a 1 for the intercept, the treatment indicator $T_{ij}$, and the five center predictors. The center values are shared by all patients in a center, while the treatment indicator depends on the patient's assigned treatment.
+
+## Fit the model and inspect the design matrix
+
+```{r}
+#| label: fixed-model
+model_fixed <- lm(distance ~ treatment + center, data = rehab)
+summary(model_fixed)
+```
+
+We can inspect the first six patient rows of the actual design matrix used by R:
+
+```{r}
+#| label: fixed-design-matrix
+head(model.matrix(model_fixed))
+```
+
+`model.matrix()` extracts the design matrix from the fitted model, and `head()` displays its first six rows. The columns are called `(Intercept)`, `treatmentEnhanced`, and `center1` to `center5`. They correspond to $1$, $T_{ij}$, and $Z_{Aj},\ldots,Z_{Ej}$ in the coded equation.
+
+The `+ center` term adds the five effects-coded columns to the model. For example, `center1` estimates the contribution for Center A: a positive value indicates a higher expected outcome than the center average, for either treatment. The model-predicted standard-care outcome in Center A is the intercept plus `center1`.
+
+::: {.callout-important icon=false title="Question 4"}
+Interpret the intercept, the treatment coefficient, and `center1`. How would you recover the contribution for Center F? Why would the intercept have a different interpretation if we used dummy coding for center?
+:::
+
+## Compare treatments after accounting for center
+
+The reference grid now contains every combination of treatment and center: two treatments $\times$ six centers = twelve rows. For each combination, `emmeans()` calculates a predicted mean outcome from the estimated coefficients:
+
+$$
+\widehat{\text{Mean outcome}}_{tj}
+=\hat{\beta}_0+\hat{\beta}_1t+\hat{c}_j,
+\qquad t\in\{0,1\}.
+$$
+
+Requesting `~ treatment` then averages these predictions across centers, producing one mean per treatment. By default, each of the six centers receives equal weight. The resulting treatment means are **estimated marginal means**. Here, “marginal” refers to averaging over the center factor.
+
+```{r}
+#| label: fixed-means
+means_fixed <- emmeans(model_fixed, ~ treatment)
+means_fixed
+```
+
+Because effects coding makes the center contributions sum to zero, their average contribution is zero. The predicted treatment means are therefore again $\hat{\beta}_0$ for standard care and $\hat{\beta}_0+\hat{\beta}_1$ for enhanced care, now using the coefficients from the center-adjusted model. In this balanced dataset, these also equal the observed pooled treatment means. Their uncertainty is calculated from the center-adjusted model.
+
+We compare the two predicted means in exactly the same way as before:
+
+```{r}
+#| label: fixed-contrast
+difference_fixed <- pairs(means_fixed, reverse = TRUE)
+summary(difference_fixed, infer = c(TRUE, TRUE))
+```
+
+# Compare the two analyses
+
+Collect the treatment comparisons in one table. `as.data.frame()` makes the result available for selecting columns and combining rows.
+
+```{r}
+#| label: comparison-table
+result_pooled <- as.data.frame(confint(difference_pooled))
+result_fixed <- as.data.frame(confint(difference_fixed))
+
+comparison <- bind_rows(
+  "Treatment only" = result_pooled,
+  "Center fixed" = result_fixed,
+  .id = "model"
+) |>
+  select(model, estimate, SE, lower.CL, upper.CL)
+comparison
+
+# Residual standard deviation describes remaining outcome variation, in meters.
+data.frame(
+  model = c("Treatment only", "Center fixed"),
+  residual_standard_deviation = c(sigma(model_pooled), sigma(model_fixed))
+)
+```
+
+::: {.callout-important icon=false title="Question 5"}
+Compare the treatment estimates, standard errors and confidence intervals. What changes when center is included? Explain the unchanged treatment estimate using the balanced allocation within each center, and relate the standard error change to the residual standard deviations.
+:::
+
+Recall the distinction between **bias** and **precision** from the lecture. One dataset cannot establish whether an estimator is unbiased across repeated studies. Under the additive model considered here, balanced allocation makes the center contributions cancel in the treatment comparison. Accounting for center removes their contribution to the residual variation used to estimate uncertainty. This explains the smaller standard error in this example; it is not a general rule that ignoring grouping always makes standard errors smaller or always makes them larger.
+
+# Check the model and report the result
+
+As in ordinary linear regression, residual plots help assess whether the error distribution and variance assumptions are plausible.
+
+```{r}
+#| label: fixed-diagnostics
+plot(model_fixed, which = 1)  # Residuals versus fitted values
+plot(model_fixed, which = 2)  # Normal Q-Q plot
+```
+
+The first plot can reveal changes in residual spread or patterns left in the mean. The second compares the residual distribution with a Normal distribution. Residuals are calculated from the fitted model; they are estimates of the unobserved errors.
+
+::: {.callout-important icon=false title="Question 6"}
+Do these plots suggest clear violations of the Normality or constant-variance assumptions? Why would reassuring plots alone not establish that the model adequately represents the study design?
+:::
+
+::: {.callout-important icon=false title="Question 7"}
+Write a short results paragraph stating the outcome and its units, how center was included, and the estimated enhanced-minus-standard difference with its 95% confidence interval. Add one sentence explaining how accounting for center changed the reported uncertainty.
+:::
+
+# Further help
+
+For explanations of R syntax and data-handling commands used in the labs, see the [“Whole game” section of *R for Data Science* (2nd edition)](https://r4ds.hadley.nz/whole-game.html) by Hadley Wickham, Mine Çetinkaya-Rundel, and Garrett Grolemund. It provides a reference for the pipe (`|>`), data preparation, summary statistics and plotting.
+
+The [bind_rows() documentation](https://dplyr.tidyverse.org/reference/bind_rows.html) explains how to combine results into one table, including the `.id` argument used to identify the models in our comparison table.
+
+For help with the treatment comparisons, see the [emmeans guide to comparisons and contrasts](https://rvlenth.github.io/emmeans/articles/comparisons.html).

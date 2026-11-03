@@ -64,7 +64,7 @@ pacman::p_load(knitr, rmarkdown, dplyr, ggplot2, tidyr, car)
 #| fig-height: 4.5
 
 # Load the growth data
-asian_data <- read.csv("../data/asian_data.csv")
+asian_data <- read.csv("../labs_2526/data/asian_data.csv")
 asian_data <- asian_data |>
   mutate(across(where(is.character), as.factor))
 asian_data$age_c <- asian_data$Age - mean(asian_data$Age)
