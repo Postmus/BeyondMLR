@@ -2,10 +2,8 @@ const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels
 const { addFixedCenterExplanation } = require('./fixed_center_sampling');
 const { addFigureSlide } = require('../../slides-common/js/pptx_layout_primitives');
 const path = require('path');
-const crypto = require('crypto');
 const betaHat = String.raw`\widehat{\beta}_1`;
 const sigmaHat = String.raw`\widehat{\sigma}`;
-const equationImage = tex => path.join('assets', 'equations', `eq_${crypto.createHash('sha1').update(tex).digest('hex').slice(0, 12)}.png`);
 
 function calibrationSEEquation(results) {
   const patientsPerTreatment = results.centers * results.patients_per_arm;
@@ -22,26 +20,19 @@ function addFixedCenterSection(pptx, drawEquation, results) {
   addConceptPanelsSlide(pptx, {
     title: 'Lab 1 debrief: accounting for center',
     panels: [
-      { title: 'SAME TREATMENT ESTIMATE', blocks: [
-        { text: `The estimated treatment effect remains ${f(results.fixed.estimate)} m.`, h: .9, gap: .3 },
-        { inlineMath: [
-          { text: 'With equal numbers in both treatment groups in every center, the two models always give the same treatment estimate (and therefore the same sampling distribution of ' },
-          { image: equationImage(betaHat), heightEm: 1.3, baselineFraction: .78 },
-          { text: ').' }
-        ], h: 2.25 }
+      { title: 'THE DESIGN HAS ALREADY DONE\nTHE ADJUSTMENT', titleHeight: .65, blocks: [
+        { text: 'Including a covariate in an analysis can remove its contribution to the treatment comparison.', h: .95, gap: .2 },
+        { text: 'Here, balanced randomization has already made the center contributions cancel.', h: .95, gap: .2 },
+        { text: `Including center in the model therefore leaves the treatment estimate at ${f(results.fixed.estimate)} m, with the same variation across repeated studies.`, h: 1.3 }
       ] },
-      { title: 'BETTER-CALIBRATED UNCERTAINTY', blocks: [
-        { text: 'After accounting for treatment and center, the residual SD estimates the individual-error SD, σ.', h: 1.1 },
-        { inlineMath: [
-          { text: 'The fitted model gives ' },
-          { image: equationImage(sigmaHat), heightEm: 1.0, baselineFraction: .92 },
-          { text: ` = ${f(results.fixed.residual_sd)} m and uses it to estimate the treatment effect’s SE:` }
-        ], h: 1.1 },
-        { equation: calibrationSEEquation(results), h: 1.25 }
+      { title: 'THE STANDARD ERROR MUST REFLECT THIS', blocks: [
+        { text: 'The treatment-only model still counts center differences as residual variation.', h: .7, gap: .07 },
+        { text: 'Including center removes those differences from the residual variation used to calculate the treatment effect’s standard error.', h: 1.3, gap: .07 },
+        { text: `The estimated individual-error standard deviation is ${f(results.fixed.residual_sd)} m, giving:`, h: .72, gap: .07 },
+        { equation: calibrationSEEquation(results), h: 1.08 }
       ] }
     ],
-    takeaway: 'The estimated SE now uses the individual variation that determines the treatment estimate’s sampling variability. Better calibration does not always mean a smaller SE.',
-    takeawayHeight: 1.1,
+    takeaway: 'The aim is to estimate uncertainty correctly. In this example, that means a smaller standard error, but that is not always the case.',
     drawEquation
   });
 }

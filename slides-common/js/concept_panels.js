@@ -39,9 +39,10 @@ function addConceptPanelsSlide(pptx, { title, intro, lead, panels, takeaway, tak
       fill: { color: COLORS.card }, line: STROKES.card });
     const x = box.x + .28, w = box.w - .56;
     let y = box.y + .22;
-    slide.addText(panel.title, { x, y, w, h: .35, fontFace: FONT_FAMILIES.sans,
+    const titleH = panel.titleHeight || .35;
+    slide.addText(panel.title, { x, y, w, h: titleH, fontFace: FONT_FAMILIES.sans,
       fontSize: 17, bold: true, color: COLORS.primary, margin: 0 });
-    y += .58;
+    y += titleH + .23;
     for (const block of panel.blocks) {
       const h = block.h || (block.equation ? .55 : block.image ? 2.25 :
         calcTextBox(block.fontSize || 21, { text: block.text, w, fontFace: FONT_FAMILIES.sans,
