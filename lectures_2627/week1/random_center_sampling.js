@@ -6,7 +6,7 @@ const { addFigureSlide } = require('../../slides-common/js/pptx_layout_primitive
 const { consequences: sharedConsequences } = require('./omitted_center_consequences');
 
 const setup = {
-  title: 'Step 1: Specify the data-generating model',
+  title: 'Explaining the random-center errors',
   panels: [
     { title: 'MODEL AND PARAMETERS', blocks: [
       { equation: String.raw`Y_{ij}=100+5T_{ij}+c_j+\varepsilon_{ij}`, h: .55 },
@@ -22,7 +22,7 @@ const setup = {
       { text: 'Averaging over centers gives expected outcomes of 100 and 105.', h: .85 }
     ] }
   ],
-  takeaway: 'The treatment effect and individual-error distribution stay the same. Center effects now vary across studies.'
+  takeaway: 'Return to the two-center teaching example, now drawing new center effects as well as new patients.'
 };
 
 const treatmentOnlyError = String.raw`u_{ij}=Y_{ij}-(100+5T_{ij})=c_j+\varepsilon_{ij}`;
@@ -36,7 +36,7 @@ function addRandomCenterSampling(pptx, drawEquation) {
   const f = value => Number(value).toFixed(1);
   addConceptPanelsSlide(pptx, { ...setup, drawEquation });
   addTeachingTableSlide(pptx, {
-    title: 'Step 2: Generate a sample',
+    title: 'One study: centers and patients',
     intro: 'Draw two center effects, then one patient per treatment in each center (rounded values).',
     columns: [
       { label: 'CENTER', weight: 1.3 }, { label: 'TREATMENT', weight: 2.5 },
@@ -49,7 +49,7 @@ function addRandomCenterSampling(pptx, drawEquation) {
     takeaway: 'Outcome = 100 + 5Tᵢⱼ + cⱼ + εᵢⱼ. Each center shares cⱼ; individual errors are independent.'
   });
   addTeachingTableSlide(pptx, {
-    title: 'Step 3: Examine the treatment-only errors',
+    title: 'What is left in the treatment-only error?',
     intro: 'Use the same sample, but leave center out of the prediction.',
     leadEquation: treatmentOnlyError, drawEquation,
     columns: [
@@ -62,8 +62,8 @@ function addRandomCenterSampling(pptx, drawEquation) {
       f(p.first_outcome), String(p.treatment_component), f(p.first_error)]),
     takeaway: 'Repeat the study, drawing new center effects and new individual errors each time.'
   });
-  for (const n of sim.stages) addFigureSlide(pptx, {
-    title: `Repeated sampling: ${n.toLocaleString('en-GB')} studies`,
+  for (const n of [sim.repetitions]) addFigureSlide(pptx, {
+    title: 'Random centers: the error distributions',
     assetPath: path.join('assets', `random-center-errors-${n}.png`),
     caption: 'Each panel follows one patient position. Dashed line: expected error, now zero in every panel.',
     captionFontSize: 18, captionMinFontSize: 18,

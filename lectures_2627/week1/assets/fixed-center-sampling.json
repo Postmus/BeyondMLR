@@ -1,69 +1,1007 @@
 {
   "seed": 20261103,
   "repetitions": 10000,
-  "baseline": 100,
-  "treatment_effect": 5,
-  "individual_error_sd": 5,
-  "stages": [20, 10000],
+  "total": 120,
+  "centers": 6,
+  "patients_per_center": 20,
+  "patients_per_arm_per_center": 10,
+  "baseline": 360,
+  "treatment_effect": 10,
+  "individual_error_sd": 24,
+  "center_effects": {
+    "A": -17,
+    "B": 16,
+    "C": 8,
+    "D": -29,
+    "E": 27,
+    "F": -5
+  },
+  "error_definition": "Known generating error u = c + epsilon, not fitted residuals.",
+  "histogram_positions": [
+    1,
+    21,
+    41,
+    61,
+    81,
+    101
+  ],
+  "pair_positions": {
+    "first": 1,
+    "second": [
+      11,
+      21
+    ]
+  },
   "positions": [
     {
-      "center": 1,
-      "treatment": "Standard",
-      "center_effect": -10,
-      "treatment_component": 100,
-      "first_error": -10.74448916,
-      "first_outcome": 89.25551084,
-      "expected_error": -10,
-      "empirical_mean": -10.03401523,
-      "empirical_variance": 25.20773322
+      "center": "A",
+      "patient": 1,
+      "treatment": 0,
+      "expected_error": -17,
+      "empirical_mean": -16.68727916,
+      "empirical_variance": 570.68450022
     },
     {
-      "center": 1,
-      "treatment": "Enhanced",
-      "center_effect": -10,
-      "treatment_component": 105,
-      "first_error": -5.57625531,
-      "first_outcome": 99.42374469,
-      "expected_error": -10,
-      "empirical_mean": -9.9946022,
-      "empirical_variance": 25.12976265
+      "center": "A",
+      "patient": 2,
+      "treatment": 0,
+      "expected_error": -17,
+      "empirical_mean": -16.65296744,
+      "empirical_variance": 565.22306435
     },
     {
-      "center": 2,
-      "treatment": "Standard",
-      "center_effect": 10,
-      "treatment_component": 100,
-      "first_error": 17.3849334,
-      "first_outcome": 117.3849334,
-      "expected_error": 10,
-      "empirical_mean": 10.05779458,
-      "empirical_variance": 24.49708788
+      "center": "A",
+      "patient": 3,
+      "treatment": 0,
+      "expected_error": -17,
+      "empirical_mean": -17.0661643,
+      "empirical_variance": 572.26565693
     },
     {
-      "center": 2,
-      "treatment": "Enhanced",
-      "center_effect": 10,
-      "treatment_component": 105,
-      "first_error": 3.24135699,
-      "first_outcome": 108.24135699,
-      "expected_error": 10,
-      "empirical_mean": 9.99065144,
-      "empirical_variance": 24.57852636
+      "center": "A",
+      "patient": 4,
+      "treatment": 0,
+      "expected_error": -17,
+      "empirical_mean": -17.29889823,
+      "empirical_variance": 592.66188311
+    },
+    {
+      "center": "A",
+      "patient": 5,
+      "treatment": 0,
+      "expected_error": -17,
+      "empirical_mean": -17.21777709,
+      "empirical_variance": 583.47426172
+    },
+    {
+      "center": "A",
+      "patient": 6,
+      "treatment": 0,
+      "expected_error": -17,
+      "empirical_mean": -16.93605541,
+      "empirical_variance": 573.76166273
+    },
+    {
+      "center": "A",
+      "patient": 7,
+      "treatment": 0,
+      "expected_error": -17,
+      "empirical_mean": -17.00766349,
+      "empirical_variance": 570.18848244
+    },
+    {
+      "center": "A",
+      "patient": 8,
+      "treatment": 0,
+      "expected_error": -17,
+      "empirical_mean": -16.92056768,
+      "empirical_variance": 584.57208508
+    },
+    {
+      "center": "A",
+      "patient": 9,
+      "treatment": 0,
+      "expected_error": -17,
+      "empirical_mean": -17.5227061,
+      "empirical_variance": 563.73154182
+    },
+    {
+      "center": "A",
+      "patient": 10,
+      "treatment": 0,
+      "expected_error": -17,
+      "empirical_mean": -16.79031057,
+      "empirical_variance": 578.40047758
+    },
+    {
+      "center": "A",
+      "patient": 11,
+      "treatment": 1,
+      "expected_error": -17,
+      "empirical_mean": -17.25228627,
+      "empirical_variance": 583.8831372
+    },
+    {
+      "center": "A",
+      "patient": 12,
+      "treatment": 1,
+      "expected_error": -17,
+      "empirical_mean": -17.09294402,
+      "empirical_variance": 571.57065895
+    },
+    {
+      "center": "A",
+      "patient": 13,
+      "treatment": 1,
+      "expected_error": -17,
+      "empirical_mean": -16.99148697,
+      "empirical_variance": 579.30894519
+    },
+    {
+      "center": "A",
+      "patient": 14,
+      "treatment": 1,
+      "expected_error": -17,
+      "empirical_mean": -17.33293565,
+      "empirical_variance": 580.24810459
+    },
+    {
+      "center": "A",
+      "patient": 15,
+      "treatment": 1,
+      "expected_error": -17,
+      "empirical_mean": -17.28037545,
+      "empirical_variance": 587.91334052
+    },
+    {
+      "center": "A",
+      "patient": 16,
+      "treatment": 1,
+      "expected_error": -17,
+      "empirical_mean": -16.8513898,
+      "empirical_variance": 562.81243047
+    },
+    {
+      "center": "A",
+      "patient": 17,
+      "treatment": 1,
+      "expected_error": -17,
+      "empirical_mean": -17.01376146,
+      "empirical_variance": 580.98606022
+    },
+    {
+      "center": "A",
+      "patient": 18,
+      "treatment": 1,
+      "expected_error": -17,
+      "empirical_mean": -17.16464974,
+      "empirical_variance": 563.0684072
+    },
+    {
+      "center": "A",
+      "patient": 19,
+      "treatment": 1,
+      "expected_error": -17,
+      "empirical_mean": -17.027483,
+      "empirical_variance": 565.36213415
+    },
+    {
+      "center": "A",
+      "patient": 20,
+      "treatment": 1,
+      "expected_error": -17,
+      "empirical_mean": -16.36538298,
+      "empirical_variance": 569.22198665
+    },
+    {
+      "center": "B",
+      "patient": 1,
+      "treatment": 0,
+      "expected_error": 16,
+      "empirical_mean": 16.12269703,
+      "empirical_variance": 597.49035565
+    },
+    {
+      "center": "B",
+      "patient": 2,
+      "treatment": 0,
+      "expected_error": 16,
+      "empirical_mean": 16.12291603,
+      "empirical_variance": 569.86968409
+    },
+    {
+      "center": "B",
+      "patient": 3,
+      "treatment": 0,
+      "expected_error": 16,
+      "empirical_mean": 15.77876658,
+      "empirical_variance": 579.70561878
+    },
+    {
+      "center": "B",
+      "patient": 4,
+      "treatment": 0,
+      "expected_error": 16,
+      "empirical_mean": 15.8468758,
+      "empirical_variance": 578.97634583
+    },
+    {
+      "center": "B",
+      "patient": 5,
+      "treatment": 0,
+      "expected_error": 16,
+      "empirical_mean": 15.73557324,
+      "empirical_variance": 563.39411661
+    },
+    {
+      "center": "B",
+      "patient": 6,
+      "treatment": 0,
+      "expected_error": 16,
+      "empirical_mean": 15.92056472,
+      "empirical_variance": 577.89466778
+    },
+    {
+      "center": "B",
+      "patient": 7,
+      "treatment": 0,
+      "expected_error": 16,
+      "empirical_mean": 16.56719048,
+      "empirical_variance": 585.19150169
+    },
+    {
+      "center": "B",
+      "patient": 8,
+      "treatment": 0,
+      "expected_error": 16,
+      "empirical_mean": 15.94045593,
+      "empirical_variance": 571.08349152
+    },
+    {
+      "center": "B",
+      "patient": 9,
+      "treatment": 0,
+      "expected_error": 16,
+      "empirical_mean": 16.19109268,
+      "empirical_variance": 585.79157969
+    },
+    {
+      "center": "B",
+      "patient": 10,
+      "treatment": 0,
+      "expected_error": 16,
+      "empirical_mean": 16.15004883,
+      "empirical_variance": 577.12977682
+    },
+    {
+      "center": "B",
+      "patient": 11,
+      "treatment": 1,
+      "expected_error": 16,
+      "empirical_mean": 15.79287948,
+      "empirical_variance": 578.8177116
+    },
+    {
+      "center": "B",
+      "patient": 12,
+      "treatment": 1,
+      "expected_error": 16,
+      "empirical_mean": 15.86026888,
+      "empirical_variance": 585.43450784
+    },
+    {
+      "center": "B",
+      "patient": 13,
+      "treatment": 1,
+      "expected_error": 16,
+      "empirical_mean": 16.06159602,
+      "empirical_variance": 587.8802515
+    },
+    {
+      "center": "B",
+      "patient": 14,
+      "treatment": 1,
+      "expected_error": 16,
+      "empirical_mean": 15.62071528,
+      "empirical_variance": 580.39021013
+    },
+    {
+      "center": "B",
+      "patient": 15,
+      "treatment": 1,
+      "expected_error": 16,
+      "empirical_mean": 15.74539226,
+      "empirical_variance": 586.14949439
+    },
+    {
+      "center": "B",
+      "patient": 16,
+      "treatment": 1,
+      "expected_error": 16,
+      "empirical_mean": 16.05762222,
+      "empirical_variance": 577.52275194
+    },
+    {
+      "center": "B",
+      "patient": 17,
+      "treatment": 1,
+      "expected_error": 16,
+      "empirical_mean": 15.77480306,
+      "empirical_variance": 585.78527753
+    },
+    {
+      "center": "B",
+      "patient": 18,
+      "treatment": 1,
+      "expected_error": 16,
+      "empirical_mean": 16.30449506,
+      "empirical_variance": 587.45765915
+    },
+    {
+      "center": "B",
+      "patient": 19,
+      "treatment": 1,
+      "expected_error": 16,
+      "empirical_mean": 16.06754713,
+      "empirical_variance": 590.38785955
+    },
+    {
+      "center": "B",
+      "patient": 20,
+      "treatment": 1,
+      "expected_error": 16,
+      "empirical_mean": 16.41052683,
+      "empirical_variance": 572.35216483
+    },
+    {
+      "center": "C",
+      "patient": 1,
+      "treatment": 0,
+      "expected_error": 8,
+      "empirical_mean": 8.021038,
+      "empirical_variance": 578.6362011
+    },
+    {
+      "center": "C",
+      "patient": 2,
+      "treatment": 0,
+      "expected_error": 8,
+      "empirical_mean": 7.58687661,
+      "empirical_variance": 582.09397613
+    },
+    {
+      "center": "C",
+      "patient": 3,
+      "treatment": 0,
+      "expected_error": 8,
+      "empirical_mean": 7.67183408,
+      "empirical_variance": 572.42373363
+    },
+    {
+      "center": "C",
+      "patient": 4,
+      "treatment": 0,
+      "expected_error": 8,
+      "empirical_mean": 8.03887141,
+      "empirical_variance": 569.719162
+    },
+    {
+      "center": "C",
+      "patient": 5,
+      "treatment": 0,
+      "expected_error": 8,
+      "empirical_mean": 7.95868873,
+      "empirical_variance": 588.45719222
+    },
+    {
+      "center": "C",
+      "patient": 6,
+      "treatment": 0,
+      "expected_error": 8,
+      "empirical_mean": 8.20434451,
+      "empirical_variance": 566.01980554
+    },
+    {
+      "center": "C",
+      "patient": 7,
+      "treatment": 0,
+      "expected_error": 8,
+      "empirical_mean": 7.87979981,
+      "empirical_variance": 570.5156266
+    },
+    {
+      "center": "C",
+      "patient": 8,
+      "treatment": 0,
+      "expected_error": 8,
+      "empirical_mean": 8.04811838,
+      "empirical_variance": 576.56351107
+    },
+    {
+      "center": "C",
+      "patient": 9,
+      "treatment": 0,
+      "expected_error": 8,
+      "empirical_mean": 8.02397345,
+      "empirical_variance": 584.00590324
+    },
+    {
+      "center": "C",
+      "patient": 10,
+      "treatment": 0,
+      "expected_error": 8,
+      "empirical_mean": 7.98537218,
+      "empirical_variance": 593.76998219
+    },
+    {
+      "center": "C",
+      "patient": 11,
+      "treatment": 1,
+      "expected_error": 8,
+      "empirical_mean": 7.62658419,
+      "empirical_variance": 584.44240646
+    },
+    {
+      "center": "C",
+      "patient": 12,
+      "treatment": 1,
+      "expected_error": 8,
+      "empirical_mean": 7.79262865,
+      "empirical_variance": 581.32697789
+    },
+    {
+      "center": "C",
+      "patient": 13,
+      "treatment": 1,
+      "expected_error": 8,
+      "empirical_mean": 7.85710698,
+      "empirical_variance": 575.4763566
+    },
+    {
+      "center": "C",
+      "patient": 14,
+      "treatment": 1,
+      "expected_error": 8,
+      "empirical_mean": 8.09302675,
+      "empirical_variance": 594.56642267
+    },
+    {
+      "center": "C",
+      "patient": 15,
+      "treatment": 1,
+      "expected_error": 8,
+      "empirical_mean": 7.73985163,
+      "empirical_variance": 564.97090342
+    },
+    {
+      "center": "C",
+      "patient": 16,
+      "treatment": 1,
+      "expected_error": 8,
+      "empirical_mean": 8.25183013,
+      "empirical_variance": 584.09910561
+    },
+    {
+      "center": "C",
+      "patient": 17,
+      "treatment": 1,
+      "expected_error": 8,
+      "empirical_mean": 8.15546021,
+      "empirical_variance": 566.38679121
+    },
+    {
+      "center": "C",
+      "patient": 18,
+      "treatment": 1,
+      "expected_error": 8,
+      "empirical_mean": 8.07845534,
+      "empirical_variance": 573.69095863
+    },
+    {
+      "center": "C",
+      "patient": 19,
+      "treatment": 1,
+      "expected_error": 8,
+      "empirical_mean": 8.02373907,
+      "empirical_variance": 578.66926627
+    },
+    {
+      "center": "C",
+      "patient": 20,
+      "treatment": 1,
+      "expected_error": 8,
+      "empirical_mean": 8.07741463,
+      "empirical_variance": 584.4183934
+    },
+    {
+      "center": "D",
+      "patient": 1,
+      "treatment": 0,
+      "expected_error": -29,
+      "empirical_mean": -29.04989042,
+      "empirical_variance": 573.89566052
+    },
+    {
+      "center": "D",
+      "patient": 2,
+      "treatment": 0,
+      "expected_error": -29,
+      "empirical_mean": -29.17572132,
+      "empirical_variance": 574.88705341
+    },
+    {
+      "center": "D",
+      "patient": 3,
+      "treatment": 0,
+      "expected_error": -29,
+      "empirical_mean": -28.99747138,
+      "empirical_variance": 588.31632982
+    },
+    {
+      "center": "D",
+      "patient": 4,
+      "treatment": 0,
+      "expected_error": -29,
+      "empirical_mean": -28.97470515,
+      "empirical_variance": 578.95370421
+    },
+    {
+      "center": "D",
+      "patient": 5,
+      "treatment": 0,
+      "expected_error": -29,
+      "empirical_mean": -29.10970244,
+      "empirical_variance": 585.44386362
+    },
+    {
+      "center": "D",
+      "patient": 6,
+      "treatment": 0,
+      "expected_error": -29,
+      "empirical_mean": -28.77885859,
+      "empirical_variance": 580.24537915
+    },
+    {
+      "center": "D",
+      "patient": 7,
+      "treatment": 0,
+      "expected_error": -29,
+      "empirical_mean": -28.42464908,
+      "empirical_variance": 581.87125348
+    },
+    {
+      "center": "D",
+      "patient": 8,
+      "treatment": 0,
+      "expected_error": -29,
+      "empirical_mean": -28.34414297,
+      "empirical_variance": 574.75406935
+    },
+    {
+      "center": "D",
+      "patient": 9,
+      "treatment": 0,
+      "expected_error": -29,
+      "empirical_mean": -28.62081083,
+      "empirical_variance": 581.43037302
+    },
+    {
+      "center": "D",
+      "patient": 10,
+      "treatment": 0,
+      "expected_error": -29,
+      "empirical_mean": -29.48212083,
+      "empirical_variance": 584.19238624
+    },
+    {
+      "center": "D",
+      "patient": 11,
+      "treatment": 1,
+      "expected_error": -29,
+      "empirical_mean": -28.92749559,
+      "empirical_variance": 575.98985636
+    },
+    {
+      "center": "D",
+      "patient": 12,
+      "treatment": 1,
+      "expected_error": -29,
+      "empirical_mean": -29.04546053,
+      "empirical_variance": 581.06643104
+    },
+    {
+      "center": "D",
+      "patient": 13,
+      "treatment": 1,
+      "expected_error": -29,
+      "empirical_mean": -28.97589473,
+      "empirical_variance": 573.80671323
+    },
+    {
+      "center": "D",
+      "patient": 14,
+      "treatment": 1,
+      "expected_error": -29,
+      "empirical_mean": -28.83029383,
+      "empirical_variance": 571.83158953
+    },
+    {
+      "center": "D",
+      "patient": 15,
+      "treatment": 1,
+      "expected_error": -29,
+      "empirical_mean": -28.96714391,
+      "empirical_variance": 569.85607747
+    },
+    {
+      "center": "D",
+      "patient": 16,
+      "treatment": 1,
+      "expected_error": -29,
+      "empirical_mean": -28.87959731,
+      "empirical_variance": 577.08856581
+    },
+    {
+      "center": "D",
+      "patient": 17,
+      "treatment": 1,
+      "expected_error": -29,
+      "empirical_mean": -29.10530055,
+      "empirical_variance": 582.96899336
+    },
+    {
+      "center": "D",
+      "patient": 18,
+      "treatment": 1,
+      "expected_error": -29,
+      "empirical_mean": -28.84178887,
+      "empirical_variance": 571.75426058
+    },
+    {
+      "center": "D",
+      "patient": 19,
+      "treatment": 1,
+      "expected_error": -29,
+      "empirical_mean": -28.82318848,
+      "empirical_variance": 573.17657829
+    },
+    {
+      "center": "D",
+      "patient": 20,
+      "treatment": 1,
+      "expected_error": -29,
+      "empirical_mean": -28.9909899,
+      "empirical_variance": 576.19849516
+    },
+    {
+      "center": "E",
+      "patient": 1,
+      "treatment": 0,
+      "expected_error": 27,
+      "empirical_mean": 27.11080815,
+      "empirical_variance": 570.81818538
+    },
+    {
+      "center": "E",
+      "patient": 2,
+      "treatment": 0,
+      "expected_error": 27,
+      "empirical_mean": 26.93947078,
+      "empirical_variance": 567.4170123
+    },
+    {
+      "center": "E",
+      "patient": 3,
+      "treatment": 0,
+      "expected_error": 27,
+      "empirical_mean": 26.74272406,
+      "empirical_variance": 560.94048507
+    },
+    {
+      "center": "E",
+      "patient": 4,
+      "treatment": 0,
+      "expected_error": 27,
+      "empirical_mean": 27.19028701,
+      "empirical_variance": 574.40522778
+    },
+    {
+      "center": "E",
+      "patient": 5,
+      "treatment": 0,
+      "expected_error": 27,
+      "empirical_mean": 26.75087275,
+      "empirical_variance": 570.80685927
+    },
+    {
+      "center": "E",
+      "patient": 6,
+      "treatment": 0,
+      "expected_error": 27,
+      "empirical_mean": 26.84906052,
+      "empirical_variance": 566.76278599
+    },
+    {
+      "center": "E",
+      "patient": 7,
+      "treatment": 0,
+      "expected_error": 27,
+      "empirical_mean": 26.97572137,
+      "empirical_variance": 568.21886598
+    },
+    {
+      "center": "E",
+      "patient": 8,
+      "treatment": 0,
+      "expected_error": 27,
+      "empirical_mean": 27.04214811,
+      "empirical_variance": 575.57599884
+    },
+    {
+      "center": "E",
+      "patient": 9,
+      "treatment": 0,
+      "expected_error": 27,
+      "empirical_mean": 27.44458269,
+      "empirical_variance": 573.58721006
+    },
+    {
+      "center": "E",
+      "patient": 10,
+      "treatment": 0,
+      "expected_error": 27,
+      "empirical_mean": 26.7626322,
+      "empirical_variance": 571.68201763
+    },
+    {
+      "center": "E",
+      "patient": 11,
+      "treatment": 1,
+      "expected_error": 27,
+      "empirical_mean": 26.86697395,
+      "empirical_variance": 574.36915749
+    },
+    {
+      "center": "E",
+      "patient": 12,
+      "treatment": 1,
+      "expected_error": 27,
+      "empirical_mean": 27.44987838,
+      "empirical_variance": 581.78772405
+    },
+    {
+      "center": "E",
+      "patient": 13,
+      "treatment": 1,
+      "expected_error": 27,
+      "empirical_mean": 27.02500819,
+      "empirical_variance": 564.16635969
+    },
+    {
+      "center": "E",
+      "patient": 14,
+      "treatment": 1,
+      "expected_error": 27,
+      "empirical_mean": 26.63620124,
+      "empirical_variance": 579.41421035
+    },
+    {
+      "center": "E",
+      "patient": 15,
+      "treatment": 1,
+      "expected_error": 27,
+      "empirical_mean": 27.15302975,
+      "empirical_variance": 568.33661002
+    },
+    {
+      "center": "E",
+      "patient": 16,
+      "treatment": 1,
+      "expected_error": 27,
+      "empirical_mean": 27.13360473,
+      "empirical_variance": 595.78119041
+    },
+    {
+      "center": "E",
+      "patient": 17,
+      "treatment": 1,
+      "expected_error": 27,
+      "empirical_mean": 27.44775809,
+      "empirical_variance": 583.4208218
+    },
+    {
+      "center": "E",
+      "patient": 18,
+      "treatment": 1,
+      "expected_error": 27,
+      "empirical_mean": 27.12426829,
+      "empirical_variance": 581.44390684
+    },
+    {
+      "center": "E",
+      "patient": 19,
+      "treatment": 1,
+      "expected_error": 27,
+      "empirical_mean": 27.06687007,
+      "empirical_variance": 569.67772313
+    },
+    {
+      "center": "E",
+      "patient": 20,
+      "treatment": 1,
+      "expected_error": 27,
+      "empirical_mean": 26.67195527,
+      "empirical_variance": 592.78732954
+    },
+    {
+      "center": "F",
+      "patient": 1,
+      "treatment": 0,
+      "expected_error": -5,
+      "empirical_mean": -5.06966316,
+      "empirical_variance": 560.51099137
+    },
+    {
+      "center": "F",
+      "patient": 2,
+      "treatment": 0,
+      "expected_error": -5,
+      "empirical_mean": -5.42426813,
+      "empirical_variance": 586.48092361
+    },
+    {
+      "center": "F",
+      "patient": 3,
+      "treatment": 0,
+      "expected_error": -5,
+      "empirical_mean": -4.88206849,
+      "empirical_variance": 581.58114127
+    },
+    {
+      "center": "F",
+      "patient": 4,
+      "treatment": 0,
+      "expected_error": -5,
+      "empirical_mean": -5.1536889,
+      "empirical_variance": 549.24965007
+    },
+    {
+      "center": "F",
+      "patient": 5,
+      "treatment": 0,
+      "expected_error": -5,
+      "empirical_mean": -5.12619308,
+      "empirical_variance": 592.50690946
+    },
+    {
+      "center": "F",
+      "patient": 6,
+      "treatment": 0,
+      "expected_error": -5,
+      "empirical_mean": -4.70278755,
+      "empirical_variance": 577.76515683
+    },
+    {
+      "center": "F",
+      "patient": 7,
+      "treatment": 0,
+      "expected_error": -5,
+      "empirical_mean": -5.00687224,
+      "empirical_variance": 573.77720585
+    },
+    {
+      "center": "F",
+      "patient": 8,
+      "treatment": 0,
+      "expected_error": -5,
+      "empirical_mean": -5.00617663,
+      "empirical_variance": 561.0159914
+    },
+    {
+      "center": "F",
+      "patient": 9,
+      "treatment": 0,
+      "expected_error": -5,
+      "empirical_mean": -4.92016248,
+      "empirical_variance": 584.97406505
+    },
+    {
+      "center": "F",
+      "patient": 10,
+      "treatment": 0,
+      "expected_error": -5,
+      "empirical_mean": -5.11742688,
+      "empirical_variance": 572.96119738
+    },
+    {
+      "center": "F",
+      "patient": 11,
+      "treatment": 1,
+      "expected_error": -5,
+      "empirical_mean": -5.07602758,
+      "empirical_variance": 567.29095589
+    },
+    {
+      "center": "F",
+      "patient": 12,
+      "treatment": 1,
+      "expected_error": -5,
+      "empirical_mean": -4.83795323,
+      "empirical_variance": 590.26226248
+    },
+    {
+      "center": "F",
+      "patient": 13,
+      "treatment": 1,
+      "expected_error": -5,
+      "empirical_mean": -5.15271789,
+      "empirical_variance": 576.51003429
+    },
+    {
+      "center": "F",
+      "patient": 14,
+      "treatment": 1,
+      "expected_error": -5,
+      "empirical_mean": -5.08961089,
+      "empirical_variance": 575.17322781
+    },
+    {
+      "center": "F",
+      "patient": 15,
+      "treatment": 1,
+      "expected_error": -5,
+      "empirical_mean": -4.78447608,
+      "empirical_variance": 589.39115903
+    },
+    {
+      "center": "F",
+      "patient": 16,
+      "treatment": 1,
+      "expected_error": -5,
+      "empirical_mean": -4.84824778,
+      "empirical_variance": 585.10585866
+    },
+    {
+      "center": "F",
+      "patient": 17,
+      "treatment": 1,
+      "expected_error": -5,
+      "empirical_mean": -4.95437516,
+      "empirical_variance": 579.19855903
+    },
+    {
+      "center": "F",
+      "patient": 18,
+      "treatment": 1,
+      "expected_error": -5,
+      "empirical_mean": -4.67117718,
+      "empirical_variance": 559.32904614
+    },
+    {
+      "center": "F",
+      "patient": 19,
+      "treatment": 1,
+      "expected_error": -5,
+      "empirical_mean": -5.1130657,
+      "empirical_variance": 579.96149564
+    },
+    {
+      "center": "F",
+      "patient": 20,
+      "treatment": 1,
+      "expected_error": -5,
+      "empirical_mean": -4.85817746,
+      "empirical_variance": 572.43116275
     }
   ],
-  "pooled_expected_error": 0,
   "theoretical_pair_covariance": 0,
-  "empirical_covariances": [
-    [25.20773322, -0.32966683, 0.20942097, -0.11388813],
-    [-0.32966683, 25.12976265, -0.10287562, 0.01708907],
-    [0.20942097, -0.10287562, 24.49708788, -0.40608356],
-    [-0.11388813, 0.01708907, -0.40608356, 24.57852636]
-  ],
-  "empirical_correlations": [
-    [1, -0.01309828, 0.00842745, -0.00457545],
-    [-0.01309828, 1, -0.0041463, 0.00068762],
-    [0.00842745, -0.0041463, 1, -0.01654932],
-    [-0.00457545, 0.00068762, -0.01654932, 1]
-  ],
-  "plot_y_max": 0.12
+  "empirical_pair_correlations": [-0.00178717, 0.00859379],
+  "treatment": {
+    "mean_estimate": 10.01143629,
+    "bias": 0.01143629,
+    "empirical_se": 4.41171637,
+    "theoretical_se": 4.38178046,
+    "mean_estimated_se_pooled": 5.61709406,
+    "mean_estimated_se_fixed": 4.37538084
+  }
 }

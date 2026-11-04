@@ -21,10 +21,8 @@ write_json(results,'assets/initial-analysis-results.json',auto_unbox=TRUE,digits
 
 cols <- c(Standard=color_primary,Enhanced=color_accent)
 p <- ggplot(study,aes(treatment,distance,fill=treatment)) +
-  geom_boxplot(width=.48,alpha=.4,outlier.shape=NA) +
-  geom_point(aes(color=treatment),position=position_jitter(width=.15,height=0,seed=158),
-             size=1.65,alpha=.45) +
-  scale_fill_manual(values=cols) + scale_color_manual(values=cols) +
+  geom_boxplot(width=.48,alpha=.4) +
+  scale_fill_manual(values=cols) +
   labs(x=NULL,y='6-minute walk distance (m)') +
   theme_minimal(base_size=16) +
   theme(panel.grid.minor=element_blank(),panel.grid.major.x=element_blank(),
@@ -47,7 +45,7 @@ p_residual <- ggplot(diagnostics,aes(fitted,residual)) +
 p_qq <- ggplot(diagnostics,aes(sample=standardized)) +
   stat_qq_line(color=color_accent,linewidth=.8) +
   stat_qq(color=color_primary,alpha=.6,size=1.5) +
-  labs(title='Normal Q–Q plot',x='Theoretical quantiles',y='Std. residual') + diagnostic_theme
+  labs(title='Normal Q-Q plot',x='Theoretical quantiles',y='Std. residual') + diagnostic_theme
 ggsave('assets/pooled-residuals-vs-fitted.png',p_residual,width=5.80,height=2.38,dpi=220,bg='white')
 ggsave('assets/pooled-normal-qq.png',p_qq,width=5.80,height=2.38,dpi=220,bg='white')
 print(results)

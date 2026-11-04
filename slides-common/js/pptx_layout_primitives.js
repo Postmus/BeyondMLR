@@ -27,9 +27,17 @@ function defineTemplateMasters(pptx) {
   });
 }
 
-function getSlots({ reverse = false, captionHeight = 0, noteHeight = 0 } = {}) {
+function getSlots({ reverse = false, captionHeight = 0, noteHeight = 0, textFraction = 0.5 } = {}) {
   const left = { ...LAYOUT.left };
   const right = { ...LAYOUT.right };
+  if (!(textFraction > 0 && textFraction < 1)) throw new Error('textFraction must be between 0 and 1');
+  if (textFraction !== 0.5) {
+    const gutter = right.x - left.x - left.w;
+    const columnWidth = left.w + right.w;
+    left.w = columnWidth * (reverse ? 1 - textFraction : textFraction);
+    right.x = left.x + left.w + gutter;
+    right.w = columnWidth - left.w;
+  }
   const text = reverse ? right : left;
   const visual = reverse ? left : right;
   const reserved = Math.max(0, captionHeight) + Math.max(0, noteHeight);
@@ -578,6 +586,7 @@ function addBulletVisualSlide(pptx, {
   bulletMinFontSize = 13,
   assetPath,
   reverse = false,
+  textFraction = 0.5,
   caption = "",
   note = "",
   noteTitle = "",
@@ -592,7 +601,7 @@ function addBulletVisualSlide(pptx, {
 } = {}) {
   const captionHeight = caption ? 0.46 : 0;
   const noteHeight = note ? requestedNoteHeight : 0;
-  const slots = getSlots({ reverse, captionHeight, noteHeight });
+  const slots = getSlots({ reverse, captionHeight, noteHeight, textFraction });
   const slide = pptx.addSlide({ masterName: MASTERS.content });
   addBase(slide);
   addSlideTitle(slide, title);

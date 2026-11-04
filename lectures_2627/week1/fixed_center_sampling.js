@@ -1,130 +1,51 @@
-const fs = require('fs');
-const path = require('path');
 const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels');
-const { addTeachingTableSlide } = require('../../slides-common/js/teaching_table');
-const { addAssumptionFocusSlide } = require('../../slides-common/js/course_builders');
-const { addFigureSlide } = require('../../slides-common/js/pptx_layout_primitives');
-const { consequences } = require('./omitted_center_consequences');
 
-const simulationIntroduction = {
-  title: 'Using simulation to study model misspecification',
-  statement: 'A model is misspecified when it does not adequately describe how the outcomes arise. Simulation lets us investigate the consequences under conditions we control.',
-  points: [
-    { title: '1  SPECIFY HOW OUTCOMES ARE GENERATED',
-      text: 'Choose a model and its parameter values, so we know what is true in the simulation.' },
-    { title: '2  GENERATE REPEATED SAMPLES',
-      text: 'Repeat the same study many times, drawing new observations each time.' },
-    { title: '3  EXAMINE A MODEL THAT LEAVES SOMETHING OUT',
-      text: 'Check the error assumptions and examine the consequences for estimates and uncertainty.' }
-  ],
-  reminder: 'We start by examining the errors when a treatment-only model leaves out differences between centers.'
-};
+// Keep the full patient-level substitution visible before reducing the contrast.
+// The epsilon terms belong to the data-generating model; fitted residuals enter
+// only on the next slide, where the model estimates its error variance.
+const groupDifference = String.raw`\widehat{\beta}_1=\bar Y_{\mathrm{enhanced}}-\bar Y_{\mathrm{standard}}`;
+const fullSubstitution = String.raw`\widehat{\beta}_1=\frac{1}{60}\sum_{j=1}^{6}\sum_{i=1}^{10}\left(\beta_0+\beta_1+c_j+\varepsilon_{ij,\mathrm{enhanced}}\right)-\frac{1}{60}\sum_{j=1}^{6}\sum_{i=1}^{10}\left(\beta_0+c_j+\varepsilon_{ij,\mathrm{standard}}\right)`;
+const treatmentContrast = String.raw`\widehat{\beta}_1=\beta_1+\bar\varepsilon_{\mathrm{enhanced}}-\bar\varepsilon_{\mathrm{standard}}`;
+const trueSE = String.raw`\operatorname{SE}(\widehat{\beta}_1)=\sigma\sqrt{\frac{1}{60}+\frac{1}{60}}`;
+const residual = String.raw`\widehat u_{ij}=Y_{ij}-\widehat Y_{ij}`;
+const residualVariance = String.raw`\widehat{\sigma}_u^2=\frac{\displaystyle\sum_{j=1}^{6}\sum_{i=1}^{20}\widehat u_{ij}^{\,2}}{120-2}`;
+const reportedSE = String.raw`\widehat{\operatorname{SE}}(\widehat{\beta}_1)=\widehat{\sigma}_u\sqrt{\frac{1}{60}+\frac{1}{60}}`;
 
-const setup = {
-  title: 'Step 1: Specify the data-generating model',
-  panels: [
-    { title: 'MODEL AND PARAMETERS', blocks: [
-      { equation: String.raw`Y_{ij}=100+5T_{ij}+c_j+\varepsilon_{ij}`, h: .55 },
-      { equation: String.raw`\varepsilon_{ij}\overset{\mathrm{iid}}{\sim}N(0,5^2)`, h: .5 },
-      { text: 'Tᵢⱼ = 0 for standard care and 1 for enhanced care.', h: .8 },
-      { text: 'Baseline: 100. Enhanced care adds 5 to the expected outcome.', h: .8 },
-      { text: 'Individual errors are independent, with mean 0 and SD 5.', h: .7 }
-    ] },
-    { title: 'EXPECTED OUTCOMES', blocks: [
-      { text: 'Center 1: c₁ = −10.\nCenter 2: c₂ = +10.', h: .8 },
-      { table: {
-        columns: [{ label: 'CENTER', weight: 1.4 },
-          { label: 'STANDARD', weight: 2, align: 'center' },
-          { label: 'ENHANCED', weight: 2, align: 'center' }],
-        rows: [['1', '90', '95'], ['2', '110', '115']],
-        fontSize: 22, headerFontSize: 14, headerHeight: .55
-      }, h: 1.8 },
-      { text: 'Each center effect shifts both treatment means by the same amount.', h: .85 }
-    ] }
-  ],
-  takeaway: 'This model specifies the outcome distribution for a patient, given their treatment and center.'
-};
-
-const treatmentOnlyError = String.raw`u_{ij}=Y_{ij}-(100+5T_{ij})=c_j+\varepsilon_{ij}`;
-
-function addFixedCenterSampling(pptx, drawEquation) {
-  addAssumptionFocusSlide(pptx, simulationIntroduction);
-  addConceptPanelsSlide(pptx, { ...setup, drawEquation });
-  const simulation = JSON.parse(fs.readFileSync(path.join('assets', 'fixed-center-sampling.json'), 'utf8'));
-  addTeachingTableSlide(pptx, {
-    title: 'Step 2: Generate a sample',
-    intro: 'Sample four patients: one receiving each treatment in each center.',
-    columns: [
-      { label: 'CENTER', weight: 1.3 }, { label: 'TREATMENT', weight: 2.5 },
-      { label: 'EXPECTED OUTCOME', weight: 3, align: 'center' },
-      { label: 'DRAWN ERROR εᵢⱼ', weight: 2.8, align: 'center' },
-      { label: 'OUTCOME Yᵢⱼ', weight: 2.6, align: 'center' }
+function addFixedCenterExplanation(pptx, drawEquation) {
+  addConceptPanelsSlide(pptx, {
+    title: 'What determines the treatment estimate’s sampling variability?',
+    panels: [
+      { title: 'SUBSTITUTE THE DATA-GENERATING MODEL', blocks: [
+        { equation: groupDifference, h: .45, gap: .08 },
+        { equation: fullSubstitution, h: 1.1, gap: .25 },
+        { text: '• Both groups contain 60 copies of the same baseline, so these terms cancel.', h: .4, gap: .08 },
+        { text: '• Both groups contain 10 copies of every center effect, so these terms cancel.', h: .4, gap: .14 },
+        { equation: treatmentContrast, h: .5, gap: .08 },
+        { text: 'Each epsilon bar averages the individual errors used to generate that group’s outcomes.', fontSize: 19, h: .4, gap: .1 },
+        { equation: trueSE, h: .95 }
+      ] }
     ],
-    rows: simulation.positions.map(p => [String(p.center), p.treatment + ' care',
-      String(p.treatment_component + p.center_effect),
-      (p.first_error - p.center_effect).toFixed(1), p.first_outcome.toFixed(1)]),
-    takeaway: 'Draw each error independently from N(0, 5²), then add it to that patient’s expected outcome.'
+    drawEquation
   });
-  addTeachingTableSlide(pptx, {
-    title: 'Step 3: Examine the treatment-only errors',
-    intro: 'Use the same sample, but leave center out of the prediction.',
-    leadEquation: treatmentOnlyError,
-    drawEquation,
-    columns: [
-      { label: 'CENTER', weight: 1.3 }, { label: 'TREATMENT', weight: 2.5 },
-      { label: 'OUTCOME Yᵢⱼ', weight: 2.6, align: 'center' },
-      { label: 'PREDICTED OUTCOME', weight: 3.2, align: 'center' },
-      { label: 'ERROR uᵢⱼ', weight: 2.6, align: 'center' }
+  addConceptPanelsSlide(pptx, {
+    title: 'How does the treatment-only model estimate the SE?',
+    panels: [
+      { title: 'FROM FITTED MEANS TO RESIDUALS', blocks: [
+        { text: 'The model fits one mean per treatment group.', h: .8 },
+        { text: 'Each residual is a patient’s observed outcome minus their fitted group mean:', h: 1.1 },
+        { equation: residual, h: .6 },
+        { text: 'The fitted group means do not account for center, so the residuals still contain center differences.', h: 1.1 }
+      ] },
+      { title: 'FROM RESIDUALS TO THE REPORTED SE', blocks: [
+        { text: 'Estimate the error variance:', h: .55 },
+        { equation: residualVariance, h: 1.68 },
+        { text: 'Use its square root in the SE formula:', h: .55 },
+        { equation: reportedSE, h: .85 }
+      ] }
     ],
-    rows: simulation.positions.map(p => [String(p.center), p.treatment + ' care',
-      p.first_outcome.toFixed(1), String(p.treatment_component), p.first_error.toFixed(1)]),
-    takeaway: 'Repeat this process with new patients in the same centers to study the distribution of these errors.'
-  });
-  for (const n of simulation.stages) {
-    addFigureSlide(pptx, {
-      title: `Repeated sampling: ${n.toLocaleString('en-GB')} studies`,
-      assetPath: path.join('assets', `fixed-center-errors-${n}.png`),
-      caption: 'Each panel follows one patient position. Dashed line: expected error. Solid line: zero.',
-      takeaway: n === simulation.repetitions
-        ? 'The errors are Normally distributed with equal variance, but their means differ by center: −10 and +10.'
-        : '',
-      captionFontSize: 18, captionMinFontSize: 18
-    });
-  }
-  addFigureSlide(pptx, {
-    title: 'Zero covariance within and across centers',
-    assetPath: path.join('assets', 'fixed-center-error-pairs.png'),
-    caption: 'Each point pairs errors from one repetition. Dashed lines mark the expected errors.',
-    takeaway: 'In this simulation, errors remain independent within and across centers, so their covariance is zero.',
-    captionFontSize: 18, captionMinFontSize: 18
-  });
-  addTeachingTableSlide(pptx, {
-    title: 'Do these errors satisfy our assumptions?',
-    intro: 'Consider the error distribution for each of the four patient positions.',
-    columns: [
-      { label: 'ASSUMPTION', weight: 3.0 }, { label: 'STATUS', weight: 1.8 },
-      { label: 'IN THIS SIMULATION', weight: 7.4 }
-    ],
-    rows: [
-      ['Zero mean', 'Violated', 'Mean −10 for both positions in center 1; mean +10 for both positions in center 2.'],
-      ['Equal variance', 'Satisfied', 'Variance 25 (SD 5) for every position.'],
-      ['Independence', 'Satisfied', 'Errors vary independently within and across centers, giving zero covariance for both pairs.'],
-      ['Normality', 'Satisfied', 'Each error distribution is Normal, centered at its own center’s contribution.']
-    ]
-  });
-  addFigureSlide(pptx, {
-    title: 'Bias and precision across repeated studies',
-    assetPath: path.join('assets', 'bias-precision.png')
-  });
-  addConceptPanelsSlide(pptx, { ...consequences, drawEquation });
-  addFigureSlide(pptx, {
-    title: 'Time for Lab 1',
-    assetPath: path.join('assets', 'lab1-break.png')
+    takeaway: 'Center differences contribute to the estimated error variance, although they cancel from the treatment contrast.',
+    drawEquation
   });
 }
 
-const equations = [treatmentOnlyError, ...[setup, consequences].flatMap(slide => [
-  ...(slide.lead ? [slide.lead.equation] : []),
-  ...slide.panels.flatMap(panel => panel.blocks.filter(block => block.equation).map(block => block.equation))
-])];
-module.exports = { addFixedCenterSampling, equations };
+module.exports = { addFixedCenterExplanation, equations: [groupDifference, fullSubstitution, treatmentContrast, trueSE, residual, residualVariance, reportedSE] };

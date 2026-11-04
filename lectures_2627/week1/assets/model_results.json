@@ -1,47 +1,48 @@
 {
-  "patients_per_arm": 40,
+  "patients_per_arm": 10,
   "centers": 6,
-  "total": 480,
+  "total": 120,
+  "generating_treatment_effect": 10,
   "single": {
-    "standard_mean": 338.9375,
-    "enhanced_mean": 352.6975,
-    "standard_sd": 29.5045471289,
-    "enhanced_sd": 22.5621590108,
-    "estimate": 13.76,
-    "lower": 2.0682460204,
-    "upper": 25.4517539796,
-    "t": 2.3430236143,
-    "p": 0.021677609457,
-    "df": 78,
+    "standard_mean": 325.39,
+    "enhanced_mean": 344.66,
+    "standard_sd": 25.4349912085,
+    "enhanced_sd": 29.1718738209,
+    "estimate": 19.27,
+    "lower": -6.4432345454,
+    "upper": 44.9832345454,
+    "t": 1.5744719959,
+    "p": 0.13279062535,
+    "df": 18,
     "intercept": {
-      "lower": 330.670181477,
-      "upper": 347.204818523,
-      "p": 2.7017684595e-77
+      "lower": 307.2079974867,
+      "upper": 343.5720025133,
+      "p": 1.4643367834e-18
     },
-    "residual_sd": 26.2637518313,
-    "residual_var": 689.7846602564
+    "residual_sd": 27.3672888683,
+    "residual_var": 748.9685
   },
   "pooled": {
-    "estimate": 23.62625,
-    "se": 2.7635004745,
-    "lower": 18.1961393904,
-    "upper": 29.0563606096,
-    "residual_sd": 30.2726309513
+    "estimate": 11.03,
+    "se": 5.7740584056,
+    "lower": -0.40420762621,
+    "upper": 22.4642076262,
+    "residual_sd": 31.6258203708
   },
   "fixed": {
-    "estimate": 23.62625,
-    "se": 2.2556835055,
-    "lower": 19.193849964,
-    "upper": 28.058650036,
-    "residual_sd": 24.7097747706
+    "estimate": 11.03,
+    "se": 4.3388042274,
+    "lower": 2.4340462813,
+    "upper": 19.6259537187,
+    "residual_sd": 23.7646094796
   },
   "random": {
-    "estimate": 23.62625,
-    "se": 2.2556835055,
-    "lower": 19.193849964,
-    "upper": 28.058650036,
-    "center_var": 365.5018,
-    "patient_var": 610.573,
-    "icc": 0.37446085075
+    "estimate": 11.03,
+    "se": 4.3388042274,
+    "lower": 2.4340462813,
+    "upper": 19.6259537187,
+    "center_var": 513.8143,
+    "patient_var": 564.7567,
+    "icc": 0.4763843085
   }
 }

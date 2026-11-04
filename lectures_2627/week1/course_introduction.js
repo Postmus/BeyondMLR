@@ -1,20 +1,21 @@
-const { addAssumptionFocusSlide } = require('../../slides-common/js/course_builders');
+const path = require('path');
+const { addBulletVisualSlide } = require('../../slides-common/js/pptx_layout_primitives');
 const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels');
 const { addTeachingTableSlide } = require('../../slides-common/js/teaching_table');
 
 function addCourseIntroduction(pptx) {
-  addAssumptionFocusSlide(pptx, {
+  addBulletVisualSlide(pptx, {
     title: 'Why go beyond multiple linear regression?',
-    statement: 'Ignoring grouping can violate the usual independent and identically distributed (iid) error assumptions. This may introduce bias in estimated effects and/or lead to incorrectly reported uncertainty.',
-    points: [
-      { title: 'GROUPED OBSERVATIONS',
-        text: 'Examples include patients within hospitals, teeth within patients, and pupils within schools.' },
-      { title: 'MODELS THAT ACCOUNT FOR GROUPING',
-        text: 'Linear mixed-effects models combine overall effects with group-specific variation.' },
-      { title: 'THE SCOPE OF THIS COURSE',
-        text: 'We study experimental designs, hierarchical data and repeated measurements over time.' }
+    bullets: [
+      'Experimental designs and sampling strategies in observational studies often lead to grouped observations.',
+      'Ignoring this structure can violate the iid error assumptions, potentially biasing effect estimates or giving incorrectly estimated uncertainty.',
+      'We use models that explicitly account for this structure, including linear mixed-effects models.',
+      'The course develops your ability to choose, fit and interpret these models.'
     ],
-    reminder: 'Our focus is choosing, fitting and interpreting models that reflect how the data arise.'
+    textFraction: .57,
+    bulletFontSize: 22, bulletMinFontSize: 22,
+    assetPath: path.join('assets', 'grouped-patients-hospitals.png'),
+    framed: false
   });
 
   addTeachingTableSlide(pptx, {

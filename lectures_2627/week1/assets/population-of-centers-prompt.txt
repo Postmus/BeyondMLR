@@ -1,0 +1,7 @@
+Use case: illustration-story.
+Asset type: illustration for the right column of a medical statistics lecture slide, portrait aspect ratio 6:7.
+Primary request: several rehabilitation centers, with a few prominent in the foreground and more extending into the distance, suggesting that the centers in a study belong to a broader population of centers.
+Scene: a softly imagined landscape of distinct rehabilitation facilities among trees and gardens. Two or three clearly visible foreground centers have modest differences in building shape and size; additional centers become smaller and softer toward the horizon. Make them recognizable as contemporary healthcare facilities, not individual houses. This is a conceptual illustration, not a literal map or a campus of connected buildings.
+Style: warm, refined gouache and watercolor editorial illustration, softly textured paper, gentle natural daylight, consistent with a friendly illustrated university lecture. Restrained deep teal, sage green, warm ochre and cream palette. Clear composition that reads well when projected, simple architectural forms and uncluttered landscaping.
+Composition: fill the portrait frame with the scene, foreground centers lower in the image, increasing depth toward the upper background; keep all main buildings comfortably inside the frame. Opaque warm cream background.
+Constraints: no text, labels, letters, numbers, charts, statistical symbols, arrows, diagrams, logos, watermarks, or inset boxes.

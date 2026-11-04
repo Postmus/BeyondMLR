@@ -24,14 +24,14 @@ function addTeachingTable(slide, { box, columns, rows, fontSize = 21, headerFont
 }
 
 // Editable teaching table with a short introduction and a shared conclusion.
-function addTeachingTableSlide(pptx, { title, intro, columns, rows, takeaway, fontSize = 21, leadEquation, drawEquation }) {
+function addTeachingTableSlide(pptx, { title, intro, introHeight = .48, columns, rows, takeaway, fontSize = 21, leadEquation, drawEquation }) {
   const slide = pptx.addSlide();
   addBase(slide); addSlideTitle(slide, title);
   const body = { ...LAYOUT.body };
   if (intro) {
-    slide.addText(intro, { x: body.x, y: body.y + .06, w: body.w, h: .48,
+    slide.addText(intro, { x: body.x, y: body.y + .06, w: body.w, h: introHeight,
       fontFace: FONT_FAMILIES.sans, fontSize: 20, color: COLORS.muted, margin: 0 });
-    body.y += .68; body.h -= .68;
+    body.y += introHeight + .20; body.h -= introHeight + .20;
   }
   if (leadEquation) {
     drawEquation(slide, leadEquation, body.x, body.y, body.w, .55);

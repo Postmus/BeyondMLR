@@ -1,0 +1,152 @@
+---
+title: "Teaching note: estimated marginal means and treatment comparisons"
+format:
+  html:
+    toc: true
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true
+---
+
+This note preserves the estimated marginal means material from the earlier Lab 1 draft for use later in the course. It is separate from the required Week 1 lab and uses the same rehabilitation dataset. The explanations below are retained from that draft.
+
+# Setup
+
+Run the code from the `labs_2627` working directory, with the dataset in `data/rehabilitation_week1.csv`.
+
+```{r}
+packages <- c("dplyr", "emmeans")
+missing_packages <- packages[
+  !vapply(packages, requireNamespace, logical(1), quietly = TRUE)
+]
+if (length(missing_packages) > 0) {
+  install.packages(missing_packages, repos = "https://cloud.r-project.org")
+}
+library(dplyr)
+library(emmeans)
+
+rehab <- read.csv("data/rehabilitation_week1.csv")
+rehab$treatment <- factor(rehab$treatment,
+                          levels = c("Standard", "Enhanced"))
+rehab$center <- factor(rehab$center,
+                       levels = paste("Center", LETTERS[1:6]))
+contrasts(rehab$treatment) <- contr.treatment(levels(rehab$treatment))
+contrasts(rehab$center) <- contr.sum(levels(rehab$center))
+
+model_pooled <- lm(distance ~ treatment, data = rehab)
+model_fixed <- lm(distance ~ treatment + center, data = rehab)
+```
+
+Treatment uses dummy coding with standard care as the reference. Center uses effects coding: the six center contributions sum to zero, and the intercept describes standard care averaged equally across the six centers.
+
+# Treatment-only model
+
+## Obtain the treatment comparison with emmeans
+
+### Calculate the predicted treatment means
+
+The estimated regression coefficients allow us to calculate the **predicted mean outcome** for each treatment group. With our dummy coding, the predicted mean for standard care is $\hat{\beta}_0$, and the predicted mean for enhanced care is $\hat{\beta}_0+\hat{\beta}_1$. The hats indicate estimated coefficients.
+
+To calculate these means, we first specify the predictor values for which we want predictions. `emmeans` calls this the **reference grid**. In the treatment-only model, the grid contains just two rows:
+
+| Treatment | Indicator $T_{ij}$ | Predicted mean outcome |
+| --- | ---: | --- |
+| Standard | 0 | $\hat{\beta}_0$ |
+| Enhanced | 1 | $\hat{\beta}_0+\hat{\beta}_1$ |
+
+For each row, `emmeans()` calculates the predicted mean outcome from the estimated regression coefficients, together with its standard error and confidence interval. The resulting means are called **estimated marginal means**. In this treatment-only model, they equal the observed treatment-group means. When we add center later, we will see how the same function averages predictions across centers.
+
+```{r}
+#| label: pooled-means
+means_pooled <- emmeans(model_pooled, ~ treatment)
+means_pooled
+```
+
+The command has three parts:
+
+- `model_pooled` supplies the fitted model, including the estimated coefficients and the information needed to calculate uncertainty.
+- `~ treatment` requests a separate estimated mean for each treatment level. It specifies which means we want; it does not fit a new regression model.
+- `means_pooled <-` saves the results so that we can inspect them and then compare the treatment means. Typing `means_pooled` displays the output.
+
+In the output, `emmean` is the predicted mean outcome, `SE` is its standard error, and `lower.CL` and `upper.CL` are the limits of its 95% confidence interval.
+
+### Compare the predicted treatment means
+
+Our research question concerns the difference between these means. The `pairs()` function calculates pairwise differences. Because our treatment levels are ordered Standard, Enhanced, `reverse = TRUE` gives **enhanced minus standard care**. There is only one pairwise comparison when there are two treatments.
+
+```{r}
+#| label: pooled-contrast
+difference_pooled <- pairs(means_pooled, reverse = TRUE)
+summary(difference_pooled, infer = c(TRUE, TRUE))
+```
+
+We save the difference as `difference_pooled`. In `summary()`, `infer = c(TRUE, TRUE)` requests both a confidence interval (the first `TRUE`) and a test against a zero difference (the second `TRUE`). The output reports the estimated difference, its standard error, and its 95% confidence interval. The difference is also called a **contrast** in the output.
+
+The standard error printed beside each estimated marginal mean describes uncertainty about that **mean**. To answer our question, use the standard error printed for the **difference**. It accounts for the covariance between the two estimated means.
+
+# Fixed-effects model
+
+## Compare treatments after accounting for center
+
+The reference grid now contains every combination of treatment and center: two treatments $\times$ six centers = twelve rows. For each combination, `emmeans()` calculates a predicted mean outcome from the estimated coefficients:
+
+$$
+\widehat{\text{Mean outcome}}_{tj}
+=\hat{\beta}_0+\hat{\beta}_1t+\hat{c}_j,
+\qquad t\in\{0,1\}.
+$$
+
+Requesting `~ treatment` then averages these predictions across centers, producing one mean per treatment. By default, each of the six centers receives equal weight. The resulting treatment means are **estimated marginal means**. Here, “marginal” refers to averaging over the center factor.
+
+```{r}
+#| label: fixed-means
+means_fixed <- emmeans(model_fixed, ~ treatment)
+means_fixed
+```
+
+Because effects coding makes the center contributions sum to zero, their average contribution is zero. The predicted treatment means are therefore again $\hat{\beta}_0$ for standard care and $\hat{\beta}_0+\hat{\beta}_1$ for enhanced care, now using the coefficients from the center-adjusted model. In this balanced dataset, these also equal the observed pooled treatment means. Their uncertainty is calculated from the center-adjusted model.
+
+We compare the two predicted means in exactly the same way as before:
+
+```{r}
+#| label: fixed-contrast
+difference_fixed <- pairs(means_fixed, reverse = TRUE)
+summary(difference_fixed, infer = c(TRUE, TRUE))
+```
+
+# Compare the two analyses
+
+Collect the treatment comparisons in one table. `as.data.frame()` makes the result available for selecting columns and combining rows.
+
+```{r}
+#| label: comparison-table
+result_pooled <- as.data.frame(confint(difference_pooled))
+result_fixed <- as.data.frame(confint(difference_fixed))
+
+comparison <- bind_rows(
+  "Treatment only" = result_pooled,
+  "Center fixed" = result_fixed,
+  .id = "model"
+) |>
+  select(model, estimate, SE, lower.CL, upper.CL)
+comparison
+
+# Residual standard deviation describes remaining outcome variation, in meters.
+data.frame(
+  model = c("Treatment only", "Center fixed"),
+  residual_standard_deviation = c(sigma(model_pooled), sigma(model_fixed))
+)
+```
+
+::: {.callout-important icon=false title="Question 5"}
+Compare the treatment estimates, standard errors and confidence intervals. What changes when center is included? Explain the unchanged treatment estimate using the balanced allocation within each center, and relate the standard error change to the residual standard deviations.
+:::
+
+Recall the distinction between **bias** and **precision** from the lecture. One dataset cannot establish whether an estimator is unbiased across repeated studies. Under the additive model considered here, balanced allocation makes the center contributions cancel in the treatment comparison. Accounting for center removes their contribution to the residual variation used to estimate uncertainty. This explains the smaller standard error in this example; it is not a general rule that ignoring grouping always makes standard errors smaller or always makes them larger.
+
+# Further help
+
+- [emmeans guide to comparisons and contrasts](https://rvlenth.github.io/emmeans/articles/comparisons.html).
+- [bind_rows() documentation](https://dplyr.tidyverse.org/reference/bind_rows.html).

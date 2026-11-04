@@ -1,0 +1,10 @@
+Generated using the built-in image_gen tool.
+Used on the conceptual opening slide of Part 2, before the full-width exploratory plot.
+
+Use case: illustration-story.
+Asset type: a conceptual illustration occupying the right half of a university statistics lecture slide about rehabilitation patients grouped within study centers. The slide text will be added separately.
+Primary request: make a statistics presentation feel lighter with a warm, polished editorial illustration suggesting that patients receive rehabilitation in different clinical settings.
+Scene: two clearly distinct rehabilitation-center interiors arranged as an airy, gently diagonal pair of illustrated vignettes on one continuous warm cream background. In each center, an older adult practices walking with an attentive physiotherapist nearby. Use different adult patients and clinicians in the two settings. Both centers provide equally attentive, professional care; their room layouts, windows and modest rehabilitation equipment differ. Keep walking, people and the different settings immediately recognizable. Natural human proportions, believable movement and relaxed expressions.
+Style: refined hand-painted editorial illustration with clean shapes, subtle paper texture, soft daylight and restrained detail, appropriate for an adult academic audience. Match the established lecture palette: deep teal #173F48, warm cream #F4F1EA, sage green #6F9878, small muted orange #D58A3D accents.
+Composition: near-square 1:1 image for a roughly 6-by-6-inch slide image slot, two balanced scenes with generous breathing room and clear silhouettes that remain legible under classroom projection. Loose architectural cutaways or open room views, with softly fading edges. No hard panel borders, no central divider, no card-grid appearance. Fill the image meaningfully without crowded tiny details.
+Constraints: no text, letters, numbers, charts, mathematical symbols, labels, logos or watermarks. No suggestion that one center is superior or that a particular patient group belongs to only one center. This is an illustrative teaching scene, not a depiction of actual study data.

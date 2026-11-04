@@ -3,8 +3,9 @@ const { COLORS, FONT_FAMILIES, LAYOUT, SPACING, STROKES, RADII } = require('./bl
 const { addBase, addSlideTitle, addFooter, addNoteBox, addAssetFrame } = require('./pptx_layout_primitives');
 const { calcTextBox } = require('../../lectures_2627/week1/pptxgenjs_helpers/text');
 const { addTeachingTable } = require('./teaching_table');
+const { addInlineMathParagraph } = require('./inline_math');
 
-function addConceptPanelsSlide(pptx, { title, intro, lead, panels, takeaway, drawEquation }) {
+function addConceptPanelsSlide(pptx, { title, intro, lead, panels, takeaway, takeawayHeight = .82, drawEquation }) {
   const slide = pptx.addSlide();
   addBase(slide);
   addSlideTitle(slide, title);
@@ -24,7 +25,7 @@ function addConceptPanelsSlide(pptx, { title, intro, lead, panels, takeaway, dra
     body.y += 1.3;
     body.h -= 1.3;
   }
-  const noteH = takeaway ? .82 : 0;
+  const noteH = takeaway ? takeawayHeight : 0;
   const panelH = body.h - (takeaway ? noteH + .16 : 0);
   const availableW = body.w - SPACING.gutter * (panels.length - 1);
   const totalWeight = panels.reduce((sum, panel) => sum + (panel.weight || 1), 0);
@@ -46,6 +47,7 @@ function addConceptPanelsSlide(pptx, { title, intro, lead, panels, takeaway, dra
         calcTextBox(block.fontSize || 21, { text: block.text, w, fontFace: FONT_FAMILIES.sans,
           margin: 0, padding: .04 }).h + .07);
       if (block.equation) drawEquation(slide, block.equation, x, y, w, h);
+      else if (block.inlineMath) addInlineMathParagraph(slide, { runs: block.inlineMath, box: { x, y, w, h }, fontSize: block.fontSize || 21 });
       else if (block.table) addTeachingTable(slide, { ...block.table, box: { x, y, w, h } });
       else if (block.image) addAssetFrame(slide, { box: { x, y, w, h }, assetPath: block.image, framed: false });
       else slide.addText(block.text, { x, y, w, h, fontFace: FONT_FAMILIES.sans,

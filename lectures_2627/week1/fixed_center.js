@@ -1,44 +1,50 @@
 const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels');
-const { addFixedCenterSampling } = require('./fixed_center_sampling');
+const { addFixedCenterExplanation } = require('./fixed_center_sampling');
+const { addFigureSlide } = require('../../slides-common/js/pptx_layout_primitives');
+const path = require('path');
+const crypto = require('crypto');
+const betaHat = String.raw`\widehat{\beta}_1`;
+const sigmaHat = String.raw`\widehat{\sigma}`;
+const equationImage = tex => path.join('assets', 'equations', `eq_${crypto.createHash('sha1').update(tex).digest('hex').slice(0, 12)}.png`);
 
-const bridge = {
-  title: 'Do we want a separate parameter for every center?',
-  intro: 'The fixed-center model accounts for center differences. Now reconsider how we describe them.',
-  panels: [
-    { title: 'SEPARATE CENTER PARAMETERS', blocks: [
-      { text: 'Estimate a mean adjustment for each of the centers in this trial.', h: 1.0 },
-      { text: 'This provides a familiar way to adjust the treatment comparison for center.', h: 1.05 }
-    ] },
-    { title: 'A MODEL FOR VARIATION ACROSS CENTERS', blocks: [
-      { text: 'We may also want to describe how much outcomes vary across a population of centers.', h: 1.15 },
-      { text: 'Could we represent the center contributions using a shared distribution?', h: 1.05 }
-    ] }
-  ],
-  takeaway: 'Next: model center contributions using a distribution, within the same randomized block design.'
-};
+function calibrationSEEquation(results) {
+  const patientsPerTreatment = results.centers * results.patients_per_arm;
+  return String.raw`\begin{aligned}\widehat{\mathrm{SE}}(\widehat{\beta}_1)&=\widehat{\sigma}\sqrt{\frac{1}{${patientsPerTreatment}}+\frac{1}{${patientsPerTreatment}}}\\&=${Number(results.fixed.se).toFixed(2)}\ \mathrm{m}\end{aligned}`;
+}
 
 function addFixedCenterSection(pptx, drawEquation, results) {
-  addFixedCenterSampling(pptx, drawEquation);
+  addFixedCenterExplanation(pptx, drawEquation);
+  addFigureSlide(pptx, {
+    title: 'Time for lab 1',
+    assetPath: path.join('assets', 'lab1-break.png')
+  });
   const f = (x, digits = 1) => Number(x).toFixed(digits);
   addConceptPanelsSlide(pptx, {
     title: 'Lab 1 debrief: accounting for center',
-    intro: 'Compare the treatment estimates and their uncertainty for the same 480 patients.',
-    panels: [['TREATMENT ONLY', results.pooled], ['CENTER AS A FIXED EFFECT', results.fixed]].map(([title, result]) => ({
-      title, blocks: [
-        { text: `Treatment difference: ${f(result.estimate)} m`, h: .55 },
-        { text: `Standard error: ${f(result.se, 2)} m`, h: .55 },
-        { text: `95% confidence interval: ${f(result.lower)} to ${f(result.upper)} m`, h: .85 },
-        { text: `Residual SD: ${f(result.residual_sd)} m`, h: .55 }
-      ]
-    })),
-    takeaway: 'In this balanced trial, the treatment estimate is unchanged. Accounting for center reduces its standard error.',
+    panels: [
+      { title: 'SAME TREATMENT ESTIMATE', blocks: [
+        { text: `The estimated treatment effect remains ${f(results.fixed.estimate)} m.`, h: .9, gap: .3 },
+        { inlineMath: [
+          { text: 'With equal numbers in both treatment groups in every center, the two models always give the same treatment estimate (and therefore the same sampling distribution of ' },
+          { image: equationImage(betaHat), heightEm: 1.3, baselineFraction: .78 },
+          { text: ').' }
+        ], h: 2.25 }
+      ] },
+      { title: 'BETTER-CALIBRATED UNCERTAINTY', blocks: [
+        { text: 'After accounting for treatment and center, the residual SD estimates the individual-error SD, σ.', h: 1.1 },
+        { inlineMath: [
+          { text: 'The fitted model gives ' },
+          { image: equationImage(sigmaHat), heightEm: 1.0, baselineFraction: .92 },
+          { text: ` = ${f(results.fixed.residual_sd)} m and uses it to estimate the treatment effect’s SE:` }
+        ], h: 1.1 },
+        { equation: calibrationSEEquation(results), h: 1.25 }
+      ] }
+    ],
+    takeaway: 'The estimated SE now uses the individual variation that determines the treatment estimate’s sampling variability. Better calibration does not always mean a smaller SE.',
+    takeawayHeight: 1.1,
     drawEquation
   });
 }
 
-function addCenterDistributionBridge(pptx, drawEquation) {
-  return addConceptPanelsSlide(pptx, { ...bridge, drawEquation });
-}
-
-const equations = [];
-module.exports = { addFixedCenterSection, addCenterDistributionBridge, equations };
+const equations = [betaHat, sigmaHat, calibrationSEEquation(require('./assets/model_results.json'))];
+module.exports = { addFixedCenterSection, equations };

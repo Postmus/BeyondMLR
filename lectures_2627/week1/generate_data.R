@@ -3,20 +3,21 @@ library(nlme)
 source('../../slides-common/R/common_fig.R')
 set.seed(158)
 centers <- paste('Center', LETTERS[1:6])
-# Permute labels while retaining the original patient draws and treatment allocation.
+# Use the established center-label permutation for the revised teaching trial.
 # Original A–F cohorts are now D, A, F, C, B, E; display levels remain alphabetical.
 generation_centers <- centers[c(4, 1, 6, 3, 2, 5)]
 center_effects <- setNames(c(-29, -17, -5, 8, 16, 27), generation_centers)
-patients_per_arm <- 40
+patients_per_arm <- 10
+treatment_effect <- 10
 dat <- do.call(rbind, lapply(seq_along(centers), function(j) {
   treatment <- sample(rep(c('Standard','Enhanced'), each=patients_per_arm))
   data.frame(center=generation_centers[j], treatment=treatment,
-    distance=round(360 + center_effects[[generation_centers[j]]] + 24*(treatment=='Enhanced') + rnorm(2*patients_per_arm,0,24), 1))
+    distance=round(360 + center_effects[[generation_centers[j]]] + treatment_effect*(treatment=='Enhanced') + rnorm(2*patients_per_arm,0,24), 1))
 }))
 dat$center <- factor(dat$center, levels=centers)
 dat$treatment <- factor(dat$treatment, levels=c('Standard','Enhanced'))
 write.csv(dat,'assets/rehabilitation_data.csv',row.names=FALSE)
-# Preserve the original single-center teaching cohort, now labelled Center D.
+# Retain Center D for the auxiliary single-center teaching figures.
 single <- subset(dat, center==generation_centers[1])
 base <- theme_minimal(base_size=16)+theme(panel.grid.minor=element_blank(),panel.grid.major.x=element_blank(),plot.title=element_text(face='bold'),legend.position='none',plot.margin=margin(10,16,10,10))
 cols <- c(Standard=color_primary,Enhanced=color_accent)
@@ -53,7 +54,7 @@ p_residual <- ggplot(diagnostics,aes(fitted,residual)) +
 p_qq <- ggplot(diagnostics,aes(sample=standardized)) +
   stat_qq_line(color=color_accent,linewidth=.8) +
   stat_qq(color=color_primary,alpha=.75,size=1.8) +
-  labs(title='Normal Q–Q plot',x='Theoretical quantiles',y='Std. residual') + diagnostic_theme
+  labs(title='Normal Q-Q plot',x='Theoretical quantiles',y='Std. residual') + diagnostic_theme
 ggsave('assets/residuals-vs-fitted.png',p_residual,width=5.80,height=2.38,dpi=220,bg='white')
 ggsave('assets/normal-qq.png',p_qq,width=5.80,height=2.38,dpi=220,bg='white')
 output<-c(paste('single means',paste(round(tapply(single$distance,single$treatment,mean),1),collapse=' ')),paste('single contrast',round(coef(singlemod)[2],2),'se',round(summary(singlemod)$coefficients[2,2],2)),paste('pooled',round(coef(m0)[2],2),'se',round(summary(m0)$coefficients[2,2],2),'resid_sd',round(sigma(m0),2)),paste('fixed',round(coef(m1)[2],2),'se',round(summary(m1)$coefficients[2,2],2),'resid_sd',round(sigma(m1),2)),paste('random',round(fixef(m2)[2],2),'se',round(summary(m2)$tTable[2,2],2),'center_var',round(as.numeric(vc[1,'Variance']),2),'resid_var',round(as.numeric(vc[2,'Variance']),2)))
@@ -85,6 +86,7 @@ re_ci <- unname(intervals(m2,which='fixed')$fixed['treatmentEnhanced',c('lower',
 vc_center <- as.numeric(vc[1,'Variance']); vc_patient <- as.numeric(vc[2,'Variance'])
 statistics <- list(
   patients_per_arm=patients_per_arm, centers=length(centers), total=nrow(dat),
+  generating_treatment_effect=treatment_effect,
   single=list(standard_mean=mean(single$distance[single$treatment=='Standard']),
     enhanced_mean=mean(single$distance[single$treatment=='Enhanced']),
     standard_sd=sd(single$distance[single$treatment=='Standard']),

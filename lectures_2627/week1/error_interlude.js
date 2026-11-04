@@ -1,4 +1,27 @@
 const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels');
+const { addTeachingTableSlide } = require('../../slides-common/js/teaching_table');
+
+const fullModelEquation = String.raw`Y_{ij}=\beta_0+\beta_1T_{ij}+c_j+\varepsilon_{ij}`;
+
+function addTreatmentCenterModelSlide(pptx, drawEquation) {
+  return addTeachingTableSlide(pptx, {
+    title: 'The data-generating model: fixed center effects',
+    intro: 'Patient i in center j: Yᵢⱼ is walking distance. Tᵢⱼ = 0 (standard) or 1 (enhanced).',
+    leadEquation: fullModelEquation,
+    drawEquation,
+    columns: [
+      { label: 'TERM', weight: 1.5 },
+      { label: 'INTERPRETATION', weight: 10.5 }
+    ],
+    rows: [
+      ['β₀', 'Expected standard-care outcome averaged equally across the six centers.'],
+      ['β₁', 'Enhanced-minus-standard difference, assumed to be the same in every center.'],
+      ['cⱼ', 'Center j’s deviation from the average standard-care outcome.\nThe center deviations sum to zero: c₁ + ⋯ + c₆ = 0.'],
+      ['εᵢⱼ', 'Deviation from the expected outcome given treatment and center.\nIndependent Normal errors with mean 0 and common variance σ².']
+    ],
+    fontSize: 21
+  });
+}
 
 // Generic model discussion: separate from the rehabilitation case and its EDA.
 // Expectations hold treatment assignments and patient-to-center memberships fixed.
@@ -6,24 +29,20 @@ const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels
 // In the random-center formulation expectations average over c_j unless conditioned.
 const slides = [
   {
-    title: 'What happens if we leave center out?',
-    intro: 'Suppose expected outcomes differ between centers, even under the same treatment.',
+    title: 'Omitting center: a mathematical explanation',
     panels: [
-      { title: 'ACCOUNTING FOR TREATMENT AND CENTER', blocks: [
-        { equation: String.raw`Y_{ij}=\beta_0+\beta_1T_{ij}+c_j+\varepsilon_{ij}`, h: .55 },
-        { equation: String.raw`\varepsilon_{ij}\overset{\mathrm{iid}}{\sim}N(0,\sigma^2)`, h: .5 },
-        { text: 'cⱼ: shifts the predicted outcome up or down for both treatments in center j.', fontSize: 20, h: .85 },
-        { text: 'εᵢⱼ: the remaining error; independent across patients, Normally distributed with mean zero and common variance.', fontSize: 20, h: .95 }
+      { title: 'TREATMENT AND CENTER', blocks: [
+        { equation: fullModelEquation, h: .6, gap: .3 },
+        { equation: String.raw`\varepsilon_{ij}\overset{\mathrm{iid}}{\sim}N(0,\sigma^2)`, h: .6, gap: .3 },
+        { text: 'Center differences are included in the expected outcome. The remaining errors satisfy the iid zero-mean Normal assumption.', fontSize: 21, h: 1.25 }
       ] },
-      { title: 'OUR TREATMENT-ONLY MODEL', blocks: [
-        { equation: String.raw`Y_{ij}=\beta_0+\beta_1T_{ij}+u_{ij}`, h: .5 },
-        { text: 'Our prediction uses treatment alone. The difference associated with center therefore remains in the error:', fontSize: 20, h: .9 },
-        { equation: String.raw`\boxed{u_{ij}=c_j+\varepsilon_{ij}}`, h: .5 },
-        { text: 'Does the original assumption still hold?', fontSize: 20, h: .4 },
-        { equation: String.raw`u_{ij}\overset{\mathrm{iid}}{\sim}N(0,\sigma_u^2)\quad\text{?}`, h: .5 }
+      { title: 'TREATMENT ONLY', blocks: [
+        { equation: String.raw`Y_{ij}=\beta_0+\beta_1T_{ij}+u_{ij}`, h: .6, gap: .3 },
+        { equation: String.raw`\boxed{u_{ij}=c_j+\varepsilon_{ij}}`, h: .6, gap: .3 },
+        { equation: String.raw`u_{ij}\sim N(c_j,\sigma^2)`, h: .6, gap: .3 },
+        { text: 'The errors remain independent, but are no longer identically distributed: their means differ by center, while their variances remain equal.', fontSize: 21, h: 1.65 }
       ] }
-    ],
-    takeaway: 'If the model on the left is correct, are the errors in our treatment-only model still independent and identically Normally distributed, with mean zero?'
+    ]
   },
   {
     title: 'What is the expected error?',
@@ -84,11 +103,11 @@ function addFixedRandomPerspectiveSlide(pptx) {
         { text: 'We describe the center differences using a distribution with an estimated variance.', h: 1.0 }
       ] }
     ],
-    takeaway: 'First, we hold the centers fixed and examine what happens when we repeatedly sample new patients.'
+    takeaway: 'We now sample centers as well as patients, while retaining treatment randomization within each center.'
   });
 }
 function addErrorInterlude(pptx, drawEquation) {
   slides.slice(1).forEach(spec => addConceptPanelsSlide(pptx, { ...spec, drawEquation }));
 }
 
-module.exports = { addOmittedCenterSlide, addFixedRandomPerspectiveSlide, addErrorInterlude, slides };
+module.exports = { addTreatmentCenterModelSlide, addOmittedCenterSlide, addFixedRandomPerspectiveSlide, addErrorInterlude, slides };

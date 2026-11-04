@@ -1,24 +1,21 @@
 const path = require('path');
 const { addConceptPanelsSlide, addConceptTableSlide } = require('../../slides-common/js/concept_panels');
+const { treatmentOnlyAssumption } = require('./initial_model');
 
 const meanModel = {
-  title: 'Start with a model for the outcome',
-  intro: 'For patient i in center j: Yᵢⱼ is walking distance and Tᵢⱼ indicates the assigned treatment.',
+  title: 'The treatment-only model',
+  intro: 'Patient i, center j: Yᵢⱼ is walking distance; Tᵢⱼ = 0 (standard) or 1 (enhanced).',
   panels: [
     { title: 'SYSTEMATIC PART AND ERROR', blocks: [
       { equation: String.raw`Y_{ij}=\underbrace{\beta_0+\beta_1T_{ij}}_{\text{model-predicted outcome}}+\underbrace{u_{ij}}_{\text{error}}`, h: .9 },
-      { text: 'The model predicts an outcome from the patient’s treatment.', h: .85 },
-      { text: 'uᵢⱼ is the error: the difference between the observed outcome and that prediction.', h: 1.05 }
+      { equation: treatmentOnlyAssumption, h: .55, gap: .18 },
+      { text: 'β₁ is the expected difference in walking distance between enhanced and standard care.', h: .95 },
+      { text: 'uᵢⱼ is the individual error. Errors are independent and identically distributed: Normal, with mean zero and a common variance.', h: 1.45 }
     ] },
-    { title: 'INTERPRETING THE PREDICTION', blocks: [
-      { text: 'Standard care (Tᵢⱼ = 0):', h: .4 },
-      { equation: String.raw`\beta_0`, h: .4 },
-      { text: 'Enhanced care (Tᵢⱼ = 1):', h: .4 },
-      { equation: String.raw`\beta_0+\beta_1`, h: .4 },
-      { text: 'β₁ is the difference in model-predicted outcomes between enhanced and standard care.', h: .95 }
+    { title: 'MODEL-PREDICTED OUTCOMES', blocks: [
+      { image: path.join('assets', 'conditional-distributions.png'), h: 4.2 }
     ] }
-  ],
-  takeaway: 'To complete the statistical model, we need to specify how the errors behave.'
+  ]
 };
 
 const rows = [
@@ -46,7 +43,7 @@ const covariance = {
   takeaway: 'Both panels have the same means and variances. The dashed lines mark the expected errors.'
 };
 
-function addMeanModelSlide(pptx, drawEquation) {
+function addTreatmentOnlyModelSlide(pptx, drawEquation) {
   return addConceptPanelsSlide(pptx, { ...meanModel, drawEquation });
 }
 function addErrorRecap(pptx, drawEquation) {
@@ -55,4 +52,4 @@ function addErrorRecap(pptx, drawEquation) {
   addConceptPanelsSlide(pptx, { ...covariance, drawEquation });
 }
 const equations = [...meanModel.panels.flatMap(p => p.blocks.filter(b => b.equation).map(b => b.equation)), ...rows.map(r => r.equation)];
-module.exports = { addMeanModelSlide, addErrorRecap, equations };
+module.exports = { addTreatmentOnlyModelSlide, addErrorRecap, equations };

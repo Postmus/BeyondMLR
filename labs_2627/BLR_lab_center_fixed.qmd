@@ -7,6 +7,9 @@ format:
     toc-location: right
   pdf:
     toc: false
+    include-in-header:
+      text: |
+        \usepackage{needspace}
 format-links: [pdf]
 execute:
   warning: false
@@ -17,13 +20,13 @@ execute:
 
 # A multicenter rehabilitation trial
 
-We return to the rehabilitation trial from the lecture. In this simulated study, 480 patients recovering from knee replacement receive either **standard care** or an **enhanced rehabilitation program**. Standard care consists of weekly physiotherapy and home exercises; enhanced care adds a weekly supervised session. The outcome is the distance walked during a six-minute walk test at 12 weeks, measured in meters. A larger distance indicates better walking performance.
+We return to the rehabilitation trial from the lecture. In this simulated study, 120 patients recovering from knee replacement receive either **standard care** or an **enhanced rehabilitation program**. Standard care consists of weekly physiotherapy and home exercises; enhanced care adds a weekly supervised session. The outcome is the distance walked during a six-minute walk test at 12 weeks, measured in meters. A larger distance indicates better walking performance.
 
-The study includes six centers. Within each center, 40 patients are randomly assigned to standard care and 40 to enhanced care. This is a **randomized block design**, with center as the blocking factor. These are simulated teaching data, not observations from an actual clinical trial.
+The study includes six centers. Within each center, 10 patients are randomly assigned to standard care and 10 to enhanced care. This is a **randomized block design**, with center as the blocking factor. These are simulated teaching data, not observations from an actual clinical trial.
 
-Our question is: **What is the estimated difference in expected walking distance between enhanced and standard care, and how precisely is it estimated?** We will compare an analysis that ignores center with an analysis that includes center as a fixed effect.
+Our question is: **What is the estimated difference in expected walking distance between enhanced and standard care, and how precisely is it estimated?** We will explore differences between centers and fit a model that includes center as a fixed effect.
 
-By the end of this lab, you should be able to specify and fit both models, interpret their coefficients, and use `emmeans` to obtain the treatment difference and its standard error and confidence interval.
+By the end of this lab, you should be able to visualize treatment and center differences, fit and interpret the fixed-effects model, assess the overall contribution of center using an analysis of variance table, and check the model assumptions.
 
 ::: {.callout-note icon=false title="Working through the lab"}
 Run the code in order in an R script, and record your answers to the questions. The lab page shows the code; you generate the results yourself.
@@ -31,11 +34,11 @@ Run the code in order in an R script, and record your answers to the questions. 
 
 # Setup and data
 
-We use `ggplot2` for figures, `dplyr` for summaries, and `emmeans` for model-based treatment comparisons. The following code installs any missing packages and loads them.
+We use `ggplot2` for figures and `dplyr` for summaries. The following code installs any missing packages and loads them.
 
 ```{r}
 #| label: setup
-packages <- c("ggplot2", "dplyr", "emmeans")
+packages <- c("ggplot2", "dplyr")
 missing_packages <- packages[
   !vapply(packages, requireNamespace, logical(1), quietly = TRUE)
 ]
@@ -45,7 +48,6 @@ if (length(missing_packages) > 0) {
 
 library(ggplot2)
 library(dplyr)
-library(emmeans)
 ```
 
 [Download the rehabilitation dataset](data/rehabilitation_week1.csv). Save it in a folder named `data` inside your working directory. Keep your R script in that working directory. You can use `getwd()` to check where R is looking for files.
@@ -73,48 +75,56 @@ Check the allocation table. How many patients are in each treatment group within
 
 # Explore treatment and center differences
 
-First summarize the outcomes by treatment, pooling patients across centers.
+Create a plot that shows the individual walking distances and the treatment-specific means within each center. Add the overall mean for each treatment as a reference line. This lets us examine center differences while keeping the two treatment groups separate.
+
+First calculate the mean walking distance for each treatment within each center, and then the overall mean for each treatment.
 
 ```{r}
-#| label: treatment-summary
-rehab |>
-  group_by(treatment) |>
-  summarise(n = n(), mean_distance = mean(distance),
-            sd_distance = sd(distance), .groups = "drop")
-
-ggplot(rehab, aes(x = treatment, y = distance, fill = treatment)) +
-  geom_boxplot() +
-  labs(x = "Treatment", y = "Six-minute walk distance (m)") +
-  theme_minimal() +
-  theme(legend.position = "none")
-```
-
-Next calculate the treatment-specific means within centers and the overall mean for each center. The plot shows means only, with centers on the vertical axis. The black diamond summarizes each center across both treatments.
-
-```{r}
-#| label: center-means
+#| label: center-summaries
 center_treatment_means <- rehab |>
   group_by(center, treatment) |>
   summarise(mean_distance = mean(distance), .groups = "drop")
 
-center_means <- rehab |>
-  group_by(center) |>
+treatment_means <- rehab |>
+  group_by(treatment) |>
   summarise(mean_distance = mean(distance), .groups = "drop")
-
-ggplot(center_treatment_means,
-       aes(x = mean_distance, y = center, color = treatment)) +
-  geom_point(size = 3) +
-  geom_point(data = center_means,
-             aes(x = mean_distance, y = center),
-             inherit.aes = FALSE, shape = 18, size = 3, color = "black") +
-  labs(x = "Mean six-minute walk distance (m)", y = "Center",
-       color = "Treatment",
-       caption = "Black diamonds: overall center means") +
-  theme_minimal()
 ```
 
+Use these summaries together with the individual observations to create the plot.
+
+```{r}
+#| label: center-plot
+#| fig-width: 10
+#| fig-height: 5.5
+center_plot <- ggplot(rehab,
+                      aes(x = center, y = distance, color = treatment)) +
+  geom_hline(data = treatment_means,
+             aes(yintercept = mean_distance, color = treatment),
+             linetype = "dashed", linewidth = 0.7, show.legend = FALSE) +
+  geom_point(position = position_jitterdodge(jitter.width = 0.18,
+                                            jitter.height = 0,
+                                            dodge.width = 0.64,
+                                            seed = 20261104),
+             alpha = 0.35, size = 1.8) +
+  geom_point(data = center_treatment_means,
+             aes(y = mean_distance),
+             position = position_dodge(width = 0.64),
+             shape = 18, size = 4, show.legend = FALSE) +
+  scale_color_manual(values = c(Standard = "#173F48",
+                                 Enhanced = "#D58A3D")) +
+  labs(x = "Center", y = "Six-minute walk distance (m)",
+       color = "Treatment") +
+  guides(color = guide_legend(override.aes = list(alpha = 1, size = 3))) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "top")
+
+center_plot
+```
+
+The small points are individual observations. They are shifted slightly along the horizontal axis to make overlapping points easier to see; their walking distances are unchanged. The diamonds show the observed treatment means within each center. The dashed lines show the overall treatment means across all six centers.
+
 ::: {.callout-important icon=false title="Question 2"}
-Describe the treatment difference and the differences between centers. What feature of the study design would a treatment-only analysis leave out?
+Does the plot suggest substantial differences in walking distance between centers? Support your answer using the center-specific means and the variation among patients within centers.
 :::
 
 # Choose how to code the factors
@@ -172,79 +182,11 @@ The intercept is a mean for **standard care**, because standard care is coded 0.
 
 These coding choices change how we express the model, but do not change its fitted outcomes or the estimated treatment difference and its standard error. We set the coding on each factor explicitly, so the analysis does not depend on previously changed global R options.
 
-# Start with a treatment-only model
-
-## Specify and fit the model
-
-Using the lecture notation, let $Y_{ij}$ be the outcome for patient $i$ in center $j$, and let $T_{ij}$ equal 0 for standard care and 1 for enhanced care. The treatment-only model is
-
-$$
-Y_{ij} = \beta_0 + \beta_1 T_{ij} + u_{ij},
-\qquad u_{ij} \overset{\mathrm{iid}}{\sim} N(0,\sigma_u^2).
-$$
-
-Here, $\beta_0$ is the model-predicted outcome under standard care and $\beta_1$ is the enhanced-minus-standard difference. The error $u_{ij}$ is the difference between the outcome and its model prediction. The model assumes independent, normally distributed errors with mean zero and common variance.
-
-```{r}
-#| label: pooled-model
-model_pooled <- lm(distance ~ treatment, data = rehab)
-summary(model_pooled)
-```
-
-In an R model formula, the outcome is on the left of `~`, and predictors are on the right. An intercept is included automatically. With our dummy coding, the treatment coefficient gives the difference between enhanced and standard care.
-
-::: {.callout-important icon=false title="Question 3"}
-Interpret the intercept and treatment coefficient in meters. Which number in the coefficient table is the standard error of the treatment difference? How does this differ from the residual standard error at the bottom of the output?
-:::
-
-## Obtain the treatment comparison with emmeans
-
-### Calculate the predicted treatment means
-
-The estimated regression coefficients allow us to calculate the **predicted mean outcome** for each treatment group. With our dummy coding, the predicted mean for standard care is $\hat{\beta}_0$, and the predicted mean for enhanced care is $\hat{\beta}_0+\hat{\beta}_1$. The hats indicate estimated coefficients.
-
-To calculate these means, we first specify the predictor values for which we want predictions. `emmeans` calls this the **reference grid**. In the treatment-only model, the grid contains just two rows:
-
-| Treatment | Indicator $T_{ij}$ | Predicted mean outcome |
-| --- | ---: | --- |
-| Standard | 0 | $\hat{\beta}_0$ |
-| Enhanced | 1 | $\hat{\beta}_0+\hat{\beta}_1$ |
-
-For each row, `emmeans()` calculates the predicted mean outcome from the estimated regression coefficients, together with its standard error and confidence interval. The resulting means are called **estimated marginal means**. In this treatment-only model, they equal the observed treatment-group means. When we add center later, we will see how the same function averages predictions across centers.
-
-```{r}
-#| label: pooled-means
-means_pooled <- emmeans(model_pooled, ~ treatment)
-means_pooled
-```
-
-The command has three parts:
-
-- `model_pooled` supplies the fitted model, including the estimated coefficients and the information needed to calculate uncertainty.
-- `~ treatment` requests a separate estimated mean for each treatment level. It specifies which means we want; it does not fit a new regression model.
-- `means_pooled <-` saves the results so that we can inspect them and then compare the treatment means. Typing `means_pooled` displays the output.
-
-In the output, `emmean` is the predicted mean outcome, `SE` is its standard error, and `lower.CL` and `upper.CL` are the limits of its 95% confidence interval.
-
-### Compare the predicted treatment means
-
-Our research question concerns the difference between these means. The `pairs()` function calculates pairwise differences. Because our treatment levels are ordered Standard, Enhanced, `reverse = TRUE` gives **enhanced minus standard care**. There is only one pairwise comparison when there are two treatments.
-
-```{r}
-#| label: pooled-contrast
-difference_pooled <- pairs(means_pooled, reverse = TRUE)
-summary(difference_pooled, infer = c(TRUE, TRUE))
-```
-
-We save the difference as `difference_pooled`. In `summary()`, `infer = c(TRUE, TRUE)` requests both a confidence interval (the first `TRUE`) and a test against a zero difference (the second `TRUE`). The output reports the estimated difference, its standard error, and its 95% confidence interval. The difference is also called a **contrast** in the output.
-
-The standard error printed beside each estimated marginal mean describes uncertainty about that **mean**. To answer our question, use the standard error printed for the **difference**. It accounts for the covariance between the two estimated means.
-
-# Include center as a fixed effect
+# Fit the fixed-effects model
 
 ## Specify the model
 
-Centers may differ in their expected outcomes. We can represent these differences by adding a separate center contribution:
+Let $Y_{ij}$ be the outcome for patient $i$ in center $j$, and let $T_{ij}$ equal 0 for standard care and 1 for enhanced care. We represent differences between centers through a separate center contribution:
 
 $$
 Y_{ij} = \beta_0 + \beta_1 T_{ij} + c_j + \varepsilon_{ij},
@@ -253,7 +195,7 @@ $$
 
 With effects coding for center, we impose $\sum_{j=1}^{6}c_j=0$. The intercept represents the expected outcome under standard care, averaged equally across the six centers. Each $c_j$ is a fixed parameter describing that center's deviation from the average, comparing patients receiving the same treatment. We estimate five center contributions directly and recover the sixth from the sum-to-zero constraint.
 
-The treatment coefficient remains the enhanced-minus-standard difference. This model assumes that the expected treatment difference is the same in every center: it contains no treatment-by-center interaction. The remaining errors are assumed to be iid Normal with mean zero and common variance, after accounting for treatment and center.
+The treatment coefficient is the enhanced-minus-standard difference. This model assumes that the expected treatment difference is the same in every center: it contains no treatment-by-center interaction. The remaining errors are assumed to be iid Normal with mean zero and common variance, after accounting for treatment and center.
 
 ## Connect the model to the design matrix
 
@@ -264,6 +206,10 @@ Y_{ij}=\beta_0+\beta_1T_{ij}
 +c_AZ_{Aj}+c_BZ_{Bj}+c_CZ_{Cj}+c_DZ_{Dj}+c_EZ_{Ej}
 +\varepsilon_{ij}.
 $$
+
+```{=latex}
+\Needspace{13\baselineskip}
+```
 
 Here, $Z_{Aj},\ldots,Z_{Ej}$ are the numerical values assigned to center $j$ by the coding scheme:
 
@@ -294,6 +240,8 @@ model_fixed <- lm(distance ~ treatment + center, data = rehab)
 summary(model_fixed)
 ```
 
+In an R model formula, the outcome is on the left of `~`, and predictors are on the right. An intercept is included automatically.
+
 We can inspect the first six patient rows of the actual design matrix used by R:
 
 ```{r}
@@ -305,69 +253,54 @@ head(model.matrix(model_fixed))
 
 The `+ center` term adds the five effects-coded columns to the model. For example, `center1` estimates the contribution for Center A: a positive value indicates a higher expected outcome than the center average, for either treatment. The model-predicted standard-care outcome in Center A is the intercept plus `center1`.
 
-::: {.callout-important icon=false title="Question 4"}
+::: {.callout-important icon=false title="Question 3"}
 Interpret the intercept, the treatment coefficient, and `center1`. How would you recover the contribution for Center F? Why would the intercept have a different interpretation if we used dummy coding for center?
 :::
 
-## Compare treatments after accounting for center
+# Assess the model results
 
-The reference grid now contains every combination of treatment and center: two treatments $\times$ six centers = twelve rows. For each combination, `emmeans()` calculates a predicted mean outcome from the estimated coefficients:
+## Treatment effect and uncertainty
 
-$$
-\widehat{\text{Mean outcome}}_{tj}
-=\hat{\beta}_0+\hat{\beta}_1t+\hat{c}_j,
-\qquad t\in\{0,1\}.
-$$
+In `summary(model_fixed)`, the row `treatmentEnhanced` gives the estimated enhanced-minus-standard difference, its standard error, and a test against a zero difference. The residual standard error at the bottom of the output estimates the individual-error standard deviation after accounting for treatment and center.
 
-Requesting `~ treatment` then averages these predictions across centers, producing one mean per treatment. By default, each of the six centers receives equal weight. The resulting treatment means are **estimated marginal means**. Here, “marginal” refers to averaging over the center factor.
+Use `confint()` to obtain the 95% confidence interval for the treatment coefficient, and `sigma()` to extract the residual standard deviation.
 
 ```{r}
-#| label: fixed-means
-means_fixed <- emmeans(model_fixed, ~ treatment)
-means_fixed
+#| label: treatment-uncertainty
+confint(model_fixed, "treatmentEnhanced")
+sigma(model_fixed)
 ```
 
-Because effects coding makes the center contributions sum to zero, their average contribution is zero. The predicted treatment means are therefore again $\hat{\beta}_0$ for standard care and $\hat{\beta}_0+\hat{\beta}_1$ for enhanced care, now using the coefficients from the center-adjusted model. In this balanced dataset, these also equal the observed pooled treatment means. Their uncertainty is calculated from the center-adjusted model.
+The standard error of the treatment coefficient describes uncertainty about the estimated treatment difference. The residual standard deviation describes the remaining variation in individual walking distances. Both are expressed in meters.
 
-We compare the two predicted means in exactly the same way as before:
-
-```{r}
-#| label: fixed-contrast
-difference_fixed <- pairs(means_fixed, reverse = TRUE)
-summary(difference_fixed, infer = c(TRUE, TRUE))
-```
-
-# Compare the two analyses
-
-Collect the treatment comparisons in one table. `as.data.frame()` makes the result available for selecting columns and combining rows.
-
-```{r}
-#| label: comparison-table
-result_pooled <- as.data.frame(confint(difference_pooled))
-result_fixed <- as.data.frame(confint(difference_fixed))
-
-comparison <- bind_rows(
-  "Treatment only" = result_pooled,
-  "Center fixed" = result_fixed,
-  .id = "model"
-) |>
-  select(model, estimate, SE, lower.CL, upper.CL)
-comparison
-
-# Residual standard deviation describes remaining outcome variation, in meters.
-data.frame(
-  model = c("Treatment only", "Center fixed"),
-  residual_standard_deviation = c(sigma(model_pooled), sigma(model_fixed))
-)
-```
-
-::: {.callout-important icon=false title="Question 5"}
-Compare the treatment estimates, standard errors and confidence intervals. What changes when center is included? Explain the unchanged treatment estimate using the balanced allocation within each center, and relate the standard error change to the residual standard deviations.
+::: {.callout-important icon=false title="Question 4"}
+What are the estimated enhanced-minus-standard difference, its standard error, and its 95% confidence interval? What is the residual standard deviation, and how does its interpretation differ from that of the treatment coefficient's standard error?
 :::
 
-Recall the distinction between **bias** and **precision** from the lecture. One dataset cannot establish whether an estimator is unbiased across repeated studies. Under the additive model considered here, balanced allocation makes the center contributions cancel in the treatment comparison. Accounting for center removes their contribution to the residual variation used to estimate uncertainty. This explains the smaller standard error in this example; it is not a general rule that ignoring grouping always makes standard errors smaller or always makes them larger.
+## Overall contribution of center
 
-# Check the model and report the result
+The coefficient table describes individual center effects. An **analysis of variance (ANOVA) table** also provides an overall test of whether expected walking distance differs between centers after accounting for treatment.
+
+```{r}
+#| label: fixed-anova
+anova(model_fixed)
+```
+
+`anova()` produces a row for treatment, a row for center, and a row for the residual variation. With treatment followed by center in our model formula, the center row assesses the contribution of center after treatment has been included.
+
+- `Df` gives the degrees of freedom. Center has five because six center effects are linked by the sum-to-zero constraint.
+- `Sum Sq` gives the variation attributed to each term, expressed as a sum of squares.
+- `Mean Sq` divides each sum of squares by its degrees of freedom. The residual mean square estimates the individual-error variance.
+- `F value` compares a term's mean square with the residual mean square.
+- `Pr(>F)` is the p-value for the corresponding overall test.
+
+For center, the null hypothesis is that expected walking distance is the same in all six centers for patients receiving the same treatment. Under effects coding, this means that all six center effects are zero. The plot and estimated center effects show the size of the differences in meters; the ANOVA table assesses the evidence for those differences.
+
+::: {.callout-important icon=false title="Question 5"}
+What does the center row tell you about differences between centers after accounting for treatment? Relate this result to the pattern in your exploratory plot.
+:::
+
+# Check the model assumptions
 
 As in ordinary linear regression, residual plots help assess whether the error distribution and variance assumptions are plausible.
 
@@ -380,17 +313,5 @@ plot(model_fixed, which = 2)  # Normal Q-Q plot
 The first plot can reveal changes in residual spread or patterns left in the mean. The second compares the residual distribution with a Normal distribution. Residuals are calculated from the fitted model; they are estimates of the unobserved errors.
 
 ::: {.callout-important icon=false title="Question 6"}
-Do these plots suggest clear violations of the Normality or constant-variance assumptions? Why would reassuring plots alone not establish that the model adequately represents the study design?
+Do these plots suggest clear violations of the Normality or constant-variance assumptions? Describe the patterns that support your answer.
 :::
-
-::: {.callout-important icon=false title="Question 7"}
-Write a short results paragraph stating the outcome and its units, how center was included, and the estimated enhanced-minus-standard difference with its 95% confidence interval. Add one sentence explaining how accounting for center changed the reported uncertainty.
-:::
-
-# Further help
-
-For explanations of R syntax and data-handling commands used in the labs, see the [“Whole game” section of *R for Data Science* (2nd edition)](https://r4ds.hadley.nz/whole-game.html) by Hadley Wickham, Mine Çetinkaya-Rundel, and Garrett Grolemund. It provides a reference for the pipe (`|>`), data preparation, summary statistics and plotting.
-
-The [bind_rows() documentation](https://dplyr.tidyverse.org/reference/bind_rows.html) explains how to combine results into one table, including the `.id` argument used to identify the models in our comparison table.
-
-For help with the treatment comparisons, see the [emmeans guide to comparisons and contrasts](https://rvlenth.github.io/emmeans/articles/comparisons.html).

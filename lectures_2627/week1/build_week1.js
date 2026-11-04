@@ -8,17 +8,16 @@ const {autoFontSize}=require('./pptxgenjs_helpers/text');
 const {COLORS, FONT_FAMILIES}=require('../../slides-common/js/blr_theme');
 const primitives=require('../../slides-common/js/pptx_layout_primitives');
 const {writePresentation}=require('../../slides-common/js/write_presentation');
-const {addOmittedCenterSlide,addFixedRandomPerspectiveSlide}=require('./error_interlude');
-const {addFixedCenterSection,addCenterDistributionBridge}=require('./fixed_center');
-const {addRandomCenterSampling}=require('./random_center_sampling');
+const {addTreatmentCenterModelSlide,addOmittedCenterSlide}=require('./error_interlude');
+const {addFixedCenterSection}=require('./fixed_center');
+const {addSimulationApproach,addFixedSimulationOpening}=require('./simulation_demonstration');
+const {addRandomCenterModel}=require('./random_center_model');
 const {addLab2Debrief}=require('./lab2_debrief');
-const {addDesignConclusion}=require('./design_conclusion');
 const {addCourseIntroduction}=require('./course_introduction');
-const {addMeanModelSlide,addErrorRecap}=require('./error_recap');
-const {treatmentOnlyModel,treatmentOnlyAssumption}=require('./initial_model');
-const {addStudyOverviewSlide,addConditionalModelSlide,addDiagnosticsInterpretationSlide}=require('../../slides-common/js/course_builders');
+const {addTreatmentOnlyModelSlide}=require('./error_recap');
+const {addStudyOverviewSlide,addDiagnosticsInterpretationSlide}=require('../../slides-common/js/course_builders');
 const {defineTemplateMasters,addBase,addSlideTitle,addTextBox,addAssetFrame,addNoteBox,addBrandedTitleSlide,addSectionSlide,addBulletVisualSlide,addComparisonSlide,addFigureSlide}=primitives;
-const pptx=new pptxgen(); pptx.layout='LAYOUT_WIDE'; pptx.author='Beyond MLR';pptx.subject='Modeling center effects and comparing treatments';pptx.title='Randomized block designs | Beyond MLR — Week 1';pptx.lang='en-GB';pptx.theme={headFontFace:FONT_FAMILIES.sans,bodyFontFace:FONT_FAMILIES.sans,lang:'en-GB'};defineTemplateMasters(pptx);
+const pptx=new pptxgen(); pptx.layout='LAYOUT_WIDE'; pptx.author='Beyond MLR';pptx.subject='Modeling center effects and comparing treatments';pptx.title='Randomized block designs | Beyond MLR | Week 1';pptx.lang='en-GB';pptx.theme={headFontFace:FONT_FAMILIES.sans,bodyFontFace:FONT_FAMILIES.sans,lang:'en-GB'};defineTemplateMasters(pptx);
 const C={navy:COLORS.primary,teal:COLORS.primary,orange:COLORS.accent,ink:COLORS.text,muted:COLORS.muted,pale:COLORS.surfaceMuted,line:COLORS.cardLine,white:COLORS.card,gray:COLORS.background};
 const W=13.333,H=7.5;
 const R=JSON.parse(fs.readFileSync(path.join('assets','model_results.json'),'utf8'));
@@ -30,7 +29,7 @@ function line(s,x1,y1,x2,y2,color=C.line,width=1){s.addShape(pptx.ShapeType.line
 function header(s,title,section='WEEK 1'){addBase(s);addSlideTitle(s,title);}
 function footer(s,n){txt(s,'BEYOND MLR · WEEK 1',10.15,7.18,2.1,.16,{fontSize:8,color:C.muted,align:'right'});txt(s,String(n),12.35,7.18,.35,.16,{fontSize:8,color:C.muted,align:'right'});}
 function slide(title,section){let s=pptx.addSlide();header(s,title,section);return s;}
-function bullet(s,items,x,y,w,fs=20,dy=.61){items.forEach((t,i)=>{txt(s,'–',x,y+i*dy,.2,.31,{fontSize:fs,color:C.teal});txt(s,t,x+.31,y+i*dy,w-.31,dy-.12,{fontSize:fs,valign:'top',breakLine:false});});}
+function bullet(s,items,x,y,w,fs=20,dy=.61){items.forEach((t,i)=>{txt(s,'•',x,y+i*dy,.2,.31,{fontSize:fs,color:C.teal});txt(s,t,x+.31,y+i*dy,w-.31,dy-.12,{fontSize:fs,valign:'top',breakLine:false});});}
 function fig(s,file,x,y,w,h){addAssetFrame(s,{box:{x,y,w,h},assetPath:path.join('assets',file),fit:'contain'});}
 function panelText(s,label,body,x,y,w){addTextBox(s,{box:{x:x-.13,y:y-.14,w:w+.2,h:1.78},title:label,text:body,fontSize:19,minFontSize:17});}
 function equation(s,tex,x,y,w,h){
@@ -47,10 +46,10 @@ function equation(s,tex,x,y,w,h){
 function table(s,rows,x,y,widths,rowH=.5){let yy=y;rows.forEach((row,r)=>{const sw=widths.reduce((a,b)=>a+b,0);/* Row background intentionally contains table text. */ s.addShape(pptx.ShapeType.rect,{x,y:yy,w:sw,h:rowH,line:{color:r?C.line:C.navy,width:.35},fill:{color:r?(r%2?C.white:'E6F0ED'):C.navy}});let xx=x;row.forEach((v,c)=>{txt(s,String(v),xx+.1,yy+.04,widths[c]-.2,rowH-.08,{fontSize:r?17:14,bold:r===0,color:r===0?C.white:C.ink,align:c?'center':'left'});xx+=widths[c];});yy+=rowH;});}
 function takeaway(s,text,x,y,w,h=.48){/* Filled panel intentionally contains the takeaway text. */ s.addShape(pptx.ShapeType.roundRect,{x,y,w,h,rectRadius:.06,line:{color:C.navy,width:.3},fill:{color:C.navy}});txt(s,text,x+.18,y+.04,w-.36,h-.08,{fontSize:17,bold:true,color:C.white,align:'center'});}
 // Retain the note calls in source, but export empty speaker notes.
-function note(s,_text=''){s.addNotes('');}
+function note(s){s.addNotes('');}
 let s;
 // 1
-s=addBrandedTitleSlide(pptx,{courseLabel:'BEYOND MULTIPLE LINEAR REGRESSION',mainTitle:'Randomized block designs',subtitle:'Modeling center effects and comparing treatments',author:'Dr Douwe Postmus',affiliation:'UMCG · Department of Epidemiology',badge:'BLR'});note(s,'The rehabilitation data in this lecture are simulated teaching data.');
+s=addBrandedTitleSlide(pptx,{courseLabel:'BEYOND MULTIPLE LINEAR REGRESSION',mainTitle:'Randomized block designs',subtitle:'Modeling center effects and comparing treatments',author:'Dr Douwe Postmus',affiliation:'UMCG · Department of Epidemiology',badge:'BLR'});note(s);
 // Course-wide introduction precedes Part 1.
 addCourseIntroduction(pptx);
 //3
@@ -69,39 +68,19 @@ s=addStudyOverviewSlide(pptx,{
   assetPath:path.join('assets','rehabilitation-walk-assessment.png'),
   question:'How much do the mean walking distances differ between the programs?'
 });
-note(s,'');
+note(s);
 
 s=addFigureSlide(pptx,{
   title:'Walking distances pooled across centers',assetPath:path.join('assets','pooled-outcomes.png'),
-  caption:`${initial.patients_per_arm} patients per program across all ${initial.centers} centers. Each point represents one patient.`
+  caption:`${initial.patients_per_arm} patients per program across all ${initial.centers} centers.`,
+  captionFontSize:18,captionMinFontSize:18
 });
 
-// Introduce model-predicted outcomes and errors before specifying error assumptions.
-s=addMeanModelSlide(pptx,equation);
-addErrorRecap(pptx,equation);
+// Specify the complete model once; OLS review is covered in the homework.
+s=addTreatmentOnlyModelSlide(pptx,equation);
+note(s);
 
-// Complete the distributional specification before showing model estimates.
-s=addConditionalModelSlide(pptx,{
-  title:'Completing the statistical model',
-  modelLabel:'TREATMENT-ONLY MODEL',
-  equation:treatmentOnlyModel,
-  assumptionEquation:treatmentOnlyAssumption,
-  drawEquation:equation,
-  modelHeight:1.58,
-  interpretationTitle:'READING THE NOTATION',
-  bullets:[
-    '∼ means “is distributed as”.',
-    'N(0, σᵤ²): a Normal distribution with mean zero and variance σᵤ².',
-    'iid means “independent and identically distributed”: errors are independent across patients and follow the same distribution.'
-  ],
-  bulletFontSize:20,bulletMinFontSize:20,
-  assetPath:path.join('assets','conditional-distributions.png'),
-  note:'Errors share one distribution. Treatment changes the mean outcome.',
-  noteHeight:.9,noteFontSize:19
-});
-note(s,'');
-
-s=slide('Initial treatment-only results','TREATMENT COMPARISON');
+s=slide('Model results','TREATMENT COMPARISON');
 table(s,[['Term','Estimate (m)','SE (m)','95% CI (m)','p-value'],
   ['Intercept (β₀)',fmt(initial.intercept.estimate),fmt(initial.intercept.se,2),ci(initial.intercept),pvalue(initial.intercept.p)],
   ['Enhanced care (β₁)',fmt(initial.treatment.estimate),fmt(initial.treatment.se,2),ci(initial.treatment),pvalue(initial.treatment.p)]
@@ -112,10 +91,10 @@ addNoteBox(s,{
   text:`Estimated residual variance: ${fmt(initial.residual_var)} m².\nCorresponding residual SD: ${fmt(initial.residual_sd)} m.`,
   fontSize:20,minFontSize:19
 });
-note(s,'');
+note(s);
 
 s=addDiagnosticsInterpretationSlide(pptx,{
-  title:'Checking the treatment-only model',
+  title:'Model diagnostics',
   diagnostics:[
     {
       assetPath:path.join('assets','pooled-residuals-vs-fitted.png'),
@@ -128,36 +107,36 @@ s=addDiagnosticsInterpretationSlide(pptx,{
   ],
   takeaway:'The residual plots do not suggest clear violations of the Normality or equal-variance assumptions.'
 });
-note(s,'');
-// End Part 1 by connecting study design, omitted center effects and sampling perspectives.
+note(s);
+// Part 2: specify the generating model, investigate treatment-only inference,
+// explain the finding, then let the lab introduce the center-adjusted analysis.
+s=addSectionSlide(pptx,{sectionLabel:'PART 2',sectionTitle:'Modeling center as a fixed effect'});
 s=addBulletVisualSlide(pptx,{
-  title:'Does the model reflect the study design?',
-  bulletTitle:'OUR MODEL AND OUR STUDY',
+  title:'A multicenter trial, a pooled analysis',
+  textFraction:0.6,
   bullets:[
-    'Our model gives the same predicted outcome to patients receiving the same treatment.',
-    'Patients were recruited from six centers.',
-    'Patient populations and care settings may differ between centers.',
-    'Patients receiving the same treatment may therefore have different expected outcomes across centers.'
+    'The trial used a randomized block design: patients were randomized to the two programs within each of six centers, with equal numbers per program in every center.',
+    'The treatment-only model represents each treatment group as one homogeneous sample, without distinguishing the centers from which patients were recruited.',
+    'Centers may differ in patient populations and care settings, shifting expected outcomes for both treatments.'
   ],
   bulletFontSize:21,bulletMinFontSize:21,
-  assetPath:path.join('assets','center-summary.png'),
-  note:'If centers differ in their expected outcomes, where do those differences enter our treatment-only model?',
-  noteHeight:1.35,noteFontSize:20
+  assetPath:path.join('assets','rehabilitation-center-context.png'),
+  framed:false,
+  note:'Do center differences in expected outcomes matter for our treatment comparison?',
+  noteHeight:1.05,noteFontSize:22
 });
+addSimulationApproach(pptx);
+addTreatmentCenterModelSlide(pptx,equation);
+addFixedSimulationOpening(pptx);
 addOmittedCenterSlide(pptx,equation);
-addFixedRandomPerspectiveSlide(pptx);
-
-s=addSectionSlide(pptx,{sectionLabel:'PART 2',sectionTitle:'Modeling center as a fixed effect'});
 addFixedCenterSection(pptx,equation,R);
 
-// Random-center simulation precedes the later trial/model-comparison material.
+// Move from the included centers to modeling variation in a population of centers.
 s=addSectionSlide(pptx,{sectionLabel:'PART 3',sectionTitle:'Modeling center as a random effect'});
-addCenterDistributionBridge(pptx,equation);
-addRandomCenterSampling(pptx,equation);
+addRandomCenterModel(pptx,equation);
 addLab2Debrief(pptx,equation,R);
-// Connect the examples through their design before opening the discussion.
-addDesignConclusion(pptx);
+// End with the Lab 2 debrief before opening the discussion.
 s=addSectionSlide(pptx,{sectionLabel:'The End',sectionTitle:'Questions'});
 // Footer and layout checks.
-pptx._slides.forEach((sl,i)=>{if(i>0)warnIfSlideHasOverlaps(sl,pptx,{ignoreLines:true});warnIfSlideElementsOutOfBounds(sl,pptx)});
+pptx._slides.forEach((sl,i)=>{sl.addNotes('');if(i>0)warnIfSlideHasOverlaps(sl,pptx,{ignoreLines:true});warnIfSlideElementsOutOfBounds(sl,pptx)});
 writePresentation(pptx,'Beyond_MLR_Week_1.pptx').catch(error=>{console.error(error);process.exitCode=1;});

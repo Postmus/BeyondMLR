@@ -1,16 +1,20 @@
 # Week 1 lab development notes
 
-Initial 2026–27 drafts use the same 480-patient rehabilitation dataset as the lecture. They retain the previous guided format: supplied R code, explanatory text, interpretation questions, and a short reporting task. Rendering displays the code without executing it; students run the chunks themselves.
+Initial 2026–27 drafts use the same 120-patient rehabilitation dataset as the lecture. They retain the previous guided format: supplied R code, explanatory text, and interpretation questions. Rendering displays the code without executing it; students run the chunks themselves.
 
 ## Lab 1
 
-[Modeling center as a fixed effect](../../labs_2627/BLR_lab_center_fixed.qmd) covers the study design, treatment and center summaries, treatment-only and fixed-center models, coefficient interpretation, and treatment contrasts using `emmeans`. Students compare the estimated difference, SE, confidence interval and residual SD. A dedicated section before model fitting introduces dummy coding for treatment and effects coding for center. This makes the treatment coefficient the enhanced-minus-standard difference and the intercept the expected standard-care outcome averaged equally across centers. It explains the coding matrices and how to recover the sixth center contribution from the sum-to-zero constraint. Diagnostics and reporting complete the lab.
+[Modeling center as a fixed effect](../../labs_2627/BLR_lab_center_fixed.qmd) focuses on the study design, a center-by-treatment exploratory plot, the fixed-effects model, coefficient interpretation, treatment uncertainty, an overall ANOVA test for center, and diagnostics. The main EDA deliverable reproduces the plot removed from the lecture: individual observations, observed treatment means within each center, and overall treatment means as dashed reference lines. The question asks whether the plot suggests substantial center differences. Students do not repeat the pooled boxplot or fit a treatment-only model.
+
+The coding explanation retains dummy coding for treatment and effects coding for center, including the design matrix and recovery of the sixth center contribution. Students use `summary()`, `confint()` and `sigma()` to interpret the treatment effect and uncertainty, followed by `anova()` to assess center after treatment. The lab distinguishes evidence for center differences from their size in meters. It ends with model diagnostics; the reporting exercise belongs to the assignment.
+
+The previous estimated marginal means explanations, reference grids, treatment comparisons, and comparison-table code are preserved in a separate [teaching note](../../labs_2627/notes/estimated_marginal_means.qmd). The note includes setup for both fitted models so it can be reused independently. It is not part of the required Week 1 lab or the website navigation/render list.
 
 ## Lab 2
 
-[Modeling center as a random effect](../../labs_2627/BLR_lab_center_random.qmd) introduces the complete random-intercept model and its assumptions, `lmer()` syntax, fixed effects and variance components. Students compare the three treatment analyses, calculate the ICC, interpret it as a variance proportion and correlation after accounting for treatment, and inspect conditional residuals. The lab runs independently in a fresh R session.
+[Modeling center as a random effect](../../labs_2627/BLR_lab_center_random.qmd) introduces the complete random-intercept model and its assumptions, `lmer()` syntax, fixed effects and variance components. Students interpret the treatment estimate and uncertainty, calculate the ICC, interpret it as a variance proportion and correlation after accounting for treatment, and inspect conditional residuals. The lab runs independently in a fresh R session.
 
-Both labs focus on one planned enhanced-minus-standard comparison, calculated with `pairs(..., reverse = TRUE)` rather than explicit contrast weights. Lab 1 introduces estimated marginal means as predicted mean outcomes calculated from the estimated regression coefficients, explains the `emmeans()` syntax, and develops the reference grid from two treatment rows to twelve treatment-by-center combinations. It explains averaging over centers and connects that averaging to effects coding. Lab 2 uses the same comparison syntax while distinguishing averaging over the random-effect distribution from averaging over named fixed centers. They use the lecture notation and distinguish the SE of a contrast from outcome variation and the SEs of individual treatment means. Lab 2 explicitly uses REML and Satterthwaite degrees of freedom.
+Lab 2 currently retains its estimated marginal means workflow, distinguishing averaging over the random-effect distribution from averaging over named fixed centers. It uses the lecture notation, distinguishes the standard error of a treatment difference from outcome variation and the standard errors of individual means, and explicitly uses REML and Satterthwaite degrees of freedom. The three-model comparison, reporting exercise, and further-reading section have been removed. The comparison is now included in the Lab 2 lecture debrief (slide 30), alongside the ICC interpretation.
 
 ## Lab conventions
 
@@ -31,17 +35,17 @@ Spell out statistical terms in explanations and questions, including standard er
 
 ## Validation and review
 
-All R chunks were executed. Treatment estimates, SEs and confidence intervals reproduce the lecture values; variance components and ICC also match. The coding check confirms identical fitted values and treatment contrasts under alternative center coding, the interpretation of the intercept, and recovery of the sixth center contribution. Lab 2 uses the same coding when refitting the fixed-center model. Data balance and exact agreement with the lecture CSV were checked, and backups were compared byte for byte with their committed originals.
+The revised dataset contains 120 patients, with 10 per treatment in each of six centers and a simulated treatment effect of 10 m. Data balance, exact agreement between the lab and lecture CSVs, and the treatment-only and fixed-center estimates were checked. The random-intercept results were regenerated with REML using `nlme`, as in the lecture generator. The revised Lab 1 code was run from a fresh R session: its plot, coding matrices, model fit, treatment confidence interval, residual standard deviation, ANOVA table, and diagnostic plots were checked. The center test gives F(5, 113) = 19.196 and p = 8.672e-14. Lab 2 was checked for valid R syntax and consecutive question numbering, and its updated HTML and PDF previews were rendered and visually checked. The `lmerTest` and `emmeans` workflow in Lab 2 and the retained teaching note was not rerun in these revisions.
 
 | Model | Enhanced minus standard (m) | SE (m) | 95% CI (m) |
 | --- | ---: | ---: | --- |
-| Treatment only | 23.62625 | 2.76350 | 18.19614 to 29.05636 |
-| Center fixed | 23.62625 | 2.25568 | 19.19385 to 28.05865 |
-| Center random | 23.62625 | 2.25568 | 19.19385 to 28.05865 |
+| Treatment only | 11.03000 | 5.77406 | -0.40421 to 22.46421 |
+| Center fixed | 11.03000 | 4.33880 | 2.43405 to 19.62595 |
+| Center random | 11.03000 | 4.33880 | 2.43405 to 19.62595 |
 
-The random-intercept model gives center variance 365.50 m², individual variance 610.57 m² and ICC 0.37446.
+The random-intercept model gives center variance 513.81 m², individual variance 564.76 m² and ICC 0.47638.
 
-Website previews are available in [labs_2627/_site](../../labs_2627/_site/). Their accompanying `data` directory contains the student download. These previews contain code for students to run, following the old lab format. Executed versions were rendered separately for validation.
+Website previews are available in [labs_2627/_site](../../labs_2627/_site/). Their accompanying `data` directory contains the student download. These previews contain code for students to run, following the old lab format. Executed versions were rendered separately for validation. The revised Lab 1 HTML and downloadable PDF were rendered and visually checked, including the plotting code, mathematical notation, coding table, and ANOVA section.
 
 Rendering requires Quarto and the R packages `knitr` and `rmarkdown`. Install missing rendering packages with `install.packages(c("knitr", "rmarkdown"))`. Each lab includes setup code for its analysis packages.
 
