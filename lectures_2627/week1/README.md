@@ -87,14 +87,26 @@ All speaker notes are empty strings. Slide text, tables and layout elements are 
 
 ## Rebuild
 
-Run from this directory after installing the Node dependencies in `package.json`. R requires `ggplot2`, `nlme` and `jsonlite`.
+Install dependencies once from the repository root with `npm ci`. The root workspace and
+lockfile provide the local `node_modules/` installation used by this deck and shared helpers.
+Do not set `NODE_PATH` or rely on packages in a temporary folder.
+
+For slide-text or layout changes, run from the repository root:
 
 ```sh
-npm install
-npm run build
+npm run build:week1
 ```
 
-Figure generation finishes before the presentation is built. The fixed seed makes the data and model results reproducible. The supplied equation PNGs allow the presentation to render without a local TeX installation.
+This rebuilds the PPTX using existing assets and exports `output/pdf/Beyond_MLR_Week_1.pdf`.
+Use `npm run slides:week1` or `npm run render:week1` for either step separately.
+LibreOffice must be installed; the render script handles its isolated profile and runtime.
+
+When figure sources or data change, use `npm run rebuild:week1` from the repository root.
+R requires `ggplot2`, `nlme` and `jsonlite`. Figure generation finishes before the presentation
+is built. The fixed seed makes the data and model results reproducible. Supplied equation
+PNGs allow ordinary slide rebuilds without a local TeX installation.
+
+The individual figure commands below run from this directory after the root `npm ci`.
 
 To regenerate only the fixed-center teaching simulation, run `npm run fixed-center-simulation`. Its checks verify allocation, error moments, independence, treatment-estimate bias and SE calibration. Closed-form estimates and SEs are checked against `lm`. The histogram and paired-error figures use the same full trials; six designated patient positions appear in the histograms, and two fixed pairs appear in the scatterplots.
 

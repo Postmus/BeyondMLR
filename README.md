@@ -42,3 +42,40 @@ Each project builds into its own `_site/` folder. Normal rendering leaves `docs/
 Run `quarto render labs_2627` to build the website and PDF downloads. Replace the contents of `docs/` with the fresh build from `labs_2627/_site/`, include a `.nojekyll` file in `docs/`, and commit and push the published files to `master`. Replacing the directory contents also removes retired pages. The published site contains only the current edition; `labs_2526/` remains available in the repository.
 
 The website is hosted at <https://postmus.github.io/BeyondMLR/>. Preview and render commands update local files; GitHub Pages deploys after the published files are pushed.
+
+
+## Build the lecture decks
+
+Use Node.js 20 or newer and npm. Install the exact JavaScript dependencies from the
+repository root with:
+
+```sh
+npm ci
+```
+
+The root npm workspace currently includes Week 1. Dependencies live in the repository's
+ignored `node_modules/`, with exact versions in `package-lock.json`. Shared slide helpers
+resolve their dependencies from the same installation. No `NODE_PATH` or dependency
+installation under `/tmp` is needed. Add later lecture packages to the root `workspaces`
+list when they are ready to join this build setup.
+
+For a normal slide edit, reuse the existing figure assets and rebuild both PowerPoint and PDF:
+
+```sh
+npm run build:week1
+```
+
+The outputs are `lectures_2627/week1/Beyond_MLR_Week_1.pptx` and
+`output/pdf/Beyond_MLR_Week_1.pdf`. To build only the PowerPoint, use `npm run slides:week1`;
+to export the existing PowerPoint again, use `npm run render:week1`.
+
+PDF export requires LibreOffice on `PATH` (or set `LIBREOFFICE_BIN` to its executable).
+The renderer creates its own isolated profile and runtime under ignored `.cache/lecture-build/`,
+uses a memory-backed settings store, and removes these disposable files afterwards.
+It does not require an interactive desktop session. Install the course fonts used by
+`slides-common/js/blr_theme.js` to preserve the intended layout on another machine.
+
+When data or figure-generation code changes, use `npm run rebuild:week1` to regenerate
+figures first, then build and render the slides. This also requires R and the packages
+listed in the Week 1 README. Existing equation PNGs allow ordinary slide rebuilds without
+LaTeX; regenerating missing equation images requires the TeX/Poppler tools described there.

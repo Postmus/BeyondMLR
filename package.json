@@ -1,0 +1,17 @@
+{
+  "name": "beyond-mlr-lectures",
+  "version": "1.0.0",
+  "private": true,
+  "engines": { "node": ">=20" },
+  "workspaces": ["lectures_2627/week1"],
+  "scripts": {
+    "slides:week1": "npm run slides --workspace=lectures_2627/week1",
+    "render:week1": "node scripts/render_lecture.js lectures_2627/week1/Beyond_MLR_Week_1.pptx",
+    "build:week1": "npm run slides:week1 && npm run render:week1",
+    "figures:week1": "npm run figures --workspace=lectures_2627/week1",
+    "rebuild:week1": "npm run figures:week1 && npm run build:week1"
+  },
+  "dependencies": {
+    "skia-canvas": "3.0.8"
+  }
+}
