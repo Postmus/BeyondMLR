@@ -1,4 +1,6 @@
 const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels');
+const path = require('path');
+const crypto = require('crypto');
 
 // Keep the full patient-level substitution visible before reducing the contrast.
 // The epsilon terms belong to the data-generating model; fitted residuals enter
@@ -7,9 +9,12 @@ const groupDifference = String.raw`\widehat{\beta}_1=\bar Y_{\mathrm{enhanced}}-
 const fullSubstitution = String.raw`\widehat{\beta}_1=\frac{1}{60}\sum_{j=1}^{6}\sum_{i=1}^{10}\left(\beta_0+\beta_1+c_j+\varepsilon_{ij,\mathrm{enhanced}}\right)-\frac{1}{60}\sum_{j=1}^{6}\sum_{i=1}^{10}\left(\beta_0+c_j+\varepsilon_{ij,\mathrm{standard}}\right)`;
 const treatmentContrast = String.raw`\widehat{\beta}_1=\beta_1+\bar\varepsilon_{\mathrm{enhanced}}-\bar\varepsilon_{\mathrm{standard}}`;
 const trueSE = String.raw`\operatorname{SE}(\widehat{\beta}_1)=\sigma\sqrt{\frac{1}{60}+\frac{1}{60}}`;
-const residual = String.raw`\widehat u_{ij}=Y_{ij}-\widehat Y_{ij}`;
-const residualVariance = String.raw`\widehat{\sigma}_u^2=\frac{\displaystyle\sum_{j=1}^{6}\sum_{i=1}^{20}\widehat u_{ij}^{\,2}}{120-2}`;
-const reportedSE = String.raw`\widehat{\operatorname{SE}}(\widehat{\beta}_1)=\widehat{\sigma}_u\sqrt{\frac{1}{60}+\frac{1}{60}}`;
+const modelErrors = String.raw`u_{ij}\overset{\mathrm{iid}}{\sim}N(0,\sigma_u^2)`;
+const modelContrast = String.raw`\widehat{\beta}_1=\beta_1+\bar u_{\mathrm{enhanced}}-\bar u_{\mathrm{standard}}`;
+const modelVariance = String.raw`\operatorname{Var}_{\mathrm{model}}(\widehat{\beta}_1)=\frac{\sigma_u^2}{60}+\frac{\sigma_u^2}{60}`;
+const reportedSE = String.raw`\boxed{\widehat{\operatorname{SE}}(\widehat{\beta}_1)=\widehat{\sigma}_u\sqrt{\frac{1}{60}+\frac{1}{60}}}`;
+const sigmaHat = String.raw`\widehat{\sigma}_u`;
+const sigmaHatImage = path.join('assets', 'equations', 'eq_' + crypto.createHash('sha1').update(sigmaHat).digest('hex').slice(0, 12) + '.png');
 
 function addFixedCenterExplanation(pptx, drawEquation) {
   addConceptPanelsSlide(pptx, {
@@ -28,24 +33,29 @@ function addFixedCenterExplanation(pptx, drawEquation) {
     drawEquation
   });
   addConceptPanelsSlide(pptx, {
-    title: 'How does the treatment-only model estimate the SE?',
+    title: 'The SE estimated by the treatment-only model',
     panels: [
-      { title: 'FROM FITTED MEANS TO RESIDUALS', blocks: [
-        { text: 'The model fits one mean per treatment group.', h: .8 },
-        { text: 'Each residual is a patient’s observed outcome minus their fitted group mean:', h: 1.1 },
-        { equation: residual, h: .6 },
-        { text: 'The fitted group means do not account for center, so the residuals still contain center differences.', h: 1.1 }
+      { title: 'THE MODEL’S CALCULATION', blocks: [
+        { text: 'The treatment-only model assumes:', h: .38, gap: .06 },
+        { equation: modelErrors, h: .5, gap: .1 },
+        { equation: modelContrast, h: .55, gap: .12 },
+        { equation: modelVariance, h: .65, gap: .1 },
+        { text: 'The estimated SE is therefore:', h: .32, gap: .06 },
+        { equation: reportedSE, h: .9 }
       ] },
-      { title: 'FROM RESIDUALS TO THE REPORTED SE', blocks: [
-        { text: 'Estimate the error variance:', h: .55 },
-        { equation: residualVariance, h: 1.68 },
-        { text: 'Use its square root in the SE formula:', h: .55 },
-        { equation: reportedSE, h: .85 }
+      { title: 'WHAT THE RESIDUAL SD CAPTURES', blocks: [
+        { inlineMath: [
+          { text: '• ' },
+          { image: sigmaHatImage, heightEm: 1.1, baselineFraction: .8 },
+          { text: ' is the residual SD from the treatment-only model.' }
+        ], h: .95, gap: .2 },
+        { text: '• This model fits one mean for each treatment group. Differences between centers remain in the residuals.', h: 1.3, gap: .2 },
+        { text: '• Its residual SD therefore reflects both center differences and individual variation.', h: 1.25 }
       ] }
     ],
-    takeaway: 'Center differences contribute to the estimated error variance, although they cancel from the treatment contrast.',
+    takeaway: 'Center differences cancel from the treatment comparison, but remain in the residual variation used to calculate its SE. The estimated SE is therefore too large.',
     drawEquation
   });
 }
 
-module.exports = { addFixedCenterExplanation, equations: [groupDifference, fullSubstitution, treatmentContrast, trueSE, residual, residualVariance, reportedSE] };
+module.exports = { addFixedCenterExplanation, equations: [groupDifference, fullSubstitution, treatmentContrast, trueSE, modelErrors, modelContrast, modelVariance, reportedSE, sigmaHat] };

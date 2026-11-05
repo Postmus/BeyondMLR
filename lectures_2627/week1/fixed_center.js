@@ -10,6 +10,10 @@ function calibrationSEEquation(results) {
   return String.raw`\begin{aligned}\widehat{\mathrm{SE}}(\widehat{\beta}_1)&=\widehat{\sigma}\sqrt{\frac{1}{${patientsPerTreatment}}+\frac{1}{${patientsPerTreatment}}}\\&=${Number(results.fixed.se).toFixed(2)}\ \mathrm{m}\end{aligned}`;
 }
 
+function residualSDEquation(results) {
+  return String.raw`\widehat{\sigma}=${Number(results.fixed.residual_sd).toFixed(1)}\ \mathrm{m}`;
+}
+
 function addFixedCenterSection(pptx, drawEquation, results) {
   addFixedCenterExplanation(pptx, drawEquation);
   addFigureSlide(pptx, {
@@ -20,22 +24,23 @@ function addFixedCenterSection(pptx, drawEquation, results) {
   addConceptPanelsSlide(pptx, {
     title: 'Lab 1 debrief: accounting for center',
     panels: [
-      { title: 'THE DESIGN HAS ALREADY DONE\nTHE ADJUSTMENT', titleHeight: .65, blocks: [
-        { text: 'Including a covariate in an analysis can remove its contribution to the treatment comparison.', h: .95, gap: .2 },
-        { text: 'Here, balanced randomization has already made the center contributions cancel.', h: .95, gap: .2 },
-        { text: `Including center in the model therefore leaves the treatment estimate at ${f(results.fixed.estimate)} m, with the same variation across repeated studies.`, h: 1.3 }
+      { title: 'WHAT CHANGES IN THE MODEL', blocks: [
+        { text: '• Including center allows the fitted outcomes to reflect systematic differences between centers.', h: 1.1, gap: .15 },
+        { text: '• Those differences no longer remain in the residuals.', h: .75, gap: .15 },
+        { text: '• The residual SD now estimates the individual-error SD:', h: .8, gap: .15 },
+        { equation: residualSDEquation(results), h: .6 }
       ] },
-      { title: 'THE STANDARD ERROR MUST REFLECT THIS', blocks: [
-        { text: 'The treatment-only model still counts center differences as residual variation.', h: .7, gap: .07 },
-        { text: 'Including center removes those differences from the residual variation used to calculate the treatment effect’s standard error.', h: 1.3, gap: .07 },
-        { text: `The estimated individual-error standard deviation is ${f(results.fixed.residual_sd)} m, giving:`, h: .72, gap: .07 },
+      { title: 'WHAT CHANGES IN THE SE', blocks: [
+        { text: `• The treatment estimate remains ${f(results.fixed.estimate)} m, with the same sampling distribution: balanced allocation already makes center contributions cancel.`, h: 1.65, gap: .22 },
+        { text: '• The SE now uses the estimated individual-error SD:', h: .8, gap: .16 },
         { equation: calibrationSEEquation(results), h: 1.08 }
       ] }
     ],
-    takeaway: 'The aim is to estimate uncertainty correctly. In this example, that means a smaller standard error, but that is not always the case.',
+    takeaway: 'Including center makes the SE better calibrated: the residual variance now estimates the variation that actually contributes to the treatment comparison in this randomized block design.',
     drawEquation
   });
 }
 
-const equations = [betaHat, sigmaHat, calibrationSEEquation(require('./assets/model_results.json'))];
+const results = require('./assets/model_results.json');
+const equations = [betaHat, sigmaHat, residualSDEquation(results), calibrationSEEquation(results)];
 module.exports = { addFixedCenterSection, equations };

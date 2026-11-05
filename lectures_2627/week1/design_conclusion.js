@@ -7,7 +7,7 @@ function addDesignConclusion(pptx) {
       { title: 'BALANCE AND INFERENCE', weight: 3, blocks: [
         { text: 'Blocking or stratification creates treatment balance within groups.', fontSize: 20, h: .67, gap: .10 },
         { text: 'With equal treatment allocation within each group, differences between groups cancel from the treatment comparison.', fontSize: 20, h: 1.00, gap: .10 },
-        { text: 'Accounting for these groups makes the reported uncertainty reflect the balance built into the design.', fontSize: 20, h: .67, gap: .10 },
+        { text: 'Accounting for these groups makes the estimated uncertainty reflect the balance built into the design.', fontSize: 20, h: .67, gap: .10 },
         { text: 'Overestimated standard errors make tests overly conservative: the type I error rate falls below the chosen significance level, and power to detect a treatment effect is reduced.', fontSize: 20, h: 1.35 }
       ] },
       { title: 'THE SAME PRINCIPLE', weight: 2, blocks: [
@@ -28,7 +28,7 @@ function addDesignConclusion(pptx) {
         }, h: 4.0 }
       ] }
     ],
-    takeaway: 'Account for blocking and stratification factors in the analysis so that the reported uncertainty reflects how treatment was allocated.'
+    takeaway: 'Account for blocking and stratification factors in the analysis so that the estimated uncertainty reflects how treatment was allocated.'
   });
 }
 

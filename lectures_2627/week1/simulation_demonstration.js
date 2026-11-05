@@ -33,10 +33,10 @@ function addSimulationConcept(pptx) {
         { text: 'Compare the average treatment estimate across studies with that true effect.', h: 1.0 },
         { text: 'Bias is the difference between the expected estimate and the true effect.', h: 1.0 }
       ] },
-      { title: 'CALIBRATION OF REPORTED UNCERTAINTY', blocks: [
+      { title: 'CALIBRATION OF ESTIMATED UNCERTAINTY', blocks: [
         { text: 'Empirical SE: the standard deviation of treatment estimates across studies.', h: 1.0 },
-        { text: 'Mean estimated SE: the average of the SEs reported by the model across studies.', h: 1.0 },
-        { text: 'Does the reported uncertainty match the sampling variability?', h: 1.0 }
+        { text: 'Mean estimated SE: the average of the SEs estimated by the model across studies.', h: 1.0 },
+        { text: 'Does the estimated uncertainty match the sampling variability?', h: 1.0 }
       ] }
     ],
     takeaway: 'Calibration matters for confidence-interval coverage and type I error.'
@@ -68,10 +68,10 @@ function addFixedSimulationOpening(pptx) {
   addConceptPanelsSlide(pptx, {
     title: 'Summary: unbiased estimates, overstated uncertainty',
     panels: [
-      { title: 'ESTIMATE AND REPORTED SE', blocks: [
+      { title: 'ESTIMATE AND ESTIMATED SE', blocks: [
         { text: 'The treatment estimator is unbiased: estimates are centered at the true effect of 10 m.', h: 1.0 },
         { text: 'The mean estimated SE is larger than the empirical SE.', h: 1.0, bold: true },
-        { text: 'The model reports more uncertainty than the actual spread of treatment estimates.', h: 1.0 }
+        { text: 'The model overestimates the sampling variability of the treatment estimator.', h: 1.0 }
       ] },
       { title: 'CONSEQUENCES FOR INFERENCE', blocks: [
         { text: 'Consequently, its usual 95% confidence intervals overcover: they contain the true treatment effect more than 95% of the time.', h: 1.5 },

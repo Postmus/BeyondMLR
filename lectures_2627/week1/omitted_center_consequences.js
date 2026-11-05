@@ -7,7 +7,7 @@ const consequences = {
       { equation: String.raw`E[\widehat{\beta}_1]=\beta_1`, h: .55 },
       { text: 'Balanced treatment allocation makes center effects cancel from the treatment comparison.', h: 1.4 }
     ] },
-    { title: 'REPORTED UNCERTAINTY', blocks: [
+    { title: 'ESTIMATED UNCERTAINTY', blocks: [
       { text: 'The usual standard error is too large on average.', h: .85, gap: .79 },
       { text: 'The standard error includes center variation that the balanced design eliminates from the treatment comparison.', h: 1.4 }
     ] }

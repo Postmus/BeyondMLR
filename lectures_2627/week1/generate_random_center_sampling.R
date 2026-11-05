@@ -131,4 +131,4 @@ write_json(result,'assets/random-center-sampling.json',auto_unbox=TRUE,pretty=TR
 cat('Generated random-center four-position simulation: 20 and 10000 repetitions, plus paired-error scatterplots.\n')
 print(data.frame(positions,empirical_mean=colMeans(errors),empirical_variance=apply(errors,2,var)))
 
-cat('Treatment mean:',mean(contrast),'SD:',sd(contrast),'Mean reported SE:',mean(reported_se),'Mean SE squared:',mean(reported_se^2),'\n')
+cat('Treatment mean:',mean(contrast),'SD:',sd(contrast),'Mean estimated SE:',mean(reported_se),'Mean SE squared:',mean(reported_se^2),'\n')
