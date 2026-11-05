@@ -36,56 +36,35 @@ Replace the italic prompts with your own writing, remove this instruction box wh
 ```{r}
 #| label: prepare-data
 # Read protein_yield.csv and prepare the variables for analysis.
-# Set the factor levels and coding needed for the models.
+# Set the factor levels and coding needed for the model.
 ```
 
 ```{r}
 #| label: explore-data
-# Produce suitable descriptive summaries and plots.
+# Create the exploratory plot described in the assignment.
 ```
 
-*Describe the patterns in protein yield across protocols and donors.*
+*Describe the patterns across protocols and donors. Discuss whether the plot suggests substantial donor differences, considering the variation among aliquots within donors.*
 
 # Model fitting
-
-## Protocol only
-
-```{r}
-#| label: protocol-only
-# Fit and inspect the protocol-only model.
-```
-
-*Interpret the intercept and protocol coefficient in the context of the study.*
-
-## Donor as a fixed effect
-
-```{r}
-#| label: donor-fixed
-# Fit and inspect the model with donor as a fixed effect.
-```
-
-*Interpret the intercept, protocol coefficient and one donor coefficient, taking account of the chosen coding schemes.*
-
-## Donor as a random effect
 
 ```{r}
 #| label: donor-random
 # Fit and inspect the model with a random donor intercept.
 ```
 
-*Interpret the fixed intercept and protocol coefficient.*
+*Interpret the intercept and protocol coefficient in the context of the study. Explain what the random donor intercept represents.*
 
-# Comparison and interpretation
+# Results and interpretation
 
 ## Protocol difference
 
 ```{r}
-#| label: compare-protocols
-# Obtain the modified-minus-standard difference from each model.
-# Assemble a table of estimates, standard errors and 95% confidence intervals.
+#| label: protocol-difference
+# Obtain the modified-minus-standard difference and its uncertainty.
 ```
 
-*Compare the three analyses and explain the findings using the study design.*
+*Report and interpret the estimated protocol difference, its standard error and its 95% confidence interval, including units.*
 
 ## Variance components
 
@@ -100,17 +79,12 @@ Replace the italic prompts with your own writing, remove this instruction box wh
 # Model diagnostics
 
 ```{r}
-#| label: fixed-model-diagnostics
-# Produce diagnostic plots for the fixed-donor model.
-```
-
-```{r}
 #| label: random-model-diagnostics
-# Produce diagnostic plots for the random-intercept model.
+# Produce conditional-residual diagnostic plots.
 ```
 
 *Describe what the plots suggest about the model assumptions.*
 
 # Conclusion
 
-*Write a short conclusion answering the laboratory's question. Include the estimated protocol difference, its uncertainty and the units, and identify the model used for the reported result.*
+*Write a short conclusion answering the laboratory's question. Include the estimated protocol difference, its uncertainty and the units.*
