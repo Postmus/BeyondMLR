@@ -6,7 +6,7 @@ Slides 2–5 introduce the course: why grouping matters for iid error assumption
 
 ## Lecture sequence
 
-The 31-slide lecture moves from a motivating trial to a lecturer-led demonstration, explanation of its findings, and student application in the labs.
+The 34-slide lecture moves from a motivating trial to a lecturer-led demonstration, explanation of its findings, student application in the labs, and a general summary of grouped data.
 
 | Slides | Purpose |
 | --- | --- |
@@ -17,7 +17,8 @@ The 31-slide lecture moves from a motivating trial to a lecturer-led demonstrati
 | 23–24 | Lab 1 and debrief: students create the EDA plot, fit the fixed-effects model, and find an unchanged treatment estimate with a smaller estimated SE. The debrief directly addresses the SE problem on slide 22: including center accounts for systematic center differences in the fitted outcomes, so the residual SD now estimates the individual-error SD. The treatment estimate and its sampling distribution remain unchanged because balanced allocation already makes center contributions cancel. The slide substitutes the fitted individual-error SD into the SE expression and links better calibration to the variation that contributes to the treatment comparison in this randomized block design. It then leads directly into Part 3. |
 | 25–28 | Part 3 divider, scientific motivation for modeling a population of centers in four bullets beside a generated illustration, without a callout (26), random-intercept model and its implied marginal model side by side, with explanations of the conditional and marginal means (27), then variance components and ICC (28). The marginal mean matches the treatment-only structure, but combined errors share a random center effect and are dependent within centers. |
 | 29–30 | Title-and-image Lab 2 placeholder (29), then a two-column debrief interpreting the ICC and comparing the three models’ treatment estimates and standard errors (30). |
-| 31 | Questions, directly after the Lab 2 debrief. |
+| 31–33 | Three equation-free summary slides: define grouped data and the shared-effect setting (no interaction), then distinguish fixed and random group effects. Each perspective starts from how we view the groups. The fixed-effects summary covers potential bias when the explanatory variable is unevenly distributed across groups; the random-effects summary states the zero-mean and unrelated-to-covariate assumptions under which OLS remains unbiased. Both address estimated uncertainty. |
+| 34 | Questions, after the summary. |
 
 ### Lecturer-led demonstration
 

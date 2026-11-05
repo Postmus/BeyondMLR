@@ -114,4 +114,48 @@ function addAssumptionFocusSlide(pptx, { title, statement, points, reminder }) {
   addFooter(slide);
   return slide;
 }
-module.exports = { addStudyOverviewSlide, addConditionalModelSlide, addAssumptionsDiagnosticsSlide, addDiagnosticsInterpretationSlide, addAssumptionFocusSlide };
+// Ordered summary sections keep the scientific perspective before its consequences.
+// Measure the text at its final size rather than shrinking it to fit a card.
+function addStructuredSummarySlide(pptx, { title, sections, takeaway }) {
+  const { calcTextBox } = require('../../lectures_2627/week1/pptxgenjs_helpers/text');
+  const slide = pptx.addSlide();
+  const { body } = getSlots();
+  addBase(slide); addSlideTitle(slide, title);
+  const noteH = .82, pad = .10, gap = .10, labelW = 2.2;
+  const textX = body.x + .24 + labelW + .24;
+  const textW = body.w - labelW - .72;
+  let y = body.y;
+  for (const section of sections) {
+    const paragraphs = section.paragraphs;
+    const heights = paragraphs.map(text => calcTextBox(20, {
+      text, w: textW, fontFace: TYPOGRAPHY.body.fontFace, margin: 0, padding: 0,
+    }).h);
+    const labelH = calcTextBox(17, {
+      text: section.title, w: labelW, fontFace: TYPOGRAPHY.panelTitle.fontFace,
+      bold: true, margin: 0, padding: 0,
+    }).h;
+    const contentH = heights.reduce((a, b) => a + b, 0) + .08 * (paragraphs.length - 1);
+    const bottomPad = section === sections[0] ? .18 : pad;
+    const h = Math.max(labelH, contentH) + pad + bottomPad;
+    // Each row background intentionally contains its heading and paragraphs.
+    slide.addShape('roundRect', { x: body.x, y, w: body.w, h,
+      rectRadius: RADII.card, fill: { color: COLORS.card }, line: STROKES.card });
+    slide.addText(section.title, { x: body.x + .24, y: y + pad, w: labelW, h: labelH,
+      ...TYPOGRAPHY.panelTitle, fontSize: 17, color: COLORS.primary, margin: 0, valign: 'top' });
+    let textY = y + pad;
+    paragraphs.forEach((text, i) => {
+      slide.addText(text, { x: textX, y: textY, w: textW, h: heights[i],
+        ...TYPOGRAPHY.body, fontSize: 20, color: COLORS.text, margin: 0, valign: 'top' });
+      textY += heights[i] + .08;
+    });
+    y += h + gap;
+  }
+  const noteY = body.y + body.h - noteH;
+  if (y > noteY + .001) throw new Error(`Summary content exceeds its available height: ${title}`);
+  addNoteBox(slide, { box: { x: body.x, y: noteY, w: body.w, h: noteH },
+    text: takeaway, fontSize: 20, minFontSize: 20 });
+  addFooter(slide);
+  return slide;
+}
+
+module.exports = { addStudyOverviewSlide, addConditionalModelSlide, addAssumptionsDiagnosticsSlide, addDiagnosticsInterpretationSlide, addAssumptionFocusSlide, addStructuredSummarySlide };

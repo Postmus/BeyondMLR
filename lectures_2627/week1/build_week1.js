@@ -13,6 +13,7 @@ const {addFixedCenterSection}=require('./fixed_center');
 const {addSimulationApproach,addFixedSimulationOpening}=require('./simulation_demonstration');
 const {addRandomCenterModel}=require('./random_center_model');
 const {addLab2Debrief}=require('./lab2_debrief');
+const {addGroupingSummary}=require('./grouping_summary');
 const {addCourseIntroduction}=require('./course_introduction');
 const {addTreatmentOnlyModelSlide}=require('./error_recap');
 const {addStudyOverviewSlide,addDiagnosticsInterpretationSlide}=require('../../slides-common/js/course_builders');
@@ -135,7 +136,8 @@ addFixedCenterSection(pptx,equation,R);
 s=addSectionSlide(pptx,{sectionLabel:'PART 3',sectionTitle:'Modeling center as a random effect'});
 addRandomCenterModel(pptx,equation);
 addLab2Debrief(pptx,equation,R);
-// End with the Lab 2 debrief before opening the discussion.
+// Generalize the lecture's findings before opening the discussion.
+addGroupingSummary(pptx);
 s=addSectionSlide(pptx,{sectionLabel:'The End',sectionTitle:'Questions'});
 // Footer and layout checks.
 pptx._slides.forEach((sl,i)=>{sl.addNotes('');if(i>0)warnIfSlideHasOverlaps(sl,pptx,{ignoreLines:true});warnIfSlideElementsOutOfBounds(sl,pptx)});
