@@ -28,27 +28,20 @@ By the end of this lab, you should be able to fit a random-intercept model, inte
 
 # Setup and data
 
-We use `lmerTest` to fit the mixed model and `emmeans` to estimate the treatment difference. `lmerTest` uses the mixed-model machinery from `lme4` and adds approximate degrees of freedom and tests for the fixed effects.
+We use `lmerTest` to fit the mixed model. It uses the mixed-model machinery from `lme4` and adds approximate degrees of freedom and tests for the fixed effects. The treatment difference and its estimated standard error are available directly in the model summary.
 
-```{=latex}
-\Needspace{16\baselineskip}
-```
+Use `pak` as introduced in [Lab 1](BLR_lab_center_fixed.html#install-pak-once). Load it, install `lme4` and `lmerTest` if needed, and then load both packages for this R session. If `pak` asks whether to proceed, confirm the installation and wait for it to finish before running the remaining `library()` commands.
 
 ```{r}
 #| label: setup
-packages <- c("emmeans", "lmerTest")
-missing_packages <- packages[
-  !vapply(packages, requireNamespace, logical(1), quietly = TRUE)
-]
-if (length(missing_packages) > 0) {
-  install.packages(missing_packages, repos = "https://cloud.r-project.org")
-}
+library(pak)
+pkg_install(c("lme4", "lmerTest"))
 
-library(emmeans)
+library(lme4)
 library(lmerTest)
 ```
 
-The following code makes this lab runnable in a new R session. Use the [same dataset as Lab 1](data/rehabilitation_week1.csv), saved in a `data` folder inside your working directory. Each row is one patient; `distance` is the six-minute walk distance in meters. These are simulated teaching data.
+Save your code in `lab2.R` inside your `week1` folder and set that folder as your working directory, as described in [Lab 1](BLR_lab_center_fixed.html#organize-your-work). The following code makes this lab runnable in a new R session. Use the [rehabilitation dataset](data/rehabilitation_week1.csv), saved in the `data` subfolder. Each row is one patient; `distance` is the six-minute walk distance in meters. These are simulated teaching data.
 
 ```{r}
 #| label: read-data
@@ -62,7 +55,7 @@ contrasts(rehab$treatment) <- contr.treatment(levels(rehab$treatment))
 table(rehab$center, rehab$treatment)
 ```
 
-Run the chunks in order and record your interpretations. As in Lab 1, the lab page supplies code for you to run, rather than displaying its output.
+Run the code in order from your script and record your interpretations. As in Lab 1, the lab page supplies code for you to run, rather than displaying its output.
 
 # Specify the random-intercept model
 
@@ -87,7 +80,7 @@ with the center effects independent of the individual errors.
 
 This is a **mixed-effects model** because it combines fixed treatment coefficients with random center effects. It is a **random-intercept model** because each center has its own intercept, $\beta_0+c_j$, while the treatment difference remains common.
 
-In Lab 1, the center contributions were fixed parameters for the six centers. Here, they are modeled as draws from a population distribution. Modeling center as random changes how we represent variation; it does not change how patients were assigned to treatment.
+In Lab 1, we estimated a separate fixed effect for each of the six centers. Here, we model the center contributions as draws from a population distribution and estimate its variance, $\sigma_c^2$. This variance describes how much expected outcomes vary between centers after accounting for treatment.
 
 ::: {.callout-important icon=false title="Question 1"}
 Explain what a positive $c_j$ means for patients in that center. Which part of the model allows centers to have different expected outcomes? Which part assumes that the expected treatment difference is the same across centers?
@@ -115,31 +108,7 @@ We use restricted maximum likelihood (`REML = TRUE`, the default) to estimate th
 The summary separates **fixed effects** from **random effects**. The fixed-effect table contains the intercept, treatment difference and their standard errors. The random-effect table contains the estimated center and residual variances and their standard deviations. Standard deviations are in meters; variances are in squared meters.
 
 ::: {.callout-important icon=false title="Question 2"}
-Interpret the fixed intercept and treatment coefficient. Identify the estimated center variance and residual variance. What distinct sources of variation do they describe?
-:::
-
-# Estimate the treatment difference
-
-We calculate the predicted treatment means from the estimated regression coefficients using `emmeans()`, then calculate their difference using `pairs()`. In `emmeans()`, `~ treatment` requests one mean per treatment. In `pairs()`, `reverse = TRUE` gives enhanced minus standard care.
-
-```{r}
-#| label: random-contrast
-means_random <- emmeans(
-  model_random, ~ treatment,
-  lmer.df = "satterthwaite"
-)
-means_random
-
-difference_random <- pairs(means_random, reverse = TRUE)
-summary(difference_random, infer = c(TRUE, TRUE))
-```
-
-These treatment means describe expected outcomes averaged over the modeled distribution of center effects.
-
-`lmer.df = "satterthwaite"` selects an approximation for the degrees of freedom used in confidence intervals and tests. Specifying it explicitly keeps the method consistent across computers. Focus on the estimated treatment difference, its standard error and its confidence interval.
-
-::: {.callout-important icon=false title="Question 3"}
-Report the enhanced-minus-standard difference with its standard error and 95% confidence interval. Why should you use the standard error of the contrast rather than either of the standard errors printed beside the treatment means?
+Interpret the fixed intercept and treatment coefficient, and identify the estimated standard error of the treatment effect. Identify the estimated center variance and residual variance. What distinct sources of variation do they describe?
 :::
 
 # Variance components and the intraclass correlation coefficient
@@ -200,15 +169,9 @@ icc <- center_variance / (center_variance + patient_variance)
 icc
 ```
 
-::: {.callout-important icon=false title="Question 4"}
+::: {.callout-important icon=false title="Question 3"}
 Calculate the intraclass correlation coefficient. Interpret it both as a variance proportion and as a within-center correlation. What correlation does the model assume for patients in different centers, after accounting for treatment?
 :::
-
-::: {.callout-important icon=false title="Question 5"}
-Why is the intraclass correlation coefficient not the proportion of outcome variation explained by treatment? How does its interpretation differ from that of the standard error of the estimated treatment difference?
-:::
-
-The intraclass correlation coefficient describes the grouping of the remaining variation, while the treatment standard error describes uncertainty about a particular contrast. Only six centers inform the between-center variance estimate, even though the dataset contains 120 patients; the estimated intraclass correlation coefficient should not be treated as an exact population quantity.
 
 # Check the remaining errors
 
@@ -233,8 +196,8 @@ qqnorm(conditional_residuals,
 qqline(conditional_residuals, col = "grey50")
 ```
 
-The residual-versus-fitted plot can reveal patterns or changing spread. The Q-Q plot helps assess the Normality assumption for the individual errors. These plots do not directly check the assumed distribution of the center effects, and reassuring residual plots do not establish independence or prove the model is adequate.
+The residual-versus-fitted plot can reveal patterns or changing spread. The Q-Q plot helps assess the Normality assumption for the individual errors.
 
-::: {.callout-important icon=false title="Question 6"}
-Do these plots suggest clear violations of the individual-error assumptions? Explain why conditional residuals differ from the treatment-only errors $u_{ij}=c_j+\varepsilon_{ij}$ used in the lecture simulation.
+::: {.callout-important icon=false title="Question 4"}
+Explain what the conditional residuals represent. What do the residual-versus-fitted and Normal Q-Q plots suggest about the assumptions of constant variance and Normality for the individual errors? Support your answer with features of the plots.
 :::

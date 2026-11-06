@@ -4,7 +4,7 @@ The assignment compares standard and modified protein extraction protocols using
 
 - `assignment.qmd`: student-facing study description, analysis tasks and submission requirements.
 - `downloads/protein_yield.csv`: simulated data for 80 aliquots, with four aliquots per protocol within each donor.
-- `downloads/report_template.qmd`: report settings, section prompts and empty labelled R chunks. Students supply the analysis code by adapting the labs. Prompts specify the deliverables without providing a worked solution.
+- `downloads/report_template.qmd`: report settings, a hidden setup chunk that installs analysis packages with `pak` and loads them, section prompts, and empty labelled analysis chunks. Students supply the analysis code by adapting the labs. Prompts specify the deliverables without providing a worked solution. The setup chunk executes during rendering with `include: false`; package installation uses `ask = FALSE` to avoid an interactive confirmation prompt.
 - `_generate_data.R`: reproducible data-generation script, requiring only base R. Run it with `Rscript labs_2627/assignments/week1/_generate_data.R` from the repository root, or provide its full path from another working directory.
 
 The assignment belongs to the 2026–2027 website project in `labs_2627`. Render it from the repository root with:

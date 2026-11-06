@@ -13,25 +13,29 @@ execute:
 ---
 
 ::: {.callout-note title="Using this template"}
-Replace `Your name` at the top of the file and save this template in the same folder as `protein_yield.csv`.
+Replace `Your name` with your name, replace the italic prompts with your own writing, and add your analysis code to the chunks below.
 
-Write your explanations as ordinary text and place your R code inside the code chunks provided below. Run chunks in order using the editor's Run button beside each chunk. You can add further chunks where needed.
+The setup chunk installs and loads the required analysis packages and is hidden in the rendered report.
 
-To create your HTML report, select **Render** in RStudio or **Quarto: Preview** in VS Code. Rendering executes the document from beginning to end in a fresh R session, so include all package-loading and data-preparation steps in the document. The settings above keep your code visible and embed figures and other report resources in the HTML file.
-
-Replace the italic prompts with your own writing, remove this instruction box when finished, and submit both this `.qmd` file and the resulting `.html` file.
+Remove this instruction box before rendering your final report. Submit both the `.qmd` file and the rendered `.html` file.
 :::
+
+```{r}
+#| label: setup
+#| include: false
+library(pak)
+pkg_install(c("ggplot2", "dplyr", "lmerTest"), ask = FALSE)
+
+library(ggplot2)
+library(dplyr)
+library(lmerTest)
+```
 
 # Introduction
 
 *Briefly describe the study and the research question. Identify the experimental unit and blocking variable, and explain how the protocols were assigned.*
 
 # Data exploration
-
-```{r}
-#| label: setup
-# Load the packages needed for your analysis.
-```
 
 ```{r}
 #| label: prepare-data
@@ -64,7 +68,7 @@ Replace the italic prompts with your own writing, remove this instruction box wh
 # Obtain the modified-minus-standard difference and its uncertainty.
 ```
 
-*Report and interpret the estimated protocol difference, its standard error and its 95% confidence interval, including units.*
+*Report and interpret the estimated protocol difference, its estimated standard error and its 95% confidence interval, including units.*
 
 ## Variance components
 

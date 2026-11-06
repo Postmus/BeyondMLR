@@ -3979,15 +3979,29 @@ overflow-x: auto;
 <li><strong>Describe the design.</strong> Identify the experimental unit and blocking variable, and explain how the protocols were assigned within donors.</li>
 <li><strong>Explore the data.</strong> Create a plot showing individual protein yields, protocol-specific means within each donor, and overall protocol means. Discuss whether the plot suggests substantial differences between donors, considering both the donor-specific means and the variation among aliquots within donors.</li>
 <li><strong>Fit a random-intercept model.</strong> Include protocol as a fixed effect and a random intercept for donor. Use dummy coding for protocol, with Standard as the reference. Interpret the intercept and protocol coefficient, and explain what the random donor intercept represents.</li>
-<li><strong>Interpret the results.</strong> Obtain the modified-minus-standard difference, its standard error and its 95% confidence interval. Report and interpret the estimated donor and residual variances. Calculate and interpret the intraclass correlation coefficient.</li>
+<li><strong>Interpret the results.</strong> Obtain the modified-minus-standard difference, its estimated standard error and its 95% confidence interval. Report and interpret the estimated donor and residual variances. Calculate and interpret the intraclass correlation coefficient.</li>
 <li><strong>Check the model and conclude.</strong> Examine conditional-residual diagnostic plots and comment on the model assumptions. Write a short conclusion answering the laboratory’s question, including the estimated protocol difference, its uncertainty and appropriate units.</li>
 </ol>
 <p>Use the Week 1 labs as references when constructing your analysis. Explain your findings in the context of protein extraction and include units where appropriate.</p>
 </section>
 <section id="report-and-submission" class="level1">
 <h1>Report and submission</h1>
-<p>Use the report template below to organize your analysis. Save the template and dataset in the same working folder, replace the author placeholder with your name, and complete the text and code sections. Brief instructions for running code and rendering the report are included in the template.</p>
-<p>Submit both the completed <strong>Quarto source file (<code>.qmd</code>)</strong> and the <strong>rendered HTML report</strong>. Keep the code, results and figures visible in the report, and accompany them with your interpretations.</p>
+<p>For this assignment, submit a report created using Quarto that presents your analysis, results and interpretations, using the template provided in the Downloads section below.</p>
+<p>The template starts with a setup chunk that uses <code>pak</code> to install the required analysis packages if needed and then loads them. Install <code>pak</code> itself as described in <a href="../../BLR_lab_center_fixed.html#install-pak-once">Lab 1</a> if you have not already done so. The setup chunk runs when you render the document, but its code and output are hidden from the report. Brief instructions for running code and rendering the report are included in the template.</p>
+<p>Submit both the completed <strong>Quarto source file (<code>.qmd</code>)</strong> and the <strong>rendered HTML report</strong>. Keep your analysis code, results and figures visible in the report, and accompany them with your interpretations. Only the setup chunk is hidden.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Help with Quarto">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Help with Quarto
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For an introduction to creating reports with Quarto, see <a href="https://r4ds.hadley.nz/quarto.html">Chapter 28: Quarto</a> in <em>R for Data Science</em> (2nd edition). It covers text formatting, code chunks, figures, tables and rendering. <a href="https://r4ds.hadley.nz/quarto-formats.html">Chapter 29: Quarto formats</a> provides further information about output formats.</p>
+</div>
+</div>
 </section>
 <section id="downloads" class="level1">
 <h1>Downloads</h1>

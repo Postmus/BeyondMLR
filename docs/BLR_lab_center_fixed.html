@@ -4082,21 +4082,28 @@ overflow-x: auto;
    
   <ul>
   <li><a href="#a-multicenter-rehabilitation-trial" id="toc-a-multicenter-rehabilitation-trial" class="nav-link active" data-scroll-target="#a-multicenter-rehabilitation-trial">A multicenter rehabilitation trial</a></li>
-  <li><a href="#setup-and-data" id="toc-setup-and-data" class="nav-link" data-scroll-target="#setup-and-data">Setup and data</a></li>
-  <li><a href="#explore-treatment-and-center-differences" id="toc-explore-treatment-and-center-differences" class="nav-link" data-scroll-target="#explore-treatment-and-center-differences">Explore treatment and center differences</a></li>
-  <li><a href="#choose-how-to-code-the-factors" id="toc-choose-how-to-code-the-factors" class="nav-link" data-scroll-target="#choose-how-to-code-the-factors">Choose how to code the factors</a>
+  <li><a href="#organize-your-work" id="toc-organize-your-work" class="nav-link" data-scroll-target="#organize-your-work">Organize your work</a>
   <ul class="collapse">
-  <li><a href="#dummy-coding-for-treatment" id="toc-dummy-coding-for-treatment" class="nav-link" data-scroll-target="#dummy-coding-for-treatment">Dummy coding for treatment</a></li>
-  <li><a href="#effects-coding-for-center" id="toc-effects-coding-for-center" class="nav-link" data-scroll-target="#effects-coding-for-center">Effects coding for center</a></li>
+  <li><a href="#use-one-folder-per-week" id="toc-use-one-folder-per-week" class="nav-link" data-scroll-target="#use-one-folder-per-week">Use one folder per week</a></li>
+  <li><a href="#save-your-code-in-an-r-script" id="toc-save-your-code-in-an-r-script" class="nav-link" data-scroll-target="#save-your-code-in-an-r-script">Save your code in an R script</a></li>
+  <li><a href="#set-the-working-directory" id="toc-set-the-working-directory" class="nav-link" data-scroll-target="#set-the-working-directory">Set the working directory</a></li>
   </ul></li>
-  <li><a href="#fit-the-fixed-effects-model" id="toc-fit-the-fixed-effects-model" class="nav-link" data-scroll-target="#fit-the-fixed-effects-model">Fit the fixed-effects model</a>
+  <li><a href="#setup-and-data" id="toc-setup-and-data" class="nav-link" data-scroll-target="#setup-and-data">Setup and data</a>
+  <ul class="collapse">
+  <li><a href="#install-pak-once" id="toc-install-pak-once" class="nav-link" data-scroll-target="#install-pak-once">Install pak once</a></li>
+  <li><a href="#use-pak-throughout-the-course" id="toc-use-pak-throughout-the-course" class="nav-link" data-scroll-target="#use-pak-throughout-the-course">Use pak throughout the course</a></li>
+  <li><a href="#read-the-data" id="toc-read-the-data" class="nav-link" data-scroll-target="#read-the-data">Read the data</a></li>
+  </ul></li>
+  <li><a href="#explore-treatment-and-center-differences" id="toc-explore-treatment-and-center-differences" class="nav-link" data-scroll-target="#explore-treatment-and-center-differences">Explore treatment and center differences</a></li>
+  <li><a href="#specify-the-model-and-code-the-factors" id="toc-specify-the-model-and-code-the-factors" class="nav-link" data-scroll-target="#specify-the-model-and-code-the-factors">Specify the model and code the factors</a>
   <ul class="collapse">
   <li><a href="#specify-the-model" id="toc-specify-the-model" class="nav-link" data-scroll-target="#specify-the-model">Specify the model</a></li>
-  <li><a href="#connect-the-model-to-the-design-matrix" id="toc-connect-the-model-to-the-design-matrix" class="nav-link" data-scroll-target="#connect-the-model-to-the-design-matrix">Connect the model to the design matrix</a></li>
-  <li><a href="#fit-the-model-and-inspect-the-design-matrix" id="toc-fit-the-model-and-inspect-the-design-matrix" class="nav-link" data-scroll-target="#fit-the-model-and-inspect-the-design-matrix">Fit the model and inspect the design matrix</a></li>
+  <li><a href="#code-treatment-using-dummy-coding" id="toc-code-treatment-using-dummy-coding" class="nav-link" data-scroll-target="#code-treatment-using-dummy-coding">Code treatment using dummy coding</a></li>
+  <li><a href="#code-center-using-effects-coding" id="toc-code-center-using-effects-coding" class="nav-link" data-scroll-target="#code-center-using-effects-coding">Code center using effects coding</a></li>
   </ul></li>
-  <li><a href="#assess-the-model-results" id="toc-assess-the-model-results" class="nav-link" data-scroll-target="#assess-the-model-results">Assess the model results</a>
+  <li><a href="#fit-and-interpret-the-model" id="toc-fit-and-interpret-the-model" class="nav-link" data-scroll-target="#fit-and-interpret-the-model">Fit and interpret the model</a>
   <ul class="collapse">
+  <li><a href="#fit-the-model-and-read-its-output" id="toc-fit-the-model-and-read-its-output" class="nav-link" data-scroll-target="#fit-the-model-and-read-its-output">Fit the model and read its output</a></li>
   <li><a href="#treatment-effect-and-uncertainty" id="toc-treatment-effect-and-uncertainty" class="nav-link" data-scroll-target="#treatment-effect-and-uncertainty">Treatment effect and uncertainty</a></li>
   <li><a href="#overall-contribution-of-center" id="toc-overall-contribution-of-center" class="nav-link" data-scroll-target="#overall-contribution-of-center">Overall contribution of center</a></li>
   </ul></li>
@@ -4146,34 +4153,86 @@ overflow-x: auto;
 </div>
 </div>
 </section>
+<section id="organize-your-work" class="level1">
+<h1>Organize your work</h1>
+<section id="use-one-folder-per-week" class="level2">
+<h2 class="anchored" data-anchor-id="use-one-folder-per-week">Use one folder per week</h2>
+<p>Create a folder for this course, with a separate folder for each week. Keep that week’s lab scripts and data together so that you can find and rerun your analyses when working on the assignment. For Week 1, use the following structure:</p>
+<pre class="text"><code>BeyondMLR/
+  week1/
+    lab1.R
+    lab2.R
+    data/
+      rehabilitation_week1.csv
+  week2/</code></pre>
+<p>Create the <code>week1</code> folder and its <code>data</code> subfolder now. <a href="data/rehabilitation_week1.csv">Download the rehabilitation dataset</a> and save it in <code>week1/data</code>. Keep the filename unchanged.</p>
+</section>
+<section id="save-your-code-in-an-r-script" class="level2">
+<h2 class="anchored" data-anchor-id="save-your-code-in-an-r-script">Save your code in an R script</h2>
+<p>An <strong>R script</strong> is a text file with the extension <code>.R</code> that records the commands for your analysis. Saving your code lets you repeat the analysis in a new R session and adapt it later.</p>
+<p>In RStudio, select <strong>File &gt; New File &gt; R Script</strong> and save the file as <code>lab1.R</code> inside <code>week1</code>. Copy the R code from this lab into your script as you work through it. Place the cursor on a line, or select several lines, and click <strong>Run</strong> to execute them in the Console. The shortcut is <strong>Ctrl+Enter</strong> on Windows/Linux or <strong>Cmd+Enter</strong> on macOS. Run the code in order, starting with package loading and data import. <a href="https://docs.posit.co/ide/user/ide/get-started/">RStudio’s code-editing guide</a> describes these controls.</p>
+<p>Add comments beginning with <code>#</code> to explain your code and record short answers to the lab questions. Save the script regularly.</p>
+</section>
+<section id="set-the-working-directory" class="level2">
+<h2 class="anchored" data-anchor-id="set-the-working-directory">Set the working directory</h2>
+<p>The <strong>working directory</strong> is the folder R uses as the starting point for relative file paths. For example, <code>&quot;data/rehabilitation_week1.csv&quot;</code> tells R to look inside the <code>data</code> subfolder of its working directory. Relative paths used to save output also start from this folder.</p>
+<p>For this lab, set the working directory to <code>week1</code>, which contains your script and the <code>data</code> folder. Saving or opening a script does not by itself guarantee that R uses that folder as its working directory.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Changing the working directory in RStudio">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Changing the working directory in RStudio
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Select <strong>Session &gt; Set Working Directory &gt; Choose Directory…</strong>, then choose your <code>week1</code> folder. Alternatively, with the saved <code>lab1.R</code> script active, select <strong>Session &gt; Set Working Directory &gt; To Source File Location</strong>.</p>
+<p>Run <code>getwd()</code> in the Console to check the selected folder. It should be <code>week1</code>, not its <code>data</code> subfolder. Check this again when starting a new session. These controls are part of <a href="https://support.posit.co/hc/en-us/articles/200711843-Working-Directories-and-Workspaces-in-the-RStudio-IDE">RStudio’s working-directory tools</a>.</p>
+</div>
+</div>
+</section>
+</section>
 <section id="setup-and-data" class="level1">
 <h1>Setup and data</h1>
-<p>We use <code>ggplot2</code> for figures and <code>dplyr</code> for summaries. The following code installs any missing packages and loads them.</p>
+<section id="install-pak-once" class="level2">
+<h2 class="anchored" data-anchor-id="install-pak-once">Install pak once</h2>
+<p>An R <strong>package</strong> provides additional functions, for example for drawing figures or fitting statistical models. Throughout this course, we will use the package manager <strong>pak</strong> to install the packages we need. It also handles their <strong>dependencies</strong>: other packages they need to work.</p>
+<p>First, install <code>pak</code> itself by running the following command in the Console. You only need to do this once for your current R installation; skip this step if you already have <code>pak</code> installed.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;ggplot2&quot;</span>, <span class="st">&quot;dplyr&quot;</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>missing_packages <span class="ot">&lt;-</span> packages[</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="sc">!</span><span class="fu">vapply</span>(packages, requireNamespace, <span class="fu">logical</span>(<span class="dv">1</span>), <span class="at">quietly =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">length</span>(missing_packages) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">install.packages</span>(missing_packages, <span class="at">repos =</span> <span class="st">&quot;https://cloud.r-project.org&quot;</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;pak&quot;</span>, <span class="at">repos =</span> <span class="st">&quot;https://cloud.r-project.org&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p><a href="data/rehabilitation_week1.csv">Download the rehabilitation dataset</a>. Save it in a folder named <code>data</code> inside your working directory. Keep your R script in that working directory. You can use <code>getwd()</code> to check where R is looking for files.</p>
+</section>
+<section id="use-pak-throughout-the-course" class="level2">
+<h2 class="anchored" data-anchor-id="use-pak-throughout-the-course">Use pak throughout the course</h2>
+<p><strong>Installing</strong> a package saves it on your computer. <strong>Loading</strong> a package makes its functions available in the current R session. Installed packages remain available between sessions, but you need to load them again when you start a new session.</p>
+<p>We will follow the same pattern in each lab: load <code>pak</code> with <code>library(pak)</code>, use <code>pkg_install()</code> to install the packages needed for that lab, and then load those packages with <code>library()</code>. The <a href="https://pak.r-lib.org/reference/pkg_install.html">pak package manager</a> checks the required packages and their dependencies and keeps already installed versions when they meet the requirements.</p>
+<p>For this lab, we need <code>ggplot2</code> for figures and <code>dplyr</code> for summaries. Add the following code to the beginning of your script and run it. If <code>pak</code> asks whether to proceed, confirm the installation and wait for it to finish.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>rehab <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;data/rehabilitation_week1.csv&quot;</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify the order of the categories explicitly.</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>rehab<span class="sc">$</span>treatment <span class="ot">&lt;-</span> <span class="fu">factor</span>(rehab<span class="sc">$</span>treatment,</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                          <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;Standard&quot;</span>, <span class="st">&quot;Enhanced&quot;</span>))</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>rehab<span class="sc">$</span>center <span class="ot">&lt;-</span> <span class="fu">factor</span>(rehab<span class="sc">$</span>center,</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                       <span class="at">levels =</span> <span class="fu">paste</span>(<span class="st">&quot;Center&quot;</span>, LETTERS[<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>]))</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rehab)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(rehab)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rehab<span class="sc">$</span>center, rehab<span class="sc">$</span>treatment)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pak)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pkg_install</span>(<span class="fu">c</span>(<span class="st">&quot;ggplot2&quot;</span>, <span class="st">&quot;dplyr&quot;</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Now load the packages for your analysis. Keep these commands in your script so that they run each time you start the lab in a new R session.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="read-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="read-the-data">Read the data</h2>
+<p>With <code>week1</code> as your working directory and the dataset saved in its <code>data</code> subfolder, run the following code. If R cannot find the file, check <code>getwd()</code>, the folder containing the CSV file, and its filename.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rehab <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;data/rehabilitation_week1.csv&quot;</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify the order of the categories explicitly.</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>rehab<span class="sc">$</span>treatment <span class="ot">&lt;-</span> <span class="fu">factor</span>(rehab<span class="sc">$</span>treatment,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                          <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;Standard&quot;</span>, <span class="st">&quot;Enhanced&quot;</span>))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>rehab<span class="sc">$</span>center <span class="ot">&lt;-</span> <span class="fu">factor</span>(rehab<span class="sc">$</span>center,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                       <span class="at">levels =</span> <span class="fu">paste</span>(<span class="st">&quot;Center&quot;</span>, LETTERS[<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>]))</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rehab)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(rehab)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rehab<span class="sc">$</span>center, rehab<span class="sc">$</span>treatment)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Each row represents one patient. The variables are <code>center</code>, <code>treatment</code>, and <code>distance</code> (six-minute walk distance in meters). A <strong>factor</strong> tells R that a variable represents categories rather than a continuous measurement. The order of the factor levels will matter when we choose how to represent these categories in the model.</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 1">
@@ -4190,44 +4249,45 @@ overflow-x: auto;
 </div>
 </div>
 </section>
+</section>
 <section id="explore-treatment-and-center-differences" class="level1">
 <h1>Explore treatment and center differences</h1>
 <p>Create a plot that shows the individual walking distances and the treatment-specific means within each center. Add the overall mean for each treatment as a reference line. This lets us examine center differences while keeping the two treatment groups separate.</p>
 <p>First calculate the mean walking distance for each treatment within each center, and then the overall mean for each treatment.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>center_treatment_means <span class="ot">&lt;-</span> rehab <span class="sc">|&gt;</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(center, treatment) <span class="sc">|&gt;</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_distance =</span> <span class="fu">mean</span>(distance), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>treatment_means <span class="ot">&lt;-</span> rehab <span class="sc">|&gt;</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(treatment) <span class="sc">|&gt;</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_distance =</span> <span class="fu">mean</span>(distance), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>center_treatment_means <span class="ot">&lt;-</span> rehab <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(center, treatment) <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_distance =</span> <span class="fu">mean</span>(distance), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>treatment_means <span class="ot">&lt;-</span> rehab <span class="sc">|&gt;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(treatment) <span class="sc">|&gt;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_distance =</span> <span class="fu">mean</span>(distance), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Use these summaries together with the individual observations to create the plot.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>center_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(rehab,</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">aes</span>(<span class="at">x =</span> center, <span class="at">y =</span> distance, <span class="at">color =</span> treatment)) <span class="sc">+</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">data =</span> treatment_means,</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>             <span class="fu">aes</span>(<span class="at">yintercept =</span> mean_distance, <span class="at">color =</span> treatment),</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">linetype =</span> <span class="st">&quot;dashed&quot;</span>, <span class="at">linewidth =</span> <span class="fl">0.7</span>, <span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_jitterdodge</span>(<span class="at">jitter.width =</span> <span class="fl">0.18</span>,</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">jitter.height =</span> <span class="dv">0</span>,</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">dodge.width =</span> <span class="fl">0.64</span>,</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">seed =</span> <span class="dv">20261104</span>),</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">alpha =</span> <span class="fl">0.35</span>, <span class="at">size =</span> <span class="fl">1.8</span>) <span class="sc">+</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> center_treatment_means,</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>             <span class="fu">aes</span>(<span class="at">y =</span> mean_distance),</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>             <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.64</span>),</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">18</span>, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="at">Standard =</span> <span class="st">&quot;#173F48&quot;</span>,</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">Enhanced =</span> <span class="st">&quot;#D58A3D&quot;</span>)) <span class="sc">+</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Center&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Six-minute walk distance (m)&quot;</span>,</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">&quot;Treatment&quot;</span>) <span class="sc">+</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">override.aes =</span> <span class="fu">list</span>(<span class="at">alpha =</span> <span class="dv">1</span>, <span class="at">size =</span> <span class="dv">3</span>))) <span class="sc">+</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;top&quot;</span>)</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>center_plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>center_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(rehab,</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">aes</span>(<span class="at">x =</span> center, <span class="at">y =</span> distance, <span class="at">color =</span> treatment)) <span class="sc">+</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">data =</span> treatment_means,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>             <span class="fu">aes</span>(<span class="at">yintercept =</span> mean_distance, <span class="at">color =</span> treatment),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">linetype =</span> <span class="st">&quot;dashed&quot;</span>, <span class="at">linewidth =</span> <span class="fl">0.7</span>, <span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_jitterdodge</span>(<span class="at">jitter.width =</span> <span class="fl">0.18</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">jitter.height =</span> <span class="dv">0</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">dodge.width =</span> <span class="fl">0.64</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">seed =</span> <span class="dv">20261104</span>),</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">alpha =</span> <span class="fl">0.35</span>, <span class="at">size =</span> <span class="fl">1.8</span>) <span class="sc">+</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> center_treatment_means,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>             <span class="fu">aes</span>(<span class="at">y =</span> mean_distance),</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>             <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.64</span>),</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">18</span>, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="at">Standard =</span> <span class="st">&quot;#173F48&quot;</span>,</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">Enhanced =</span> <span class="st">&quot;#D58A3D&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Center&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Six-minute walk distance (m)&quot;</span>,</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">&quot;Treatment&quot;</span>) <span class="sc">+</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">override.aes =</span> <span class="fu">list</span>(<span class="at">alpha =</span> <span class="dv">1</span>, <span class="at">size =</span> <span class="dv">3</span>))) <span class="sc">+</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;top&quot;</span>)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>center_plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The small points are individual observations. They are shifted slightly along the horizontal axis to make overlapping points easier to see; their walking distances are unchanged. The diamonds show the observed treatment means within each center. The dashed lines show the overall treatment means across all six centers.</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 2">
@@ -4244,12 +4304,25 @@ overflow-x: auto;
 </div>
 </div>
 </section>
-<section id="choose-how-to-code-the-factors" class="level1">
-<h1>Choose how to code the factors</h1>
-<p>A regression model represents a categorical variable using numerical columns. The <strong>coding scheme</strong> determines what the intercept and factor coefficients mean. We will use two schemes in the same model: dummy coding for treatment and effects coding for center. These choices make the coefficients useful for our research question.</p>
-<section id="dummy-coding-for-treatment" class="level2">
-<h2 class="anchored" data-anchor-id="dummy-coding-for-treatment">Dummy coding for treatment</h2>
-<p>With <strong>dummy coding</strong>, one category is the reference. For our two treatments, we use standard care as the reference and represent treatment by a single indicator:</p>
+<section id="specify-the-model-and-code-the-factors" class="level1">
+<h1>Specify the model and code the factors</h1>
+<section id="specify-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="specify-the-model">Specify the model</h2>
+<p>Let <span class="math inline">\(Y_{ij}\)</span> be the outcome for patient <span class="math inline">\(i\)</span> in center <span class="math inline">\(j\)</span>, and let <span class="math inline">\(T_{ij}\)</span> indicate the patient’s treatment. We include an intercept <span class="math inline">\(\beta_0\)</span>, a treatment coefficient <span class="math inline">\(\beta_1\)</span>, and a fixed contribution <span class="math inline">\(c_j\)</span> for each center:</p>
+<p><span class="math display">\[
+Y_{ij} = \beta_0 + \beta_1 T_{ij} + c_j + \varepsilon_{ij},
+\qquad \varepsilon_{ij} \overset{\mathrm{iid}}{\sim} N(0,\sigma^2).
+\]</span></p>
+<p>Without a constraint, increasing the intercept and decreasing every center contribution by the same amount would leave the model’s predictions unchanged. To define these parameters uniquely, we require the six center contributions to sum to zero:</p>
+<p><span class="math display">\[
+c_A+c_B+c_C+c_D+c_E+c_F=0.
+\]</span></p>
+<p>The model assumes that the expected treatment difference is the same in every center: it contains no treatment-by-center interaction. After accounting for treatment and center, the remaining errors are assumed to be independent and identically distributed Normal variables with mean zero and common variance.</p>
+<p>To fit this model in R, we explicitly set how each factor is represented numerically. We use <strong>dummy coding</strong> for treatment to define <span class="math inline">\(T_{ij}\)</span> and <strong>effects coding</strong> for center so that R estimates the center deviations specified above.</p>
+</section>
+<section id="code-treatment-using-dummy-coding" class="level2">
+<h2 class="anchored" data-anchor-id="code-treatment-using-dummy-coding">Code treatment using dummy coding</h2>
+<p>With <strong>dummy coding</strong>, one category is the reference. We use standard care as the reference and represent treatment by a single indicator:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -4268,161 +4341,36 @@ overflow-x: auto;
 </tr>
 </tbody>
 </table>
-<p>In a model containing <span class="math inline">\(\beta_0+\beta_1T_{ij}\)</span>, the predicted standard-care outcome is <span class="math inline">\(\beta_0\)</span>, and the predicted enhanced-care outcome is <span class="math inline">\(\beta_0+\beta_1\)</span>. The treatment coefficient therefore directly answers our question: it is the enhanced-minus-standard difference.</p>
+<p>Within center <span class="math inline">\(j\)</span>, the expected standard-care outcome is <span class="math inline">\(\beta_0+c_j\)</span>, and the expected enhanced-care outcome is <span class="math inline">\(\beta_0+\beta_1+c_j\)</span>. The treatment coefficient <span class="math inline">\(\beta_1\)</span> is therefore the enhanced-minus-standard difference.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The first factor level, Standard, is the reference.</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">contrasts</span>(rehab<span class="sc">$</span>treatment) <span class="ot">&lt;-</span> <span class="fu">contr.treatment</span>(<span class="fu">levels</span>(rehab<span class="sc">$</span>treatment))</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">contrasts</span>(rehab<span class="sc">$</span>treatment)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The first factor level, Standard, is the reference.</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">contrasts</span>(rehab<span class="sc">$</span>treatment) <span class="ot">&lt;-</span> <span class="fu">contr.treatment</span>(<span class="fu">levels</span>(rehab<span class="sc">$</span>treatment))</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">contrasts</span>(rehab<span class="sc">$</span>treatment)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><code>contr.treatment()</code> creates the dummy-coding matrix. Assigning it with <code>contrasts()</code> tells R to use this coding when fitting a model with the treatment factor. Printing the matrix shows how each treatment is represented.</p>
 </section>
-<section id="effects-coding-for-center" class="level2">
-<h2 class="anchored" data-anchor-id="effects-coding-for-center">Effects coding for center</h2>
-<p>We could also use dummy coding for center. With Center A as the reference, the model intercept would then describe standard care specifically in Center A, and the center coefficients would compare the other centers with Center A.</p>
-<p>Instead, we use <strong>effects coding</strong> for center. This describes each center contribution as a deviation from the equally weighted average across centers. The six center contributions sum to zero:</p>
-<p><span class="math display">\[
-c_A+c_B+c_C+c_D+c_E+c_F=0.
-\]</span></p>
-<p>Combined with dummy coding for treatment, this gives the intercept a useful interpretation: <strong>the expected standard-care outcome averaged equally across the six centers</strong>. Each center contribution describes how much higher or lower its expected outcome is than that average, comparing patients receiving the same treatment. The treatment coefficient still gives the enhanced-minus-standard difference.</p>
+<section id="code-center-using-effects-coding" class="level2">
+<h2 class="anchored" data-anchor-id="code-center-using-effects-coding">Code center using effects coding</h2>
+<p>The sum-to-zero constraint makes each <span class="math inline">\(c_j\)</span> a deviation from the equally weighted average across centers, comparing patients receiving the same treatment. With standard care coded 0, the intercept <span class="math inline">\(\beta_0\)</span> is <strong>the expected standard-care outcome averaged equally across the six centers</strong>. It does not average over the two treatments. In this balanced trial, equal weighting of centers also agrees with weighting by their patient counts.</p>
+<p>We use <strong>effects coding</strong> to estimate these deviations directly. With dummy coding for center instead, the intercept would describe standard care in a reference center, and the other center coefficients would describe differences from that center.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">contrasts</span>(rehab<span class="sc">$</span>center) <span class="ot">&lt;-</span> <span class="fu">contr.sum</span>(<span class="fu">levels</span>(rehab<span class="sc">$</span>center))</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">contrasts</span>(rehab<span class="sc">$</span>center)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">contrasts</span>(rehab<span class="sc">$</span>center) <span class="ot">&lt;-</span> <span class="fu">contr.sum</span>(<span class="fu">levels</span>(rehab<span class="sc">$</span>center))</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">contrasts</span>(rehab<span class="sc">$</span>center)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p><code>contr.sum()</code> creates the effects-coding matrix. Inspect the result: there are six rows, one per center, but only five columns. Centers A–E each have a 1 in their own column and 0 in the others. Center F has <span class="math inline">\(-1\)</span> in all five columns. Its contribution is therefore minus the sum of the other five contributions; it is not set to zero.</p>
-<p>R labels the five columns <code>1</code> to <code>5</code>, so the fitted center coefficients will be called <code>center1</code> to <code>center5</code>, corresponding to Centers A–E. Only five center coefficients are needed because the sum-to-zero constraint determines the sixth.</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Factor</th>
-<th>Coding</th>
-<th>Interpretation of its coefficients</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Treatment</td>
-<td>Dummy coding</td>
-<td>Enhanced minus standard care</td>
-</tr>
-<tr class="even">
-<td>Center</td>
-<td>Effects coding</td>
-<td>Each center’s deviation from the equally weighted center average</td>
-</tr>
-</tbody>
-</table>
-<p>The intercept is a mean for <strong>standard care</strong>, because standard care is coded 0. Averaging over centers does not also average over treatments. In this balanced trial, all centers contribute the same number of patients, so equal weighting of centers also agrees with weighting by their patient counts.</p>
-<p>These coding choices change how we express the model, but do not change its fitted outcomes or the estimated treatment difference and its standard error. We set the coding on each factor explicitly, so the analysis does not depend on previously changed global R options.</p>
+<p><code>contr.sum()</code> creates the effects-coding matrix. Inspect the result: there are six rows, one per center, but only five columns. Centers A–E each have a 1 in their own column and 0 in the others. Center F has <span class="math inline">\(-1\)</span> in all five columns. Its contribution is therefore minus the sum of the other five contributions; it is not set to zero. Only five center coefficients are needed because the sum-to-zero constraint determines the sixth.</p>
+<p>Changing the center coding changes the interpretation of the intercept and center coefficients, but does not change the fitted outcomes or the estimated treatment difference and its standard error. Setting the coding explicitly ensures that the analysis does not depend on previously changed global R options.</p>
 </section>
 </section>
-<section id="fit-the-fixed-effects-model" class="level1">
-<h1>Fit the fixed-effects model</h1>
-<section id="specify-the-model" class="level2">
-<h2 class="anchored" data-anchor-id="specify-the-model">Specify the model</h2>
-<p>Let <span class="math inline">\(Y_{ij}\)</span> be the outcome for patient <span class="math inline">\(i\)</span> in center <span class="math inline">\(j\)</span>, and let <span class="math inline">\(T_{ij}\)</span> equal 0 for standard care and 1 for enhanced care. We represent differences between centers through a separate center contribution:</p>
-<p><span class="math display">\[
-Y_{ij} = \beta_0 + \beta_1 T_{ij} + c_j + \varepsilon_{ij},
-\qquad \varepsilon_{ij} \overset{\mathrm{iid}}{\sim} N(0,\sigma^2).
-\]</span></p>
-<p>With effects coding for center, we impose <span class="math inline">\(\sum_{j=1}^{6}c_j=0\)</span>. The intercept represents the expected outcome under standard care, averaged equally across the six centers. Each <span class="math inline">\(c_j\)</span> is a fixed parameter describing that center’s deviation from the average, comparing patients receiving the same treatment. We estimate five center contributions directly and recover the sixth from the sum-to-zero constraint.</p>
-<p>The treatment coefficient is the enhanced-minus-standard difference. This model assumes that the expected treatment difference is the same in every center: it contains no treatment-by-center interaction. The remaining errors are assumed to be iid Normal with mean zero and common variance, after accounting for treatment and center.</p>
-</section>
-<section id="connect-the-model-to-the-design-matrix" class="level2">
-<h2 class="anchored" data-anchor-id="connect-the-model-to-the-design-matrix">Connect the model to the design matrix</h2>
-<p>The equation above describes the center contribution directly. To fit the model, we represent that contribution using the five effects-coded predictors introduced earlier. Written in terms of those predictors, the same model is</p>
-<p><span class="math display">\[
-Y_{ij}=\beta_0+\beta_1T_{ij}
-+c_AZ_{Aj}+c_BZ_{Bj}+c_CZ_{Cj}+c_DZ_{Dj}+c_EZ_{Ej}
-+\varepsilon_{ij}.
-\]</span></p>
-<p>Here, <span class="math inline">\(Z_{Aj},\ldots,Z_{Ej}\)</span> are the numerical values assigned to center <span class="math inline">\(j\)</span> by the coding scheme:</p>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Center</th>
-<th style="text-align: right;"><span class="math inline">\(Z_A\)</span></th>
-<th style="text-align: right;"><span class="math inline">\(Z_B\)</span></th>
-<th style="text-align: right;"><span class="math inline">\(Z_C\)</span></th>
-<th style="text-align: right;"><span class="math inline">\(Z_D\)</span></th>
-<th style="text-align: right;"><span class="math inline">\(Z_E\)</span></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>A</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-</tr>
-<tr class="even">
-<td>B</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-</tr>
-<tr class="odd">
-<td>C</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-</tr>
-<tr class="even">
-<td>D</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">0</td>
-</tr>
-<tr class="odd">
-<td>E</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">1</td>
-</tr>
-<tr class="even">
-<td>F</td>
-<td style="text-align: right;">−1</td>
-<td style="text-align: right;">−1</td>
-<td style="text-align: right;">−1</td>
-<td style="text-align: right;">−1</td>
-<td style="text-align: right;">−1</td>
-</tr>
-</tbody>
-</table>
-<p>For a patient in Center A, the five center terms reduce to <span class="math inline">\(c_A\)</span>. For a patient in Center F, they reduce to</p>
-<p><span class="math display">\[
-c_F=-c_A-c_B-c_C-c_D-c_E.
-\]</span></p>
-<p>This is how the coding makes the six center contributions sum to zero. It also explains why the intercept represents the expected standard-care outcome averaged equally across centers.</p>
-<p>The <strong>design matrix</strong> collects the numerical predictor values used to fit the model. Each row represents one patient and contains seven entries: a 1 for the intercept, the treatment indicator <span class="math inline">\(T_{ij}\)</span>, and the five center predictors. The center values are shared by all patients in a center, while the treatment indicator depends on the patient’s assigned treatment.</p>
-</section>
-<section id="fit-the-model-and-inspect-the-design-matrix" class="level2">
-<h2 class="anchored" data-anchor-id="fit-the-model-and-inspect-the-design-matrix">Fit the model and inspect the design matrix</h2>
+<section id="fit-and-interpret-the-model" class="level1">
+<h1>Fit and interpret the model</h1>
+<section id="fit-the-model-and-read-its-output" class="level2">
+<h2 class="anchored" data-anchor-id="fit-the-model-and-read-its-output">Fit the model and read its output</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>model_fixed <span class="ot">&lt;-</span> <span class="fu">lm</span>(distance <span class="sc">~</span> treatment <span class="sc">+</span> center, <span class="at">data =</span> rehab)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_fixed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>model_fixed <span class="ot">&lt;-</span> <span class="fu">lm</span>(distance <span class="sc">~</span> treatment <span class="sc">+</span> center, <span class="at">data =</span> rehab)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_fixed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>In an R model formula, the outcome is on the left of <code>~</code>, and predictors are on the right. An intercept is included automatically.</p>
-<p>We can inspect the first six patient rows of the actual design matrix used by R:</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">model.matrix</span>(model_fixed))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p><code>model.matrix()</code> extracts the design matrix from the fitted model, and <code>head()</code> displays its first six rows. The columns are called <code>(Intercept)</code>, <code>treatmentEnhanced</code>, and <code>center1</code> to <code>center5</code>. They correspond to <span class="math inline">\(1\)</span>, <span class="math inline">\(T_{ij}\)</span>, and <span class="math inline">\(Z_{Aj},\ldots,Z_{Ej}\)</span> in the coded equation.</p>
-<p>The <code>+ center</code> term adds the five effects-coded columns to the model. For example, <code>center1</code> estimates the contribution for Center A: a positive value indicates a higher expected outcome than the center average, for either treatment. The model-predicted standard-care outcome in Center A is the intercept plus <code>center1</code>.</p>
+<p>In an R model formula, the outcome is on the left of <code>~</code>, and predictors are on the right. An intercept is included automatically. R uses the coding we assigned to the treatment and center factors.</p>
+<p>In the output, <code>(Intercept)</code> estimates <span class="math inline">\(\beta_0\)</span>, and <code>treatmentEnhanced</code> estimates <span class="math inline">\(\beta_1\)</span>. The five center coefficients are named <code>center1</code> to <code>center5</code>, corresponding to Centers A–E. For example, a positive <code>center1</code> indicates a higher expected outcome in Center A than the center average, for either treatment. The model-predicted standard-care outcome in Center A is the intercept plus <code>center1</code>.</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 3">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -4437,16 +4385,13 @@ c_F=-c_A-c_B-c_C-c_D-c_E.
 </div>
 </div>
 </section>
-</section>
-<section id="assess-the-model-results" class="level1">
-<h1>Assess the model results</h1>
 <section id="treatment-effect-and-uncertainty" class="level2">
 <h2 class="anchored" data-anchor-id="treatment-effect-and-uncertainty">Treatment effect and uncertainty</h2>
 <p>In <code>summary(model_fixed)</code>, the row <code>treatmentEnhanced</code> gives the estimated enhanced-minus-standard difference, its standard error, and a test against a zero difference. The residual standard error at the bottom of the output estimates the individual-error standard deviation after accounting for treatment and center.</p>
 <p>Use <code>confint()</code> to obtain the 95% confidence interval for the treatment coefficient, and <code>sigma()</code> to extract the residual standard deviation.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">confint</span>(model_fixed, <span class="st">&quot;treatmentEnhanced&quot;</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sigma</span>(model_fixed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">confint</span>(model_fixed, <span class="st">&quot;treatmentEnhanced&quot;</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sigma</span>(model_fixed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The standard error of the treatment coefficient describes uncertainty about the estimated treatment difference. The residual standard deviation describes the remaining variation in individual walking distances. Both are expressed in meters.</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 4">
@@ -4467,9 +4412,9 @@ c_F=-c_A-c_B-c_C-c_D-c_E.
 <h2 class="anchored" data-anchor-id="overall-contribution-of-center">Overall contribution of center</h2>
 <p>The coefficient table describes individual center effects. An <strong>analysis of variance (ANOVA) table</strong> also provides an overall test of whether expected walking distance differs between centers after accounting for treatment.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model_fixed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model_fixed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p><code>anova()</code> produces a row for treatment, a row for center, and a row for the residual variation. With treatment followed by center in our model formula, the center row assesses the contribution of center after treatment has been included.</p>
+<p><code>anova()</code> produces a row for treatment, a row for center, and a row for the residual variation.</p>
 <ul>
 <li><code>Df</code> gives the degrees of freedom. Center has five because six center effects are linked by the sum-to-zero constraint.</li>
 <li><code>Sum Sq</code> gives the variation attributed to each term, expressed as a sum of squares.</li>
@@ -4497,8 +4442,8 @@ c_F=-c_A-c_B-c_C-c_D-c_E.
 <h1>Check the model assumptions</h1>
 <p>As in ordinary linear regression, residual plots help assess whether the error distribution and variance assumptions are plausible.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(model_fixed, <span class="at">which =</span> <span class="dv">1</span>)  <span class="co"># Residuals versus fitted values</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(model_fixed, <span class="at">which =</span> <span class="dv">2</span>)  <span class="co"># Normal Q-Q plot</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(model_fixed, <span class="at">which =</span> <span class="dv">1</span>)  <span class="co"># Residuals versus fitted values</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(model_fixed, <span class="at">which =</span> <span class="dv">2</span>)  <span class="co"># Normal Q-Q plot</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The first plot can reveal changes in residual spread or patterns left in the mean. The second compares the residual distribution with a Normal distribution. Residuals are calculated from the fitted model; they are estimates of the unobserved errors.</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 6">

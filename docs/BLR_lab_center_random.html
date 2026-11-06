@@ -4085,7 +4085,6 @@ overflow-x: auto;
   <li><a href="#setup-and-data" id="toc-setup-and-data" class="nav-link" data-scroll-target="#setup-and-data">Setup and data</a></li>
   <li><a href="#specify-the-random-intercept-model" id="toc-specify-the-random-intercept-model" class="nav-link" data-scroll-target="#specify-the-random-intercept-model">Specify the random-intercept model</a></li>
   <li><a href="#fit-the-model-and-read-its-output" id="toc-fit-the-model-and-read-its-output" class="nav-link" data-scroll-target="#fit-the-model-and-read-its-output">Fit the model and read its output</a></li>
-  <li><a href="#estimate-the-treatment-difference" id="toc-estimate-the-treatment-difference" class="nav-link" data-scroll-target="#estimate-the-treatment-difference">Estimate the treatment difference</a></li>
   <li><a href="#variance-components-and-the-intraclass-correlation-coefficient" id="toc-variance-components-and-the-intraclass-correlation-coefficient" class="nav-link" data-scroll-target="#variance-components-and-the-intraclass-correlation-coefficient">Variance components and the intraclass correlation coefficient</a>
   <ul class="collapse">
   <li><a href="#extract-the-variances" id="toc-extract-the-variances" class="nav-link" data-scroll-target="#extract-the-variances">Extract the variances</a></li>
@@ -4125,20 +4124,16 @@ overflow-x: auto;
 </section>
 <section id="setup-and-data" class="level1">
 <h1>Setup and data</h1>
-<p>We use <code>lmerTest</code> to fit the mixed model and <code>emmeans</code> to estimate the treatment difference. <code>lmerTest</code> uses the mixed-model machinery from <code>lme4</code> and adds approximate degrees of freedom and tests for the fixed effects.</p>
+<p>We use <code>lmerTest</code> to fit the mixed model. It uses the mixed-model machinery from <code>lme4</code> and adds approximate degrees of freedom and tests for the fixed effects. The treatment difference and its estimated standard error are available directly in the model summary.</p>
+<p>Use <code>pak</code> as introduced in <a href="BLR_lab_center_fixed.html#install-pak-once">Lab 1</a>. Load it, install <code>lme4</code> and <code>lmerTest</code> if needed, and then load both packages for this R session. If <code>pak</code> asks whether to proceed, confirm the installation and wait for it to finish before running the remaining <code>library()</code> commands.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;emmeans&quot;</span>, <span class="st">&quot;lmerTest&quot;</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>missing_packages <span class="ot">&lt;-</span> packages[</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="sc">!</span><span class="fu">vapply</span>(packages, requireNamespace, <span class="fu">logical</span>(<span class="dv">1</span>), <span class="at">quietly =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">length</span>(missing_packages) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">install.packages</span>(missing_packages, <span class="at">repos =</span> <span class="st">&quot;https://cloud.r-project.org&quot;</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(emmeans)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmerTest)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pak)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pkg_install</span>(<span class="fu">c</span>(<span class="st">&quot;lme4&quot;</span>, <span class="st">&quot;lmerTest&quot;</span>))</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lme4)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmerTest)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>The following code makes this lab runnable in a new R session. Use the <a href="data/rehabilitation_week1.csv">same dataset as Lab 1</a>, saved in a <code>data</code> folder inside your working directory. Each row is one patient; <code>distance</code> is the six-minute walk distance in meters. These are simulated teaching data.</p>
+<p>Save your code in <code>lab2.R</code> inside your <code>week1</code> folder and set that folder as your working directory, as described in <a href="BLR_lab_center_fixed.html#organize-your-work">Lab 1</a>. The following code makes this lab runnable in a new R session. Use the <a href="data/rehabilitation_week1.csv">rehabilitation dataset</a>, saved in the <code>data</code> subfolder. Each row is one patient; <code>distance</code> is the six-minute walk distance in meters. These are simulated teaching data.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>rehab <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;data/rehabilitation_week1.csv&quot;</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>rehab<span class="sc">$</span>treatment <span class="ot">&lt;-</span> <span class="fu">factor</span>(rehab<span class="sc">$</span>treatment,</span>
@@ -4149,7 +4144,7 @@ overflow-x: auto;
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(rehab<span class="sc">$</span>center, rehab<span class="sc">$</span>treatment)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Run the chunks in order and record your interpretations. As in Lab 1, the lab page supplies code for you to run, rather than displaying its output.</p>
+<p>Run the code in order from your script and record your interpretations. As in Lab 1, the lab page supplies code for you to run, rather than displaying its output.</p>
 </section>
 <section id="specify-the-random-intercept-model" class="level1">
 <h1>Specify the random-intercept model</h1>
@@ -4170,7 +4165,7 @@ c_j \overset{\mathrm{iid}}{\sim} N(0,\sigma_c^2),
 <li><span class="math inline">\(\varepsilon_{ij}\)</span> is the remaining individual error. Its variance, <span class="math inline">\(\sigma^2\)</span>, describes variation among patients receiving the same treatment within the same center.</li>
 </ul>
 <p>This is a <strong>mixed-effects model</strong> because it combines fixed treatment coefficients with random center effects. It is a <strong>random-intercept model</strong> because each center has its own intercept, <span class="math inline">\(\beta_0+c_j\)</span>, while the treatment difference remains common.</p>
-<p>In Lab 1, the center contributions were fixed parameters for the six centers. Here, they are modeled as draws from a population distribution. Modeling center as random changes how we represent variation; it does not change how patients were assigned to treatment.</p>
+<p>In Lab 1, we estimated a separate fixed effect for each of the six centers. Here, we model the center contributions as draws from a population distribution and estimate its variance, <span class="math inline">\(\sigma_c^2\)</span>. This variance describes how much expected outcomes vary between centers after accounting for treatment.</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 1">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -4212,36 +4207,7 @@ c_j \overset{\mathrm{iid}}{\sim} N(0,\sigma_c^2),
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Interpret the fixed intercept and treatment coefficient. Identify the estimated center variance and residual variance. What distinct sources of variation do they describe?</p>
-</div>
-</div>
-</section>
-<section id="estimate-the-treatment-difference" class="level1">
-<h1>Estimate the treatment difference</h1>
-<p>We calculate the predicted treatment means from the estimated regression coefficients using <code>emmeans()</code>, then calculate their difference using <code>pairs()</code>. In <code>emmeans()</code>, <code>~ treatment</code> requests one mean per treatment. In <code>pairs()</code>, <code>reverse = TRUE</code> gives enhanced minus standard care.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>means_random <span class="ot">&lt;-</span> <span class="fu">emmeans</span>(</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  model_random, <span class="sc">~</span> treatment,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">lmer.df =</span> <span class="st">&quot;satterthwaite&quot;</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>means_random</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>difference_random <span class="ot">&lt;-</span> <span class="fu">pairs</span>(means_random, <span class="at">reverse =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(difference_random, <span class="at">infer =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">TRUE</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>These treatment means describe expected outcomes averaged over the modeled distribution of center effects.</p>
-<p><code>lmer.df = &quot;satterthwaite&quot;</code> selects an approximation for the degrees of freedom used in confidence intervals and tests. Specifying it explicitly keeps the method consistent across computers. Focus on the estimated treatment difference, its standard error and its confidence interval.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 3">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 3
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Report the enhanced-minus-standard difference with its standard error and 95% confidence interval. Why should you use the standard error of the contrast rather than either of the standard errors printed beside the treatment means?</p>
+<p>Interpret the fixed intercept and treatment coefficient, and identify the estimated standard error of the treatment effect. Identify the estimated center variance and residual variance. What distinct sources of variation do they describe?</p>
 </div>
 </div>
 </section>
@@ -4251,18 +4217,18 @@ c_j \overset{\mathrm{iid}}{\sim} N(0,\sigma_c^2),
 <h2 class="anchored" data-anchor-id="extract-the-variances">Extract the variances</h2>
 <p><code>VarCorr()</code> returns the estimated variance components. Converting its output to a data frame makes it straightforward to use the values in a calculation.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>variance_components <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">VarCorr</span>(model_random))</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>variance_components</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>center_variance <span class="ot">&lt;-</span> variance_components<span class="sc">$</span>vcov[</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  variance_components<span class="sc">$</span>grp <span class="sc">==</span> <span class="st">&quot;center&quot;</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>patient_variance <span class="ot">&lt;-</span> variance_components<span class="sc">$</span>vcov[</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  variance_components<span class="sc">$</span>grp <span class="sc">==</span> <span class="st">&quot;Residual&quot;</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="at">center_variance =</span> center_variance,</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">patient_variance =</span> patient_variance)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>variance_components <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">VarCorr</span>(model_random))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>variance_components</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>center_variance <span class="ot">&lt;-</span> variance_components<span class="sc">$</span>vcov[</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  variance_components<span class="sc">$</span>grp <span class="sc">==</span> <span class="st">&quot;center&quot;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>patient_variance <span class="ot">&lt;-</span> variance_components<span class="sc">$</span>vcov[</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  variance_components<span class="sc">$</span>grp <span class="sc">==</span> <span class="st">&quot;Residual&quot;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="at">center_variance =</span> center_variance,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">patient_variance =</span> patient_variance)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The <code>vcov</code> column contains variances; the <code>sdcor</code> column contains their standard deviations for this model. Use the <strong>variances</strong>, not the standard deviations, in the intraclass correlation coefficient calculation.</p>
 </section>
@@ -4288,9 +4254,41 @@ u_{ij}=c_j+\varepsilon_{ij},
 </ol>
 <p>If we condition on a particular center effect as well as treatment, only the independent individual errors remain. The within-center correlation above arises because patients share a random center contribution.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>icc <span class="ot">&lt;-</span> center_variance <span class="sc">/</span> (center_variance <span class="sc">+</span> patient_variance)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>icc</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>icc <span class="ot">&lt;-</span> center_variance <span class="sc">/</span> (center_variance <span class="sc">+</span> patient_variance)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>icc</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 3">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question 3
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Calculate the intraclass correlation coefficient. Interpret it both as a variance proportion and as a within-center correlation. What correlation does the model assume for patients in different centers, after accounting for treatment?</p>
+</div>
+</div>
+</section>
+</section>
+<section id="check-the-remaining-errors" class="level1">
+<h1>Check the remaining errors</h1>
+<p>For a mixed model, fitted values can include both the fixed effects and the estimated center contributions. The associated <strong>conditional residuals</strong> are the observed outcomes minus these fitted values. They help assess the distribution and spread of the individual errors <span class="math inline">\(\varepsilon_{ij}\)</span>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>conditional_residuals <span class="ot">&lt;-</span> <span class="fu">resid</span>(model_random)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>conditional_fitted <span class="ot">&lt;-</span> <span class="fu">fitted</span>(model_random)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(conditional_fitted, conditional_residuals,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">&quot;Conditional fitted walk distance (m)&quot;</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Conditional residual (m)&quot;</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">&quot;grey50&quot;</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(conditional_residuals,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">main =</span> <span class="st">&quot;Normal Q-Q plot of conditional residuals&quot;</span>)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(conditional_residuals, <span class="at">col =</span> <span class="st">&quot;grey50&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The residual-versus-fitted plot can reveal patterns or changing spread. The Q-Q plot helps assess the Normality assumption for the individual errors.</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 4">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -4301,53 +4299,7 @@ u_{ij}=c_j+\varepsilon_{ij},
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Calculate the intraclass correlation coefficient. Interpret it both as a variance proportion and as a within-center correlation. What correlation does the model assume for patients in different centers, after accounting for treatment?</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 5">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 5
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Why is the intraclass correlation coefficient not the proportion of outcome variation explained by treatment? How does its interpretation differ from that of the standard error of the estimated treatment difference?</p>
-</div>
-</div>
-<p>The intraclass correlation coefficient describes the grouping of the remaining variation, while the treatment standard error describes uncertainty about a particular contrast. Only six centers inform the between-center variance estimate, even though the dataset contains 120 patients; the estimated intraclass correlation coefficient should not be treated as an exact population quantity.</p>
-</section>
-</section>
-<section id="check-the-remaining-errors" class="level1">
-<h1>Check the remaining errors</h1>
-<p>For a mixed model, fitted values can include both the fixed effects and the estimated center contributions. The associated <strong>conditional residuals</strong> are the observed outcomes minus these fitted values. They help assess the distribution and spread of the individual errors <span class="math inline">\(\varepsilon_{ij}\)</span>.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>conditional_residuals <span class="ot">&lt;-</span> <span class="fu">resid</span>(model_random)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>conditional_fitted <span class="ot">&lt;-</span> <span class="fu">fitted</span>(model_random)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(conditional_fitted, conditional_residuals,</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">&quot;Conditional fitted walk distance (m)&quot;</span>,</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Conditional residual (m)&quot;</span>)</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">&quot;grey50&quot;</span>)</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(conditional_residuals,</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">main =</span> <span class="st">&quot;Normal Q-Q plot of conditional residuals&quot;</span>)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(conditional_residuals, <span class="at">col =</span> <span class="st">&quot;grey50&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>The residual-versus-fitted plot can reveal patterns or changing spread. The Q-Q plot helps assess the Normality assumption for the individual errors. These plots do not directly check the assumed distribution of the center effects, and reassuring residual plots do not establish independence or prove the model is adequate.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 6">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 6
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Do these plots suggest clear violations of the individual-error assumptions? Explain why conditional residuals differ from the treatment-only errors <span class="math inline">\(u_{ij}=c_j+\varepsilon_{ij}\)</span> used in the lecture simulation.</p>
+<p>Explain what the conditional residuals represent. What do the residual-versus-fitted and Normal Q-Q plots suggest about the assumptions of constant variance and Normality for the individual errors? Support your answer with features of the plots.</p>
 </div>
 </div>
 
