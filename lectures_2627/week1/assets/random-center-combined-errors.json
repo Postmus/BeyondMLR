@@ -1,0 +1,76 @@
+{
+  "seed": 20261109,
+  "repetitions": 10000,
+  "centers": 6,
+  "patients_per_center": 20,
+  "center_effect_sd": 20,
+  "individual_error_sd": 24,
+  "sampling": "Draw new independent center effects and individual errors in every study; share each center effect within that study.",
+  "error_definition": "Known generating combined error c + epsilon, not a fitted residual.",
+  "theoretical_mean": 0,
+  "theoretical_variance": 976,
+  "positions": [
+    {
+      "center": "A",
+      "patient": 1,
+      "empirical_mean": 0.42656688,
+      "empirical_variance": 985.24070297
+    },
+    {
+      "center": "A",
+      "patient": 2,
+      "empirical_mean": 0.21801185,
+      "empirical_variance": 984.04031971
+    },
+    {
+      "center": "B",
+      "patient": 1,
+      "empirical_mean": -0.13113013,
+      "empirical_variance": 955.55731689
+    },
+    {
+      "center": "B",
+      "patient": 2,
+      "empirical_mean": -0.07656743,
+      "empirical_variance": 947.43784948
+    }
+  ],
+  "pairs": [
+    {
+      "label": "Same center: A1 / A2",
+      "first": 1,
+      "second": 2,
+      "theoretical_covariance": 400,
+      "empirical_covariance": 415.02053972,
+      "theoretical_correlation": 0.40983607,
+      "empirical_correlation": 0.42149456
+    },
+    {
+      "label": "Same center: B1 / B2",
+      "first": 21,
+      "second": 22,
+      "theoretical_covariance": 400,
+      "empirical_covariance": 386.84451857,
+      "theoretical_correlation": 0.40983607,
+      "empirical_correlation": 0.40656755
+    },
+    {
+      "label": "Different centers: A1 / B1",
+      "first": 1,
+      "second": 21,
+      "theoretical_covariance": 0,
+      "empirical_covariance": 1.27167575,
+      "theoretical_correlation": 0,
+      "empirical_correlation": 0.00131062
+    },
+    {
+      "label": "Different centers: A2 / B2",
+      "first": 2,
+      "second": 22,
+      "theoretical_covariance": 0,
+      "empirical_covariance": -9.87765888,
+      "theoretical_correlation": 0,
+      "empirical_correlation": -0.01022992
+    }
+  ]
+}

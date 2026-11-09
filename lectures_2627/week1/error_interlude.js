@@ -1,4 +1,5 @@
 const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels');
+const { treatmentOnlyAssumption } = require('./initial_model');
 const { addTeachingTableSlide } = require('../../slides-common/js/teaching_table');
 
 const fullModelEquation = String.raw`Y_{ij}=\beta_0+\beta_1T_{ij}+c_j+\varepsilon_{ij}`;
@@ -31,16 +32,18 @@ const slides = [
   {
     title: 'Omitting center: a mathematical explanation',
     panels: [
-      { title: 'TREATMENT AND CENTER', blocks: [
+      { title: 'THE DATA-GENERATING MODEL', blocks: [
         { equation: fullModelEquation, h: .6, gap: .3 },
         { equation: String.raw`\varepsilon_{ij}\overset{\mathrm{iid}}{\sim}N(0,\sigma^2)`, h: .6, gap: .3 },
-        { text: 'Center differences are included in the expected outcome. The remaining errors satisfy the iid zero-mean Normal assumption.', fontSize: 21, h: 1.25 }
+        { text: 'cⱼ is center j’s fixed shift from the average expected outcome. The center shifts sum to zero.', fontSize: 21, h: 1.10, gap: .20 },
+        { text: 'After accounting for treatment and center, individual errors are independent Normal variables with mean 0 and variance σ².', fontSize: 21, h: 1.25 }
       ] },
-      { title: 'TREATMENT ONLY', blocks: [
-        { equation: String.raw`Y_{ij}=\beta_0+\beta_1T_{ij}+u_{ij}`, h: .6, gap: .3 },
-        { equation: String.raw`\boxed{u_{ij}=c_j+\varepsilon_{ij}}`, h: .6, gap: .3 },
-        { equation: String.raw`u_{ij}\sim N(c_j,\sigma^2)`, h: .6, gap: .3 },
-        { text: 'The errors remain independent, but are no longer identically distributed: their means differ by center, while their variances remain equal.', fontSize: 21, h: 1.65 }
+      { title: 'THE TRUE ERRORS WHEN CENTER IS OMITTED', titleHeight: .65, blocks: [
+        { text: 'We can rewrite the same generated outcomes as:', fontSize: 20, h: .65 },
+        { equation: String.raw`Y_{ij}=\beta_0+\beta_1T_{ij}+u_{ij}`, h: .55, gap: .20 },
+        { equation: String.raw`\boxed{u_{ij}=c_j+\varepsilon_{ij}}`, h: .55, gap: .20 },
+        { equation: String.raw`u_{ij}\sim N(c_j,\sigma^2)`, h: .55, gap: .20 },
+        { text: 'These errors remain independent, with equal variances, but their means differ between centers.', fontSize: 21, h: 1.15 }
       ] }
     ]
   },
@@ -84,6 +87,31 @@ const slides = [
   }
 ];
 
+const errorComparison = {
+  title: 'True errors and the treatment-only model',
+  panels: [
+    { title: 'THE TRUE ERROR DISTRIBUTION', blocks: [
+      { equation: String.raw`\boxed{u_{ij}=c_j+\varepsilon_{ij}}`, h: .55, gap: .15 },
+      { equation: String.raw`u_{ij}\sim N(c_j,\sigma^2)`, h: .55, gap: .15 },
+      { text: 'Independent errors.', h: .40, gap: .20 },
+      { text: 'Means differ between centers: cⱼ.', h: .65, gap: .15 },
+      { text: 'Equal variances: σ².', h: .90 }
+    ] },
+    { title: 'WHAT THE FITTED MODEL ASSUMES', blocks: [
+      { equation: treatmentOnlyAssumption, h: .55, gap: .15 },
+      { text: 'A common zero-mean Normal distribution.', fontSize: 20, h: .55, gap: .15 },
+      { text: 'Independent errors.', h: .40, gap: .20 },
+      { text: 'Mean zero for every patient.', h: .65, gap: .15 },
+      { text: 'One common variance, σᵤ², estimated from the data.', h: .90 }
+    ] }
+  ],
+  takeaway: 'The treatment-only model correctly assumes independence and equal variances,\nbut misses the center-specific error means.'
+};
+
+function addErrorAssumptionComparison(pptx, drawEquation) {
+  return addConceptPanelsSlide(pptx, { ...errorComparison, drawEquation });
+}
+
 function addOmittedCenterSlide(pptx, drawEquation) {
   return addConceptPanelsSlide(pptx, { ...slides[0], drawEquation });
 }
@@ -110,4 +138,4 @@ function addErrorInterlude(pptx, drawEquation) {
   slides.slice(1).forEach(spec => addConceptPanelsSlide(pptx, { ...spec, drawEquation }));
 }
 
-module.exports = { addTreatmentCenterModelSlide, addOmittedCenterSlide, addFixedRandomPerspectiveSlide, addErrorInterlude, slides };
+module.exports = { addTreatmentCenterModelSlide, addOmittedCenterSlide, addFixedRandomPerspectiveSlide, addErrorInterlude, addErrorAssumptionComparison, errorComparison, slides };

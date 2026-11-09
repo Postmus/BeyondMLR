@@ -8,14 +8,15 @@ const {autoFontSize}=require('./pptxgenjs_helpers/text');
 const {COLORS, FONT_FAMILIES}=require('../../slides-common/js/blr_theme');
 const primitives=require('../../slides-common/js/pptx_layout_primitives');
 const {writePresentation}=require('../../slides-common/js/write_presentation');
-const {addTreatmentCenterModelSlide,addOmittedCenterSlide}=require('./error_interlude');
+const {addOmittedCenterSlide,addErrorAssumptionComparison}=require('./error_interlude');
 const {addFixedCenterSection}=require('./fixed_center');
-const {addSimulationApproach,addFixedSimulationOpening}=require('./simulation_demonstration');
+const {addFixedCenterErrorFigures}=require('./fixed_center_error_figures');
 const {addRandomCenterModel}=require('./random_center_model');
 const {addLab2Debrief}=require('./lab2_debrief');
-const {addGroupingSummary}=require('./grouping_summary');
 const {addCourseIntroduction}=require('./course_introduction');
-const {addTreatmentOnlyModelSlide}=require('./error_recap');
+const {addProbabilityRecap}=require('./probability_recap');
+const {addLinearCombinationRecap}=require('./linear_combination_recap');
+const {addTreatmentOnlyModelSlide,addOutcomeDistributionsSlide}=require('./error_recap');
 const {addStudyOverviewSlide,addDiagnosticsInterpretationSlide}=require('../../slides-common/js/course_builders');
 const {defineTemplateMasters,addBase,addSlideTitle,addTextBox,addAssetFrame,addNoteBox,addBrandedTitleSlide,addSectionSlide,addBulletVisualSlide,addComparisonSlide,addFigureSlide}=primitives;
 const pptx=new pptxgen(); pptx.layout='LAYOUT_WIDE'; pptx.author='Beyond MLR';pptx.subject='Modeling center effects and comparing treatments';pptx.title='Randomized block designs | Beyond MLR | Week 1';pptx.lang='en-GB';pptx.theme={headFontFace:FONT_FAMILIES.sans,bodyFontFace:FONT_FAMILIES.sans,lang:'en-GB'};defineTemplateMasters(pptx);
@@ -53,6 +54,8 @@ let s;
 s=addBrandedTitleSlide(pptx,{courseLabel:'BEYOND MULTIPLE LINEAR REGRESSION',mainTitle:'Randomized block designs',subtitle:'Modeling center effects and comparing treatments',author:'Dr Douwe Postmus',affiliation:'UMCG · Department of Epidemiology',badge:'BLR'});note(s);
 // Course-wide introduction precedes Part 1.
 addCourseIntroduction(pptx);
+addProbabilityRecap(pptx,equation);
+addLinearCombinationRecap(pptx,equation);
 //3
 s=addSectionSlide(pptx,{sectionLabel:'PART 1',sectionTitle:'A multicenter trial: initial analysis'});
 // Start with the full trial and its treatment-only analysis. Center-specific
@@ -80,6 +83,8 @@ s=addFigureSlide(pptx,{
 // Specify the complete model once; OLS review is covered in the homework.
 s=addTreatmentOnlyModelSlide(pptx,equation);
 note(s);
+s=addOutcomeDistributionsSlide(pptx,equation);
+note(s);
 
 s=slide('Model results','TREATMENT COMPARISON');
 table(s,[['Term','Estimate (m)','SE (m)','95% CI (m)','p-value'],
@@ -106,7 +111,7 @@ s=addDiagnosticsInterpretationSlide(pptx,{
       purpose:'Assess whether the residual distribution is approximately Normal.'
     }
   ],
-  takeaway:'The residual plots do not suggest clear violations of the Normality or equal-variance assumptions.'
+  takeaway:'The plots suggest no clear violations of Normality or equal variance.\nThey do not establish whether ignoring center gives valid inference.'
 });
 note(s);
 // Part 2: specify the generating model, investigate treatment-only inference,
@@ -126,18 +131,16 @@ s=addBulletVisualSlide(pptx,{
   note:'Do center differences in expected outcomes matter for our treatment comparison?',
   noteHeight:1.05,noteFontSize:22
 });
-addSimulationApproach(pptx);
-addTreatmentCenterModelSlide(pptx,equation);
-addFixedSimulationOpening(pptx);
 addOmittedCenterSlide(pptx,equation);
+addFixedCenterErrorFigures(pptx);
+addErrorAssumptionComparison(pptx,equation);
 addFixedCenterSection(pptx,equation,R);
 
 // Move from the included centers to modeling variation in a population of centers.
 s=addSectionSlide(pptx,{sectionLabel:'PART 3',sectionTitle:'Modeling center as a random effect'});
 addRandomCenterModel(pptx,equation);
 addLab2Debrief(pptx,equation,R);
-// Generalize the lecture's findings before opening the discussion.
-addGroupingSummary(pptx);
+// The model comparison is the overall summary before questions.
 s=addSectionSlide(pptx,{sectionLabel:'The End',sectionTitle:'Questions'});
 // Footer and layout checks.
 pptx._slides.forEach((sl,i)=>{sl.addNotes('');if(i>0)warnIfSlideHasOverlaps(sl,pptx,{ignoreLines:true});warnIfSlideElementsOutOfBounds(sl,pptx)});

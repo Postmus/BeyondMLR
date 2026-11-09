@@ -633,12 +633,14 @@ function addFigureSlide(pptx, {
   caption = "",
   captionFontSize = TYPOGRAPHY.caption.fontSize,
   captionMinFontSize = 9,
+  captionHeight: requestedCaptionHeight = 0.48,
   takeaway = "",
+  takeawayHeight = 0.82,
   footerShortTitle = "",
   fit = "contain",
 } = {}) {
-  const captionHeight = caption ? 0.48 : 0;
-  const noteHeight = takeaway ? 0.82 : 0;
+  const captionHeight = caption ? requestedCaptionHeight : 0;
+  const noteHeight = takeaway ? takeawayHeight : 0;
   const noteSpace = takeaway ? noteHeight + 0.16 : 0;
   const slide = pptx.addSlide({ masterName: MASTERS.content });
   const figureBox = {

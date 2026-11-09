@@ -1,15 +1,16 @@
 const path = require('path');
 const { addBulletVisualSlide } = require('../../slides-common/js/pptx_layout_primitives');
 const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels');
+const { addRandomCenterErrorFigures } = require('./random_center_error_figures');
 
 const model = String.raw`Y_{ij}=\beta_0+\beta_1T_{ij}+c_j+\varepsilon_{ij}`;
 const distributions = String.raw`\begin{aligned}c_j&\overset{\mathrm{iid}}{\sim}N(0,\sigma_c^2)\\\varepsilon_{ij}&\overset{\mathrm{iid}}{\sim}N(0,\sigma^2)\end{aligned}`;
-const marginalModel = String.raw`Y_{ij}=\beta_0+\beta_1T_{ij}+u_{ij}`;
-const combinedError = String.raw`u_{ij}=c_j+\varepsilon_{ij}`;
-const icc = String.raw`\mathrm{ICC}=\frac{\sigma_c^2}{\sigma_c^2+\sigma^2}`;
-const centerVariance = String.raw`\sigma_c^2`;
-const individualVariance = String.raw`\sigma^2`;
-const totalVariance = String.raw`\operatorname{Var}(u_{ij})=\sigma_c^2+\sigma^2`;
+const outcomeMean = String.raw`\begin{aligned}E(Y_{ij})&=\beta_0+\beta_1T_{ij}+E(c_j)+E(\varepsilon_{ij})\\&=\beta_0+\beta_1T_{ij}\end{aligned}`;
+const outcomeVariance = String.raw`\begin{aligned}\operatorname{Var}(Y_{ij})&=\operatorname{Var}(c_j)+\operatorname{Var}(\varepsilon_{ij})\\&=\sigma_c^2+\sigma^2\end{aligned}`;
+const outcomeDistribution = String.raw`Y_{ij}\sim N\!\left(\beta_0+\beta_1T_{ij},\,\sigma_c^2+\sigma^2\right)`;
+const icc = String.raw`\operatorname{Corr}(Y_{ij},Y_{kj})=\frac{\sigma_c^2}{\sigma_c^2+\sigma^2}=\mathrm{ICC}`;
+const withinCenterCovariance = String.raw`\begin{aligned}\operatorname{Cov}(Y_{ij},Y_{kj})&=\operatorname{Var}(c_j)\\&=\sigma_c^2\end{aligned}`;
+const totalVariance = String.raw`\operatorname{Var}(Y_{ij})=\sigma_c^2+\sigma^2`;
 
 function addRandomCenterModel(pptx, drawEquation) {
   addBulletVisualSlide(pptx, {
@@ -32,47 +33,45 @@ function addRandomCenterModel(pptx, drawEquation) {
       { title: 'RANDOM-INTERCEPT MODEL', blocks: [
         { equation: model, h: .55, gap: .06 },
         { equation: distributions, h: 1.2, gap: .06 },
-        { text: [
-          { text: 'For a given center effect, the expected walking distance is β₀ + β₁Tᵢⱼ + cⱼ. This is the ' },
-          { text: 'conditional mean', options: { bold: true } },
-          { text: '.' }
-        ], h: 1.2, gap: .08 },
+        { text: 'For a given center effect, the expected walking distance is β₀ + β₁Tᵢⱼ + cⱼ.', h: 1.05, gap: .08 },
         { text: 'Individual errors are independent of each other and of the center effects.', h: .85 }
       ] },
-      { title: 'IMPLIED MARGINAL MODEL', blocks: [
-        { equation: marginalModel, h: .55 },
-        { equation: combinedError, h: .55, gap: .2 },
-        { text: [
-          { text: 'Averaging over center effects gives the expected walking distance β₀ + β₁Tᵢⱼ, because center effects have mean zero. This is the ' },
-          { text: 'marginal mean', options: { bold: true } },
-          { text: '.' }
-        ], h: 1.55, gap: .15 },
-        { text: 'Patients in the same center share cⱼ, so their combined errors uᵢⱼ are correlated.', h: .85 }
+      { title: 'WHAT DOES THIS IMPLY FOR Yᵢⱼ?', blocks: [
+        { text: 'Recap rules: slides 8–9', fontSize: 17, muted: true, h: .26, gap: .07 },
+        { text: 'EXPECTED VALUE: ADD EXPECTATIONS', fontSize: 15, bold: true, h: .24, gap: .04 },
+        { equation: outcomeMean, h: .90, gap: .10 },
+        { text: 'VARIANCE: ADD INDEPENDENT VARIANCES', fontSize: 15, bold: true, h: .24, gap: .04 },
+        { equation: outcomeVariance, h: .90, gap: .10 },
+        { text: 'Independent Normal terms give a Normal sum:', fontSize: 17, h: .50, gap: .06 },
+        { equation: outcomeDistribution, h: .55 }
       ] }
     ],
-    takeaway: 'The implied marginal model has the same mean structure as the treatment-only model, but its errors are correlated within centers.',
+    takeaway: 'Patients in the same center share the random effect cⱼ, so their outcomes are correlated.',
     drawEquation
   });
 
+  addRandomCenterErrorFigures(pptx);
+
   addConceptPanelsSlide(pptx, {
     title: 'Between-center variation and the ICC',
+    intro: 'After accounting for treatment',
     panels: [
-      { title: 'VARIANCE COMPONENTS', blocks: [
-        { equation: centerVariance, h: .45 },
-        { text: 'Variation between center intercepts.', h: .65, gap: .25 },
-        { equation: individualVariance, h: .45 },
-        { text: 'Individual variation within centers.', h: .65, gap: .25 },
-        { text: 'After accounting for treatment, the total variance is:', h: .85 },
-        { equation: totalVariance, h: .6 }
+      { title: 'VARIANCE AND COVARIANCE', blocks: [
+        { text: 'One patient:', h: .38, gap: .08 },
+        { equation: totalVariance, h: .60, gap: .22 },
+        { text: 'Two different patients in the same center (i ≠ k):', h: .70, gap: .08 },
+        { equation: withinCenterCovariance, h: .90, gap: .18 },
+        { text: 'Their individual errors are independent; their shared center effect creates the covariance.', h: 1.0 }
       ] },
-      { title: 'INTRACLASS CORRELATION', blocks: [
-        { equation: icc, h: .9, gap: .4 },
-        { text: 'The proportion of remaining outcome variance attributable to differences between centers.', h: 1.2, gap: .3 },
-        { text: 'The correlation between outcomes of two patients in the same center, after accounting for treatment.', h: 1.45 }
+      { title: 'FROM COVARIANCE TO CORRELATION', blocks: [
+        { text: 'Divide their covariance by their common variance:', h: .65 },
+        { equation: icc, h: .95, gap: .25 },
+        { text: 'The correlation between outcomes of two patients in the same center.', h: 1.0, gap: .20 },
+        { text: 'The proportion of remaining outcome variance attributable to differences between centers.', h: 1.05 }
       ] }
     ],
     drawEquation
   });
 }
 
-module.exports = { addRandomCenterModel, equations: [model, distributions, marginalModel, combinedError, icc, centerVariance, individualVariance, totalVariance] };
+module.exports = { addRandomCenterModel, equations: [model, distributions, outcomeMean, outcomeVariance, outcomeDistribution, icc, withinCenterCovariance, totalVariance] };

@@ -19,19 +19,32 @@
   "error_definition": "Known generating error u = c + epsilon, not fitted residuals.",
   "histogram_positions": [
     1,
+    2,
     21,
-    41,
-    61,
-    81,
-    101
+    22
   ],
-  "pair_positions": {
-    "first": 1,
-    "second": [
-      11,
-      21
-    ]
-  },
+  "pair_positions": [
+    {
+      "first": 1,
+      "second": 2,
+      "label": "Same center: A1 / A2"
+    },
+    {
+      "first": 21,
+      "second": 22,
+      "label": "Same center: B1 / B2"
+    },
+    {
+      "first": 1,
+      "second": 21,
+      "label": "Different centers: A1 / B1"
+    },
+    {
+      "first": 2,
+      "second": 22,
+      "label": "Different centers: A2 / B2"
+    }
+  ],
   "positions": [
     {
       "center": "A",
@@ -994,8 +1007,30 @@
       "empirical_variance": 572.43116275
     }
   ],
+  "pooled_error_distribution": {
+    "observations": 1200000,
+    "center_weights": {
+      "A": 0.16666667,
+      "B": 0.16666667,
+      "C": 0.16666667,
+      "D": 0.16666667,
+      "E": 0.16666667,
+      "F": 0.16666667
+    },
+    "component_areas": {
+      "A": 0.16666667,
+      "B": 0.16666667,
+      "C": 0.16666667,
+      "D": 0.16666667,
+      "E": 0.16666667,
+      "F": 0.16666667
+    },
+    "theoretical_mean": 4.4408921e-16,
+    "empirical_mean": 0.00797875
+  },
   "theoretical_pair_covariance": 0,
-  "empirical_pair_correlations": [-0.00178717, 0.00859379],
+  "empirical_pair_correlations": [0.01674869, 0.0052326, 0.00859379, -0.00646325],
+  "empirical_pair_covariances": [9.51237285, 3.05331158, 5.01820136, -3.66816375],
   "treatment": {
     "mean_estimate": 10.01143629,
     "bias": 0.01143629,

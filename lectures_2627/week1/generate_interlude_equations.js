@@ -5,9 +5,11 @@ const path = require('path');
 const cp = require('child_process');
 const crypto = require('crypto');
 const execFile = require('util').promisify(cp.execFile);
-const { slides } = require('./error_interlude');
+const { slides, errorComparison } = require('./error_interlude');
 const initialModelEquations = require('./initial_model');
 const { equations: recapEquations } = require('./error_recap');
+const { equations: probabilityRecapEquations } = require('./probability_recap');
+const { equations: linearCombinationEquations } = require('./linear_combination_recap');
 const { equations: fixedCenterEquations } = require('./fixed_center');
 const { equations: samplingEquations } = require('./fixed_center_sampling');
 const { equations: randomSamplingEquations } = require('./random_center_sampling');
@@ -18,10 +20,12 @@ const dir = path.join(__dirname, 'assets', 'equations');
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'blr-interlude-equations-'));
 async function main() {
 try {
-  const equations = new Set(slides.flatMap(slide => slide.panels.flatMap(panel =>
+  const equations = new Set([...slides, errorComparison].flatMap(slide => slide.panels.flatMap(panel =>
     panel.blocks.filter(block => block.equation).map(block => block.equation))));
   Object.values(initialModelEquations).forEach(tex => equations.add(tex));
   recapEquations.forEach(tex => equations.add(tex));
+  probabilityRecapEquations.forEach(tex => equations.add(tex));
+  linearCombinationEquations.forEach(tex => equations.add(tex));
   fixedCenterEquations.forEach(tex => equations.add(tex));
   samplingEquations.forEach(tex => equations.add(tex));
   randomSamplingEquations.forEach(tex => equations.add(tex));

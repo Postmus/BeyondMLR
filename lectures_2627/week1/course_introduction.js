@@ -7,10 +7,10 @@ function addCourseIntroduction(pptx) {
   addBulletVisualSlide(pptx, {
     title: 'Why go beyond multiple linear regression?',
     bullets: [
-      'Experimental designs and sampling strategies in observational studies often lead to grouped observations.',
-      'Ignoring this structure can violate the iid error assumptions, potentially biasing effect estimates or giving incorrectly estimated uncertainty.',
-      'We use models that explicitly account for this structure, including linear mixed-effects models.',
-      'The course develops your ability to choose, fit and interpret these models.'
+      'Observations often share a setting or unit, such as patients within a center or repeated measurements from one person.',
+      'Differences between groups contribute to variation in outcomes, alongside differences between individuals within groups.',
+      'Ignoring this structure can bias effect estimates or give incorrect standard errors, affecting confidence intervals and hypothesis tests.',
+      'In this course, you learn to choose, fit and interpret models that account for grouping, separating variation between groups from variation within groups.'
     ],
     textFraction: .57,
     bulletFontSize: 22, bulletMinFontSize: 22,
