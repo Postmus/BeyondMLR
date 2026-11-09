@@ -26,7 +26,7 @@ The study includes six centers. Within each center, 10 patients are randomly ass
 
 Our question is: **What is the estimated difference in expected walking distance between enhanced and standard care, and how precisely is it estimated?** We will explore differences between centers and fit a model that includes center as a fixed effect.
 
-By the end of this lab, you should be able to visualize treatment and center differences, fit and interpret the fixed-effects model, assess the overall contribution of center using an analysis of variance table, and check the model assumptions.
+By the end of this lab, you should be able to visualize treatment and center differences, fit and interpret the fixed-effects model, quantify uncertainty about the treatment effect, and check the model assumptions.
 
 ::: {.callout-note icon=false title="Working through the lab"}
 Run the code in order in an R script, and record your answers to the questions. The lab page shows the code; you generate the results yourself.
@@ -277,29 +277,6 @@ The standard error of the treatment coefficient describes uncertainty about the 
 What are the estimated enhanced-minus-standard difference, its standard error, and its 95% confidence interval? What is the residual standard deviation, and how does its interpretation differ from that of the treatment coefficient's standard error?
 :::
 
-## Overall contribution of center
-
-The coefficient table describes individual center effects. An **analysis of variance (ANOVA) table** also provides an overall test of whether expected walking distance differs between centers after accounting for treatment.
-
-```{r}
-#| label: fixed-anova
-anova(model_fixed)
-```
-
-`anova()` produces a row for treatment, a row for center, and a row for the residual variation.
-
-- `Df` gives the degrees of freedom. Center has five because six center effects are linked by the sum-to-zero constraint.
-- `Sum Sq` gives the variation attributed to each term, expressed as a sum of squares.
-- `Mean Sq` divides each sum of squares by its degrees of freedom. The residual mean square estimates the individual-error variance.
-- `F value` compares a term's mean square with the residual mean square.
-- `Pr(>F)` is the p-value for the corresponding overall test.
-
-For center, the null hypothesis is that expected walking distance is the same in all six centers for patients receiving the same treatment. Under effects coding, this means that all six center effects are zero. The plot and estimated center effects show the size of the differences in meters; the ANOVA table assesses the evidence for those differences.
-
-::: {.callout-important icon=false title="Question 5"}
-What does the center row tell you about differences between centers after accounting for treatment? Relate this result to the pattern in your exploratory plot.
-:::
-
 # Check the model assumptions
 
 As in ordinary linear regression, residual plots help assess whether the error distribution and variance assumptions are plausible.
@@ -312,6 +289,6 @@ plot(model_fixed, which = 2)  # Normal Q-Q plot
 
 The first plot can reveal changes in residual spread or patterns left in the mean. The second compares the residual distribution with a Normal distribution. Residuals are calculated from the fitted model; they are estimates of the unobserved errors.
 
-::: {.callout-important icon=false title="Question 6"}
+::: {.callout-important icon=false title="Question 5"}
 Do these plots suggest clear violations of the Normality or constant-variance assumptions? Describe the patterns that support your answer.
 :::

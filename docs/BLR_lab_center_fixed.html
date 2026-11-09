@@ -4105,7 +4105,6 @@ overflow-x: auto;
   <ul class="collapse">
   <li><a href="#fit-the-model-and-read-its-output" id="toc-fit-the-model-and-read-its-output" class="nav-link" data-scroll-target="#fit-the-model-and-read-its-output">Fit the model and read its output</a></li>
   <li><a href="#treatment-effect-and-uncertainty" id="toc-treatment-effect-and-uncertainty" class="nav-link" data-scroll-target="#treatment-effect-and-uncertainty">Treatment effect and uncertainty</a></li>
-  <li><a href="#overall-contribution-of-center" id="toc-overall-contribution-of-center" class="nav-link" data-scroll-target="#overall-contribution-of-center">Overall contribution of center</a></li>
   </ul></li>
   <li><a href="#check-the-model-assumptions" id="toc-check-the-model-assumptions" class="nav-link" data-scroll-target="#check-the-model-assumptions">Check the model assumptions</a></li>
   </ul>
@@ -4138,7 +4137,7 @@ overflow-x: auto;
 <p>We return to the rehabilitation trial from the lecture. In this simulated study, 120 patients recovering from knee replacement receive either <strong>standard care</strong> or an <strong>enhanced rehabilitation program</strong>. Standard care consists of weekly physiotherapy and home exercises; enhanced care adds a weekly supervised session. The outcome is the distance walked during a six-minute walk test at 12 weeks, measured in meters. A larger distance indicates better walking performance.</p>
 <p>The study includes six centers. Within each center, 10 patients are randomly assigned to standard care and 10 to enhanced care. This is a <strong>randomized block design</strong>, with center as the blocking factor. These are simulated teaching data, not observations from an actual clinical trial.</p>
 <p>Our question is: <strong>What is the estimated difference in expected walking distance between enhanced and standard care, and how precisely is it estimated?</strong> We will explore differences between centers and fit a model that includes center as a fixed effect.</p>
-<p>By the end of this lab, you should be able to visualize treatment and center differences, fit and interpret the fixed-effects model, assess the overall contribution of center using an analysis of variance table, and check the model assumptions.</p>
+<p>By the end of this lab, you should be able to visualize treatment and center differences, fit and interpret the fixed-effects model, quantify uncertainty about the treatment effect, and check the model assumptions.</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled" title="Working through the lab">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -4408,21 +4407,15 @@ c_A+c_B+c_C+c_D+c_E+c_F=0.
 </div>
 </div>
 </section>
-<section id="overall-contribution-of-center" class="level2">
-<h2 class="anchored" data-anchor-id="overall-contribution-of-center">Overall contribution of center</h2>
-<p>The coefficient table describes individual center effects. An <strong>analysis of variance (ANOVA) table</strong> also provides an overall test of whether expected walking distance differs between centers after accounting for treatment.</p>
+</section>
+<section id="check-the-model-assumptions" class="level1">
+<h1>Check the model assumptions</h1>
+<p>As in ordinary linear regression, residual plots help assess whether the error distribution and variance assumptions are plausible.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model_fixed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(model_fixed, <span class="at">which =</span> <span class="dv">1</span>)  <span class="co"># Residuals versus fitted values</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(model_fixed, <span class="at">which =</span> <span class="dv">2</span>)  <span class="co"># Normal Q-Q plot</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p><code>anova()</code> produces a row for treatment, a row for center, and a row for the residual variation.</p>
-<ul>
-<li><code>Df</code> gives the degrees of freedom. Center has five because six center effects are linked by the sum-to-zero constraint.</li>
-<li><code>Sum Sq</code> gives the variation attributed to each term, expressed as a sum of squares.</li>
-<li><code>Mean Sq</code> divides each sum of squares by its degrees of freedom. The residual mean square estimates the individual-error variance.</li>
-<li><code>F value</code> compares a term’s mean square with the residual mean square.</li>
-<li><code>Pr(&gt;F)</code> is the p-value for the corresponding overall test.</li>
-</ul>
-<p>For center, the null hypothesis is that expected walking distance is the same in all six centers for patients receiving the same treatment. Under effects coding, this means that all six center effects are zero. The plot and estimated center effects show the size of the differences in meters; the ANOVA table assesses the evidence for those differences.</p>
+<p>The first plot can reveal changes in residual spread or patterns left in the mean. The second compares the residual distribution with a Normal distribution. Residuals are calculated from the fitted model; they are estimates of the unobserved errors.</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 5">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -4430,29 +4423,6 @@ c_A+c_B+c_C+c_D+c_E+c_F=0.
 </div>
 <div class="callout-title-container flex-fill">
 <span class="screen-reader-only">Important</span>Question 5
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>What does the center row tell you about differences between centers after accounting for treatment? Relate this result to the pattern in your exploratory plot.</p>
-</div>
-</div>
-</section>
-</section>
-<section id="check-the-model-assumptions" class="level1">
-<h1>Check the model assumptions</h1>
-<p>As in ordinary linear regression, residual plots help assess whether the error distribution and variance assumptions are plausible.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(model_fixed, <span class="at">which =</span> <span class="dv">1</span>)  <span class="co"># Residuals versus fitted values</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(model_fixed, <span class="at">which =</span> <span class="dv">2</span>)  <span class="co"># Normal Q-Q plot</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>The first plot can reveal changes in residual spread or patterns left in the mean. The second compares the residual distribution with a Normal distribution. Residuals are calculated from the fitted model; they are estimates of the unobserved errors.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 6">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 6
 </div>
 </div>
 <div class="callout-body-container callout-body">
