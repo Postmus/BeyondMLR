@@ -13,11 +13,13 @@ execute:
 ---
 
 ::: {.callout-note title="Using this template"}
-Replace `Your name` with your name, replace the italic prompts with your own writing, and add your analysis code to the chunks below.
+Save this template in your `week1` folder and save `protein_yield.csv` in its `data` subfolder, following the folder structure introduced in Lab 1. You may rename the template.
 
-The setup chunk installs and loads the required analysis packages and is hidden in the rendered report.
+Open the template in RStudio. Replace `Your name` with your name, replace the italic prompts with your own writing, and add your analysis code to the chunks below. Read the dataset using `read.csv("data/protein_yield.csv")`.
 
-Remove this instruction box before rendering your final report. Submit both the `.qmd` file and the rendered `.html` file.
+The setup chunk installs and loads the required analysis packages and is hidden in the rendered report. Keep your analysis code and results visible.
+
+Remove this instruction box before rendering your final report. Submit both the `.qmd` file and the rendered `.html` file. Expand [Help with Quarto on the assignment website](https://postmus.github.io/BeyondMLR/assignments/week1/assignment.html#help-with-quarto) for instructions on running code and rendering your report.
 :::
 
 ```{r}
@@ -39,7 +41,7 @@ library(lmerTest)
 
 ```{r}
 #| label: prepare-data
-# Read protein_yield.csv and prepare the variables for analysis.
+# Read data/protein_yield.csv and prepare the variables for analysis.
 # Set the factor levels and coding needed for the model.
 ```
 
@@ -57,7 +59,7 @@ library(lmerTest)
 # Fit and inspect the model with a random donor intercept.
 ```
 
-*Interpret the intercept and protocol coefficient in the context of the study. Explain what the random donor intercept represents.*
+*Interpret the intercept and protocol coefficient in the context of the study. Explain what the random donor intercept represents and what the model assumes about the protocol difference across donors.*
 
 # Results and interpretation
 

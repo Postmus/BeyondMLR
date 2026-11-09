@@ -4085,6 +4085,7 @@ overflow-x: auto;
   <li><a href="#setup-and-data" id="toc-setup-and-data" class="nav-link" data-scroll-target="#setup-and-data">Setup and data</a></li>
   <li><a href="#specify-the-random-intercept-model" id="toc-specify-the-random-intercept-model" class="nav-link" data-scroll-target="#specify-the-random-intercept-model">Specify the random-intercept model</a></li>
   <li><a href="#fit-the-model-and-read-its-output" id="toc-fit-the-model-and-read-its-output" class="nav-link" data-scroll-target="#fit-the-model-and-read-its-output">Fit the model and read its output</a></li>
+  <li><a href="#treatment-effect-and-its-confidence-interval" id="toc-treatment-effect-and-its-confidence-interval" class="nav-link" data-scroll-target="#treatment-effect-and-its-confidence-interval">Treatment effect and its confidence interval</a></li>
   <li><a href="#variance-components-and-the-intraclass-correlation-coefficient" id="toc-variance-components-and-the-intraclass-correlation-coefficient" class="nav-link" data-scroll-target="#variance-components-and-the-intraclass-correlation-coefficient">Variance components and the intraclass correlation coefficient</a>
   <ul class="collapse">
   <li><a href="#extract-the-variances" id="toc-extract-the-variances" class="nav-link" data-scroll-target="#extract-the-variances">Extract the variances</a></li>
@@ -4211,24 +4212,62 @@ c_j \overset{\mathrm{iid}}{\sim} N(0,\sigma_c^2),
 </div>
 </div>
 </section>
+<section id="treatment-effect-and-its-confidence-interval" class="level1">
+<h1>Treatment effect and its confidence interval</h1>
+<p>The row <code>treatmentEnhanced</code> in the model summary gives the estimated enhanced-minus-standard difference, its standard error, and approximate degrees of freedom. We use <strong>Satterthwaite’s approximation</strong> for these degrees of freedom, as in the default <code>lmerTest</code> summary. An approximate 95% confidence interval is the estimate plus or minus a critical value from the t distribution multiplied by the estimated standard error.</p>
+<p>First extract the coefficient table and select the treatment row. The column names below match those printed by <code>summary()</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>coefficient_table <span class="ot">&lt;-</span> <span class="fu">coef</span>(<span class="fu">summary</span>(model_random, <span class="at">ddf =</span> <span class="st">&quot;Satterthwaite&quot;</span>))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>treatment_result <span class="ot">&lt;-</span> coefficient_table[<span class="st">&quot;treatmentEnhanced&quot;</span>, ]</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>treatment_estimate <span class="ot">&lt;-</span> treatment_result[<span class="st">&quot;Estimate&quot;</span>]</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>treatment_se <span class="ot">&lt;-</span> treatment_result[<span class="st">&quot;Std. Error&quot;</span>]</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>treatment_df <span class="ot">&lt;-</span> treatment_result[<span class="st">&quot;df&quot;</span>]</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>critical_value <span class="ot">&lt;-</span> <span class="fu">qt</span>(<span class="fl">0.975</span>, <span class="at">df =</span> treatment_df)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">estimate =</span> treatment_estimate,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">standard_error =</span> treatment_se,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">df =</span> treatment_df,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower_95 =</span> treatment_estimate <span class="sc">-</span> critical_value <span class="sc">*</span> treatment_se,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper_95 =</span> treatment_estimate <span class="sc">+</span> critical_value <span class="sc">*</span> treatment_se,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="cn">NULL</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p><code>qt(0.975, df = treatment_df)</code> gives the critical value for a two-sided 95% interval, leaving 2.5% in each tail of the t distribution. The estimate, standard error, and interval limits are all in meters. The interval describes uncertainty about the common expected treatment difference; individual patients’ walking distances can vary much more widely.</p>
+<p>When adapting this code to another analysis, use your fitted model and the coefficient name shown in its summary. The same calculation then gives the confidence interval for that coefficient.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 3">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question 3
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Report the estimated enhanced-minus-standard difference, its standard error, and its 95% confidence interval. Interpret the interval in the context of the trial. Is a zero expected treatment difference compatible with this interval?</p>
+</div>
+</div>
+</section>
 <section id="variance-components-and-the-intraclass-correlation-coefficient" class="level1">
 <h1>Variance components and the intraclass correlation coefficient</h1>
 <section id="extract-the-variances" class="level2">
 <h2 class="anchored" data-anchor-id="extract-the-variances">Extract the variances</h2>
 <p><code>VarCorr()</code> returns the estimated variance components. Converting its output to a data frame makes it straightforward to use the values in a calculation.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>variance_components <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">VarCorr</span>(model_random))</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>variance_components</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>center_variance <span class="ot">&lt;-</span> variance_components<span class="sc">$</span>vcov[</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  variance_components<span class="sc">$</span>grp <span class="sc">==</span> <span class="st">&quot;center&quot;</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>patient_variance <span class="ot">&lt;-</span> variance_components<span class="sc">$</span>vcov[</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  variance_components<span class="sc">$</span>grp <span class="sc">==</span> <span class="st">&quot;Residual&quot;</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="at">center_variance =</span> center_variance,</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">patient_variance =</span> patient_variance)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>variance_components <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">VarCorr</span>(model_random))</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>variance_components</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>center_variance <span class="ot">&lt;-</span> variance_components<span class="sc">$</span>vcov[</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  variance_components<span class="sc">$</span>grp <span class="sc">==</span> <span class="st">&quot;center&quot;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>patient_variance <span class="ot">&lt;-</span> variance_components<span class="sc">$</span>vcov[</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  variance_components<span class="sc">$</span>grp <span class="sc">==</span> <span class="st">&quot;Residual&quot;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="at">center_variance =</span> center_variance,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">patient_variance =</span> patient_variance)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The <code>vcov</code> column contains variances; the <code>sdcor</code> column contains their standard deviations for this model. Use the <strong>variances</strong>, not the standard deviations, in the intraclass correlation coefficient calculation.</p>
 </section>
@@ -4254,16 +4293,16 @@ u_{ij}=c_j+\varepsilon_{ij},
 </ol>
 <p>If we condition on a particular center effect as well as treatment, only the independent individual errors remain. The within-center correlation above arises because patients share a random center contribution.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>icc <span class="ot">&lt;-</span> center_variance <span class="sc">/</span> (center_variance <span class="sc">+</span> patient_variance)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>icc</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>icc <span class="ot">&lt;-</span> center_variance <span class="sc">/</span> (center_variance <span class="sc">+</span> patient_variance)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>icc</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 3">
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 4">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 3
+<span class="screen-reader-only">Important</span>Question 4
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -4276,26 +4315,26 @@ u_{ij}=c_j+\varepsilon_{ij},
 <h1>Check the remaining errors</h1>
 <p>For a mixed model, fitted values can include both the fixed effects and the estimated center contributions. The associated <strong>conditional residuals</strong> are the observed outcomes minus these fitted values. They help assess the distribution and spread of the individual errors <span class="math inline">\(\varepsilon_{ij}\)</span>.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>conditional_residuals <span class="ot">&lt;-</span> <span class="fu">resid</span>(model_random)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>conditional_fitted <span class="ot">&lt;-</span> <span class="fu">fitted</span>(model_random)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(conditional_fitted, conditional_residuals,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">&quot;Conditional fitted walk distance (m)&quot;</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Conditional residual (m)&quot;</span>)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">&quot;grey50&quot;</span>)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(conditional_residuals,</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">main =</span> <span class="st">&quot;Normal Q-Q plot of conditional residuals&quot;</span>)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(conditional_residuals, <span class="at">col =</span> <span class="st">&quot;grey50&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>conditional_residuals <span class="ot">&lt;-</span> <span class="fu">resid</span>(model_random)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>conditional_fitted <span class="ot">&lt;-</span> <span class="fu">fitted</span>(model_random)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(conditional_fitted, conditional_residuals,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">&quot;Conditional fitted walk distance (m)&quot;</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">&quot;Conditional residual (m)&quot;</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">&quot;grey50&quot;</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="fu">qqnorm</span>(conditional_residuals,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">main =</span> <span class="st">&quot;Normal Q-Q plot of conditional residuals&quot;</span>)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="fu">qqline</span>(conditional_residuals, <span class="at">col =</span> <span class="st">&quot;grey50&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The residual-versus-fitted plot can reveal patterns or changing spread. The Q-Q plot helps assess the Normality assumption for the individual errors.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 4">
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 5">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 4
+<span class="screen-reader-only">Important</span>Question 5
 </div>
 </div>
 <div class="callout-body-container callout-body">

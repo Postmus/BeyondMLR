@@ -111,6 +111,40 @@ The summary separates **fixed effects** from **random effects**. The fixed-effec
 Interpret the fixed intercept and treatment coefficient, and identify the estimated standard error of the treatment effect. Identify the estimated center variance and residual variance. What distinct sources of variation do they describe?
 :::
 
+# Treatment effect and its confidence interval
+
+The row `treatmentEnhanced` in the model summary gives the estimated enhanced-minus-standard difference, its standard error, and approximate degrees of freedom. We use **Satterthwaite's approximation** for these degrees of freedom, as in the default `lmerTest` summary. An approximate 95% confidence interval is the estimate plus or minus a critical value from the t distribution multiplied by the estimated standard error.
+
+First extract the coefficient table and select the treatment row. The column names below match those printed by `summary()`.
+
+```{r}
+#| label: treatment-confidence-interval
+coefficient_table <- coef(summary(model_random, ddf = "Satterthwaite"))
+treatment_result <- coefficient_table["treatmentEnhanced", ]
+
+treatment_estimate <- treatment_result["Estimate"]
+treatment_se <- treatment_result["Std. Error"]
+treatment_df <- treatment_result["df"]
+critical_value <- qt(0.975, df = treatment_df)
+
+data.frame(
+  estimate = treatment_estimate,
+  standard_error = treatment_se,
+  df = treatment_df,
+  lower_95 = treatment_estimate - critical_value * treatment_se,
+  upper_95 = treatment_estimate + critical_value * treatment_se,
+  row.names = NULL
+)
+```
+
+`qt(0.975, df = treatment_df)` gives the critical value for a two-sided 95% interval, leaving 2.5% in each tail of the t distribution. The estimate, standard error, and interval limits are all in meters. The interval describes uncertainty about the common expected treatment difference; individual patients' walking distances can vary much more widely.
+
+When adapting this code to another analysis, use your fitted model and the coefficient name shown in its summary. The same calculation then gives the confidence interval for that coefficient.
+
+::: {.callout-important icon=false title="Question 3"}
+Report the estimated enhanced-minus-standard difference, its standard error, and its 95% confidence interval. Interpret the interval in the context of the trial. Is a zero expected treatment difference compatible with this interval?
+:::
+
 # Variance components and the intraclass correlation coefficient
 
 ## Extract the variances
@@ -169,7 +203,7 @@ icc <- center_variance / (center_variance + patient_variance)
 icc
 ```
 
-::: {.callout-important icon=false title="Question 3"}
+::: {.callout-important icon=false title="Question 4"}
 Calculate the intraclass correlation coefficient. Interpret it both as a variance proportion and as a within-center correlation. What correlation does the model assume for patients in different centers, after accounting for treatment?
 :::
 
@@ -198,6 +232,6 @@ qqline(conditional_residuals, col = "grey50")
 
 The residual-versus-fitted plot can reveal patterns or changing spread. The Q-Q plot helps assess the Normality assumption for the individual errors.
 
-::: {.callout-important icon=false title="Question 4"}
+::: {.callout-important icon=false title="Question 5"}
 Explain what the conditional residuals represent. What do the residual-versus-fitted and Normal Q-Q plots suggest about the assumptions of constant variance and Normality for the individual errors? Support your answer with features of the plots.
 :::
