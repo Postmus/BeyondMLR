@@ -1,0 +1,400 @@
+---
+title: "Beyond MLR Lab 2: Modeling center as a random effect"
+subtitle: "Model answers · Week 1"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    embed-resources: true
+format-links: false
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true
+---
+
+```{r}
+#| label: model-answer-calculations
+#| eval: true
+#| include: false
+library(lme4)
+library(lmerTest)
+
+rehab <- read.csv("data/rehabilitation_week1.csv")
+rehab$treatment <- factor(rehab$treatment,
+                          levels = c("Standard", "Enhanced"))
+rehab$center <- factor(rehab$center,
+                       levels = paste("Center", LETTERS[1:6]))
+contrasts(rehab$treatment) <- contr.treatment(levels(rehab$treatment))
+
+table(rehab$center, rehab$treatment)
+
+model_random <- lmer(
+  distance ~ treatment + (1 | center),
+  data = rehab,
+  REML = TRUE
+)
+summary(model_random)
+
+coefficient_table <- coef(summary(model_random, ddf = "Satterthwaite"))
+treatment_result <- coefficient_table["treatmentEnhanced", ]
+
+treatment_estimate <- treatment_result["Estimate"]
+treatment_se <- treatment_result["Std. Error"]
+treatment_df <- treatment_result["df"]
+critical_value <- qt(0.975, df = treatment_df)
+
+data.frame(
+  estimate = treatment_estimate,
+  standard_error = treatment_se,
+  df = treatment_df,
+  lower_95 = treatment_estimate - critical_value * treatment_se,
+  upper_95 = treatment_estimate + critical_value * treatment_se,
+  row.names = NULL
+)
+
+variance_components <- as.data.frame(VarCorr(model_random))
+variance_components
+
+center_variance <- variance_components$vcov[
+  variance_components$grp == "center"
+]
+patient_variance <- variance_components$vcov[
+  variance_components$grp == "Residual"
+]
+
+c(center_variance = center_variance,
+  patient_variance = patient_variance)
+
+icc <- center_variance / (center_variance + patient_variance)
+icc
+
+fmt <- function(x) formatC(x, format = "f", digits = 2)
+conditional_residuals <- resid(model_random)
+conditional_fitted <- fitted(model_random)
+
+```
+
+# The same trial, a different model for center
+
+In [Lab 1](BLR_lab_center_fixed.html), we analyzed a simulated rehabilitation trial involving 120 patients after knee replacement in six centers. Each center assigned 10 patients to standard care and 10 to enhanced rehabilitation. We fitted a model containing separate fixed center effects.
+
+We now keep the same randomized block design and the same question: **What is the difference in expected six-minute walk distance at 12 weeks between enhanced and standard care, and how precisely is it estimated?** Instead of estimating separate fixed center parameters, we describe center contributions using a distribution. This also allows us to quantify variation between centers.
+
+By the end of this lab, you should be able to fit a random-intercept model, interpret its treatment estimate and uncertainty, interpret its variance components and intraclass correlation coefficient (ICC), and assess its conditional residuals.
+
+# Setup and data
+
+We use `lmerTest` to fit the mixed model. It uses the mixed-model machinery from `lme4` and adds approximate degrees of freedom and tests for the fixed effects. The treatment difference and its estimated standard error are available directly in the model summary.
+
+Use `pak` as introduced in [Lab 1](BLR_lab_center_fixed.html#install-pak-once). Load it, install `lme4` and `lmerTest` if needed, and then load both packages for this R session. If `pak` asks whether to proceed, confirm the installation and wait for it to finish before running the remaining `library()` commands.
+
+```{r}
+#| label: setup
+library(pak)
+pkg_install(c("lme4", "lmerTest"))
+
+library(lme4)
+library(lmerTest)
+```
+
+Save your code in `lab2.R` inside your `week1` folder and set that folder as your working directory, as described in [Lab 1](BLR_lab_center_fixed.html#organize-your-work). The following code makes this lab runnable in a new R session. Use the [rehabilitation dataset](data/rehabilitation_week1.csv), saved in the `data` subfolder. Each row is one patient; `distance` is the six-minute walk distance in meters. These are simulated teaching data.
+
+```{r}
+#| label: read-data
+rehab <- read.csv("data/rehabilitation_week1.csv")
+rehab$treatment <- factor(rehab$treatment,
+                          levels = c("Standard", "Enhanced"))
+rehab$center <- factor(rehab$center,
+                       levels = paste("Center", LETTERS[1:6]))
+contrasts(rehab$treatment) <- contr.treatment(levels(rehab$treatment))
+
+table(rehab$center, rehab$treatment)
+```
+
+Run the code in order from your script and record your interpretations. As in Lab 1, the lab supplies code for you to run.
+
+# Specify the random-intercept model
+
+Let $Y_{ij}$ be the outcome for patient $i$ in center $j$, with $T_{ij}=0$ for standard care and $T_{ij}=1$ for enhanced care. We specify
+
+$$
+Y_{ij} = \beta_0 + \beta_1 T_{ij} + c_j + \varepsilon_{ij},
+$$
+
+$$
+c_j \overset{\mathrm{iid}}{\sim} N(0,\sigma_c^2),
+\qquad
+\varepsilon_{ij} \overset{\mathrm{iid}}{\sim} N(0,\sigma^2),
+$$
+
+with the center effects independent of the individual errors.
+
+- $\beta_0$ is the expected standard-care outcome for a center with $c_j=0$. It is also the expected standard-care outcome averaged over the modeled population of centers.
+- $\beta_1$ is the enhanced-minus-standard difference, assumed to be common to all centers.
+- $c_j$ is the contribution shared by patients in center $j$. Its variance, $\sigma_c^2$, describes variation between center-specific expected outcomes after accounting for treatment.
+- $\varepsilon_{ij}$ is the remaining individual error. Its variance, $\sigma^2$, describes variation among patients receiving the same treatment within the same center.
+
+This is a **mixed-effects model** because it combines fixed treatment coefficients with random center effects. It is a **random-intercept model** because each center has its own intercept, $\beta_0+c_j$, while the treatment difference remains common.
+
+In Lab 1, we estimated a separate fixed effect for each of the six centers. Here, we model the center contributions as draws from a population distribution and estimate its variance, $\sigma_c^2$. This variance describes how much expected outcomes vary between centers after accounting for treatment.
+
+::: {.callout-important icon=false title="Question 1"}
+Explain what a positive $c_j$ means for patients in that center. Which part of the model allows centers to have different expected outcomes? Which part assumes that the expected treatment difference is the same across centers?
+:::
+
+::: {.callout-tip icon=false title="Model answer 1"}
+A positive $c_j$ means that patients in center $j$ have a higher expected walking distance than the population average for their treatment. For example, $c_j=20$ m shifts the expected distance up by 20 m for both standard and enhanced care.
+
+The random center contribution $c_j$ allows expected outcomes to differ between centers. The single treatment coefficient $\beta_1$ specifies the same enhanced-minus-standard difference in every center: subtracting $\beta_0+c_j$ from $\beta_0+\beta_1+c_j$ gives $\beta_1$.
+:::
+
+# Fit the model and read its output
+
+```{r}
+#| label: random-model
+model_random <- lmer(
+  distance ~ treatment + (1 | center),
+  data = rehab,
+  REML = TRUE
+)
+summary(model_random)
+```
+
+The formula has two parts:
+
+- `distance ~ treatment` specifies the fixed intercept and treatment difference, using the same dummy coding as Lab 1.
+- `(1 | center)` adds a random intercept for each center. The `1` denotes an intercept and the grouping variable follows the vertical bar.
+
+We use restricted maximum likelihood (`REML = TRUE`, the default) to estimate the variance components. This is appropriate here because we have specified the model and want to estimate the treatment effect and its uncertainty. The estimated variance components are used when calculating the standard error and confidence interval for this fixed effect.
+
+The summary separates **fixed effects** from **random effects**. The fixed-effect table contains the intercept, treatment difference and their standard errors. The random-effect table contains the estimated center and residual variances and their standard deviations. Standard deviations are in meters; variances are in squared meters.
+
+::: {.callout-important icon=false title="Question 2"}
+Interpret the fixed intercept and treatment coefficient, and identify the estimated standard error of the treatment effect. Identify the estimated center variance and residual variance. What distinct sources of variation do they describe?
+:::
+
+::: {.callout-tip icon=false title="Model answer 2"}
+```{r}
+#| label: answer-model-output
+#| eval: true
+#| echo: false
+summary(model_random)
+```
+
+The fixed intercept is `r fmt(fixef(model_random)["(Intercept)"])` m: the estimated expected standard-care outcome in a center with $c_j=0$, also averaged over the modeled population of centers.
+
+The treatment coefficient is `r fmt(treatment_estimate)` m. Within a center, enhanced care is estimated to increase expected walking distance by this amount compared with standard care. Its standard error is `r fmt(treatment_se)` m, describing uncertainty in the estimated treatment difference.
+
+```{r}
+#| label: answer-variance-components
+#| eval: true
+#| echo: false
+knitr::kable(data.frame(
+  Component = c("Center", "Residual"),
+  `Variance (m²)` = c(center_variance, patient_variance),
+  `Standard deviation (m)` = sqrt(c(center_variance, patient_variance)),
+  check.names = FALSE), digits = 2)
+```
+
+The center variance describes differences between centers' expected outcomes after accounting for treatment. The residual variance describes variation among individual patients receiving the same treatment within the same center.
+:::
+
+# Treatment effect and its confidence interval
+
+The row `treatmentEnhanced` in the model summary gives the estimated enhanced-minus-standard difference, its standard error, and approximate degrees of freedom. We use **Satterthwaite's approximation** for these degrees of freedom, as in the default `lmerTest` summary. An approximate 95% confidence interval is the estimate plus or minus a critical value from the t distribution multiplied by the estimated standard error.
+
+First extract the coefficient table and select the treatment row. The column names below match those printed by `summary()`.
+
+```{r}
+#| label: treatment-confidence-interval
+coefficient_table <- coef(summary(model_random, ddf = "Satterthwaite"))
+treatment_result <- coefficient_table["treatmentEnhanced", ]
+
+treatment_estimate <- treatment_result["Estimate"]
+treatment_se <- treatment_result["Std. Error"]
+treatment_df <- treatment_result["df"]
+critical_value <- qt(0.975, df = treatment_df)
+
+data.frame(
+  estimate = treatment_estimate,
+  standard_error = treatment_se,
+  df = treatment_df,
+  lower_95 = treatment_estimate - critical_value * treatment_se,
+  upper_95 = treatment_estimate + critical_value * treatment_se,
+  row.names = NULL
+)
+```
+
+`qt(0.975, df = treatment_df)` gives the critical value for a two-sided 95% interval, leaving 2.5% in each tail of the t distribution. The estimate, standard error, and interval limits are all in meters. The interval describes uncertainty about the common expected treatment difference; individual patients' walking distances can vary much more widely.
+
+When adapting this code to another analysis, use your fitted model and the coefficient name shown in its summary. The same calculation then gives the confidence interval for that coefficient.
+
+::: {.callout-important icon=false title="Question 3"}
+Report the estimated enhanced-minus-standard difference, its standard error, and its 95% confidence interval. Interpret the interval in the context of the trial. Is a zero expected treatment difference compatible with this interval?
+:::
+
+::: {.callout-tip icon=false title="Model answer 3"}
+```{r}
+#| label: answer-treatment-interval
+#| eval: true
+#| echo: false
+knitr::kable(data.frame(
+  Quantity = c("Enhanced minus standard (m)", "Standard error (m)",
+               "Satterthwaite degrees of freedom", "95% CI: lower limit (m)",
+               "95% CI: upper limit (m)"),
+  Value = c(treatment_estimate, treatment_se, treatment_df,
+            treatment_estimate - critical_value * treatment_se,
+            treatment_estimate + critical_value * treatment_se)), digits = 2)
+```
+
+The estimated enhanced-minus-standard difference is `r fmt(treatment_estimate)` m, with standard error `r fmt(treatment_se)` m and an approximate 95% confidence interval from `r fmt(treatment_estimate - critical_value * treatment_se)` to `r fmt(treatment_estimate + critical_value * treatment_se)` m.
+
+The interval is compatible with an improvement in expected walking distance of about 2.4–19.6 m under enhanced care. Zero lies outside this interval, supporting a positive expected treatment difference.
+:::
+
+# Variance components and the intraclass correlation coefficient
+
+## Extract the variances
+
+`VarCorr()` returns the estimated variance components. Converting its output to a data frame makes it straightforward to use the values in a calculation.
+
+```{r}
+#| label: variance-components
+variance_components <- as.data.frame(VarCorr(model_random))
+variance_components
+
+center_variance <- variance_components$vcov[
+  variance_components$grp == "center"
+]
+patient_variance <- variance_components$vcov[
+  variance_components$grp == "Residual"
+]
+
+c(center_variance = center_variance,
+  patient_variance = patient_variance)
+```
+
+The `vcov` column contains variances; the `sdcor` column contains their standard deviations for this model. Use the **variances** in the intraclass correlation coefficient calculation.
+
+## Introduce the intraclass correlation
+
+After accounting for treatment, the remaining outcome variation consists of the shared center contribution and the individual error:
+
+$$
+u_{ij}=c_j+\varepsilon_{ij},
+\qquad \operatorname{Var}(u_{ij})=\sigma_c^2+\sigma^2.
+$$
+
+For two different patients in the same center, the shared center contribution gives
+
+$$
+\operatorname{Cov}(u_{ij},u_{kj})=\sigma_c^2 \quad (i\ne k).
+$$
+
+Dividing this covariance by the common variance gives the **intraclass correlation coefficient**:
+
+$$
+\mathrm{ICC}=\frac{\sigma_c^2}{\sigma_c^2+\sigma^2}.
+$$
+
+This has two connected interpretations:
+
+1. The proportion of outcome variance **remaining after accounting for treatment** that is attributable to differences between centers.
+2. The correlation between outcomes of two different patients in the same center, after accounting for their treatments and averaging over the modeled center distribution.
+
+If we condition on a particular center effect as well as treatment, only the independent individual errors remain. The within-center correlation above arises because patients share a random center contribution.
+
+```{r}
+#| label: icc
+icc <- center_variance / (center_variance + patient_variance)
+icc
+```
+
+::: {.callout-important icon=false title="Question 4"}
+Calculate the intraclass correlation coefficient. Interpret it both as a variance proportion and as a within-center correlation. What correlation does the model assume for patients in different centers, after accounting for treatment?
+:::
+
+::: {.callout-tip icon=false title="Model answer 4"}
+Using the estimated variances,
+
+$$
+\widehat{\mathrm{ICC}}
+= \frac{`r fmt(center_variance)`}{`r fmt(center_variance)` + `r fmt(patient_variance)`}
+\approx `r formatC(icc, format = "f", digits = 3)`.
+$$
+
+About `r fmt(100 * icc)`% of the outcome variance remaining after accounting for treatment is attributable to differences between centers. The remaining `r fmt(100 * (1 - icc))`% is individual variation within centers.
+
+For two different patients in the same center, the estimated correlation after accounting for treatment is about `r fmt(icc)`, averaging over the modeled center distribution. They share the same random center contribution. For patients in different centers, the model assumes a correlation of zero because their center contributions and individual errors are independent.
+:::
+
+# Check the remaining errors
+
+For a mixed model, fitted values can include both the fixed effects and the estimated center contributions. The associated **conditional residuals** are the observed outcomes minus these fitted values. They help assess the distribution and spread of the individual errors $\varepsilon_{ij}$.
+
+```{=latex}
+\Needspace{18\baselineskip}
+```
+
+```{r}
+#| label: random-diagnostics
+conditional_residuals <- resid(model_random)
+conditional_fitted <- fitted(model_random)
+
+plot(conditional_fitted, conditional_residuals,
+     xlab = "Conditional fitted walk distance (m)",
+     ylab = "Conditional residual (m)")
+abline(h = 0, lty = 2, col = "grey50")
+
+qqnorm(conditional_residuals,
+       main = "Normal Q-Q plot of conditional residuals")
+qqline(conditional_residuals, col = "grey50")
+```
+
+The residual-versus-fitted plot can reveal patterns or changing spread. The Q-Q plot helps assess the Normality assumption for the individual errors.
+
+::: {.callout-important icon=false title="Question 5"}
+Explain what the conditional residuals represent. What do the residual-versus-fitted and Normal Q-Q plots suggest about the assumptions of constant variance and Normality for the individual errors? Support your answer with features of the plots.
+:::
+
+::: {.callout-tip icon=false title="Model answer 5"}
+Conditional residuals are the observed walking distances minus the fitted values that include both treatment and the estimated center contributions:
+
+$$
+r_{ij}=Y_{ij}-(\widehat\beta_0+\widehat\beta_1 T_{ij}+\widehat c_j).
+$$
+
+They describe the remaining individual deviations after accounting for treatment and center.
+
+```{r}
+#| label: answer-residuals
+#| eval: true
+#| echo: false
+#| fig-width: 8
+#| fig-height: 5
+#| fig-alt: "Conditional residuals scattered around zero across fitted walking distances, with vertical bands and no clear funnel."
+plot(conditional_fitted, conditional_residuals,
+     xlab = "Conditional fitted walk distance (m)",
+     ylab = "Conditional residual (m)")
+abline(h = 0, lty = 2, col = "grey50")
+```
+
+Residuals versus fitted values: residuals are scattered around zero, with no clear curve or funnel. This suggests no strong change in variance with the fitted mean. The vertical bands occur because patients in the same center–treatment group share a fitted value.
+
+```{r}
+#| label: answer-normal-qq
+#| eval: true
+#| echo: false
+#| fig-width: 8
+#| fig-height: 5
+#| fig-alt: "Normal Q-Q plot of conditional residuals, with most points near the reference line and modest departures in the tails, especially the lower tail."
+qqnorm(conditional_residuals,
+       main = "Normal Q-Q plot of conditional residuals")
+qqline(conditional_residuals, col = "grey50")
+```
+
+Normal Q–Q plot: most points follow the reference line, with modest departures in the tails, especially the lower tail. Normality appears reasonable.
+:::

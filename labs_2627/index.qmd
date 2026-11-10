@@ -6,4 +6,4 @@ toc: false
 
 Explore how statistical models account for grouping in experimental and observational data. These pages contain the R labs and assignments for the course.
 
-Use the week menus in the top navigation to find the labs, assignments and accompanying datasets. Work through the labs during class and use them as references when completing the assignments.
+Use the week menus in the top navigation to find the labs, assignments and accompanying datasets. Model answer sheets are available from the separate Lab answers menu. Work through the labs during class and use them as references when completing the assignments.

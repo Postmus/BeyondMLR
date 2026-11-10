@@ -88,7 +88,7 @@ ci <- confint(model_fixed, "treatmentEnhanced")
 
 We return to the rehabilitation trial from the lecture. In this simulated study, 120 patients recovering from knee replacement receive either **standard care** or an **enhanced rehabilitation program**. Standard care consists of weekly physiotherapy and home exercises; enhanced care adds a weekly supervised session. The outcome is the distance walked during a six-minute walk test at 12 weeks, measured in meters. A larger distance indicates better walking performance.
 
-The study includes six centers. Within each center, 10 patients are randomly assigned to standard care and 10 to enhanced care. This is a **randomized block design**, with center as the blocking factor. These are simulated teaching data, not observations from an actual clinical trial.
+The study includes six centers. Within each center, 10 patients are randomly assigned to standard care and 10 to enhanced care. This is a **randomized block design**, with center as the blocking factor. These are simulated teaching data.
 
 Our question is: **What is the estimated difference in expected walking distance between enhanced and standard care, and how precisely is it estimated?** We will explore differences between centers and fit a model that includes center as a fixed effect.
 
@@ -128,12 +128,12 @@ Add comments beginning with `#` to explain your code and record short answers to
 
 The **working directory** is the folder R uses as the starting point for relative file paths. For example, `"data/rehabilitation_week1.csv"` tells R to look inside the `data` subfolder of its working directory. Relative paths used to save output also start from this folder.
 
-For this lab, set the working directory to `week1`, which contains your script and the `data` folder. Saving or opening a script does not by itself guarantee that R uses that folder as its working directory.
+For this lab, set the working directory to `week1`, which contains your script and the `data` folder. Set the working directory explicitly when starting your analysis.
 
 ::: {.callout-note icon=false title="Changing the working directory in RStudio"}
 Select **Session > Set Working Directory > Choose Directory...**, then choose your `week1` folder. Alternatively, with the saved `lab1.R` script active, select **Session > Set Working Directory > To Source File Location**.
 
-Run `getwd()` in the Console to check the selected folder. It should be `week1`, not its `data` subfolder. Check this again when starting a new session. These controls are part of [RStudio's working-directory tools](https://support.posit.co/hc/en-us/articles/200711843-Working-Directories-and-Workspaces-in-the-RStudio-IDE).
+Run `getwd()` in the Console to check the selected folder. It should be `week1`. Check this again when starting a new session. These controls are part of [RStudio's working-directory tools](https://support.posit.co/hc/en-us/articles/200711843-Working-Directories-and-Workspaces-in-the-RStudio-IDE).
 :::
 
 # Setup and data
@@ -190,7 +190,7 @@ str(rehab)
 table(rehab$center, rehab$treatment)
 ```
 
-Each row represents one patient. The variables are `center`, `treatment`, and `distance` (six-minute walk distance in meters). A **factor** tells R that a variable represents categories rather than a continuous measurement. The order of the factor levels will matter when we choose how to represent these categories in the model.
+Each row represents one patient. The variables are `center`, `treatment`, and `distance` (six-minute walk distance in meters). A **factor** tells R that a variable represents categories. The order of the factor levels will matter when we choose how to represent these categories in the model.
 
 ::: {.callout-important icon=false title="Question 1"}
 Check the allocation table. How many patients are in each treatment group within each center? Why is this allocation useful when comparing the treatments?
@@ -207,7 +207,7 @@ knitr::kable(as.data.frame.matrix(table(rehab$center, rehab$treatment)),
 
 There are 10 patients per treatment in each center, so each center contributes 20 patients, each treatment has 60 patients, and there are 120 patients in total.
 
-Randomization within centers allows the two treatments to be compared among patients from the same center. Equal allocation gives both treatments the same mix of centers, so differences between center averages do not create an imbalance in the overall treatment comparison. Accounting for center can improve precision by removing between-center differences from the residual variation.
+Randomization within centers allows the two treatments to be compared among patients from the same center. Equal allocation gives both treatments the same mix of centers, balancing the contribution of center differences to the overall treatment comparison. Accounting for center can improve precision by removing between-center differences from the residual variation.
 :::
 
 # Explore treatment and center differences
@@ -332,7 +332,7 @@ contrasts(rehab$treatment)
 
 ## Code center using effects coding
 
-The sum-to-zero constraint makes each $c_j$ a deviation from the equally weighted average across centers, comparing patients receiving the same treatment. With standard care coded 0, the intercept $\beta_0$ is **the expected standard-care outcome averaged equally across the six centers**. It does not average over the two treatments. In this balanced trial, equal weighting of centers also agrees with weighting by their patient counts.
+The sum-to-zero constraint makes each $c_j$ a deviation from the equally weighted average across centers, comparing patients receiving the same treatment. With standard care coded 0, the intercept $\beta_0$ is **the expected standard-care outcome averaged equally across the six centers**. In this balanced trial, equal weighting of centers also agrees with weighting by their patient counts.
 
 We use **effects coding** to estimate these deviations directly. With dummy coding for center instead, the intercept would describe standard care in a reference center, and the other center coefficients would describe differences from that center.
 
@@ -342,9 +342,9 @@ contrasts(rehab$center) <- contr.sum(levels(rehab$center))
 contrasts(rehab$center)
 ```
 
-`contr.sum()` creates the effects-coding matrix. Inspect the result: there are six rows, one per center, but only five columns. Centers A–E each have a 1 in their own column and 0 in the others. Center F has $-1$ in all five columns. Its contribution is therefore minus the sum of the other five contributions; it is not set to zero. Only five center coefficients are needed because the sum-to-zero constraint determines the sixth.
+`contr.sum()` creates the effects-coding matrix. Inspect the result: there are six rows, one per center, but only five columns. Centers A–E each have a 1 in their own column and 0 in the others. Center F has $-1$ in all five columns. Its contribution is therefore minus the sum of the other five contributions. Only five center coefficients are needed because the sum-to-zero constraint determines the sixth.
 
-Changing the center coding changes the interpretation of the intercept and center coefficients, but does not change the fitted outcomes or the estimated treatment difference and its standard error. Setting the coding explicitly ensures that the analysis does not depend on previously changed global R options.
+Changing the center coding changes the interpretation of the intercept and center coefficients. The fitted outcomes, estimated treatment difference and its standard error stay the same. Setting the coding explicitly makes the chosen parameterization reproducible.
 
 # Fit and interpret the model
 
@@ -372,9 +372,9 @@ Interpret the intercept, the treatment coefficient, and `center1`. How would you
 summary(model_fixed)
 ```
 
-- Intercept: `r fmt(b["(Intercept)"])` m. This is the estimated expected walking distance for standard care, averaged equally across the six centers. It is not the mean across both treatments.
+- Intercept: `r fmt(b["(Intercept)"])` m. This is the estimated expected walking distance for standard care, averaged equally across the six centers.
 - Treatment coefficient: `r fmt(b["treatmentEnhanced"])` m. Within any given center, enhanced care is estimated to increase the expected walking distance by 11.03 m compared with standard care. The additive model assumes this expected difference is the same in all six centers.
-- `center1`: `r fmt(b["center1"])` m. Center A's expected outcome is 24.68 m below the equally weighted center average, for either treatment. Its fitted standard-care mean is `r fmt(b["(Intercept)"] + b["center1"])` m; its fitted enhanced-care mean is `r fmt(b["(Intercept)"] + b["center1"] + b["treatmentEnhanced"])` m. These fitted means need not equal the observed group means because the model imposes a common treatment difference.
+- `center1`: `r fmt(b["center1"])` m. Center A's expected outcome is 24.68 m below the equally weighted center average, for either treatment. Its fitted standard-care mean is `r fmt(b["(Intercept)"] + b["center1"])` m; its fitted enhanced-care mean is `r fmt(b["(Intercept)"] + b["center1"] + b["treatmentEnhanced"])` m.
 
 Recover Center F using the sum-to-zero constraint:
 
@@ -428,9 +428,9 @@ knitr::kable(data.frame(
   check.names = FALSE), digits = 2)
 ```
 
-After accounting for center, enhanced care is estimated to improve mean walking distance by 11.03 m. The 95% confidence interval is 2.43 to 19.63 m. It excludes zero, consistent with the two-sided test in the model output ($t = 2.54$, 113 residual degrees of freedom, $p = 0.0124$). Under the model assumptions, the data support a positive average treatment effect. Whether this improvement is practically meaningful requires a relevant clinical benchmark, which is not supplied in this lab.
+After accounting for center, enhanced care is estimated to improve mean walking distance by 11.03 m. The 95% confidence interval is 2.43 to 19.63 m. It excludes zero, consistent with the two-sided test in the model output ($t = 2.54$, 113 residual degrees of freedom, $p = 0.0124$). Under the model assumptions, the data support a positive average treatment effect. Assessing the practical importance of this improvement requires a relevant clinical benchmark.
 
-The standard error of 4.34 m measures the sampling uncertainty in the estimated treatment difference. The residual standard deviation of 23.76 m measures the remaining variation in individual patient outcomes around their fitted treatment-and-center means. It is not the uncertainty in the treatment coefficient, and the confidence interval for the treatment effect is not an interval for an individual patient's outcome.
+The standard error of 4.34 m measures the sampling uncertainty in the estimated treatment difference. The residual standard deviation of 23.76 m measures the remaining variation in individual patient outcomes around their fitted treatment-and-center means.
 :::
 
 # Check the model assumptions
