@@ -1,0 +1,52 @@
+{
+  "centers": 6,
+  "cluster": {
+    "centers_per_arm": 3,
+    "patients_per_center": 80,
+    "total": 480,
+    "allocation": [
+      {
+        "center": "Center A",
+        "treatment": "Standard"
+      },
+      {
+        "center": "Center B",
+        "treatment": "Enhanced"
+      },
+      {
+        "center": "Center C",
+        "treatment": "Standard"
+      },
+      {
+        "center": "Center D",
+        "treatment": "Standard"
+      },
+      {
+        "center": "Center E",
+        "treatment": "Enhanced"
+      },
+      {
+        "center": "Center F",
+        "treatment": "Enhanced"
+      }
+    ],
+    "ordinary": {
+      "estimate": 39.38875,
+      "se": 2.6724148466,
+      "lower": 34.1376171178,
+      "upper": 44.6398828822,
+      "residual_sd": 29.2748378895
+    },
+    "random": {
+      "estimate": 39.38875,
+      "se": 15.8663647554,
+      "df": 4,
+      "t": 2.4825314814,
+      "p": 0.068026323149,
+      "lower": -4.6633407625,
+      "upper": 83.4408407625,
+      "center_var": 369.9958,
+      "patient_var": 609.3202
+    }
+  }
+}
