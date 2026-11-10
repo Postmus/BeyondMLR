@@ -3,9 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "figures": "Rscript generate_data.R",
+    "interaction-data": "Rscript generate_interaction_data.R",
+    "allocation-data": "Rscript explore_allocation_imbalance.R",
+    "figures": "npm run allocation-data && npm run interaction-data",
+    "equations": "node generate_equations.js",
     "slides": "node build_week2.js",
-    "build": "npm run figures && npm run slides"
+    "render": "node ../../scripts/render_lecture.js Beyond_MLR_Week_2.pptx",
+    "build": "npm run slides && npm run render",
+    "rebuild": "npm run figures && npm run equations && npm run build",
+    "cluster-starter": "node build_cluster_starter.js"
   },
   "dependencies": {
     "jszip": "3.10.1",

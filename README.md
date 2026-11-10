@@ -69,6 +69,12 @@ The outputs are `lectures_2627/week1/Beyond_MLR_Week_1.pptx` and
 `output/pdf/Beyond_MLR_Week_1.pdf`. To build only the PowerPoint, use `npm run slides:week1`;
 to export the existing PowerPoint again, use `npm run render:week1`.
 
+The revised Week 2 opening uses the same root dependencies and shared layout
+helpers. Run `npm run build:week2` for its PowerPoint and PDF, or
+`npm run rebuild:week2` to regenerate its data, figures and missing equations
+first. Its scripts invoke the Week 2 builder directly; Week 2 is not yet a root
+npm workspace. See `lectures_2627/week2/README.md` for the current slide sequence.
+
 PDF export requires LibreOffice on `PATH` (or set `LIBREOFFICE_BIN` to its executable).
 The renderer creates its own isolated profile and runtime under ignored `.cache/lecture-build/`,
 uses a memory-backed settings store, and removes these disposable files afterwards.

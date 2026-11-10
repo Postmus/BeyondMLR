@@ -1,0 +1,7 @@
+"design","model","estimate","se","residual_sd","center_variance"
+"Week 1 balanced","Treatment only",11.03,5.77405840555928,31.6258203707713,NA
+"Week 1 balanced","Fixed center effects",11.03,4.33880422742186,23.7646094795773,NA
+"Week 1 balanced","Random center effects",11.03,4.33880422742186,23.7646094795773,513.8143
+"Unequal treatment proportions","Treatment only",3.87000000000001,5.74719869533769,31.4787036790071,NA
+"Unequal treatment proportions","Fixed center effects",8.39575645756456,4.56369885720423,23.7575484999105,NA
+"Unequal treatment proportions","Random center effects",8.13418824843035,4.5508861968569,23.7573065315228,509.2931

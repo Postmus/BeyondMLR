@@ -2,14 +2,23 @@
   "name": "beyond-mlr-lectures",
   "version": "1.0.0",
   "private": true,
-  "engines": { "node": ">=20" },
-  "workspaces": ["lectures_2627/week1"],
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "lectures_2627/week1"
+  ],
   "scripts": {
     "slides:week1": "npm run slides --workspace=lectures_2627/week1",
     "render:week1": "node scripts/render_lecture.js lectures_2627/week1/Beyond_MLR_Week_1.pptx",
     "build:week1": "npm run slides:week1 && npm run render:week1",
     "figures:week1": "npm run figures --workspace=lectures_2627/week1",
-    "rebuild:week1": "npm run figures:week1 && npm run build:week1"
+    "rebuild:week1": "npm run figures:week1 && npm run build:week1",
+    "slides:week2": "node lectures_2627/week2/build_week2.js",
+    "render:week2": "node scripts/render_lecture.js lectures_2627/week2/Beyond_MLR_Week_2.pptx",
+    "build:week2": "npm run slides:week2 && npm run render:week2",
+    "figures:week2": "Rscript lectures_2627/week2/explore_allocation_imbalance.R && Rscript lectures_2627/week2/generate_interaction_data.R",
+    "rebuild:week2": "npm run figures:week2 && node lectures_2627/week2/generate_equations.js && npm run build:week2"
   },
   "dependencies": {
     "skia-canvas": "3.0.8"

@@ -1,6 +1,34 @@
 # Week 2 planning notes
 
-The proposed Week 2 lecture explores treatment effects that vary between centers, followed by a brief section on cluster randomization. Build directly on the Week 1 model in the same multicenter setting. Move crossed random effects to the end of Week 3, alongside nested grouping structures. This is a planning note; the lecture and labs still need to be developed. The existing Week 2 starter deck begins with cluster randomization and therefore does not yet follow this revised order.
+The proposed Week 2 lecture explores treatment effects that vary between centers, followed by a brief section on cluster randomization. Build directly on the Week 1 model in the same multicenter setting. Move crossed random effects to the end of Week 3, alongside nested grouping structures. The current 24-slide opening includes a title and three section dividers around the Week 1 recap, unequal allocation, fixed interaction and uncertainty, ending with a theoretical bridge to random treatment effects. The random-slope analysis, cluster-randomization section and labs remain to be developed. The earlier cluster-first starter is preserved in `build_cluster_starter.js`.
+
+## Opening and theoretical emphasis
+
+After the title, begin with the model-comparison table from the final substantive Week 1
+slide. Slides 3–6 introduce unequal treatment proportions within centers while
+retaining equal overall group sizes and a common treatment effect. Show the
+allocation, fitted results, the comparisons used by the three models, and why the
+estimated standard errors can agree or differ across designs. Slide 6 now compares
+equal center sizes, unequal center sizes with balanced treatment allocation, and
+unequal treatment proportions. Explain the same mix of centers and estimation of
+individual variation in plain language. Exact estimated-SE equality in the fully
+balanced case assumes REML and a positive estimated center variance. Move the
+detailed precision discussion for the unequal-allocation example to backup slide 26
+(after the backup divider). Use “estimated standard error” throughout the lecture.
+Keep the opening formula-free and qualify the extra between-center information
+by the random-intercept assumptions.
+Then restore balanced allocation before introducing treatment heterogeneity and
+the distinction between included-center and population-average uncertainty.
+
+Keep effects coding for center in the fixed interaction. Derive the within-center
+contrast first: baseline center effects cancel, treatment deviations remain.
+For the average over the fixed centers, sum-to-zero deviations leave only
+individual sampling noise. Omitting the fixed interaction leaves the average
+estimate unchanged under exact balance but inflates its usual estimated variance
+in expectation. Then contrast repeating the study in the same centers with
+sampling different centers: random treatment effects add a between-center term
+to uncertainty about the population average. These distinctions should remain
+explicit when the random-slope analysis is added.
 
 ## 1. Treatment effects that vary between centers
 
@@ -26,7 +54,7 @@ Use the random-intercept/random-slope formulation as the working direction:
 lmer(outcome ~ treatment + (1 + treatment | center), data = dat)
 ```
 
-This closely parallels the fixed-effects interaction model and establishes terminology and syntax that return in Week 4. With reference coding, the fixed-effects model's treatment coefficient describes the reference center; in the random-effects model it describes the population-average treatment effect.
+This closely parallels the fixed-effects interaction model and establishes terminology and syntax that return in Week 4. Retain dummy coding for treatment and effects coding for center from Week 1. In the fixed-effects interaction model, the treatment coefficient describes the equally weighted average treatment effect across the included centers, and interaction coefficients describe center-specific deviations from that average. In the random-effects model, the fixed treatment coefficient describes the population-average treatment effect.
 
 The old replicated-block lab instead used:
 
@@ -39,6 +67,8 @@ Both allow treatment effects to vary between centers, but their covariance assum
 For the two-treatment example, explain the intercept variance, treatment-effect variance, intercept-slope covariance, and individual residual variance. With 0/1 coding, the intercept refers to control outcomes. Do not carry forward the old lab's "interaction ICC" terminology: a variance fraction is not automatically a pairwise correlation. With random slopes, within-center correlation can differ for two control patients, two experimental-treatment patients, and a pair receiving different treatments. There is no single common ICC to report.
 
 For a single teaching dataset, draw one intercept/slope pair per center from a bivariate Normal distribution, then generate patient outcomes with independent individual errors. This aligns the generating assumptions with the fitted model. It does not require a repeated-sampling demonstration like the Week 1 simulation.
+
+The lecture dataset is now generated by `generate_interaction_data.R`, with patient data, known generating effects, fixed-model results and figures in `assets/fixed-interaction/`. See [README.md](README.md) for parameters and interpretation. Use a separate dataset for the later lab, potentially adapted from the old labs; lab development is deferred.
 
 ## 2. Treatment assigned to whole centers
 

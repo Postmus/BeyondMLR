@@ -1,0 +1,90 @@
+{
+  "seed": 158,
+  "generating_treatment_effect": 10,
+  "individual_error_sd": 24,
+  "allocation": [
+    {
+      "center": "Center A",
+      "standard": 5,
+      "enhanced": 15,
+      "true_standard_mean": 343
+    },
+    {
+      "center": "Center B",
+      "standard": 8,
+      "enhanced": 12,
+      "true_standard_mean": 376
+    },
+    {
+      "center": "Center C",
+      "standard": 10,
+      "enhanced": 10,
+      "true_standard_mean": 368
+    },
+    {
+      "center": "Center D",
+      "standard": 10,
+      "enhanced": 10,
+      "true_standard_mean": 331
+    },
+    {
+      "center": "Center E",
+      "standard": 12,
+      "enhanced": 8,
+      "true_standard_mean": 387
+    },
+    {
+      "center": "Center F",
+      "standard": 15,
+      "enhanced": 5,
+      "true_standard_mean": 355
+    }
+  ],
+  "results": [
+    {
+      "design": "Week 1 balanced",
+      "model": "Treatment only",
+      "estimate": 11.03,
+      "se": 5.7740584056,
+      "residual_sd": 31.6258203708
+    },
+    {
+      "design": "Week 1 balanced",
+      "model": "Fixed center effects",
+      "estimate": 11.03,
+      "se": 4.3388042274,
+      "residual_sd": 23.7646094796
+    },
+    {
+      "design": "Week 1 balanced",
+      "model": "Random center effects",
+      "estimate": 11.03,
+      "se": 4.3388042274,
+      "residual_sd": 23.7646094796,
+      "center_variance": 513.8143
+    },
+    {
+      "design": "Unequal treatment proportions",
+      "model": "Treatment only",
+      "estimate": 3.87,
+      "se": 5.7471986953,
+      "residual_sd": 31.478703679
+    },
+    {
+      "design": "Unequal treatment proportions",
+      "model": "Fixed center effects",
+      "estimate": 8.3957564576,
+      "se": 4.5636988572,
+      "residual_sd": 23.7575484999
+    },
+    {
+      "design": "Unequal treatment proportions",
+      "model": "Random center effects",
+      "estimate": 8.1341882484,
+      "se": 4.5508861969,
+      "residual_sd": 23.7573065315,
+      "center_variance": 509.2931
+    }
+  ],
+  "baseline_composition": -2.7333333333
+}
