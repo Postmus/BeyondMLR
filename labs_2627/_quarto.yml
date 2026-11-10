@@ -21,6 +21,8 @@ website:
         menu:
           - text: "Lab 1: Center as a fixed effect"
             href: BLR_lab_center_fixed.qmd
+          - text: "Lab 1: Model answers"
+            href: BLR_lab_center_fixed_answers.qmd
           - text: "Lab 2: Center as a random effect"
             href: BLR_lab_center_random.qmd
           - text: "Assignment: Protein extraction protocols"
