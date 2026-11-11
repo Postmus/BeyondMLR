@@ -1,0 +1,21 @@
+Linear mixed model fit by REML ['lmerMod']
+Formula: measurement ~ 1 + (1 | patient) + (1 | radiologist)
+   Data: dat
+Control: lmerControl(optimizer = "bobyqa")
+
+REML criterion at convergence: 186.9
+
+Scaled residuals:
+    Min      1Q  Median      3Q     Max
+-2.1748 -0.4459  0.1040  0.5980  1.8971
+
+Random effects:
+ Groups      Name        Variance Std.Dev.
+ patient     (Intercept) 7.441    2.728
+ radiologist (Intercept) 1.468    1.212
+ Residual                1.002    1.001
+Number of obs: 50, groups:  patient, 10; radiologist, 5
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)   50.822      1.029   49.41

@@ -1,0 +1,37 @@
+{
+  "dataset": "labs_2627/data/wound_healing_week2.csv",
+  "dataset_md5": "180e47e6d004795738e26b3329649952",
+  "laboratories": 5,
+  "plates_per_treatment_per_laboratory": 10,
+  "outcome": "Percentage of original wound area closed after 48 hours",
+  "contrast": "Experimental minus standard, in percentage points",
+  "coding": "Dummy coding for treatment; sum-to-zero effects coding for laboratory",
+  "additive_model": {
+    "estimate": 9.284,
+    "standard_error": 1.811620245773,
+    "lower_95": 5.686985534258,
+    "upper_95": 12.881014465742,
+    "p": 1.587007625139e-06,
+    "residual_sd": 9.058101228864,
+    "residual_df": 94,
+    "residual_sum_squares": 7712.624600000001
+  },
+  "interaction_model": {
+    "estimate": 9.284,
+    "standard_error": 1.615789865326,
+    "lower_95": 6.07395141143,
+    "upper_95": 12.49404858857,
+    "p": 1.2306121908e-07,
+    "residual_sd": 8.078949326628,
+    "residual_df": 90,
+    "residual_sum_squares": 5874.248000000001
+  },
+  "inference": "Usual model-based 95% t intervals and two-sided p-values for zero average effect; no multiplicity adjustment",
+  "unequal_size_example": {
+    "description": "Hypothetical two-laboratory illustration, not new estimates from the Lab 3 dataset; half the plates receive each treatment within each laboratory",
+    "plates": [20, 80],
+    "effects": [5, 15],
+    "interaction_average": 10,
+    "additive_average": 13
+  }
+}

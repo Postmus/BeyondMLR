@@ -25,6 +25,10 @@ website:
             href: BLR_lab_center_random.qmd
           - text: "Assignment: Protein extraction protocols"
             href: assignments/week1/assignment.qmd
+      - text: Week 2
+        menu:
+          - text: "Lab 3: Treatment effects across laboratories"
+            href: BLR_lab_fixed_interaction.qmd
       - text: Lab answers
         menu:
           - text: "Week 1 · Lab 1: Center as a fixed effect"

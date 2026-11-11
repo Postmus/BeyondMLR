@@ -1,0 +1,20 @@
+{
+  "seed": 123,
+  "n_patients": 10,
+  "n_radiologists": 5,
+  "n": 50,
+  "model": "measurement ~ 1 + (1 | patient) + (1 | radiologist)",
+  "method": "REML",
+  "mean": 50.821780681927,
+  "variance_components": {
+    "patient": 7.441124782044,
+    "radiologist": 1.468443760885,
+    "residual": 1.00249453271,
+    "total": 9.912063075639
+  },
+  "icc_absolute_agreement_single": 0.7507140264606,
+  "versions": {
+    "R": "R version 4.6.1 (2026-06-24)",
+    "lme4": "2.1.0"
+  }
+}

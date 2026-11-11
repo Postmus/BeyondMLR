@@ -174,24 +174,21 @@ figure_theme <- theme_minimal(base_size = 16) + theme(
   legend.position = "top",
   plot.margin = margin(12, 16, 12, 12)
 )
-interaction_plot <- ggplot(rehab, aes(treatment, distance, color = treatment)) +
-  geom_point(position = position_jitter(width = 0.07, height = 0, seed = seed),
-             alpha = 0.35, size = 1.7) +
-  geom_line(data = cell_means, aes(y = estimate, group = center),
-            color = color_muted, linewidth = 0.8) +
-  geom_point(data = cell_means, aes(y = estimate), shape = 18, size = 4) +
-  facet_wrap(~ center, nrow = 1) +
+# The full cell-means model reproduces the observed treatment-by-center means.
+# Show the traditional interaction plot, without individual patient observations.
+interaction_plot <- ggplot(cell_means,
+                           aes(center, estimate, color = treatment, group = treatment)) +
+  geom_line(linewidth = 1.1) +
+  geom_point(size = 3.5) +
   scale_color_manual(values = c(Standard = color_primary, Enhanced = color_accent)) +
-  labs(x = NULL, y = "Six-minute walk distance (m)") +
-  figure_theme + theme(legend.position = "none", axis.text.x = element_text(size = 11))
+  labs(x = NULL, y = "Mean six-minute walk distance (m)", color = NULL) +
+  figure_theme
 ggsave(file.path(output_dir, "interaction-outcomes.png"), interaction_plot,
        width = 12, height = 5, dpi = 200, bg = "white")
 lecture_outcomes <- interaction_plot +
-  scale_x_discrete(labels = c(Standard = "Std", Enhanced = "Enh")) +
-  labs(color = NULL) +
   theme(axis.text = element_text(size = 18), axis.text.x = element_text(size = 18),
         axis.title = element_text(size = 20),
-        strip.text = element_text(size = 20), legend.position = "top",
+        legend.position = "top",
         legend.text = element_text(size = 18))
 ggsave(file.path(output_dir, "interaction-outcomes-slide.png"), lecture_outcomes,
        width = 12, height = 5.3, dpi = 200, bg = "white")

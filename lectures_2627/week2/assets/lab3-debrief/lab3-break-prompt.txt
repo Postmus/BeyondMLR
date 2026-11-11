@@ -1,0 +1,6 @@
+Generated with the built-in image_gen tool for the Week 2 Lab 3 break slide.
+
+University statistics lecture break-slide illustration, title added separately in PowerPoint. Three adult graduate students collaborate around laptops at a wooden table in a sunlit contemporary university teaching room. One points toward a traditional interaction plot with colored lines connecting two columns of mean points, some upward and one downward. Warm editorial style, natural anatomy, clean shapes, subtle paper texture, restrained detail. Deep teal #173F48, cream #F4F1EA, sage #6F9878, muted orange #D58A3D. Broad windows, leafy university courtyard, potted plant, notebooks, coffee cup. Wide landscape approximately 2:1 for a full-width lecture image slot. No text, labels, letters, formulas, logos, watermarks, or lab coats. Fictional educational illustration.
+
+Original generated asset: exec-83b6afc5-fc4b-434c-93a2-979bb7613303.png
+Project copy: lab3-break.png
