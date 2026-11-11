@@ -84,14 +84,44 @@ comparisons <- data.frame(
   upper_95 = estimates + critical * standard_errors,
   row.names = NULL
 )
+comparisons$p <- 2 * pt(-abs(comparisons$estimate / comparisons$standard_error),
+                       df = comparisons$df)
+# One family comprises the six enhanced-minus-standard treatment contrasts.
+# Keep the existing pointwise confidence intervals; adjust the p-values only.
+comparisons$p_bonferroni <- p.adjust(comparisons$p, method = "bonferroni")
 model_result <- function(model) {
   ci <- confint(model, "treatmentEnhanced")
   list(estimate = unname(coef(model)["treatmentEnhanced"]),
        standard_error = unname(coef(summary(model))["treatmentEnhanced", "Std. Error"]),
        lower_95 = unname(ci[1]), upper_95 = unname(ci[2]),
-       residual_sd = sigma(model), residual_df = df.residual(model))
+       p = unname(coef(summary(model))["treatmentEnhanced", "Pr(>|t|)"]),
+       residual_sd = sigma(model), residual_df = df.residual(model),
+       residual_sum_squares = deviance(model))
 }
 interaction_test <- anova(model_additive, model_interaction)
+
+# All fitted coefficients in the same estimate/SE/CI/p format as Week 1.
+# The sixth center's deviations are implied by effects coding, not extra coefficients.
+coefficient_summary <- coef(summary(model_interaction))
+coefficient_intervals <- confint(model_interaction)
+coefficient_results <- data.frame(
+  term = rownames(coefficient_summary),
+  label = c("Intercept (\u03b2\u2080)", "Enhanced care (\u03b2\u2081)",
+            paste("Center", LETTERS[1:5]),
+            paste("Enhanced \u00d7 Center", LETTERS[1:5])),
+  estimate = coefficient_summary[, "Estimate"],
+  standard_error = coefficient_summary[, "Std. Error"],
+  lower_95 = coefficient_intervals[, 1],
+  upper_95 = coefficient_intervals[, 2],
+  t = coefficient_summary[, "t value"],
+  p = coefficient_summary[, "Pr(>|t|)"],
+  df = df.residual(model_interaction),
+  row.names = NULL
+)
+stopifnot(identical(coefficient_results$term,
+  c("(Intercept)", "treatmentEnhanced", paste0("center", 1:5),
+    paste0("treatmentEnhanced:center", 1:5))))
+write.csv(coefficient_results, file.path(output_dir, "regression_coefficients.csv"), row.names = FALSE)
 
 # Check the design and the intended meaning of effects coding using independent
 # observed-cell summaries and a reference-coded fit.
@@ -128,10 +158,12 @@ write_json(list(
     average_treatment_effect = mean(truth$treatment_effect)),
   additive_model = model_result(model_additive),
   interaction_model = model_result(model_interaction),
+  regression_coefficients = coefficient_results,
   interaction_test = list(numerator_df = interaction_test$Df[2],
     denominator_df = df.residual(model_interaction),
     F = interaction_test$F[2], p = interaction_test$`Pr(>F)`[2]),
   interval_method = "Pointwise 95% t intervals; no multiplicity adjustment.",
+  simple_effect_test_method = "Two-sided t tests of zero treatment difference; Bonferroni p-values across all six centers; 108 residual degrees of freedom.",
   fitted_cell_means = cell_means,
   within_center_comparisons = comparisons,
   session = capture.output(sessionInfo())
@@ -179,6 +211,32 @@ lecture_contrasts <- contrast_plot + labs(caption = NULL, y = "Treatment differe
   theme(axis.text = element_text(size = 20), axis.title = element_text(size = 22))
 ggsave(file.path(output_dir, "interaction-contrasts-slide.png"), lecture_contrasts,
        width = 12, height = 5.3, dpi = 200, bg = "white")
+
+# Diagnostics for the fitted full interaction model, using observed residuals.
+diagnostics <- data.frame(center = rehab$center, treatment = rehab$treatment,
+  fitted = fitted(model_interaction), residual = resid(model_interaction),
+  standardized = rstandard(model_interaction))
+write.csv(diagnostics, file.path(output_dir, "interaction_diagnostics.csv"), row.names = FALSE)
+diagnostic_theme <- theme_minimal(base_size = 18) + theme(
+  panel.grid.minor = element_blank(), panel.grid.major.x = element_blank(),
+  plot.title = element_text(size = 20, face = "bold", color = color_primary),
+  axis.title = element_text(size = 18, color = color_primary),
+  axis.text = element_text(size = 16, color = color_primary),
+  plot.margin = margin(8, 12, 6, 8))
+residual_plot <- ggplot(diagnostics, aes(fitted, residual)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = color_muted) +
+  geom_point(color = color_primary, alpha = .65, size = 1.8) +
+  labs(title = "Residuals vs fitted values", x = "Fitted walk distance (m)", y = "Residual (m)") +
+  diagnostic_theme
+qq_plot <- ggplot(diagnostics, aes(sample = standardized)) +
+  stat_qq_line(color = color_accent, linewidth = .8) +
+  stat_qq(color = color_primary, alpha = .65, size = 1.8) +
+  labs(title = "Normal Q-Q plot", x = "Theoretical quantiles", y = "Std. residual") +
+  diagnostic_theme
+ggsave(file.path(output_dir, "interaction-residuals-vs-fitted.png"), residual_plot,
+       width = 5.80, height = 2.90, dpi = 250, bg = "white")
+ggsave(file.path(output_dir, "interaction-normal-qq.png"), qq_plot,
+       width = 5.80, height = 2.90, dpi = 250, bg = "white")
 
 print(comparisons, digits = 4, row.names = FALSE)
 cat("\nAverage treatment effect and uncertainty:\n")

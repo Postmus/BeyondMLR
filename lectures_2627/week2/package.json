@@ -5,7 +5,8 @@
   "scripts": {
     "interaction-data": "Rscript generate_interaction_data.R",
     "allocation-data": "Rscript explore_allocation_imbalance.R",
-    "figures": "npm run allocation-data && npm run interaction-data",
+    "additive-example": "Rscript generate_additive_example.R",
+    "figures": "npm run allocation-data && npm run interaction-data && npm run additive-example",
     "equations": "node generate_equations.js",
     "slides": "node build_week2.js",
     "render": "node ../../scripts/render_lecture.js Beyond_MLR_Week_2.pptx",

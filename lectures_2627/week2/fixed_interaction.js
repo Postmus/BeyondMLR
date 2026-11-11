@@ -1,17 +1,23 @@
 const path = require('path');
 const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels');
+const { addDiagnosticsInterpretationSlide } = require('../../slides-common/js/course_builders');
 const { addTeachingTableSlide } = require('../../slides-common/js/teaching_table');
-const { addFigureSlide, addSectionSlide } = require('../../slides-common/js/pptx_layout_primitives');
+const { addFigureSlide, addSectionSlide, addBulletVisualSlide } = require('../../slides-common/js/pptx_layout_primitives');
 const { addAllocationImbalance } = require('./allocation_imbalance');
+const { addAdditiveExample, addInteractionExample } = require('./additive_example');
 
 const E = {
   additive: String.raw`Y_{ij}=\beta_0+c_j+\beta_1T_{ij}+\varepsilon_{ij}`,
   model: String.raw`Y_{ij}=\beta_0+c_j+(\beta_1+d_j)T_{ij}+\varepsilon_{ij}`,
+  centerConstraint: String.raw`\sum_j c_j=0`,
+  interactionConstraint: String.raw`\sum_j d_j=0`,
   errors: String.raw`\varepsilon_{ij}\overset{\mathrm{iid}}{\sim}N(0,\sigma^2)`,
   constraints: String.raw`\sum_{j=1}^{J}c_j=0,\qquad \sum_{j=1}^{J}d_j=0`,
   standard: String.raw`\mu_{0j}=\beta_0+c_j`,
   enhanced: String.raw`\mu_{1j}=\beta_0+c_j+\beta_1+d_j`,
   effect: String.raw`\delta_j=\mu_{1j}-\mu_{0j}=\beta_1+d_j`,
+  simpleEffect: String.raw`\text{Effect in center }j:\quad\beta_1+d_j`,
+  marginalEffect: String.raw`\text{Average effect:}\quad\beta_1`,
   beta0: String.raw`\beta_0=\frac{1}{J}\sum_{j=1}^{J}\mu_{0j}`,
   beta1: String.raw`\beta_1=\frac{1}{J}\sum_{j=1}^{J}\delta_j`,
   deviations: String.raw`c_j=\mu_{0j}-\beta_0,\qquad d_j=\delta_j-\beta_1`,
@@ -31,6 +37,13 @@ const E = {
   fixedLimit: String.raw`\frac{2\sigma^2}{Jn}\longrightarrow 0\quad\text{as }n\longrightarrow\infty`,
   randomLimit: String.raw`\frac{\sigma_d^2}{J}+\frac{2\sigma^2}{Jn}\longrightarrow\frac{\sigma_d^2}{J}`,
 };
+
+function interactionFEquation(results) {
+  const a = results.additive_model, m = results.interaction_model;
+  const rss = value => Math.round(value).toLocaleString('en-US').replaceAll(',', '{,}');
+  return String.raw`F=\frac{(\mathrm{RSS}_{\mathrm{reduced}}-\mathrm{RSS}_{\mathrm{full}})/(\mathrm{df}_{\mathrm{reduced}}-\mathrm{df}_{\mathrm{full}})}{\mathrm{RSS}_{\mathrm{full}}/\mathrm{df}_{\mathrm{full}}}` +
+    String.raw`=\frac{(${rss(a.residual_sum_squares)}-${rss(m.residual_sum_squares)})/(${a.residual_df}-${m.residual_df})}{${rss(m.residual_sum_squares)}/${m.residual_df}}\approx ${results.interaction_test.F.toFixed(2)}`;
+}
 
 function addWeek2Opening(pptx, drawEquation, week1, results, allocation) {
   const f = (v, digits = 1) => Number(v).toFixed(digits);
@@ -73,148 +86,214 @@ function addWeek2Opening(pptx, drawEquation, week1, results, allocation) {
     sectionLabel: 'PART 1',
     sectionTitle: 'Treatment-by-center interaction'
   });
-  addFigureSlide(pptx, {
-    title: 'Restore balanced allocation and let treatment effects vary',
-    assetPath: path.join(assets, 'interaction-outcomes-slide.png'),
-    caption: 'New simulated trial: 120 patients, six centers, 10 per treatment per center. Diamonds are observed treatment means.',
-    captionFontSize: 19, captionMinFontSize: 19, captionHeight: .70
+  addAdditiveExample(pptx, drawEquation);
+  addInteractionExample(pptx, drawEquation);
+
+  // Choose how centers enter the model before formalizing the fixed-effects route.
+  const representationSlide = panels('How should we represent differences between centers?', [
+    { title: 'FIXED CENTER EFFECTS', blocks: [
+      text('Give each included center its own baseline deviation and treatment-effect deviation.', 1.35, { gap: .30 }),
+      text('Express the average treatment effect across the included centers.', 1.20)
+    ] },
+    { title: 'RANDOM CENTER EFFECTS', blocks: [
+      text('Describe baseline deviations and treatment-effect deviations through a population distribution.', 1.35, { gap: .30 }),
+      text('Express the average treatment effect in the population represented by those centers.', 1.20)
+    ] }
+  ], 'We start with fixed center effects and ask what we can learn about treatment in the included centers.', {
+    intro: 'Beyond two centers, we still allow differences in baseline outcome and treatment effect.'
   });
+  representationSlide.addNotes('Both approaches allow treatment effects to vary between centers. The distinction is separate fixed center parameters versus a distribution of random center effects, not common versus varying treatment effects. This slide previews the included-center and population-average targets used in this lecture; it is not a claim that a random-effects model cannot estimate included-center contrasts or that model choice alone establishes population representativeness. Random treatment effects require random slopes as well as center intercepts. Implications for uncertainty are developed later.');
 
-  // 4–5: Define the complete fixed model and the chosen parameterization.
-  panels('Extend the fixed-effects model', [
-    { title: 'A TREATMENT DIFFERENCE FOR EACH CENTER', blocks: [
-      eq('model', .65),
-      text('Tᵢⱼ = 0 for standard care and 1 for enhanced care.', .80),
-      eq('effect', .60),
-      text('The interaction contribution dⱼ allows the expected treatment difference to vary by center.', 1.15)
-    ] },
-    { title: 'FIXED PARAMETERS AND INDIVIDUAL ERRORS', blocks: [
-      text('Each cⱼ and dⱼ is a fixed, unknown parameter for one of the six included centers.', 1.05),
-      eq('errors', .65),
-      text('After accounting for the center-specific treatment means, individual errors are independent with a common variance.', 1.30)
-    ] }
-  ], 'We retain the Week 1 center effects and add center-specific deviations from the average treatment effect.');
-
-  panels('Effects coding defines the average and the deviations', [
-    { title: 'THE AVERAGE PARAMETERS', blocks: [
-      eq('beta0', .70),
-      text('β₀: expected standard-care outcome, averaged equally across the included centers.', 1.05),
-      eq('beta1', .70),
-      text('β₁: treatment difference, averaged equally across those same centers.', 1.05)
-    ] },
-    { title: 'CENTER-SPECIFIC DEVIATIONS', blocks: [
-      eq('deviations', .65),
-      text('cⱼ and dⱼ describe a center’s deviations in standard-care mean and treatment effect.', 1.00),
-      eq('constraints', .65),
-      text('Center F’s deviations are minus the sums of the corresponding five estimated deviations.', 1.05)
-    ] }
-  ], 'Treatment uses dummy coding; center uses effects coding, as in Week 1.');
-
-  // 6: Model predictions provide the reference grid for estimated marginal means.
-  const cell = (center, treatment) => results.fitted_cell_means.find(r => r.center === center && r.treatment === treatment).estimate;
-  addTeachingTableSlide(pptx, {
-    title: 'Interpret the interaction through fitted means',
-    intro: 'Predict the mean for each treatment–center combination: the reference grid used by estimated marginal means.',
-    introHeight: .65,
-    columns: [
-      { label: 'Center', weight: 1.4 },
-      { label: 'Standard (m)', weight: 2, align: 'center' },
-      { label: 'Enhanced (m)', weight: 2, align: 'center' },
-      { label: 'Difference (m)', weight: 2, align: 'center' }
+  const empiricalSlide = addBulletVisualSlide(pptx, {
+    title: 'From known means to patient data',
+    bulletTitle: 'THE REHABILITATION TRIAL',
+    bullets: [
+      'New simulated trial: 120 patients after knee replacement at six centers.',
+      'Within each center: 10 patients randomized to standard care and 10 to enhanced care.',
+      'Outcome: six-minute walk distance at 12 weeks.',
+      'Fit the fixed-effects interaction model to estimate treatment effects in these centers.'
     ],
-    rows: results.within_center_comparisons.map(r => [r.center, f(cell(r.center, 'Standard')), f(cell(r.center, 'Enhanced')), f(r.estimate)]),
-    takeaway: 'The full interaction model reproduces the observed cell means. Subtract within each center to obtain its treatment comparison.',
-    fontSize: 21
+    bulletFontSize: 21, bulletMinFontSize: 21,
+    assetPath: path.join(assets, 'rehabilitation-case-study.png'),
+    note: 'The group means are now unknown and must be estimated from patient outcomes.',
+    noteFontSize: 20, noteHeight: 1.0
   });
+  empiricalSlide.addNotes('The preceding toy examples assumed the four true group means were known. We now begin an empirical analysis of a new simulated six-center trial: the analyst estimates unknown group means and treatment effects from individual patient outcomes. Each center has 10 patients per treatment. After exploring the data, formalize the grouped fixed-effects interaction model on the next model slide. The right-hand image is an AI-generated fictional illustration of a rehabilitation walking assessment, not a study participant photograph. Exploratory plots and fitted cell means follow on separate slides.');
 
-  // 7: Keep the visible heterogeneity and the uncertainty about each contrast together.
   addFigureSlide(pptx, {
-    title: 'Treatment differences and their uncertainty',
-    assetPath: path.join(assets, 'interaction-contrasts-slide.png'),
-    caption: 'Enhanced minus standard care. Bars: pointwise 95% confidence intervals, unadjusted. Dashed line: average estimate.',
-    captionFontSize: 19, captionMinFontSize: 19, captionHeight: .70
+    title: 'Explore outcomes by treatment and center',
+    assetPath: path.join(assets, 'interaction-outcomes-slide.png'),
+    caption: 'Each dot is a patient outcome; diamonds show sample means.\nWhat differences do you notice in the treatment gaps across centers?',
+    captionFontSize: 19, captionMinFontSize: 19, captionHeight: .85
   });
 
-  // 8: State the estimand before deriving its uncertainty.
-  addSectionSlide(pptx, {
-    sectionLabel: 'PART 2',
-    sectionTitle: 'Uncertainty in the included centers'
+  const fixedSpecificationSlide = panels('A fixed-effects model for treatment and center', [
+    { title: 'BASELINE OUTCOMES', blocks: [
+      text('β₀: average standard-care outcome across the included centers.', .90, { fontSize: 21 }),
+      text('cⱼ: center j’s deviation from that baseline average.', .85, { fontSize: 21 }),
+      eq('centerConstraint', .72, .10)
+    ] },
+    { title: 'TREATMENT EFFECTS', blocks: [
+      text('β₁: average treatment effect across the included centers.', .90, { fontSize: 21 }),
+      text('dⱼ: center j’s deviation from the average treatment effect.', .85, { fontSize: 21 }),
+      eq('interactionConstraint', .72, .10)
+    ] }
+  ], 'Each center receives equal weight in the averages. Center deviations are fixed, unknown parameters.', {
+    lead: { equation: E.model, text: 'Tᵢⱼ = 0 for standard care and 1 for enhanced care. Center uses effects coding.' }
   });
-  panels('Which average treatment effect are we estimating?', [{ blocks: [
-    eq('beta1', .65, .25),
-    text('Our current target is the equally weighted average true treatment effect in these six centers.', .85, { gap: .20 }),
-    eq('average', .65, .25),
-    text('Dⱼ is the observed enhanced-minus-standard difference in center j. Here, their average is 21.27 m.', .85, { gap: .20 }),
-    text('Averaging fitted means over centers and then contrasting the treatments gives the same estimate.', .65)
-  ] }], 'An average remains well defined when treatment effects differ. The weighting and the target centers must be explicit.');
+  fixedSpecificationSlide.addNotes('This is the same grouped model as the preceding toy interaction example. The center-specific standard-care mean is beta_0 + c_j and the center-specific treatment effect (the slope for treatment coded 0/1) is beta_1 + d_j. These treatment slopes are the vertical gaps in the earlier two-center toy plots. In the immediately preceding exploratory plot, each center has its own panel and treatment is on the horizontal axis. It applies to any number of centers with two treatments. Patient i is in center j. Effects coding imposes sum_j c_j = 0 and sum_j d_j = 0, so beta_0 and beta_1 are equally weighted included-center averages. Treatment retains 0/1 coding; beta_0 is the average standard-care mean, not the grand mean across both treatments. The patient error epsilon_ij has mean zero. Independent normal errors with a common variance are the assumptions used later for the fixed-model sampling variance and t interval; those assumptions and their role belong to the uncertainty section.');
 
-  // 9–11: Derive the fixed-target uncertainty using the Week 1 linear-combination rules.
-  panels('Within a center, the baseline contribution cancels', [{ blocks: [
-    eq('difference', .60, .20),
-    eq('expansion', 1.60, .15),
-    text('Both treatment groups share β₀ + cⱼ, so these terms cancel. The center-specific treatment deviation dⱼ remains.', 1.0, { gap: .18 }),
-    text('Each barred epsilon averages the individual errors in one treatment group within that center.', .75)
-  ] }], 'The within-center comparison removes baseline differences, but it retains differences in treatment effects.');
+  const coefficientSlide = addTeachingTableSlide(pptx, {
+    title: 'Fixed-effects interaction model: results',
+    columns: [
+      { label: 'Term', weight: 3.9 },
+      { label: 'Estimate (m)', weight: 1.8, align: 'center' },
+      { label: 'Estimated\nSE (m)', weight: 1.8, align: 'center' },
+      { label: '95% CI (m)', weight: 2.9, align: 'center' },
+      { label: 'p-value', weight: 1.6, align: 'center' }
+    ],
+    rows: results.regression_coefficients.map(row => [
+      row.label, f(row.estimate), f(row.standard_error, 2),
+      `${f(row.lower_95)} to ${f(row.upper_95)}`,
+      row.p < .001 ? '< .001' : f(row.p, 3)
+    ]),
+    fontSize: 18,
+    tableOptions: { headerFontSize: 16, headerHeight: .62, cellPaddingY: .035, firstColumnBold: false },
+    takeaway: 'Effects coding: Center F follows from the sum-to-zero constraints.',
+    takeawayHeight: .60
+  });
+  coefficientSlide.addNotes('OLS coefficient estimates from lm(distance ~ treatment * center), with Standard as treatment zero and contr.sum for center. Columns follow the Week 1 convention: estimates and confidence limits to one decimal, estimated standard errors to two decimals, and p-values to three decimals or < .001. All intervals are pointwise 95% t intervals and p-values are two-sided t tests of a zero coefficient, using 108 residual degrees of freedom. The intercept is the equally weighted standard-care mean; the Enhanced care coefficient is the equally weighted treatment effect. Center A through E are baseline deviations c_j; Enhanced by Center A through E are treatment-effect deviations d_j. Their p-values test deviations from the included-center average, not each center\'s overall treatment effect. Center F has no separate regression coefficient: its baseline and treatment deviations are minus the corresponding sums for A through E. The global interaction test is a different, five-degree-of-freedom test.');
 
-  panels('Uncertainty in one center’s treatment difference', [
-    { title: 'INDIVIDUAL SAMPLING NOISE', blocks: [
-      eq('differenceNoise', .65),
-      eq('noise', .60),
-      text('For this fixed center, β₁ + dⱼ remains constant across repeated samples of patients.', 1.15),
-      text('Only the individual errors contribute to the sampling variability of Dⱼ.', 1.0)
-    ] },
-    { title: 'APPLY THE VARIANCE RULES', blocks: [
-      text('Let n be the number of patients per treatment per center; here n = 10.', .95),
-      eq('errorVariance', .70),
-      text('The two groups have independent errors, so the variance of their difference is:', .95),
-      eq('noiseVariance', .85)
-    ] }
-  ], 'Differences between the centers’ true treatment effects do not add sampling variation within a fixed center.');
-
-  panels('Uncertainty in the average across fixed centers', [{ blocks: [
-    text('Average the J independent center comparisons. The fixed treatment deviations sum to zero.', .70, { gap: .12 }),
-    eq('fixedExpansion', .65, .20),
-    eq('fixedVariance', .85, .25),
-    text('The individual errors are the only source of sampling variation around the true average for these centers.', .85, { gap: .20 }),
-    text('More patients in these same centers can make this average increasingly precise.', .75)
-  ] }], 'Conditioning on the included centers, treatment heterogeneity adds no extra variance term for their average.');
-
-  // 12: Connect the theoretical SE to the fitted residual variance.
-  panels('Estimate the standard error from individual variation', [
-    { title: 'FROM THE MODEL RESIDUALS', blocks: [
-      text('The model fits a separate mean for every treatment–center combination.', .90),
-      text(`Residual standard deviation: ${f(m.residual_sd, 2)} m, estimating the individual-error standard deviation σ.`, .95),
-      eq('estimatedSE', .90),
-      text('Use J = 6 centers and n = 10 patients per treatment per center.', .75)
-    ] },
-    { title: 'THE AVERAGE TREATMENT COMPARISON', blocks: [
-      text(`Estimated difference: ${f(m.estimate, 2)} m`, .65, { bold: true, gap: .25 }),
-      text(`Estimated standard error: ${f(m.standard_error, 2)} m`, .65, { gap: .25 }),
-      text(`95% confidence interval:\n${f(m.lower_95, 2)} to ${f(m.upper_95, 2)} m`, .95, { gap: .25 }),
-      text('The t interval uses 108 residual degrees of freedom: 120 patients minus 12 fitted cell means.', .95)
-    ] }
-  ], 'This interval describes uncertainty about the true average treatment effect in the six included centers.');
-
-  // 13: Explain unchanged point estimates before showing the changed estimated SE.
-  panels('What if we omit the fixed interaction?', [{ blocks: [
+  const interactionTest = results.interaction_test;
+  const comparisonSlide = panels('Testing interaction by comparing two models', [{ blocks: [
     { table: {
       columns: [
-        { label: 'Fixed-effects model', weight: 3.2 },
-        { label: 'Estimate (m)', weight: 1.7, align: 'center' },
-        { label: 'Estimated SE (m)', weight: 2.0, align: 'center' }
-      ], rows: [
-        ['Treatment + center', f(a.estimate, 2), f(a.standard_error, 2)],
-        ['Treatment × center', f(m.estimate, 2), f(m.standard_error, 2)]
-      ], fontSize: 22, headerFontSize: 18, headerHeight: .64
-    }, h: 1.65, gap: .25 },
-    text('Exact balance keeps the estimate equal to the average of the six observed treatment differences.', .70, { gap: .15 }),
-    text('Omitting the interaction leaves systematic treatment-by-center differences in the residuals.', .70, { gap: .15 }),
-    text('This inflates the estimated residual variance in expectation, and therefore the usual estimated variance of the average.', .85)
-  ] }], 'Here the estimated standard error changes; the average estimator and its actual sampling variance do not.');
+        { label: 'Model', weight: 6.1 },
+        { label: 'Residual sum\nof squares (RSS)', weight: 3.3, align: 'center' },
+        { label: 'Residual df', weight: 1.9, align: 'center' }
+      ],
+      rows: [
+        ['Reduced: common treatment effect', Math.round(a.residual_sum_squares).toLocaleString('en-US'), a.residual_df],
+        ['Full: center-specific treatment effects', Math.round(m.residual_sum_squares).toLocaleString('en-US'), m.residual_df]
+      ], fontSize: 20, headerFontSize: 17, headerHeight: .60, cellPaddingY: .045, firstColumnBold: false
+    }, h: 1.50, gap: .10 },
+    text('RSS: residual sum of squares. df: residual degrees of freedom.', .32, { fontSize: 18, gap: .10 }),
+    { equation: interactionFEquation(results), h: .95, gap: .10 },
+    text('Numerator: improvement in fit per additional parameter.', .34, { fontSize: 20, gap: .08 }),
+    text('Denominator: estimated individual-error variance from the full model.', .34, { fontSize: 20 })
+  ] }], `F(${interactionTest.numerator_df}, ${interactionTest.denominator_df}) = ${f(interactionTest.F, 2)}, p < .001: strong evidence that treatment effects differ across centers.`, {
+    intro: 'Fit the full model → fit the reduced model → compare their fit.'
+  });
+  comparisonSlide.addNotes('Both models retain center-specific baselines, treatment coded 0/1, and effects coding for center. The full model is distance ~ treatment * center; the reduced model is distance ~ treatment + center, obtained by setting all d_j to zero. They are nested models fitted by OLS to the same 120 patients. RSS measures variation left unexplained, so smaller RSS means better fit. The full model always fits at least as well. The partial F test asks whether its improvement is larger than expected from sampling variation under the reduced model. The difference in residual degrees of freedom is 113 - 108 = 5, the number of additional interaction parameters. These five coefficients are tested jointly; the sixth deviation is implied by the sum-to-zero constraint. The numerator is the reduction in RSS per added parameter; the denominator estimates the common individual-error variance using the full model. Under independent normal errors with common variance and the null hypothesis, the statistic has an F distribution with 5 and 108 degrees of freedom. Table RSS values are rounded; the test and p-value use full-precision R output from anova(model_additive, model_interaction). This is a test of variation in treatment effects, not a test that the average treatment effect is zero. Next, inspect fitted means and center-specific contrasts to see where and by how much effects differ.');
 
-  // 14–17: A theoretical bridge to the later random-slope fitting section.
+  const effectConceptSlide = panels('Which treatment effect do we want to estimate?', [
+    { title: 'SIMPLE TREATMENT EFFECTS', blocks: [
+      text('How do treatments compare within a particular center?', .80, { bold: true, gap: .15 }),
+      text('Compare the enhanced and standard means within each center.', 1.0, { fontSize: 21, gap: .15 }),
+      eq('simpleEffect', .50, .15),
+      text('One treatment effect per center.', .85, { fontSize: 20 })
+    ] },
+    { title: 'MARGINAL TREATMENT EFFECT', blocks: [
+      text('How do treatments compare on average across centers?', .80, { bold: true, gap: .15 }),
+      text('Average each treatment’s mean equally across centers, then compare the averages.', 1.0, { fontSize: 21, gap: .15 }),
+      eq('marginalEffect', .50, .15),
+      text('With effects coding, the treatment deviations average to zero.', .85, { fontSize: 20 })
+    ] }
+  ], 'Estimated marginal means (EMMs) are model-based estimates of group means, averaged over other factors where appropriate. Comparing these means gives the treatment effects.', { takeawayHeight: 1.10 });
+  effectConceptSlide.addNotes('Recall the known-means two-center examples: differences within rows were simple treatment effects, while the difference between equally weighted treatment-column averages was the marginal effect. The same questions now concern unknown means estimated from patient data. Under effects coding for center and 0/1 coding for treatment, the true simple effect in center j is beta_1 + d_j; the equally weighted marginal effect is beta_1 because sum_j d_j = 0. Estimated effects use the corresponding fitted parameters. The estimate of the marginal treatment effect is beta-hat_1 = 21.3 m, the Enhanced care coefficient on slide 14. Estimated marginal means are predicted means for specified groups, possibly averaged over other factors. Keeping center separate gives the treatment-by-center cell means here; averaging equally across centers gives one marginal mean per treatment. The effects are contrasts of these means. This is a definition of the estimands and their model-based estimation, not a new regression model or a software tutorial.');
+
+  // Keep fitted means and their within-center contrasts together, with inference.
+  const cell = (center, treatment) => results.fitted_cell_means.find(r => r.center === center && r.treatment === treatment).estimate;
+  const simpleEffectsSlide = panels('Estimating simple treatment effects with estimated marginal means', [
+    { title: 'CODING AND EFFECTS', weight: 1, blocks: [
+      text('Coding determines which effects appear directly as coefficients.', 1.10, { fontSize: 19, bullet: true, gap: .15 }),
+      text('Here, a center’s effect combines the average effect with its treatment deviation.', 1.25, { fontSize: 19, bullet: true, gap: .15 }),
+      text('Predict both treatment means within each center, then compare them.', 1.10, { fontSize: 19, bullet: true })
+    ] },
+    { weight: 2.5, blocks: [
+      { table: {
+        columns: [
+          { label: 'Center', weight: .90, align: 'center' },
+          { label: 'Standard\nmean', weight: 1.15, align: 'center' },
+          { label: 'Enhanced\nmean', weight: 1.30, align: 'center' },
+          { label: 'Difference', weight: 1.25, align: 'center', highlight: true },
+          { label: '95% CI', weight: 1.90, align: 'center', highlight: true },
+          { label: 'p-value\n(Bonf.)', weight: 1.20, align: 'center', highlight: true }
+        ],
+        columnGroups: [{ label: '', count: 1 }, { label: 'Predicted means', count: 2 }, { label: 'Simple treatment effect', count: 3 }],
+        rows: results.within_center_comparisons.map(r => [
+          r.center.replace('Center ', ''), f(cell(r.center, 'Standard')), f(cell(r.center, 'Enhanced')),
+          f(r.estimate), `${f(r.lower_95)} to ${f(r.upper_95)}`,
+          r.p_bonferroni < .001 ? '< .001' : f(r.p_bonferroni, 3)
+        ]), fontSize: 18, headerFontSize: 16, headerHeight: .65,
+        cellPaddingX: .07, cellPaddingY: .04, firstColumnBold: false
+      }, h: 3.65, gap: .15 },
+      text('Means, differences and CIs in meters. Difference: enhanced minus standard.\nPointwise 95% CIs; p-values adjusted across six comparisons (Bonferroni).', .70, { fontSize: 16 })
+    ] }
+  ], 'Equivalent coding schemes give different coefficients, but the same fitted means and treatment comparisons.');
+  simpleEffectsSlide.addNotes('All quantities are derived from the same fitted full interaction model. Standard and Enhanced columns are model-based predicted cell means, which coincide with sample cell means in this full factorial model. Enhanced minus Standard is each center’s simple treatment effect, not the interaction coefficient d_j alone. Estimated standard errors use the full coefficient covariance matrix, including covariance between the two predicted means, and the pooled full-model residual variance. Confidence intervals are pointwise 95% t intervals with 108 residual degrees of freedom. Two-sided p-values test zero treatment difference in each center and are Bonferroni-adjusted as min(6 * p, 1), treating all six centers as one family. The p-value column is adjusted, whereas the confidence intervals are pointwise, so an interval can exclude zero while its adjusted p-value exceeds .05. The effect estimate and its uncertainty do not change under an equivalent full-rank recoding of the same fitted model. No package names or software syntax are needed for this lecture explanation.');
+
+  // Close the case study by checking residuals from the full interaction model.
+  const diagnosticsSlide = addDiagnosticsInterpretationSlide(pptx, {
+    title: 'Model diagnostics: fixed-effects interaction',
+    plotHeight: 3.0,
+    diagnostics: [
+      { assetPath: path.join(assets, 'interaction-residuals-vs-fitted.png'),
+        purpose: 'Assess whether residual spread is similar across fitted walk distances.' },
+      { assetPath: path.join(assets, 'interaction-normal-qq.png'),
+        purpose: 'Assess whether the residual distribution is approximately Normal.' }
+    ],
+    takeaway: 'The plots show no clear change in residual spread and only small departures from the Normal reference line.'
+  });
+  diagnosticsSlide.addNotes('These diagnostics use the fitted full fixed-effects interaction model from this case study: distance ~ treatment * center. The left plot shows raw residuals against fitted cell means in meters. Vertical stacks are expected because patients in the same treatment-center cell share a fitted mean. The fitted model includes a separate mean for each of the 12 cells, so residuals average to zero within every cell by construction; this fact alone does not validate the mean model. Look particularly for systematic changes in residual spread. The right plot compares internally standardized residuals, calculated using residual leverage and the estimated residual standard deviation, with theoretical Normal quantiles. The reference line uses the first and third quartiles. The displayed data show no clear funnel pattern and only small tail deviations from the line. These plots do not establish independence or prove the assumptions. No additional formal diagnostic test or p-value is used. This closes the fitted-model analysis; two concluding Part 1 slides compare omission of interaction and unequal center sizes.');
+
+  // Close Part 1 with the consequences of omitting interaction, without derivations.
+  const omissionSlide = panels('What if we leave out the interaction?', [{ blocks: [
+    text('Estimated average treatment effect across the six centers', .42, { fontSize: 21, bold: true, gap: .16 }),
+    { table: {
+      columns: [
+        { label: 'Model', weight: 3.0 },
+        { label: 'Estimate (m)', weight: 1.8, align: 'center' },
+        { label: 'Estimated\nSE (m)', weight: 1.8, align: 'center' },
+        { label: '95% CI (m)', weight: 2.8, align: 'center' },
+        { label: 'p-value', weight: 1.5, align: 'center' }
+      ], rows: [['Additive', a], ['With interaction', m]].map(([label, model]) => [
+        label, f(model.estimate), f(model.standard_error, 2),
+        `${f(model.lower_95)} to ${f(model.upper_95)}`,
+        model.p < .001 ? '< .001' : f(model.p, 3)
+      ]), fontSize: 22, headerFontSize: 18, headerHeight: .70, cellPaddingY: .06,
+      firstColumnBold: false
+    }, h: 1.80, gap: .28 },
+    text('Same estimate: equal numbers in every treatment–center group make both models estimate the average of the six within-center treatment differences.', .85, { fontSize: 21, gap: .18 }),
+    text('Larger estimated SE: without interaction, differences in treatment effects remain in the residuals, increasing the estimated residual variation.', .85, { fontSize: 21 })
+  ] }], 'In this balanced study, omitting interaction leaves the average treatment estimate unchanged but increases its estimated uncertainty.');
+  omissionSlide.addNotes('Both models include fixed center effects with effects coding and treatment coded 0/1. The current design has ten patients in every treatment-center cell, so the treatment coefficients are the same equally weighted average of the six observed differences. Omitting interaction does not change this estimator or its actual sampling variance. It leaves systematic treatment heterogeneity in the residuals and inflates the usual estimated residual variance in expectation. In this realization, the estimated SE rises from 4.68 to 5.17 m. Intervals and p-values are the usual model-based t summaries, with 113 residual degrees of freedom for the additive model and 108 for the interaction model. P-values are two-sided tests that the average treatment effect is zero; these are not interaction tests or the six Bonferroni-adjusted simple-effect tests. The additive model imposes a common effect despite the heterogeneity, so its conventional SE and interval are presented to explain the consequences of omission, not as a claim that it correctly specifies the cell means.');
+
+  const sizeSlide = panels('What if center sizes differ?', [
+    { title: 'WHAT THE MODELS ESTIMATE', weight: 1.15, blocks: [
+      text('With our effects coding, the interaction model estimates the equally weighted average treatment effect, regardless of center sizes.', 1.40, { fontSize: 21, bullet: true, gap: .18 }),
+      text('If centers have equal sizes, the additive model estimates this same average.', .95, { fontSize: 21, bullet: true, gap: .18 }),
+      text('If center sizes differ, the additive model gives larger centers more weight.', .95, { fontSize: 21, bullet: true })
+    ] },
+    { title: 'ILLUSTRATIVE EXAMPLE', weight: 1, blocks: [
+      { table: {
+        columns: [
+          { label: 'Center', weight: 1.5 },
+          { label: 'Patients', weight: 1.0, align: 'center' },
+          { label: 'Treatment\neffect (m)', weight: 1.6, align: 'center' }
+        ], rows: [['Small', '20', '10'], ['Large', '80', '30']],
+        fontSize: 22, headerFontSize: 17, headerHeight: .75,
+        cellPaddingX: .10, cellPaddingY: .06, firstColumnBold: false
+      }, h: 2.0, gap: .38 },
+      text('Interaction model: 20 m', .55, { fontSize: 23, bold: true, gap: .20 }),
+      text('Additive model: 26 m', .55, { fontSize: 23, bold: true })
+    ] }
+  ], 'When treatment effects differ across centers, omitting interaction can change both the interpretation of the treatment coefficient and its estimated uncertainty.', { takeawayHeight: 1.05 });
+  sizeSlide.addNotes('Only center sizes are varied in this illustration; allocation remains half to each treatment within each center, as in the preceding empirical design. Keep that setup in the spoken explanation if needed rather than adding an allocation sentence to the slide. The displayed effects of 10 and 30 m are hypothetical known center-specific effects, not new estimates from the rehabilitation dataset. The model values are the averages targeted by the fitted treatment coefficients; equivalently they are fitted coefficients if the observed within-center differences equal these values. With effects coding and an interaction, beta_1 is the arithmetic average, (10 + 30) / 2 = 20 m, regardless of cell sizes when all cell means are estimable. With a common treatment proportion in all centers, OLS in the additive fixed-center model weights the within-center effects by total center size: (20 * 10 + 80 * 30) / 100 = 26 m. These weights are imposed by the additive fit, not chosen after fitting. For arbitrary unequal treatment proportions, the weights instead depend on n_j p_j (1-p_j); the simplified equal-size and size-weighting claims on this slide belong to the fixed-allocation illustration, not to all unbalanced designs. Describe a change in coefficient interpretation rather than universal bias. No general ordering of estimated SEs is asserted for unequal center sizes.');
+
+  // Part 2: a bridge to the later random-slope fitting section.
   addSectionSlide(pptx, {
-    sectionLabel: 'PART 3',
+    sectionLabel: 'PART 2',
     sectionTitle: 'From included centers to a population'
   });
   panels('What changes if the study uses different centers?', [
@@ -235,9 +314,9 @@ function addWeek2Opening(pptx, drawEquation, week1, results, allocation) {
     eq('randomSlope', .65, .20),
     text('The deviations have expectation zero; their realized average need not be zero.', .65),
     eq('randomExpansion', .75, .20),
-    text('Assume the random center effects are independent of the individual errors. Then:', .55),
+    text('ηⱼ is patient sampling noise, independent of the random center effects.', .65, { fontSize: 20 }),
     eq('populationVariance', .65),
-    text('The two variance terms reflect center sampling and individual sampling noise.', .50)
+    text('J = centers; n = patients per treatment per center; σ² = individual-error variance.', .60, { fontSize: 19 })
   ] }]);
 
   panels('More patients and more centers answer different needs', [
@@ -267,4 +346,4 @@ function addWeek2Opening(pptx, drawEquation, week1, results, allocation) {
   ], 'Next: model a population of center-specific intercepts and treatment effects using random intercepts and slopes.');
 }
 
-module.exports = { addWeek2Opening, equations: Object.values(E) };
+module.exports = { addWeek2Opening, interactionFEquation, equations: Object.values(E) };

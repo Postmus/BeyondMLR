@@ -56,7 +56,8 @@ function addConceptPanelsSlide(pptx, { title, intro, lead, panels, takeaway, tak
       else if (block.image) addAssetFrame(slide, { box: { x, y, w, h }, assetPath: block.image, framed: false });
       else slide.addText(block.text, { x, y, w, h, fontFace: FONT_FAMILIES.sans,
         fontSize: block.fontSize || 21, color: block.muted ? COLORS.muted : COLORS.text,
-        bold: !!block.bold, margin: 0, valign: 'top', breakLine: false });
+        bold: !!block.bold, margin: 0, valign: 'top', breakLine: false,
+        ...(block.bullet ? { bullet: { indent: block.fontSize || 21 }, hanging: 4 } : {}) });
       y += h + (block.gap === undefined ? .12 : block.gap);
     }
     if (y - .12 > box.y + box.h - .18) throw new Error(`Panel overflow: ${title} / ${panel.title} (${(y - .12 - box.y).toFixed(2)} in used; ${(box.h - .18).toFixed(2)} in available)`);

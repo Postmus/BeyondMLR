@@ -17,7 +17,7 @@
     "slides:week2": "node lectures_2627/week2/build_week2.js",
     "render:week2": "node scripts/render_lecture.js lectures_2627/week2/Beyond_MLR_Week_2.pptx",
     "build:week2": "npm run slides:week2 && npm run render:week2",
-    "figures:week2": "Rscript lectures_2627/week2/explore_allocation_imbalance.R && Rscript lectures_2627/week2/generate_interaction_data.R",
+    "figures:week2": "Rscript lectures_2627/week2/explore_allocation_imbalance.R && Rscript lectures_2627/week2/generate_interaction_data.R && Rscript lectures_2627/week2/generate_additive_example.R",
     "rebuild:week2": "npm run figures:week2 && node lectures_2627/week2/generate_equations.js && npm run build:week2"
   },
   "dependencies": {

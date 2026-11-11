@@ -1,6 +1,6 @@
 # Week 2 planning notes
 
-The proposed Week 2 lecture explores treatment effects that vary between centers, followed by a brief section on cluster randomization. Build directly on the Week 1 model in the same multicenter setting. Move crossed random effects to the end of Week 3, alongside nested grouping structures. The current 24-slide opening includes a title and three section dividers around the Week 1 recap, unequal allocation, fixed interaction and uncertainty, ending with a theoretical bridge to random treatment effects. The random-slope analysis, cluster-randomization section and labs remain to be developed. The earlier cluster-first starter is preserved in `build_cluster_starter.js`.
+The proposed Week 2 lecture explores treatment effects that vary between centers, followed by a brief section on cluster randomization. Build directly on the Week 1 model in the same multicenter setting. Move crossed random effects to the end of Week 3, alongside nested grouping structures. The current 25-slide opening includes a title and two section dividers around the Week 1 recap, unequal allocation, fixed interaction and uncertainty, ending with a theoretical bridge to random treatment effects. The random-slope analysis, cluster-randomization section and labs remain to be developed. The earlier cluster-first starter is preserved in `build_cluster_starter.js`.
 
 ## Opening and theoretical emphasis
 
@@ -13,22 +13,24 @@ equal center sizes, unequal center sizes with balanced treatment allocation, and
 unequal treatment proportions. Explain the same mix of centers and estimation of
 individual variation in plain language. Exact estimated-SE equality in the fully
 balanced case assumes REML and a positive estimated center variance. Move the
-detailed precision discussion for the unequal-allocation example to backup slide 26
+detailed precision discussion for the unequal-allocation example to backup slide 27
 (after the backup divider). Use “estimated standard error” throughout the lecture.
 Keep the opening formula-free and qualify the extra between-center information
 by the random-intercept assumptions.
+Begin Part 1 with the known-means two-center additive example on slide 8. Its table includes row and column averages, while its plot places center on the horizontal axis and annotates both 20 m treatment gaps. The matching interaction example on slide 9 changes the gaps to 10/30 m, retains the 20 m average effect, and labels center deviations of -10/+10 m before introducing the six-center dataset.
 Then restore balanced allocation before introducing treatment heterogeneity and
 the distinction between included-center and population-average uncertainty.
 
-Keep effects coding for center in the fixed interaction. Derive the within-center
-contrast first: baseline center effects cancel, treatment deviations remain.
-For the average over the fixed centers, sum-to-zero deviations leave only
-individual sampling noise. Omitting the fixed interaction leaves the average
-estimate unchanged under exact balance but inflates its usual estimated variance
-in expectation. Then contrast repeating the study in the same centers with
-sampling different centers: random treatment effects add a between-center term
-to uncertainty about the population average. These distinctions should remain
-explicit when the random-slope analysis is added.
+After the toy examples, slide 10 introduces the conceptual choice between fixed center parameters and a population distribution of random center effects. Slide 11 begins the empirical six-center analysis in the usual text-left/image-right layout, explicitly moving from known means to estimation from patient data. Slide 12 separately shows the exploratory patient-outcome plot. Slide 13 then introduces the grouped treatment-slope formulation, parameter definitions and enlarged sum-to-zero constraints. Slide 14 then presents all fitted coefficients in the Week 1 estimate/SE/95% CI/p-value format before the nested-model interaction test on slide 15. Compare full and reduced model RSS using the annotated partial F formula, then introduce simple versus marginal effects and define estimated marginal means on slide 16. Slide 17 pairs a coding explanation with predicted means, simple effects, pointwise 95% CIs and Bonferroni-adjusted p-values across the six centers. Slide 18 closes the empirical analysis with residuals versus fitted values and a Normal Q-Q plot from the full interaction model. Keep software names and syntax for the lab. Finish Part 1 with the additive/interaction average-effect comparison on slide 19 and the unequal-center-size illustration on slide 20. Remove the former technical Part 2; the population-center section becomes Part 2 on slide 21.
+
+Keep effects coding for center in the fixed interaction. Explain the consequences
+of omitting interaction in plain language: equal cell sizes preserve the average
+treatment estimate, while unexplained treatment heterogeneity increases the
+estimated residual variation and estimated SE here. Unequal center sizes can
+change the additive coefficient's interpretation because larger centers receive
+more weight in the fixed-allocation example. Retain its allocation condition in
+speaker notes only; do not add weighting formulas to the slide. Then contrast
+repeating the study in the same centers with sampling different centers in Part 2.
 
 ## 1. Treatment effects that vary between centers
 

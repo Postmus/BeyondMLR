@@ -20,17 +20,155 @@
     "standard_error": 5.172380152834,
     "lower_95": 11.01758202978,
     "upper_95": 31.51241797022,
+    "p": 7.489357142813e-05,
     "residual_sd": 28.33029285699,
-    "residual_df": 113
+    "residual_df": 113,
+    "residual_sum_squares": 90694.420750000063
   },
   "interaction_model": {
     "estimate": 21.265,
     "standard_error": 4.684882536704,
     "lower_95": 11.978750063334,
     "upper_95": 30.551249936667,
+    "p": 1.47393621229e-05,
     "residual_sd": 25.660158446149,
-    "residual_df": 108
+    "residual_df": 108,
+    "residual_sum_squares": 71111.923000000126
   },
+  "regression_coefficients": [
+    {
+      "term": "(Intercept)",
+      "label": "Intercept (β₀)",
+      "estimate": 349.865,
+      "standard_error": 3.312712210766,
+      "lower_95": 343.29862969799,
+      "upper_95": 356.43137030201,
+      "t": 105.612856698802,
+      "p": 8.012433316169e-111,
+      "df": 108
+    },
+    {
+      "term": "treatmentEnhanced",
+      "label": "Enhanced care (β₁)",
+      "estimate": 21.265,
+      "standard_error": 4.684882536704,
+      "lower_95": 11.978750063334,
+      "upper_95": 30.551249936667,
+      "t": 4.539067913314,
+      "p": 1.47393621229e-05,
+      "df": 108
+    },
+    {
+      "term": "center1",
+      "label": "Center A",
+      "estimate": 8.445,
+      "standard_error": 7.407449693166,
+      "lower_95": -6.237850360731,
+      "upper_95": 23.12785036073,
+      "t": 1.140068491831,
+      "p": 0.2567798227682,
+      "df": 108
+    },
+    {
+      "term": "center2",
+      "label": "Center B",
+      "estimate": 21.085,
+      "standard_error": 7.407449693166,
+      "lower_95": 6.40214963927,
+      "upper_95": 35.76785036073,
+      "t": 2.84645875077,
+      "p": 0.005291770081686,
+      "df": 108
+    },
+    {
+      "term": "center3",
+      "label": "Center C",
+      "estimate": -8.305,
+      "standard_error": 7.407449693166,
+      "lower_95": -22.98785036073,
+      "upper_95": 6.37785036073,
+      "t": -1.121168599722,
+      "p": 0.2647028629527,
+      "df": 108
+    },
+    {
+      "term": "center4",
+      "label": "Center D",
+      "estimate": -10.335,
+      "standard_error": 7.407449693166,
+      "lower_95": -25.01785036073,
+      "upper_95": 4.34785036073,
+      "t": -1.395217035295,
+      "p": 0.1658128651067,
+      "df": 108
+    },
+    {
+      "term": "center5",
+      "label": "Center E",
+      "estimate": -7.705,
+      "standard_error": 7.407449693166,
+      "lower_95": -22.38785036073,
+      "upper_95": 6.97785036073,
+      "t": -1.040169062114,
+      "p": 0.3005843935474,
+      "df": 108
+    },
+    {
+      "term": "treatmentEnhanced:center1",
+      "label": "Enhanced × Center A",
+      "estimate": -7.105,
+      "standard_error": 10.475715818672,
+      "lower_95": -27.869686114439,
+      "upper_95": 13.65968611444,
+      "t": -0.678235275086,
+      "p": 0.4990731474143,
+      "df": 108
+    },
+    {
+      "term": "treatmentEnhanced:center2",
+      "label": "Enhanced × Center B",
+      "estimate": 8.355,
+      "standard_error": 10.475715818672,
+      "lower_95": -12.40968611444,
+      "upper_95": 29.119686114439,
+      "t": 0.7975588632433,
+      "p": 0.42687659469,
+      "df": 108
+    },
+    {
+      "term": "treatmentEnhanced:center3",
+      "label": "Enhanced × Center C",
+      "estimate": -39.355,
+      "standard_error": 10.475715818672,
+      "lower_95": -60.119686114439,
+      "upper_95": -18.59031388556,
+      "t": -3.756783849544,
+      "p": 0.0002793784614477,
+      "df": 108
+    },
+    {
+      "term": "treatmentEnhanced:center4",
+      "label": "Enhanced × Center D",
+      "estimate": -20.685,
+      "standard_error": 10.475715818672,
+      "lower_95": -41.44968611444,
+      "upper_95": 0.0796861144394,
+      "t": -1.974566736827,
+      "p": 0.05087004446791,
+      "df": 108
+    },
+    {
+      "term": "treatmentEnhanced:center5",
+      "label": "Enhanced × Center E",
+      "estimate": 36.155,
+      "standard_error": 10.475715818672,
+      "lower_95": 15.390313885561,
+      "upper_95": 56.919686114439,
+      "t": 3.451315463861,
+      "p": 0.0007972634104867,
+      "df": 108
+    }
+  ],
   "interaction_test": {
     "numerator_df": 5,
     "denominator_df": 108,
@@ -38,6 +176,7 @@
     "p": 6.746293367406e-05
   },
   "interval_method": "Pointwise 95% t intervals; no multiplicity adjustment.",
+  "simple_effect_test_method": "Two-sided t tests of zero treatment difference; Bonferroni p-values across all six centers; 108 residual degrees of freedom.",
   "fitted_cell_means": [
     {
       "treatment": "Standard",
@@ -131,7 +270,9 @@
       "standard_error": 11.475571719801,
       "df": 108,
       "lower_95": -8.586573968785,
-      "upper_95": 36.906573968786
+      "upper_95": 36.906573968786,
+      "p": 0.2199091416426,
+      "p_bonferroni": 1
     },
     {
       "center": "Center B",
@@ -139,7 +280,9 @@
       "standard_error": 11.475571719801,
       "df": 108,
       "lower_95": 6.873426031214,
-      "upper_95": 52.366573968786
+      "upper_95": 52.366573968786,
+      "p": 0.0111884598769,
+      "p_bonferroni": 0.06713075926137
     },
     {
       "center": "Center C",
@@ -147,7 +290,9 @@
       "standard_error": 11.475571719801,
       "df": 108,
       "lower_95": -40.836573968785,
-      "upper_95": 4.656573968786
+      "upper_95": 4.656573968786,
+      "p": 0.1178602649808,
+      "p_bonferroni": 0.7071615898849
     },
     {
       "center": "Center D",
@@ -155,7 +300,9 @@
       "standard_error": 11.475571719801,
       "df": 108,
       "lower_95": -22.166573968786,
-      "upper_95": 23.326573968786
+      "upper_95": 23.326573968786,
+      "p": 0.959783724586,
+      "p_bonferroni": 1
     },
     {
       "center": "Center E",
@@ -163,7 +310,9 @@
       "standard_error": 11.475571719801,
       "df": 108,
       "lower_95": 34.673426031214,
-      "upper_95": 80.166573968786
+      "upper_95": 80.166573968786,
+      "p": 2.19632871671e-06,
+      "p_bonferroni": 1.317797230026e-05
     },
     {
       "center": "Center F",
@@ -171,7 +320,9 @@
       "standard_error": 11.475571719801,
       "df": 108,
       "lower_95": 21.153426031214,
-      "upper_95": 66.646573968786
+      "upper_95": 66.646573968786,
+      "p": 0.0002188745788974,
+      "p_bonferroni": 0.001313247473384
     }
   ],
   "session": ["R version 4.6.1 (2026-06-24)", "Platform: x86_64-pc-linux-gnu", "Running under: Ubuntu 24.04.3 LTS", "", "Matrix products: default", "BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.12.0 ", "LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.12.0  LAPACK version 3.12.0", "", "locale:", " [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       ", " [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   ", " [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          ", "[10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   ", "", "time zone: Europe/Amsterdam", "tzcode source: system (glibc)", "", "attached base packages:", "[1] stats     graphics  grDevices utils     datasets  methods   base     ", "", "other attached packages:", "[1] jsonlite_2.0.0 ggplot2_4.0.3 ", "", "loaded via a namespace (and not attached):", " [1] RColorBrewer_1.1-3 R6_2.6.1           tidyselect_1.2.1   farver_2.1.2      ", " [5] magrittr_2.0.5     gtable_0.3.6       glue_1.8.1         tibble_3.3.1      ", " [9] pkgconfig_2.0.3    dplyr_1.2.1        generics_0.1.4     lifecycle_1.0.5   ", "[13] cli_3.6.6          S7_0.2.2           scales_1.4.0       grid_4.6.1        ", "[17] vctrs_0.7.3        withr_3.0.3        compiler_4.6.1     pillar_1.11.1     ", "[21] rlang_1.3.0       "]

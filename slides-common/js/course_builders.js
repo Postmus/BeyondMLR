@@ -64,12 +64,12 @@ function addAssumptionsDiagnosticsSlide(pptx, {
   return slide;
 }
 // Paired diagnostic plots above aligned explanations, with a shared limitation.
-function addDiagnosticsInterpretationSlide(pptx, { title, diagnostics, takeaway }) {
+function addDiagnosticsInterpretationSlide(pptx, { title, diagnostics, takeaway, plotHeight = 2.40 }) {
   const slide = pptx.addSlide();
   const { body } = getSlots();
   addBase(slide);
   addSlideTitle(slide, title);
-  const plotH = 2.40, noteH = .94;
+  const plotH = plotHeight, noteH = .94;
   const columnW = (body.w - SPACING.gutter) / 2;
   const explanationY = body.y + plotH + SPACING.smallGap;
   const explanationH = body.h - plotH - noteH - 2 * SPACING.smallGap;

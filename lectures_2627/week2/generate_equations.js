@@ -4,7 +4,10 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const execFile = require('util').promisify(require('child_process').execFile);
-const { equations } = require('./fixed_interaction');
+const { equations, interactionFEquation } = require('./fixed_interaction');
+equations.push(interactionFEquation(require('./assets/fixed-interaction/model_results.json')));
+const examples = require('./additive_example');
+equations.push(examples.equation, examples.interactionEquation);
 const { latexToSvgDataUri } = require('../week1/pptxgenjs_helpers/latex');
 const dir = path.join(__dirname, 'assets/equations');
 

@@ -2,8 +2,9 @@ const { COLORS, FONT_FAMILIES, LAYOUT, STROKES } = require('./blr_theme');
 const { addBase, addSlideTitle, addFooter, addNoteBox } = require('./pptx_layout_primitives');
 
 // Shared editable table for full slides and smaller conceptual panels.
-function addTeachingTable(slide, { box, columns, rows, fontSize = 21, headerFontSize = 16, headerHeight = .55, firstColumnBold = true }) {
-  const rowH = (box.h - headerHeight) / rows.length;
+function addTeachingTable(slide, { box, columns, rows, fontSize = 21, headerFontSize = 16, headerHeight = .55, firstColumnBold = true, cellPaddingY = .10, cellPaddingX = .18, columnGroups, groupHeaderHeight = .38 }) {
+  const groupH = columnGroups ? groupHeaderHeight : 0;
+  const rowH = (box.h - headerHeight - groupH) / rows.length;
   const totalWeight = columns.reduce((sum, column) => sum + column.weight, 0);
   const widths = columns.map(column => box.w * column.weight / totalWeight);
   const drawRow = (values, y, h, header) => {
@@ -12,19 +13,35 @@ function addTeachingTable(slide, { box, columns, rows, fontSize = 21, headerFont
       fill: { color: header ? COLORS.primary : COLORS.card }, line: STROKES.card });
     let x = box.x;
     values.forEach((value, i) => {
-      slide.addText(String(value), { x: x + .18, y: y + .10, w: widths[i] - .36, h: h - .20,
+      if (!header && columns[i].highlight) {
+        // Column highlighting intentionally sits inside the row background.
+        slide.addShape('rect', { x, y, w: widths[i], h,
+          fill: { color: COLORS.surfaceMuted }, line: STROKES.card });
+      }
+      slide.addText(String(value), { x: x + cellPaddingX, y: y + cellPaddingY, w: widths[i] - 2 * cellPaddingX, h: h - 2 * cellPaddingY,
         fontFace: FONT_FAMILIES.sans, fontSize: header ? headerFontSize : fontSize,
         bold: header || (firstColumnBold && i === 0), color: header ? COLORS.onPrimary : COLORS.text,
         align: columns[i].align || 'left', margin: 0, valign: 'mid' });
       x += widths[i];
     });
   };
-  drawRow(columns.map(column => column.label), box.y, headerHeight, true);
-  rows.forEach((row, index) => drawRow(row, box.y + headerHeight + index * rowH, rowH, false));
+  if (columnGroups) {
+    if (columnGroups.reduce((sum, group) => sum + group.count, 0) !== columns.length) throw new Error('Table column groups must cover all columns');
+    let x = box.x, first = 0;
+    for (const group of columnGroups) {
+      const w = widths.slice(first, first + group.count).reduce((sum, width) => sum + width, 0);
+      if (group.label) slide.addText(group.label, { x, y: box.y, w, h: groupH,
+        fontFace: FONT_FAMILIES.sans, fontSize: headerFontSize, bold: true,
+        color: COLORS.primary, align: 'center', margin: 0, valign: 'mid' });
+      x += w; first += group.count;
+    }
+  }
+  drawRow(columns.map(column => column.label), box.y + groupH, headerHeight, true);
+  rows.forEach((row, index) => drawRow(row, box.y + groupH + headerHeight + index * rowH, rowH, false));
 }
 
 // Editable teaching table with a short introduction and a shared conclusion.
-function addTeachingTableSlide(pptx, { title, intro, introHeight = .48, columns, rows, takeaway, fontSize = 21, leadEquation, drawEquation }) {
+function addTeachingTableSlide(pptx, { title, intro, introHeight = .48, columns, rows, takeaway, takeawayHeight = .90, fontSize = 21, tableOptions = {}, leadEquation, drawEquation }) {
   const slide = pptx.addSlide();
   addBase(slide); addSlideTitle(slide, title);
   const body = { ...LAYOUT.body };
@@ -37,9 +54,9 @@ function addTeachingTableSlide(pptx, { title, intro, introHeight = .48, columns,
     drawEquation(slide, leadEquation, body.x, body.y, body.w, .55);
     body.y += .73; body.h -= .73;
   }
-  const noteH = takeaway ? .90 : 0;
+  const noteH = takeaway ? takeawayHeight : 0;
   addTeachingTable(slide, { box: { ...body, h: body.h - noteH - (takeaway ? .18 : 0) },
-    columns, rows, fontSize });
+    columns, rows, fontSize, ...tableOptions });
   if (takeaway) addNoteBox(slide, { box: { x: body.x, y: body.y + body.h - noteH, w: body.w, h: noteH },
     text: takeaway, fontSize: 20, minFontSize: 20 });
   addFooter(slide);
