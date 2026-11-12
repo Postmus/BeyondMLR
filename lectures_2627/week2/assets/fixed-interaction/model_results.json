@@ -1,328 +1,363 @@
 {
-  "seed": 20261110,
-  "observations": 120,
+  "provenance": {
+    "type": "Simulated teaching data",
+    "inspiration": "HIPARCO trial",
+    "citation": "Martinez-Garcia et al. JAMA 2013;310:2407-2415",
+    "doi": "10.1001/jama.2013.281250",
+    "note": "The six-hospital design, patient records and center heterogeneity are simulated."
+  },
+  "outcome": "Reduction in 24-hour mean blood pressure from baseline to 12 weeks (mmHg); positive values indicate improvement",
+  "treatment_coding": "0 Control: usual antihypertensive medication; 1 CPAP: the same medication plus CPAP during sleep",
+  "seed": 20261113,
+  "observations": 240,
   "centers": 6,
-  "patients_per_treatment_per_center": 10,
+  "patients_per_treatment_per_center": [12, 16, 18, 22, 24, 28],
+  "allocation": [
+    {
+      "center": "A",
+      "control": 12,
+      "CPAP": 12
+    },
+    {
+      "center": "B",
+      "control": 16,
+      "CPAP": 16
+    },
+    {
+      "center": "C",
+      "control": 18,
+      "CPAP": 18
+    },
+    {
+      "center": "D",
+      "control": 22,
+      "CPAP": 22
+    },
+    {
+      "center": "E",
+      "control": 24,
+      "CPAP": 24
+    },
+    {
+      "center": "F",
+      "control": 28,
+      "CPAP": 28
+    }
+  ],
   "generating_parameters": {
-    "baseline": 360,
-    "population_treatment_effect": 10,
-    "intercept_sd": 20,
-    "slope_sd": 20,
-    "intercept_slope_correlation": 0.25,
-    "individual_sd": 24
+    "baseline": 2,
+    "population_treatment_effect": 3.1,
+    "intercept_sd": 4,
+    "slope_sd": 4,
+    "intercept_slope_correlation": 0.5,
+    "individual_sd": 8
   },
   "realized_fixed_parameters": {
-    "intercept": 354.898536152012,
-    "average_treatment_effect": 15.493182169803
+    "intercept": 2.930059528712,
+    "average_treatment_effect": 3.97164105822
   },
   "additive_model": {
-    "estimate": 21.265,
-    "standard_error": 5.172380152834,
-    "lower_95": 11.01758202978,
-    "upper_95": 31.51241797022,
-    "p": 7.489357142813e-05,
-    "residual_sd": 28.33029285699,
-    "residual_df": 113,
-    "residual_sum_squares": 90694.420750000063
+    "estimate": 4.08,
+    "standard_error": 1.052832915678,
+    "lower_95": 2.005711117413,
+    "upper_95": 6.154288882587,
+    "p": 0.0001384979044026,
+    "residual_sd": 8.155208697517,
+    "residual_df": 233,
+    "residual_sum_squares": 15496.230933712115
   },
   "interaction_model": {
-    "estimate": 21.265,
-    "standard_error": 4.684882536704,
-    "lower_95": 11.978750063334,
-    "upper_95": 30.551249936667,
-    "p": 1.47393621229e-05,
-    "residual_sd": 25.660158446149,
-    "residual_df": 108,
-    "residual_sum_squares": 71111.923000000126
+    "estimate": 3.820624398749,
+    "standard_error": 1.055071775838,
+    "lower_95": 1.741686499592,
+    "upper_95": 5.899562297907,
+    "p": 0.0003613689481418,
+    "residual_sd": 7.861318992938,
+    "residual_df": 228,
+    "residual_sum_squares": 14090.476678391053
   },
   "regression_coefficients": [
     {
       "term": "(Intercept)",
       "label": "Intercept (β₀)",
-      "estimate": 349.865,
-      "standard_error": 3.312712210766,
-      "lower_95": 343.29862969799,
-      "upper_95": 356.43137030201,
-      "t": 105.612856698802,
-      "p": 8.012433316169e-111,
-      "df": 108
+      "estimate": 3.118586159211,
+      "standard_error": 0.7460484073336,
+      "lower_95": 1.648555073051,
+      "upper_95": 4.588617245371,
+      "t": 4.180139155255,
+      "p": 4.154002188935e-05,
+      "df": 228
     },
     {
-      "term": "treatmentEnhanced",
-      "label": "Enhanced care (β₁)",
-      "estimate": 21.265,
-      "standard_error": 4.684882536704,
-      "lower_95": 11.978750063334,
-      "upper_95": 30.551249936667,
-      "t": 4.539067913314,
-      "p": 1.47393621229e-05,
-      "df": 108
+      "term": "treatmentCPAP",
+      "label": "CPAP (β₁)",
+      "estimate": 3.820624398749,
+      "standard_error": 1.055071775838,
+      "lower_95": 1.741686499592,
+      "upper_95": 5.899562297907,
+      "t": 3.621198563211,
+      "p": 0.0003613689481418,
+      "df": 228
     },
     {
       "term": "center1",
-      "label": "Center A",
-      "estimate": 8.445,
-      "standard_error": 7.407449693166,
-      "lower_95": -6.237850360731,
-      "upper_95": 23.12785036073,
-      "t": 1.140068491831,
-      "p": 0.2567798227682,
-      "df": 108
+      "label": "Hospital A",
+      "estimate": 7.364747174122,
+      "standard_error": 1.997483477588,
+      "lower_95": 3.428859398904,
+      "upper_95": 11.300634949341,
+      "t": 3.687012812249,
+      "p": 0.0002836422166162,
+      "df": 228
     },
     {
       "term": "center2",
-      "label": "Center B",
-      "estimate": 21.085,
-      "standard_error": 7.407449693166,
-      "lower_95": 6.40214963927,
-      "upper_95": 35.76785036073,
-      "t": 2.84645875077,
-      "p": 0.005291770081686,
-      "df": 108
+      "label": "Hospital B",
+      "estimate": 2.512663840789,
+      "standard_error": 1.76963336286,
+      "lower_95": -0.9742627834613,
+      "upper_95": 5.999590465039,
+      "t": 1.419878203882,
+      "p": 0.1570090073201,
+      "df": 228
     },
     {
       "term": "center3",
-      "label": "Center C",
-      "estimate": -8.305,
-      "standard_error": 7.407449693166,
-      "lower_95": -22.98785036073,
-      "upper_95": 6.37785036073,
-      "t": -1.121168599722,
-      "p": 0.2647028629527,
-      "df": 108
+      "label": "Hospital C",
+      "estimate": -4.440808381433,
+      "standard_error": 1.686857898832,
+      "lower_95": -7.764632311412,
+      "upper_95": -1.116984451454,
+      "t": -2.632591864737,
+      "p": 0.009052830601896,
+      "df": 228
     },
     {
       "term": "center4",
-      "label": "Center D",
-      "estimate": -10.335,
-      "standard_error": 7.407449693166,
-      "lower_95": -25.01785036073,
-      "upper_95": 4.34785036073,
-      "t": -1.395217035295,
-      "p": 0.1658128651067,
-      "df": 108
+      "label": "Hospital D",
+      "estimate": -6.395858886484,
+      "standard_error": 1.558629426768,
+      "lower_95": -9.467018460889,
+      "upper_95": -3.324699312079,
+      "t": -4.103514778204,
+      "p": 5.667432772915e-05,
+      "df": 228
     },
     {
       "term": "center5",
-      "label": "Center E",
-      "estimate": -7.705,
-      "standard_error": 7.407449693166,
-      "lower_95": -22.38785036073,
-      "upper_95": 6.97785036073,
-      "t": -1.040169062114,
-      "p": 0.3005843935474,
-      "df": 108
+      "label": "Hospital E",
+      "estimate": -3.618586159211,
+      "standard_error": 1.507734802497,
+      "lower_95": -6.589461785469,
+      "upper_95": -0.6477105329529,
+      "t": -2.400015011405,
+      "p": 0.01719775110616,
+      "df": 228
     },
     {
-      "term": "treatmentEnhanced:center1",
-      "label": "Enhanced × Center A",
-      "estimate": -7.105,
-      "standard_error": 10.475715818672,
-      "lower_95": -27.869686114439,
-      "upper_95": 13.65968611444,
-      "t": -0.678235275086,
-      "p": 0.4990731474143,
-      "df": 108
+      "term": "treatmentCPAP:center1",
+      "label": "CPAP × Hospital A",
+      "estimate": 0.812708934584,
+      "standard_error": 2.824868224621,
+      "lower_95": -4.753476937108,
+      "upper_95": 6.378894806276,
+      "t": 0.2876979986183,
+      "p": 0.7738392526592,
+      "df": 228
     },
     {
-      "term": "treatmentEnhanced:center2",
-      "label": "Enhanced × Center B",
-      "estimate": 8.355,
-      "standard_error": 10.475715818672,
-      "lower_95": -12.40968611444,
-      "upper_95": 29.119686114439,
-      "t": 0.7975588632433,
-      "p": 0.42687659469,
-      "df": 108
+      "term": "treatmentCPAP:center2",
+      "label": "CPAP × Hospital B",
+      "estimate": -4.526874398749,
+      "standard_error": 2.502639502185,
+      "lower_95": -9.458133321764,
+      "upper_95": 0.404384524265,
+      "t": -1.808839984663,
+      "p": 0.07179313779966,
+      "df": 228
     },
     {
-      "term": "treatmentEnhanced:center3",
-      "label": "Enhanced × Center C",
-      "estimate": -39.355,
-      "standard_error": 10.475715818672,
-      "lower_95": -60.119686114439,
-      "upper_95": -18.59031388556,
-      "t": -3.756783849544,
-      "p": 0.0002793784614477,
-      "df": 108
+      "term": "treatmentCPAP:center3",
+      "label": "CPAP × Hospital C",
+      "estimate": 4.707153379028,
+      "standard_error": 2.385577318325,
+      "lower_95": 0.006556498311737,
+      "upper_95": 9.407750259745,
+      "t": 1.973171585289,
+      "p": 0.04968397354075,
+      "df": 228
     },
     {
-      "term": "treatmentEnhanced:center4",
-      "label": "Enhanced × Center D",
-      "estimate": -20.685,
-      "standard_error": 10.475715818672,
-      "lower_95": -41.44968611444,
-      "upper_95": 0.0796861144394,
-      "t": -1.974566736827,
-      "p": 0.05087004446791,
-      "df": 108
+      "term": "treatmentCPAP:center4",
+      "label": "CPAP × Hospital D",
+      "estimate": -7.97971530784,
+      "standard_error": 2.204234874049,
+      "lower_95": -12.322990830176,
+      "upper_95": -3.636439785505,
+      "t": -3.620174692719,
+      "p": 0.0003627233128562,
+      "df": 228
     },
     {
-      "term": "treatmentEnhanced:center5",
-      "label": "Enhanced × Center E",
-      "estimate": 36.155,
-      "standard_error": 10.475715818672,
-      "lower_95": 15.390313885561,
-      "upper_95": 56.919686114439,
-      "t": 3.451315463861,
-      "p": 0.0007972634104867,
-      "df": 108
+      "term": "treatmentCPAP:center5",
+      "label": "CPAP × Hospital E",
+      "estimate": 2.750208934584,
+      "standard_error": 2.132259006153,
+      "lower_95": -1.451243668194,
+      "upper_95": 6.951661537362,
+      "t": 1.289809974608,
+      "p": 0.1984233854763,
+      "df": 228
     }
   ],
   "interaction_test": {
     "numerator_df": 5,
-    "denominator_df": 108,
-    "F": 5.948115780809,
-    "p": 6.746293367406e-05
+    "denominator_df": 228,
+    "F": 4.549341765062,
+    "p": 0.0005656490088824
   },
   "interval_method": "Pointwise 95% t intervals; no multiplicity adjustment.",
-  "simple_effect_test_method": "Two-sided t tests of zero treatment difference; Bonferroni p-values across all six centers; 108 residual degrees of freedom.",
+  "simple_effect_test_method": "Two-sided t tests of zero CPAP-minus-control difference; pointwise 95% confidence intervals and unadjusted p-values.",
   "fitted_cell_means": [
     {
-      "treatment": "Standard",
-      "center": "Center A",
-      "estimate": 358.309999999999,
-      "lower_95": 342.22574329791,
-      "upper_95": 374.394256702089
+      "treatment": "Control",
+      "center": "A",
+      "estimate": 10.483333333333,
+      "lower_95": 6.011719331963,
+      "upper_95": 14.954947334704
     },
     {
-      "treatment": "Enhanced",
-      "center": "Center A",
-      "estimate": 372.47,
-      "lower_95": 356.38574329791,
-      "upper_95": 388.554256702089
+      "treatment": "CPAP",
+      "center": "A",
+      "estimate": 15.116666666667,
+      "lower_95": 10.645052665296,
+      "upper_95": 19.588280668037
     },
     {
-      "treatment": "Standard",
-      "center": "Center B",
-      "estimate": 370.95,
-      "lower_95": 354.86574329791,
-      "upper_95": 387.03425670209
+      "treatment": "Control",
+      "center": "B",
+      "estimate": 5.63125,
+      "lower_95": 1.758718678895,
+      "upper_95": 9.503781321105
     },
     {
-      "treatment": "Enhanced",
-      "center": "Center B",
-      "estimate": 400.57,
-      "lower_95": 384.48574329791,
-      "upper_95": 416.65425670209
+      "treatment": "CPAP",
+      "center": "B",
+      "estimate": 4.925,
+      "lower_95": 1.052468678895,
+      "upper_95": 8.797531321105
     },
     {
-      "treatment": "Standard",
-      "center": "Center C",
-      "estimate": 341.56,
-      "lower_95": 325.47574329791,
-      "upper_95": 357.644256702089
+      "treatment": "Control",
+      "center": "C",
+      "estimate": -1.322222222222,
+      "lower_95": -4.97327976557,
+      "upper_95": 2.328835321126
     },
     {
-      "treatment": "Enhanced",
-      "center": "Center C",
-      "estimate": 323.47,
-      "lower_95": 307.38574329791,
-      "upper_95": 339.55425670209
+      "treatment": "CPAP",
+      "center": "C",
+      "estimate": 7.205555555556,
+      "lower_95": 3.554498012208,
+      "upper_95": 10.856613098903
     },
     {
-      "treatment": "Standard",
-      "center": "Center D",
-      "estimate": 339.53,
-      "lower_95": 323.44574329791,
-      "upper_95": 355.61425670209
+      "treatment": "Control",
+      "center": "D",
+      "estimate": -3.277272727273,
+      "lower_95": -6.579778534349,
+      "upper_95": 0.025233079804
     },
     {
-      "treatment": "Enhanced",
-      "center": "Center D",
-      "estimate": 340.11,
-      "lower_95": 324.02574329791,
-      "upper_95": 356.194256702089
+      "treatment": "CPAP",
+      "center": "D",
+      "estimate": -7.436363636364,
+      "lower_95": -10.73886944344,
+      "upper_95": -4.133857829287
     },
     {
-      "treatment": "Standard",
-      "center": "Center E",
-      "estimate": 342.16,
-      "lower_95": 326.07574329791,
-      "upper_95": 358.244256702089
+      "treatment": "Control",
+      "center": "E",
+      "estimate": -0.5,
+      "lower_95": -3.661908583218,
+      "upper_95": 2.661908583218
     },
     {
-      "treatment": "Enhanced",
-      "center": "Center E",
-      "estimate": 399.58,
-      "lower_95": 383.49574329791,
-      "upper_95": 415.664256702089
+      "treatment": "CPAP",
+      "center": "E",
+      "estimate": 6.070833333333,
+      "lower_95": 2.908924750115,
+      "upper_95": 9.232741916551
     },
     {
-      "treatment": "Standard",
-      "center": "Center F",
-      "estimate": 346.68,
-      "lower_95": 330.59574329791,
-      "upper_95": 362.764256702089
+      "treatment": "Control",
+      "center": "F",
+      "estimate": 7.696428571429,
+      "lower_95": 4.769070051442,
+      "upper_95": 10.623787091415
     },
     {
-      "treatment": "Enhanced",
-      "center": "Center F",
-      "estimate": 390.58,
-      "lower_95": 374.49574329791,
-      "upper_95": 406.664256702089
+      "treatment": "CPAP",
+      "center": "F",
+      "estimate": 15.753571428571,
+      "lower_95": 12.826212908585,
+      "upper_95": 18.680929948558
     }
   ],
   "within_center_comparisons": [
     {
-      "center": "Center A",
-      "estimate": 14.16,
-      "standard_error": 11.475571719801,
-      "df": 108,
-      "lower_95": -8.586573968785,
-      "upper_95": 36.906573968786,
-      "p": 0.2199091416426,
-      "p_bonferroni": 1
+      "center": "A",
+      "estimate": 4.633333333333,
+      "standard_error": 3.209370039658,
+      "df": 228,
+      "lower_95": -1.690483833103,
+      "upper_95": 10.957150499769,
+      "p": 0.1501989990185
     },
     {
-      "center": "Center B",
-      "estimate": 29.62,
-      "standard_error": 11.475571719801,
-      "df": 108,
-      "lower_95": 6.873426031214,
-      "upper_95": 52.366573968786,
-      "p": 0.0111884598769,
-      "p_bonferroni": 0.06713075926137
+      "center": "B",
+      "estimate": -0.70625,
+      "standard_error": 2.779395984489,
+      "df": 228,
+      "lower_95": -6.182836315022,
+      "upper_95": 4.770336315022,
+      "p": 0.7996457902417
     },
     {
-      "center": "Center C",
-      "estimate": -18.09,
-      "standard_error": 11.475571719801,
-      "df": 108,
-      "lower_95": -40.836573968785,
-      "upper_95": 4.656573968786,
-      "p": 0.1178602649808,
-      "p_bonferroni": 0.7071615898849
+      "center": "C",
+      "estimate": 8.527777777778,
+      "standard_error": 2.620439664313,
+      "df": 228,
+      "lower_95": 3.364402682971,
+      "upper_95": 13.691152872585,
+      "p": 0.001309228161706
     },
     {
-      "center": "Center D",
-      "estimate": 0.58,
-      "standard_error": 11.475571719801,
-      "df": 108,
-      "lower_95": -22.166573968786,
-      "upper_95": 23.326573968786,
-      "p": 0.959783724586,
-      "p_bonferroni": 1
+      "center": "D",
+      "estimate": -4.159090909091,
+      "standard_error": 2.370276859716,
+      "df": 228,
+      "lower_95": -8.829539411275,
+      "upper_95": 0.5113575930929,
+      "p": 0.08065634164504
     },
     {
-      "center": "Center E",
-      "estimate": 57.42,
-      "standard_error": 11.475571719801,
-      "df": 108,
-      "lower_95": 34.673426031214,
-      "upper_95": 80.166573968786,
-      "p": 2.19632871671e-06,
-      "p_bonferroni": 1.317797230026e-05
+      "center": "E",
+      "estimate": 6.570833333333,
+      "standard_error": 2.269367318379,
+      "df": 228,
+      "lower_95": 2.099219331963,
+      "upper_95": 11.042447334704,
+      "p": 0.004154146116407
     },
     {
-      "center": "Center F",
-      "estimate": 43.9,
-      "standard_error": 11.475571719801,
-      "df": 108,
-      "lower_95": 21.153426031214,
-      "upper_95": 66.646573968786,
-      "p": 0.0002188745788974,
-      "p_bonferroni": 0.001313247473384
+      "center": "F",
+      "estimate": 8.057142857143,
+      "standard_error": 2.101025877122,
+      "df": 228,
+      "lower_95": 3.917232736249,
+      "upper_95": 12.197052978036,
+      "p": 0.0001626083650373
     }
   ],
   "session": ["R version 4.6.1 (2026-06-24)", "Platform: x86_64-pc-linux-gnu", "Running under: Ubuntu 24.04.3 LTS", "", "Matrix products: default", "BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.12.0 ", "LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.12.0  LAPACK version 3.12.0", "", "locale:", " [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       ", " [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   ", " [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          ", "[10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   ", "", "time zone: Europe/Amsterdam", "tzcode source: system (glibc)", "", "attached base packages:", "[1] stats     graphics  grDevices utils     datasets  methods   base     ", "", "other attached packages:", "[1] jsonlite_2.0.0 ggplot2_4.0.3 ", "", "loaded via a namespace (and not attached):", " [1] RColorBrewer_1.1-3 R6_2.6.1           tidyselect_1.2.1   farver_2.1.2      ", " [5] magrittr_2.0.5     gtable_0.3.6       glue_1.8.1         tibble_3.3.1      ", " [9] pkgconfig_2.0.3    dplyr_1.2.1        generics_0.1.4     lifecycle_1.0.5   ", "[13] cli_3.6.6          S7_0.2.2           scales_1.4.0       grid_4.6.1        ", "[17] vctrs_0.7.3        withr_3.0.3        compiler_4.6.1     pillar_1.11.1     ", "[21] rlang_1.3.0       "]

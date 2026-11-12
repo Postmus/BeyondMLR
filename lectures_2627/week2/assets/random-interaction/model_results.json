@@ -1,70 +1,71 @@
 {
-  "formula": "distance ~ T + (1 + T | center)",
-  "treatment_coding": "0 Standard; 1 Enhanced",
-  "data_md5": "d5e97a85fa7db9a0cf8acdaef4a4f6d8",
-  "observations": 120,
+  "formula": "bp_reduction ~ T + (1 + T | center)",
+  "treatment_coding": "0 Control; 1 CPAP",
+  "data_md5": "e982df7c02d53fc2c343bcc02709a264",
+  "observations": 240,
   "centers": 6,
+  "patients_per_treatment_per_center": [12, 16, 18, 22, 24, 28],
   "estimation": "REML; correlated random intercept and slope; bobyqa optimizer",
   "inference": "Two-sided t tests and pointwise 95% t intervals using coefficient-specific Satterthwaite degrees of freedom; no multiplicity adjustment",
   "fixed_coefficients": [
     {
       "term": "(Intercept)",
-      "estimate": 349.865000000001,
-      "standard_error": 5.03716731963,
-      "df": 5.000001509578,
-      "t": 69.456696154718,
-      "p": 1.171567231303e-08,
-      "lower_95": 336.916550360939,
-      "upper_95": 362.813449639062
+      "estimate": 2.985925430033,
+      "standard_error": 2.215376778857,
+      "df": 4.898315529026,
+      "t": 1.347818329834,
+      "p": 0.236692611838,
+      "lower_95": -2.744623803259,
+      "upper_95": 8.716474663325
     },
     {
       "term": "T",
-      "estimate": 21.265000000001,
-      "standard_error": 11.425846414536,
-      "df": 5.000001168819,
-      "t": 1.861131265772,
-      "p": 0.1217935685966,
-      "lower_95": -8.106071184871,
-      "upper_95": 50.636071184873
+      "estimate": 3.993986179816,
+      "standard_error": 2.121947229123,
+      "df": 5.15127462708,
+      "t": 1.882226911679,
+      "p": 0.116830877844,
+      "lower_95": -1.412823622493,
+      "upper_95": 9.400795982126
     }
   ],
   "variance_components": {
-    "intercept_variance": 86.393953806862,
-    "slope_variance": 651.611050073744,
-    "intercept_slope_covariance": 127.068191801164,
-    "residual_variance": 658.443738288136,
-    "intercept_sd": 9.2948347918,
-    "slope_sd": 25.526673306049,
-    "residual_sd": 25.66015857878,
-    "correlation": 0.5355511481293
+    "intercept_variance": 26.192435707714,
+    "slope_variance": 20.543811716905,
+    "intercept_slope_covariance": 11.218570239642,
+    "residual_variance": 61.837200760309,
+    "intercept_sd": 5.117854600095,
+    "slope_sd": 4.53252818159,
+    "residual_sd": 7.863663316821,
+    "correlation": 0.4836253478227
   },
   "random_intercept_model": {
-    "formula": "distance ~ T + (1 | center)",
+    "formula": "bp_reduction ~ T + (1 | center)",
     "estimation": "REML",
     "fixed_coefficients": [
       {
         "term": "(Intercept)",
-        "estimate": 349.865000000001,
-        "standard_error": 8.65464705281,
-        "df": 6.025996581575,
-        "t": 40.425103168871,
-        "p": 1.439870050108e-08,
-        "lower_95": 328.70996770544,
-        "upper_95": 371.020032294561
+        "estimate": 2.962140300658,
+        "standard_error": 2.774662291345,
+        "df": 5.383231647371,
+        "t": 1.06756786579,
+        "p": 0.3312337897348,
+        "lower_95": -4.020305382893,
+        "upper_95": 9.944585984209
       },
       {
         "term": "T",
-        "estimate": 21.265,
-        "standard_error": 5.172380152417,
-        "df": 113.000000004445,
-        "t": 4.111260072418,
-        "p": 7.489357133297e-05,
-        "lower_95": 11.01758203061,
-        "upper_95": 31.51241796939
+        "estimate": 4.08,
+        "standard_error": 1.0528291203,
+        "df": 233.004465064068,
+        "t": 3.875272749709,
+        "p": 0.000138489773317,
+        "lower_95": 2.00571880258,
+        "upper_95": 6.15428119742
       }
     ],
-    "intercept_variance": 369.156944328905,
-    "residual_variance": 802.605493233495,
+    "intercept_variance": 42.73903340855,
+    "residual_variance": 66.506949393138,
     "singular": false,
     "convergence": {
       "opt": 0,
@@ -73,46 +74,46 @@
   },
   "center_effects": [
     {
-      "center": "Center A",
-      "fixed_baseline": 358.31,
-      "fixed_effect": 14.16,
-      "random_baseline": 353.379562846744,
-      "random_effect": 20.001820148991
+      "center": "A",
+      "fixed_baseline": 10.483333333333,
+      "fixed_effect": 4.633333333333,
+      "random_baseline": 9.082621297448,
+      "random_effect": 6.174944442923
     },
     {
-      "center": "Center B",
-      "fixed_baseline": 370.95,
-      "fixed_effect": 29.62,
-      "random_baseline": 361.815407893636,
-      "random_effect": 38.765396849845
+      "center": "B",
+      "fixed_baseline": 5.63125,
+      "fixed_effect": -0.70625,
+      "random_baseline": 4.319479065668,
+      "random_effect": 1.386160845717
     },
     {
-      "center": "Center C",
-      "fixed_baseline": 341.56,
-      "fixed_effect": -18.09,
-      "random_baseline": 340.7692772699,
-      "random_effect": -14.17359037679
+      "center": "C",
+      "fixed_baseline": -1.322222222222,
+      "fixed_effect": 8.527777777778,
+      "random_baseline": 0.1460328814781,
+      "random_effect": 6.292341741672
     },
     {
-      "center": "Center D",
-      "fixed_baseline": 339.53,
-      "fixed_effect": 0.58,
-      "random_baseline": 341.988583878764,
-      "random_effect": -0.4440864197719
+      "center": "D",
+      "fixed_baseline": -3.277272727273,
+      "fixed_effect": -4.159090909091,
+      "random_baseline": -3.638637624272,
+      "random_effect": -3.047004994684
     },
     {
-      "center": "Center E",
-      "fixed_baseline": 342.16,
-      "fixed_effect": 57.42,
-      "random_baseline": 350.269285461481,
-      "random_effect": 45.903959890974
+      "center": "E",
+      "fixed_baseline": -0.5,
+      "fixed_effect": 6.570833333333,
+      "random_baseline": 0.3378199073106,
+      "random_effect": 5.32881238129
     },
     {
-      "center": "Center F",
-      "fixed_baseline": 346.68,
-      "fixed_effect": 43.9,
-      "random_baseline": 350.967882649475,
-      "random_effect": 37.536499906751
+      "center": "F",
+      "fixed_baseline": 7.696428571429,
+      "fixed_effect": 8.057142857143,
+      "random_baseline": 7.668237052567,
+      "random_effect": 7.82866266198
     }
   ],
   "singular": false,

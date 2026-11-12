@@ -33,8 +33,8 @@ function drawEquation(slide, tex, x, y, w, h) {
 }
 addBrandedTitleSlide(pptx, {
   courseLabel: 'BEYOND MULTIPLE LINEAR REGRESSION · WEEK 2',
-  mainTitle: 'Treatment effects across centers',
-  subtitle: 'Interactions and uncertainty',
+  mainTitle: 'When treatment effects vary',
+  subtitle: 'Interactions, random slopes and crossed random effects',
   author: 'Dr Douwe Postmus',
   affiliation: 'UMCG · Department of Epidemiology',
   badge: 'BLR'

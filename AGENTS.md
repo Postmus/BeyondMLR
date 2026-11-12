@@ -5,6 +5,7 @@ Apply these preferences throughout the repository, including lectures, labs, ass
 - Explain concepts directly by stating what they mean, what they describe, or what a method does.
 - Avoid sentences that define something by stating what it is not. Avoid contrastive wording such as "X, not Y" and "rather than Y" when a direct explanation conveys the point.
 - Keep explanations focused on the question being taught. Omit unsolicited caveats and unrelated conceptual detours, such as causal disclaimers when causality is outside the question at hand.
+- Keep lecture speaker notes empty. Use empty strings in existing note calls where needed, preserving the presentation library and export infrastructure.
 - Preserve relevant statistical distinctions by explaining each concept positively. For example: "The standard error describes uncertainty about the average treatment effect. The treatment-slope variance describes variation in treatment effects between laboratories."
 
 # Teaching code preferences

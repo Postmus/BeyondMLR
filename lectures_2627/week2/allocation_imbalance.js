@@ -61,24 +61,8 @@ function addAllocationImbalance(pptx, data) {
       text('Do centers with more enhanced care have higher average outcomes?', 1.05, { fontSize: 20, gap: .15 }),
       text('Using between-center information assumes baseline center effects are unrelated to treatment allocation.', 1.40, { fontSize: 20 })
     ] }
-  ], 'The random-intercept model also uses between-center information under additional assumptions, so its treatment estimate can differ.');
-
-  panels('Fixed versus random center effects', [{ blocks: [
-    { table: {
-      columns: [
-        { label: 'Design', weight: 3.7 },
-        { label: 'Treatment estimates', weight: 2.3, align: 'center' },
-        { label: 'Estimated standard errors', weight: 2.8, align: 'center' }
-      ],
-      rows: [
-        ['Equal center sizes;\n50:50 allocation within each center', 'Identical', 'Identical'],
-        ['Unequal center sizes;\n50:50 allocation within each center', 'Identical', 'Can differ'],
-        ['Treatment proportions differ across centers', 'Can differ', 'Can differ']
-      ], fontSize: 21, headerFontSize: 18, headerHeight: .62, firstColumnBold: false
-    }, h: 3.00, gap: .28 },
-    text('With 50:50 allocation within every center, all three models, including the treatment-only model, give the same treatment estimate, even when center sizes differ.', 1.00, { fontSize: 22 })
-  ] }], 'So far, we have assumed the same treatment effect in every center. What changes when the treatment effect varies across centers?')
-    .addNotes('Scope: Gaussian additive models with independent homoscedastic individual errors and a common treatment effect. The fully balanced row describes the standard analysis used in this lecture: fixed-center OLS versus random-intercept REML, with an interior positive estimate of center variance. Under these conditions, both fits estimate individual-error variance identically and give identical estimated treatment standard errors. This is a general balanced-design result, not a peculiarity of the Week 1 dataset. Other variance-estimation methods or a center-variance estimate at the zero boundary need not preserve exact equality. With unequal center sizes but a constant treatment proportion, the treatment estimator and its true variance remain identical, while estimates of individual-error variance can differ.');
+  ], 'So far, we have assumed the same treatment effect in every center. What changes when the treatment effect varies across centers?')
+    .addNotes('');
 }
 
 function addAllocationPrecisionBackup(pptx, data) {

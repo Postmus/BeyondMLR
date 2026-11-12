@@ -1,0 +1,10 @@
+Generated with the built-in image_gen tool on 2026-11-12.
+Teaching illustration for the HIPARCO-inspired simulated case study.
+Edited with the built-in image_gen tool on 2026-11-12 to match the slide 10 image frame.
+
+Final edit prompt:
+Edit the supplied CPAP clinic photograph for a university lecture slide. Edit target: the attached image. Preserve the same patient, clinician, faces, teal scrubs, clothing, CPAP nasal mask, single connected ribbed hose, bedside CPAP machine, soft daylight and realistic photographic style. Change only the canvas aspect ratio and framing: the slide's inner image frame is 5.805 inches wide by 5.820 inches high (width:height 0.9974:1), effectively square. Generate a square 2048 x 2048 full-bleed photograph, with image content extending all the way to every edge. Extend/recompose the clinic above and the bed/seating below so both people, mask, hose and device remain clearly visible and naturally proportioned. Keep the people prominent. No white bands, margins, letterboxing, borders, text, logos or watermarks. This is an aspect-ratio adaptation of the original photograph; retain its scene and visual identity.
+
+Original generation prompt:
+
+Create a polished realistic editorial photograph for a medical statistics university lecture, landscape 4:3 composition. An adult patient about 60 years old in a calm modern sleep-medicine clinic, seated on the edge of a hospital bed, wearing a properly fitted nasal CPAP mask with headgear. A single ribbed air hose connects the nasal mask to a compact CPAP machine on a bedside table. A clinician in teal scrubs is explaining the device, attentive, relaxed, professional interaction. CPAP mask only, no oxygen cannula and no intubation. Accurate human anatomy, clinically plausible equipment, no logos, no text, no labels, no diagrams. Soft daylight, understated cream and muted teal palette with a restrained warm accent. Clear focus on patient, fitted mask and CPAP device. The scene should communicate treatment of obstructive sleep apnea, suitable as the right-hand image of a two-column lecture slide.
