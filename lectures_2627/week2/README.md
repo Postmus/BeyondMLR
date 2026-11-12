@@ -1,6 +1,6 @@
 # Beyond MLR: Week 2
 
-The revised lecture has 39 slides and no backup slides. It begins with a course title slide and the Week 1 model-comparison table,
+The revised lecture has 38 slides and no backup slides. It begins with a course title slide and the Week 1 model-comparison table,
 then examines unequal treatment allocation in four formula-free slides before
 introducing treatment-by-center interaction with dummy coding for treatment
 and effects coding for center. It compares additive and interaction models for the average treatment effect,
@@ -24,32 +24,31 @@ See [PLANNING.md](PLANNING.md) for the rest of the proposed lecture.
 | 12 | Traditional interaction plot: centers on the horizontal axis, one line per treatment connecting its sample means; title and plot only. |
 | 13 | Grouped fixed-effects model with a center-specific treatment slope, parameter interpretations and enlarged effects-coding constraints. |
 | 14 | All 12 fitted regression coefficients: estimates, estimated SEs, 95% confidence intervals and p-values, in the Week 1 table format. |
-| 15 | Nested-model interaction test: full/reduced model RSS and residual df, annotated F formula and numerical substitution. |
-| 16 | Simple versus marginal treatment effects, links to beta_1 + d_j and beta_1, and the definition of estimated marginal means (EMMs). |
-| 17 | Coding explanation alongside predicted treatment means and simple effects, pointwise 95% CIs, and Bonferroni-adjusted p-values across six centers. |
-| 18 | Full interaction model diagnostics: residuals versus fitted values and a Normal Q-Q plot, closing the case study. |
-| 19 | Time for Lab 3, with a generated illustration in Week 1's break-slide style. |
-| 20 | Wound-healing debrief: average treatment estimates, estimated SEs, 95% CIs and p-values under additive and interaction models. |
-| 21 | Hypothetical unequal laboratory sizes: equally weighted interaction average of 10 percentage points versus the additive average of 13. |
-| 22 | Part 2 divider: From included centers to a population. |
-| 23 | Population target: new patients in the same centers versus new centers from the same population. |
-| 24 | Two-by-two grid of true means: random intercepts versus random intercepts and slopes, for two independent samples of centers. |
-| 25 | Random-intercept and random-slope specification, population-average parameters, and jointly distributed center deviations. |
-| 26 | Positive and negative covariance illustrated with true center means and treatment effects. |
-| 27 | Rehabilitation variance-component estimates, followed by the correlation formula, numerical substitution and interpretation. |
-| 28 | Population-average baseline and treatment estimates with estimated SEs, 95% CIs and p-values. |
-| 29 | Fixed versus random treatment estimates, estimated SEs and p-values, with different targets of inference. |
-| 30 | Time for Lab 4, using the Week 1 collaborative-learning illustration. Lab development is deferred. |
-| 31 | Post-lab random-intercept-only versus random-intercept-and-slope comparison on the rehabilitation data. |
-| 32 | Conceptual variance decomposition and ICC discussion, contrasting the two random-effects structures. |
-| 33 | Part 3 divider: Crossed random effects. |
-| 34 | From one grouping variable to multiple grouping variables: nested versus crossed, with crossed effects next and nested effects in Week 3. |
+| 15 | Simple versus marginal treatment effects, links to beta_1 + d_j and beta_1, and the definition of estimated marginal means (EMMs). |
+| 16 | Coding explanation alongside predicted treatment means and simple effects, pointwise 95% CIs, and unadjusted p-values for each center. |
+| 17 | Full interaction model diagnostics: residuals versus fitted values and a Normal Q-Q plot, closing the case study. |
+| 18 | Time for Lab 3, with a generated illustration in Week 1's break-slide style. |
+| 19 | Wound-healing debrief: average treatment estimates, estimated SEs, 95% CIs and p-values under additive and interaction models. |
+| 20 | Hypothetical unequal laboratory sizes: equally weighted interaction average of 10 percentage points versus the additive average of 13. |
+| 21 | Part 2 divider: From included centers to a population. |
+| 22 | Population target: new patients in the same centers versus new centers from the same population. |
+| 23 | Two-by-two grid of true means: random intercepts versus random intercepts and slopes, for two independent samples of centers. |
+| 24 | Random-intercept and random-slope specification, population-average parameters, and jointly distributed center deviations. |
+| 25 | Positive and negative covariance illustrated with true center means and treatment effects. |
+| 26 | Rehabilitation variance-component estimates, followed by the correlation formula, numerical substitution and interpretation. |
+| 27 | Population-average baseline and treatment estimates with estimated SEs, 95% CIs and p-values. |
+| 28 | Fixed versus random treatment estimates, estimated SEs and p-values, with different targets of inference. |
+| 29 | Time for Lab 4, using the Week 1 collaborative-learning illustration. Lab 4 continues the wound-healing study with random intercepts and slopes. |
+| 30 | Post-lab random-intercept-only versus random-intercept-and-slope comparison on the rehabilitation data. |
+| 31 | Conceptual variance decomposition and ICC discussion, contrasting the two random-effects structures. |
+| 32 | Part 3 divider: Crossed random effects. |
+| 33 | From one grouping variable to multiple grouping variables: nested versus crossed, with crossed effects next and nested effects in Week 3. |
 
-| 35 | Radiologist case study: study setting beside a generated radiology illustration. |
-| 36 | Exploratory line plot: patients on the horizontal axis and one line per radiologist. |
-| 37 | Crossed patient and radiologist random intercepts, with distributions and interpretations. |
-| 38 | Estimated variance components and the absolute-agreement ICC for a single measurement. |
-| 39 | Closing Questions slide, matching the Week 1 closing style. |
+| 34 | Radiologist case study: study setting beside a generated radiology illustration. |
+| 35 | Exploratory line plot: patients on the horizontal axis and one line per radiologist. |
+| 36 | Crossed patient and radiologist random intercepts, with distributions and interpretations. |
+| 37 | Estimated variance components and the absolute-agreement ICC for a single measurement. |
+| 38 | Closing Questions slide, matching the Week 1 closing style. |
 
 The title and section dividers use the same shared layouts as Week 1. The
 population-model section is followed by the opening of Part 3 on crossed effects.
@@ -82,7 +81,7 @@ center, the variance of the average is `2 sigma^2 / (J n)`. Under independently
 sampled random treatment effects, the population-target variance also includes
 `sigma_d^2 / J`. These are balanced-model sampling variances, distinct from fitted
 standard errors and uncertainty in estimated variance components. These derivations
-are no longer on slides 24–25, which now establish the random-effects model conceptually. The random-slope
+are no longer on slides 23–24, which now establish the random-effects model conceptually. The random-slope
 interpretation follows [Bates et al.](https://lme4.github.io/lme4/articles/lmer.pdf).
 
 All content slides and the added title and dividers were visually checked at full render resolution, including the
@@ -180,85 +179,76 @@ and two-sided coefficient tests use 108 residual degrees of freedom. The five
 center coefficients describe baseline deviations; the five interaction
 coefficients describe treatment-effect deviations. Center F is implied by the
 sum-to-zero constraints, so it has no additional coefficient row. Interaction
-coefficient p-values test deviations from the average effect, not each center's
-overall treatment effect or the global interaction hypothesis.
+coefficient p-values test whether a center's deviation from the average effect is zero.
 
-Slide 15 introduces nested-model comparison through the joint interaction test.
-Both models retain center-specific baselines. The reduced model imposes a common
-treatment effect; the full model estimates center-specific treatment effects.
-The table shows RSS and residual df, followed by the general partial F formula
-and substitution of those table values. The numerator measures improvement per
-additional parameter and the denominator estimates individual-error variance
-from the full model. The result is F(5, 108) = 5.95, p < .001. RSS is rounded on
-the slide; the test uses full precision. Speaker notes cover nesting, the joint
-null hypothesis, and the common-variance normal-error assumptions. The RSS values
-are exported by R, and the equation asset is generated from the same results.
+The coefficient table leads directly into interpretation of treatment effects and their estimation with estimated marginal means. Formal tests comparing fixed- and random-effects model structures are developed in Weeks 3 and 4.
 
-Slide 16 distinguishes simple treatment effects within centers from the marginal
+Slide 15 distinguishes simple treatment effects within centers from the marginal
 effect averaged equally across centers. It defines estimated marginal means (EMMs)
 on first use and links the effects to beta_1 + d_j and beta_1 under the current
-coding. Slide 17 explains why coding affects which effects appear directly as
+coding. Slide 16 explains why coding affects which effects appear directly as
 coefficients, then presents predicted means and enhanced-minus-standard contrasts.
 No package names or software syntax appear on these slides.
 
 The simple-effect table includes pointwise 95% t confidence intervals and
-Bonferroni-adjusted two-sided p-values for the family of six center-specific
-treatment comparisons. The adjustment is min(6 * p, 1), using 108 residual degrees
-of freedom. Center A through F have adjusted p-values 1.000, .067, .707, 1.000,
-< .001, and .001 when rounded for display. The interval and p-value conventions
-are explicitly labeled: intervals remain pointwise, so they
-need not agree with adjusted tests at .05. Coefficient-level tests on slide 14
-remain unchanged. The R generator exports both raw and adjusted simple-effect
-p-values in `within_center_comparisons.csv` and `model_results.json`.
+unadjusted two-sided p-values for each center-specific treatment comparison,
+using 108 residual degrees of freedom. Centers A through F have p-values .220,
+.011, .118, .960, < .001, and < .001 when rounded for display. The interval and
+p-value conventions are explicitly labelled and address each individual
+comparison consistently. Lab 3 uses the same convention in its main analysis,
+with an optional callout explaining multiplicity and showing Bonferroni-adjusted
+tests across all five laboratories using `by = NULL`. The R generator retains
+both raw and adjusted simple-effect p-values in `within_center_comparisons.csv`
+and `model_results.json`.
 
-Slide 18 closes the case study with residuals versus fitted values and a Normal
+Slide 17 closes the case study with residuals versus fitted values and a Normal
 Q-Q plot of internally standardized residuals from the full interaction model.
 It reuses the Week 1 diagnostics layout with taller plot slots. There is no clear
 change in residual spread across fitted values, and the Q-Q points broadly follow
 the reference line. Speaker notes explain the vertical stacks, that within-cell
 residual centering is automatic in this full factorial model, and that these plots
 do not establish independence. The former treatment-contrast plot remains an
-available generated asset but is no longer shown on slide 18.
+available generated asset but is no longer shown on slide 17.
 
-Slide 19 pauses for Lab 3 using the same title-and-illustration layout as Week 1.
+Slide 18 pauses for Lab 3 using the same title-and-illustration layout as Week 1.
 The fictional illustration and generation prompt are in `assets/lab3-debrief/`.
 Students analyze five laboratories with ten plates per treatment in each, using
 `../../labs_2627/data/wound_healing_week2.csv`. The lab itself does not add an
 omission-of-interaction exercise.
 
-Slides 20 and 21 finish Part 1 with a lecture debrief of the wound-healing case.
+Slides 19 and 20 finish Part 1 with a lecture debrief of the wound-healing case.
 Run `Rscript lectures_2627/week2/generate_lab3_debrief.R` from the repository root
 to refit the actual student CSV and update `assets/lab3-debrief/model_results.json`.
 The script is included in the full rebuild pipeline and checks both treatment
 coefficients against the arithmetic average of observed laboratory differences.
 It records the dataset hash and verifies the pooled-variance standard errors.
 
-Slide 20 shows an average experimental-minus-standard effect of 9.28 percentage
+Slide 19 shows an average experimental-minus-standard effect of 9.28 percentage
 points in both models. The additive model gives estimated SE 1.81, 95% CI
 5.69 to 12.88, and p = 0.000001587; the interaction model gives estimated SE 1.62,
 95% CI 6.07 to 12.49, and p = 0.0000001231. Both p-values display as < .001.
-These are unadjusted tests of a zero average effect, distinct from the lab's
-Bonferroni-adjusted simple effects. Equal cell sizes preserve the average estimate;
+These unadjusted tests concern a zero average effect. The lab presents
+unadjusted tests of the treatment difference within each laboratory. Equal cell sizes preserve the average estimate;
 omitted interaction increases the estimated residual variation and estimated SE
 here, without changing the average estimator's actual sampling variance.
 
-Slide 21 presents the interaction model first, then the additive model under equal
+Slide 20 presents the interaction model first, then the additive model under equal
 and unequal laboratory sizes. Its explicitly hypothetical two-laboratory example
 uses effects of 5/15 percentage points and 20/80 plates, giving 10 points with
 equal laboratory weighting and 13 under the additive model. The slide focuses on
 coefficient interpretation, not universal bias. Speaker notes retain the common
 treatment-proportion condition for these size weights. No allocation sentence or
-weighting formula appears on the slide. Part 2 starts on slide 22 and returns to
+weighting formula appears on the slide. Part 2 starts on slide 21 and returns to
 the rehabilitation centers for population-average uncertainty.
 
 ## Introducing the population model
 
-Slides 23–26 introduce the target, center sampling, and model before any new
-variance derivation. Slide 23 contrasts repeating the rehabilitation study in its
+Slides 22–25 introduce the target, center sampling, and model before any new
+variance derivation. Slide 22 contrasts repeating the rehabilitation study in its
 six centers with sampling new centers from the same population. Speaker notes
 retain the dependence of generalization on center selection and assumptions.
 
-Slide 24 uses `generate_random_center_samples.R` and the assets in
+Slide 23 uses `generate_random_center_samples.R` and the assets in
 `assets/random-center-samples/`. Rows show two independent samples of four
 hypothetical centers (A–D and E–H). Columns compare random intercepts with random
 intercepts and slopes, reusing baseline draws across columns to isolate the slope
@@ -274,14 +264,14 @@ column has a constant 20 m gap. The right column has sampled average effects of
 exact true means and deviations. Regeneration is included in `figures:week2` and
 the week-specific `random-center-samples` command.
 
-Slide 25 reuses the grouped formula from the fixed-effects section and explicitly
+Slide 24 reuses the grouped formula from the fixed-effects section and explicitly
 shows the joint Normal distribution of c_j/d_j, its variance-covariance matrix,
 and the Normal individual-error distribution. It defines all four variance and
 covariance parameters and states independence across centers and between errors
 and center effects. The callout distinguishes zero population means from
 sum-to-zero constraints on the realized sample deviations.
 
-Slide 26 illustrates positive and negative covariance with two scatterplots.
+Slide 25 illustrates positive and negative covariance with two scatterplots.
 `generate_random_center_samples.R` resets seed 20261111 and draws 40 hypothetical
 center baseline deviations (SD 20 m) and treatment deviations (SD 12 m, population
 correlation .75). Standard-care means equal 360 plus the baseline deviation;
@@ -297,11 +287,11 @@ equation source assets remain available for later development.
 
 ## Fitted random-intercept and slope model
 
-The sequence is model specification (25), covariance illustration (26), variance
-components (27), population coefficients (28), fixed-versus-random comparison (29),
-Time for Lab 4 (30), post-lab random-structure comparison (31), and conceptual
-variance decomposition/ICC discussion (32). The separate random-model diagnostics
-slide has been removed. No Lab 4 dataset or exercises have been developed.
+The sequence is model specification (24), covariance illustration (25), variance
+components (26), population coefficients (27), fixed-versus-random comparison (28),
+Time for Lab 4 (29), post-lab random-structure comparison (30), and conceptual
+variance decomposition/ICC discussion (31). The separate random-model diagnostics
+slide has been removed. Lab 4 now uses the same wound-healing dataset as Lab 3; its guided exercises are in `../../labs_2627/BLR_lab_random_interaction.qmd`.
 
 `fit_random_interaction.R` reads the existing rehabilitation CSV without changing
 observations. Outputs are in `assets/random-interaction/`; regeneration follows
@@ -317,7 +307,7 @@ t inference, with approximately 5 degrees of freedom. These are not Normal-Wald
 intervals or Bonferroni-adjusted tests. The method is documented in the
 [lmerTest paper](https://www.jstatsoft.org/article/view/v082i13).
 
-Slide 27 presents estimated variances of 86.39395 m² for intercepts, 651.6111 m²
+Slide 26 presents estimated variances of 86.39395 m² for intercepts, 651.6111 m²
 for treatment slopes, and 658.4437 m² for individual errors. The intercept-slope
 covariance is 127.0682 m², corresponding to correlation .53555. The table displays only component, parameter and estimate (m²), without an SD
 column. Below it, the estimated correlation is calculated as covariance divided
@@ -333,19 +323,18 @@ compared directly. Treatment-effect variation is much larger than baseline
 variation and almost as large as individual residual variation. These comparisons
 are not percentages of a common total.
 
-Slide 29 compares the fixed interaction and random-slope models: both treatment
+Slide 28 compares the fixed interaction and random-slope models: both treatment
 estimates are 21.3 m, with estimated SEs 4.68 and 11.43 m and p-values < .001 and
 .122. The targets differ: these six centers versus a population of centers. The
 substantial treatment heterogeneity and the sample of only six centers explain
 the additional population-average uncertainty. Technical formulas and reference
 degrees of freedom remain in the speaker notes.
 
-Slide 30 uses `../week1/assets/lab2-break.png` in the same title-plus-image layout
-as the other lab breaks. It reserves time for Lab 4 without specifying a new case
-study or exercises. The subsequent discussion explicitly returns to the existing
+Slide 29 uses `../week1/assets/lab2-break.png` in the same title-plus-image layout
+as the other lab breaks. Lab 4 continues the wound-healing case study with a random-intercept and slope model. The subsequent discussion explicitly returns to the existing
 rehabilitation observations.
 
-For slide 31, the additional REML fit `distance ~ T + (1 | center)` gives the same
+For slide 30, the additional REML fit `distance ~ T + (1 | center)` gives the same
 21.265 m estimate, estimated SE 5.17238 m, 95% CI 11.0176 to 31.5124 m, and
 p=.0000748936 (displayed < .001). Satterthwaite treatment df are approximately 113,
 compared with 5 under random slopes. `random_intercept_coefficients.csv`,
@@ -358,7 +347,7 @@ average; the key difference is whether treatment effects are assumed common or
 allowed to vary. The displayed p-values test treatment coefficients, not the
 addition of a random slope.
 
-Slide 32 connects the Week 1 decomposition and ICC to the changed structure. A
+Slide 31 connects the Week 1 decomposition and ICC to the changed structure. A
 random intercept supplies the same shared contribution under both treatments;
 a random slope makes that contribution treatment-dependent. Outcome variances
 and correlations can depend on treatment, so one common variance breakdown and
@@ -367,7 +356,7 @@ formulas, numerical ICCs or percentages.
 
 The partial-pooling and residual-diagnostic source outputs remain available but
 are not displayed in the lecture. No lab files are changed by this revision.
-Part 3 now follows as slides 33–34; the backup slides have been removed.
+Part 3 now follows as slides 32–33; the backup slides have been removed.
 
 ## Part 3: multiple grouping variables
 
@@ -414,7 +403,7 @@ Outputs are in `assets/fixed-interaction/`:
 - `interaction-outcomes.png`: patient observations and connected treatment means
   in six center panels on a common outcome scale.
 - `interaction_diagnostics.csv`: fitted values, raw residuals and internally standardized residuals from the full interaction model.
-- `interaction-residuals-vs-fitted.png` and `interaction-normal-qq.png`: the two diagnostics displayed on slide 18.
+- `interaction-residuals-vs-fitted.png` and `interaction-normal-qq.png`: the two diagnostics displayed on slide 17.
 - `interaction-contrasts.png`: estimated treatment differences and confidence
   intervals, with the equally weighted average as a reference line.
 - `interaction-outcomes-slide.png` and `interaction-contrasts-slide.png`: versions
@@ -459,10 +448,10 @@ the simulated random draws.
 
 The center-specific estimated differences are 14.16, 29.62, −18.09, 0.58, 57.42
 and 43.90 m. The interaction model gives an average of 21.27 m (standard error
-4.68 m; 95% confidence interval 11.98 to 30.55 m). The overall interaction test
-comparing the additive and interaction models gives F(5, 108) = 5.95,
-p = 0.0000675. Intervals for individual center contrasts are pointwise,
-without multiplicity adjustment.
+4.68 m; 95% confidence interval 11.98 to 30.55 m). Intervals for individual
+center contrasts are pointwise. The instructor data-generation output retains
+the overall interaction test, F(5, 108) = 5.95, p = 0.0000675, for reference.
+Formal model-comparison tests are reserved for Weeks 3 and 4.
 
 Omitting the fixed interaction leaves the average estimate unchanged in this
 balanced design, but increases its estimated standard error to 5.17 m. This
@@ -520,3 +509,7 @@ The repeated-trial discussion uses `#/concepts/randomized-block-design` and `#/c
 ## Radiologist case study
 
 `generate_radiologist_data.R` reproduces the old Week 2 simulation (seed 123): 10 patients, five radiologists, and one measurement per pair. It fits `measurement ~ 1 + (1 | patient) + (1 | radiologist)` by REML. The estimated variances are 7.4411, 1.4684 and 1.0025 mm², respectively. The single-measurement absolute-agreement ICC is 0.7507. Figures, the CSV and full-precision results are under `assets/radiologists/`. The setting image was generated using the built-in image tool; its prompt is saved in `assets/radiologists/image-prompt.txt`.
+
+## Lab 4: random intercepts and treatment slopes
+
+The lab reuses Lab 3's wound-healing data and displays its interaction plot as background, without asking students to recreate it. The guided sequence covers model specification and fitting, variance components and intercept-slope correlation, the population-average treatment effect with estimated SE, 95% CI and p-value, and conditional residual diagnostics. It does not include model comparisons or conclusion writing. Regenerate the background asset with `Rscript ../../labs_2627/assets/lab4/_generate_background_plot.R` from this directory. The lab is available from the Week 2 menu.

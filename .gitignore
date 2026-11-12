@@ -55,3 +55,6 @@ Thumbs.db
 node_modules/
 .cache/
 npm-debug.log*
+
+# Directory for testing labs and assignments, not intended for repo
+**/lab_tests/**

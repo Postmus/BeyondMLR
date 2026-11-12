@@ -46,13 +46,6 @@ const E = {
   randomLimit: String.raw`\frac{\sigma_d^2}{J}+\frac{2\sigma^2}{Jn}\longrightarrow\frac{\sigma_d^2}{J}`,
 };
 
-function interactionFEquation(results) {
-  const a = results.additive_model, m = results.interaction_model;
-  const rss = value => Math.round(value).toLocaleString('en-US').replaceAll(',', '{,}');
-  return String.raw`F=\frac{(\mathrm{RSS}_{\mathrm{reduced}}-\mathrm{RSS}_{\mathrm{full}})/(\mathrm{df}_{\mathrm{reduced}}-\mathrm{df}_{\mathrm{full}})}{\mathrm{RSS}_{\mathrm{full}}/\mathrm{df}_{\mathrm{full}}}` +
-    String.raw`=\frac{(${rss(a.residual_sum_squares)}-${rss(m.residual_sum_squares)})/(${a.residual_df}-${m.residual_df})}{${rss(m.residual_sum_squares)}/${m.residual_df}}\approx ${results.interaction_test.F.toFixed(2)}`;
-}
-
 function addWeek2Opening(pptx, drawEquation, week1, results, allocation, lab3, randomInteraction) {
   const f = (v, digits = 1) => Number(v).toFixed(digits);
   const panels = (title, content, takeaway, options = {}) => addConceptPanelsSlide(pptx, {
@@ -61,7 +54,6 @@ function addWeek2Opening(pptx, drawEquation, week1, results, allocation, lab3, r
   const text = (value, h, options = {}) => ({ text: value, h, fontSize: 22, ...options });
   const eq = (key, h = .65, gap = .18) => ({ equation: E[key], h, gap });
   const assets = path.join(__dirname, 'assets/fixed-interaction');
-  const a = results.additive_model, m = results.interaction_model;
 
   // Recap the original trial alongside the closing Week 1 comparison table.
   panels('Week 1 recap: comparing the models', [
@@ -168,29 +160,7 @@ function addWeek2Opening(pptx, drawEquation, week1, results, allocation, lab3, r
     takeaway: 'Effects coding: Center F follows from the sum-to-zero constraints.',
     takeawayHeight: .60
   });
-  coefficientSlide.addNotes('OLS coefficient estimates from lm(distance ~ treatment * center), with Standard as treatment zero and contr.sum for center. Columns follow the Week 1 convention: estimates and confidence limits to one decimal, estimated standard errors to two decimals, and p-values to three decimals or < .001. All intervals are pointwise 95% t intervals and p-values are two-sided t tests of a zero coefficient, using 108 residual degrees of freedom. The intercept is the equally weighted standard-care mean; the Enhanced care coefficient is the equally weighted treatment effect. Center A through E are baseline deviations c_j; Enhanced by Center A through E are treatment-effect deviations d_j. Their p-values test deviations from the included-center average, not each center\'s overall treatment effect. Center F has no separate regression coefficient: its baseline and treatment deviations are minus the corresponding sums for A through E. The global interaction test is a different, five-degree-of-freedom test.');
-
-  const interactionTest = results.interaction_test;
-  const comparisonSlide = panels('Testing interaction by comparing two models', [{ blocks: [
-    { table: {
-      columns: [
-        { label: 'Model', weight: 6.1 },
-        { label: 'Residual sum\nof squares (RSS)', weight: 3.3, align: 'center' },
-        { label: 'Residual df', weight: 1.9, align: 'center' }
-      ],
-      rows: [
-        ['Reduced: common treatment effect', Math.round(a.residual_sum_squares).toLocaleString('en-US'), a.residual_df],
-        ['Full: center-specific treatment effects', Math.round(m.residual_sum_squares).toLocaleString('en-US'), m.residual_df]
-      ], fontSize: 20, headerFontSize: 17, headerHeight: .60, cellPaddingY: .045, firstColumnBold: false
-    }, h: 1.50, gap: .10 },
-    text('RSS: residual sum of squares. df: residual degrees of freedom.', .32, { fontSize: 18, gap: .10 }),
-    { equation: interactionFEquation(results), h: .95, gap: .10 },
-    text('Numerator: improvement in fit per additional parameter.', .34, { fontSize: 20, gap: .08 }),
-    text('Denominator: estimated individual-error variance from the full model.', .34, { fontSize: 20 })
-  ] }], `F(${interactionTest.numerator_df}, ${interactionTest.denominator_df}) = ${f(interactionTest.F, 2)}, p < .001: strong evidence that treatment effects differ across centers.`, {
-    intro: 'Fit the full model → fit the reduced model → compare their fit.'
-  });
-  comparisonSlide.addNotes('Both models retain center-specific baselines, treatment coded 0/1, and effects coding for center. The full model is distance ~ treatment * center; the reduced model is distance ~ treatment + center, obtained by setting all d_j to zero. They are nested models fitted by OLS to the same 120 patients. RSS measures variation left unexplained, so smaller RSS means better fit. The full model always fits at least as well. The partial F test asks whether its improvement is larger than expected from sampling variation under the reduced model. The difference in residual degrees of freedom is 113 - 108 = 5, the number of additional interaction parameters. These five coefficients are tested jointly; the sixth deviation is implied by the sum-to-zero constraint. The numerator is the reduction in RSS per added parameter; the denominator estimates the common individual-error variance using the full model. Under independent normal errors with common variance and the null hypothesis, the statistic has an F distribution with 5 and 108 degrees of freedom. Table RSS values are rounded; the test and p-value use full-precision R output from anova(model_additive, model_interaction). This is a test of variation in treatment effects, not a test that the average treatment effect is zero. Next, inspect fitted means and center-specific contrasts to see where and by how much effects differ.');
+  coefficientSlide.addNotes('OLS coefficient estimates from lm(distance ~ treatment * center), with Standard as treatment zero and contr.sum for center. Columns follow the Week 1 convention: estimates and confidence limits to one decimal, estimated standard errors to two decimals, and p-values to three decimals or < .001. All intervals are pointwise 95% t intervals and p-values are two-sided t tests of a zero coefficient, using 108 residual degrees of freedom. The intercept is the equally weighted standard-care mean; the Enhanced care coefficient is the equally weighted treatment effect. Center A through E are baseline deviations c_j; Enhanced by Center A through E are treatment-effect deviations d_j. Their p-values test deviations from the included-center average, not each center\'s overall treatment effect. Center F has no separate regression coefficient: its baseline and treatment deviations are minus the corresponding sums for A through E.');
 
   const effectConceptSlide = panels('Which treatment effect do we want to estimate?', [
     { title: 'SIMPLE TREATMENT EFFECTS', blocks: [
@@ -224,20 +194,20 @@ function addWeek2Opening(pptx, drawEquation, week1, results, allocation, lab3, r
           { label: 'Enhanced\nmean', weight: 1.30, align: 'center' },
           { label: 'Difference', weight: 1.25, align: 'center', highlight: true },
           { label: '95% CI', weight: 1.90, align: 'center', highlight: true },
-          { label: 'p-value\n(Bonf.)', weight: 1.20, align: 'center', highlight: true }
+          { label: 'p-value', weight: 1.20, align: 'center', highlight: true }
         ],
         columnGroups: [{ label: '', count: 1 }, { label: 'Predicted means', count: 2 }, { label: 'Simple treatment effect', count: 3 }],
         rows: results.within_center_comparisons.map(r => [
           r.center.replace('Center ', ''), f(cell(r.center, 'Standard')), f(cell(r.center, 'Enhanced')),
           f(r.estimate), `${f(r.lower_95)} to ${f(r.upper_95)}`,
-          r.p_bonferroni < .001 ? '< .001' : f(r.p_bonferroni, 3)
+          r.p < .001 ? '< .001' : f(r.p, 3)
         ]), fontSize: 18, headerFontSize: 16, headerHeight: .65,
         cellPaddingX: .07, cellPaddingY: .04, firstColumnBold: false
       }, h: 3.65, gap: .15 },
-      text('Means, differences and CIs in meters. Difference: enhanced minus standard.\nPointwise 95% CIs; p-values adjusted across six comparisons (Bonferroni).', .70, { fontSize: 16 })
+      text('Means, differences and CIs in meters. Difference: enhanced minus standard.\nPointwise 95% CIs and unadjusted p-values.', .70, { fontSize: 16 })
     ] }
   ], 'Equivalent coding schemes give different coefficients, but the same fitted means and treatment comparisons.');
-  simpleEffectsSlide.addNotes('All quantities are derived from the same fitted full interaction model. Standard and Enhanced columns are model-based predicted cell means, which coincide with sample cell means in this full factorial model. Enhanced minus Standard is each center’s simple treatment effect, not the interaction coefficient d_j alone. Estimated standard errors use the full coefficient covariance matrix, including covariance between the two predicted means, and the pooled full-model residual variance. Confidence intervals are pointwise 95% t intervals with 108 residual degrees of freedom. Two-sided p-values test zero treatment difference in each center and are Bonferroni-adjusted as min(6 * p, 1), treating all six centers as one family. The p-value column is adjusted, whereas the confidence intervals are pointwise, so an interval can exclude zero while its adjusted p-value exceeds .05. The effect estimate and its uncertainty do not change under an equivalent full-rank recoding of the same fitted model. No package names or software syntax are needed for this lecture explanation.');
+  simpleEffectsSlide.addNotes('All quantities are derived from the same fitted full interaction model. Standard and Enhanced columns are model-based predicted cell means, which coincide with sample cell means in this full factorial model. Enhanced minus Standard is each center’s simple treatment effect, not the interaction coefficient d_j alone. Estimated standard errors use the full coefficient covariance matrix, including covariance between the two predicted means, and the pooled full-model residual variance. Confidence intervals are pointwise 95% t intervals with 108 residual degrees of freedom. Unadjusted two-sided p-values test zero treatment difference in each center. Each pointwise 95% confidence interval corresponds to its individual test at the .05 level. Lab 3 includes an optional callout on multiplicity and Bonferroni adjustment. The effect estimate and its uncertainty do not change under an equivalent full-rank recoding of the same fitted model. No package names or software syntax are needed for this lecture explanation.');
 
   // Close the case study by checking residuals from the full interaction model.
   const diagnosticsSlide = addDiagnosticsInterpretationSlide(pptx, {
@@ -257,7 +227,7 @@ function addWeek2Opening(pptx, drawEquation, week1, results, allocation, lab3, r
     title: 'Time for Lab 3',
     assetPath: path.join(__dirname, 'assets/lab3-debrief/lab3-break.png')
   });
-  lab3Slide.addNotes('Lab 3: Treatment effects across laboratories. Students analyze the simulated wound-healing dataset: five fixed laboratories, ten independent cell-culture plates per treatment in each laboratory, and percentage wound closure after 48 hours. The lab covers exploration, the fixed interaction model, the nested interaction test, estimated marginal means and simple effects, and residual diagnostics. The omission-of-interaction comparison belongs to the following lecture debrief, not an extra lab exercise. Illustration generated for this break slide in the same editorial style as Week 1.');
+  lab3Slide.addNotes('Lab 3: Treatment effects across laboratories. Students analyze the simulated wound-healing dataset: five fixed laboratories, ten independent cell-culture plates per treatment in each laboratory, and percentage wound closure after 48 hours. The lab covers exploration, the fixed interaction model, estimated marginal means and simple effects, and residual diagnostics. The omission-of-interaction comparison belongs to the following lecture debrief, not an extra lab exercise. Illustration generated for this break slide in the same editorial style as Week 1.');
 
   // Return from Lab 3 to discuss its wound-healing analysis, without derivations.
   const labAdditive = lab3.additive_model, labInteraction = lab3.interaction_model;
@@ -280,7 +250,7 @@ function addWeek2Opening(pptx, drawEquation, week1, results, allocation, lab3, r
     text('Same estimate: 10 plates per treatment in every laboratory make both models estimate the average of the five within-laboratory treatment differences.', .75, { fontSize: 21, gap: .18 }),
     text('Larger estimated SE: without interaction, differences in treatment effects remain in the residuals, increasing the estimated residual variation.', .75, { fontSize: 21 })
   ] }], 'In this balanced study, omitting interaction leaves the average treatment estimate unchanged but increases its estimated uncertainty.');
-  omissionSlide.addNotes('This table is fitted to the same wound_healing_week2.csv used in Lab 3. Both models include fixed laboratory effects with effects coding and treatment coded 0/1. The design has ten plates in every treatment-laboratory cell, so the treatment coefficients are the same equally weighted average of the five observed differences: 9.284 percentage points. Omitting interaction does not change this estimator or its actual sampling variance. It leaves systematic treatment heterogeneity in the residuals and inflates the usual estimated residual variance in expectation. Here the estimated SE rises from 1.616 to 1.812 percentage points. Intervals and p-values are the usual model-based t summaries, with 94 residual degrees of freedom for the additive model and 90 for the interaction model. The two-sided p-values test a zero average effect and are unadjusted; they are not the interaction test or the five Bonferroni-adjusted simple-effect tests in the lab. The additive model imposes a common effect despite heterogeneity, so its conventional uncertainty summaries illustrate the consequences of omission rather than asserting correct specification of the cell means.');
+  omissionSlide.addNotes('This table is fitted to the same wound_healing_week2.csv used in Lab 3. Both models include fixed laboratory effects with effects coding and treatment coded 0/1. The design has ten plates in every treatment-laboratory cell, so the treatment coefficients are the same equally weighted average of the five observed differences: 9.284 percentage points. Omitting interaction does not change this estimator or its actual sampling variance. It leaves systematic treatment heterogeneity in the residuals and inflates the usual estimated residual variance in expectation. Here the estimated SE rises from 1.616 to 1.812 percentage points. Intervals and p-values are the usual model-based t summaries, with 94 residual degrees of freedom for the additive model and 90 for the interaction model. The two-sided p-values test a zero average effect and are unadjusted; the lab separately presents five unadjusted simple-effect tests, with optional Bonferroni adjustment in a callout. The additive model imposes a common effect despite heterogeneity, so its conventional uncertainty summaries illustrate the consequences of omission rather than asserting correct specification of the cell means.');
 
   const sizeExample = lab3.unequal_size_example;
   const sizeSlide = panels('What if laboratory sizes differ?', [
@@ -369,8 +339,8 @@ function addWeek2Opening(pptx, drawEquation, week1, results, allocation, lab3, r
   });
   covarianceSlide.addNotes('These two hypothetical populations illustrate positive and negative covariance between the random intercept c_j and random treatment slope d_j. The horizontal axis uses the true standard-care mean beta_0 + c_j, and the vertical axis uses the true enhanced-minus-standard effect beta_1 + d_j. Adding these fixed population averages does not change the covariance. Both panels use identical axis limits and mirrored treatment-effect deviations, preserving exactly the same empirical spreads while reversing the covariance sign. Each dot is a different hypothetical center within a panel. The points are known true values, not estimated means, treatment-effect estimates, or fitted random effects. There is no patient sampling noise, and these are not fitted results for the six rehabilitation centers. Positive covariance means that higher standard-care means tend to accompany larger treatment effects; negative covariance means they tend to accompany smaller treatment effects. A negative covariance does not require a negative average treatment effect. This relationship is descriptive rather than a causal claim about changing baseline outcomes.');
 
-  addRandomInteractionResults(pptx, drawEquation, randomInteraction, E, m);
+  addRandomInteractionResults(pptx, drawEquation, randomInteraction, E, results.interaction_model);
 
 }
 
-module.exports = { addWeek2Opening, interactionFEquation, equations: Object.values(E) };
+module.exports = { addWeek2Opening, equations: Object.values(E) };

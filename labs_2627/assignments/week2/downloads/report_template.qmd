@@ -1,0 +1,96 @@
+---
+title: "Comparing postoperative pain-management protocols"
+author: "Your name"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    embed-resources: true
+execute:
+  eval: true
+  echo: true
+  message: false
+---
+
+::: {.callout-note title="Using this template"}
+Save this template in your `week2` folder and save `postoperative_pain.csv` in its `data` subfolder, following the folder structure introduced in Lab 1. You may rename the template.
+
+Open the template in RStudio. Replace `Your name` with your name, replace the italic prompts with your own writing, and add your analysis code to the chunks below. Read the dataset using `read.csv("data/postoperative_pain.csv")`.
+
+The setup chunk installs and loads the required analysis packages and is hidden in the rendered report. Keep your analysis code and results visible.
+
+Remove this instruction box before rendering your final report. Submit both the `.qmd` file and the rendered `.html` file. Expand [Help with Quarto on the assignment website](https://postmus.github.io/BeyondMLR/assignments/week2/assignment.html#help-with-quarto) for instructions on running code and rendering your report.
+:::
+
+```{r}
+#| label: setup
+#| include: false
+library(pak)
+pkg_install(c("ggplot2", "dplyr", "lmerTest", "emmeans"), ask = FALSE)
+
+library(ggplot2)
+library(dplyr)
+library(lmerTest)
+library(emmeans)
+```
+
+# Introduction
+
+*Describe the study and research question. Identify the experimental unit and grouping variable, explain the protocol allocation, and describe the population of interest.*
+
+# Data exploration
+
+```{r}
+#| label: prepare-data
+# Read data/postoperative_pain.csv and prepare the variables for analysis.
+# Set the factor levels and coding needed for the model.
+```
+
+```{r}
+#| label: explore-data
+# Summarize pain scores by hospital and protocol.
+# Create an interaction plot with hospitals on the horizontal axis.
+```
+
+*Describe the patterns in standard-care pain levels and protocol differences across hospitals.*
+
+# Model fitting
+
+```{r}
+#| label: hospital-random
+# Fit and inspect a model with a correlated random intercept and
+# protocol slope for hospital.
+```
+
+# Results and interpretation
+
+## Fixed effects
+
+```{r}
+#| label: protocol-difference
+# Present the relevant fixed-effect results.
+```
+
+*Interpret the fixed effects in relation to the research question and support your conclusions with appropriate statistical evidence.*
+
+## Random effects
+
+```{r}
+#| label: variance-components
+# Present the relevant random-effect results.
+```
+
+*Interpret the random effects in relation to variation between hospitals and support your conclusions with the results.*
+
+# Model diagnostics
+
+```{r}
+#| label: random-model-diagnostics
+# Produce a conditional-residual-versus-fitted plot and a Normal Q-Q plot.
+```
+
+*Describe what the plots suggest about the model assumptions, using features of the plots to support your interpretation.*
+
+# Conclusion
+
+*Answer the research team's question. Include the average protocol difference, its uncertainty and units, and what the analysis suggests about variation in effects across hospitals.*

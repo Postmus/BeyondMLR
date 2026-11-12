@@ -29,6 +29,10 @@ website:
         menu:
           - text: "Lab 3: Treatment effects across laboratories"
             href: BLR_lab_fixed_interaction.qmd
+          - text: "Lab 4: Random intercepts and treatment slopes"
+            href: BLR_lab_random_interaction.qmd
+          - text: "Assignment: Postoperative pain management"
+            href: assignments/week2/assignment.qmd
       - text: Lab answers
         menu:
           - text: "Week 1 · Lab 1: Center as a fixed effect"

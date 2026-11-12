@@ -22,7 +22,15 @@ quarto preview labs_2627
 quarto render labs_2627
 ```
 
-The website currently contains the Week 1 labs and assignment, grouped under a Week 1 menu in the top navigation. Model answer sheets are grouped in a separate Lab answers menu, with the week and lab identified in each entry. Add future answer sheets to this menu and further week menus as later weeks are revised. Assignment report templates are copied as downloadable source files and excluded from rendering.
+The website contains the Week 1 and Week 2 labs and assignments, grouped by week in the top navigation. Model answer sheets are grouped in a separate Lab answers menu, with the week and lab identified in each entry. Add future answer sheets to this menu and further week menus as later weeks are revised. Assignment report templates are copied as downloadable source files and excluded from rendering.
+
+For a local HTML preview on a fixed port, run:
+
+```sh
+quarto preview labs_2627 --render html --port 4200
+```
+
+Open `http://localhost:4200/` and use the Week 2 menu to inspect Labs 3 and 4 and the postoperative pain assignment. Local builds go into the Git-ignored `labs_2627/_site/` folder. Source changes, datasets, and templates can be committed and pushed independently of publishing; the live website uses the separately maintained `docs/` files described below.
 
 Quarto requires the R packages `knitr` and `rmarkdown` to render the lab pages. The lab setup chunks list the packages students need to run the analyses. The student lab pages display the supplied code without executing it. The HTML-only model answer sheets execute their analysis to include results and plots; rendering them also requires `ggplot2`, `dplyr`, `lme4` and `lmerTest`. The full render builds both the website and the downloadable lab PDFs, linked from each lab's right-hand side panel. PDF rendering requires a TeX installation; install it once with `quarto install tinytex`. For an HTML-only preview build, use `quarto render labs_2627 --to html`. Use the full render before publishing so the PDF downloads are up to date.
 

@@ -22,11 +22,11 @@ execute:
 
 Five laboratories compare a **standard treatment** with an **experimental treatment** in a simulated wound-healing experiment. Each laboratory uses 20 independent cell-culture plates and randomly assigns 10 plates to each treatment. Each plate is measured once, 48 hours after treatment. The outcome is the **percentage of the original wound area that has closed**. Higher values indicate more closure.
 
-This is a randomized block design, with laboratory as the blocking factor. The experimental unit is the cell-culture plate. The dataset contains 100 observations and is simulated for teaching; it does not describe an actual experiment.
+This is a randomized block design, with laboratory as the blocking factor. The experimental unit is the cell-culture plate. The dataset contains 100 observations simulated for teaching.
 
-Our question is: **Does the treatment effect differ between laboratories, and how much improvement is estimated within each laboratory?** We treat the five laboratories as fixed and focus on treatment comparisons within these laboratories.
+Our question is: **How do the estimated treatment effects vary across laboratories, and how much improvement is estimated within each laboratory?** We treat the five laboratories as fixed and focus on treatment comparisons within these laboratories.
 
-By the end of this lab, you should be able to explore an interaction, fit and interpret a fixed interaction model, test the interaction by comparing two models, estimate simple treatment effects, and assess the model assumptions.
+By the end of this lab, you should be able to explore an interaction, fit and interpret a fixed interaction model, estimate simple treatment effects, and assess the model assumptions.
 
 ::: {.callout-note icon=false title="Working through the lab"}
 Run the code in order in an R script, and record your answers to the questions. The lab page shows the code; you generate the results yourself.
@@ -60,8 +60,7 @@ Read the data and specify the order of the factor levels.
 wound <- read.csv("data/wound_healing_week2.csv")
 wound$treatment <- factor(wound$treatment,
                            levels = c("Standard", "Experimental"))
-wound$laboratory <- factor(wound$laboratory,
-                            levels = paste("Laboratory", LETTERS[1:5]))
+wound$laboratory <- factor(wound$laboratory)
 
 head(wound)
 str(wound)
@@ -123,7 +122,7 @@ interaction_plot <- ggplot(
 interaction_plot
 ```
 
-The vertical gap between the experimental and standard lines at each laboratory is its observed treatment difference. Parallel lines would indicate equal observed differences. Nonparallel lines suggest that the effects may vary, although observed means also vary because of sampling noise.
+The vertical gap between the experimental and standard lines at each laboratory is its observed treatment difference. Parallel lines would indicate equal observed differences. Varying gaps suggest that the effects may vary. Sampling variation also contributes to differences between the observed means.
 
 ::: {.callout-important icon=false title="Question 2"}
 Does the plot suggest a similar treatment effect in all five laboratories? Identify laboratories with relatively large or small observed treatment differences. Use the summary table to distinguish differences in mean closure from variation among plates.
@@ -162,7 +161,7 @@ contrasts(wound$treatment)
 contrasts(wound$laboratory)
 ```
 
-## Fit the full model
+## Fit the interaction model
 
 ```{r}
 #| label: full-model
@@ -175,42 +174,19 @@ The `*` includes treatment, laboratory, and their interaction. It is shorthand f
 
 In the coefficient table, `(Intercept)` estimates $\beta_0$ and `treatmentExperimental` estimates $\beta_1$. The rows `laboratory1` to `laboratory4` estimate the baseline deviations for Laboratories A to D. The rows `treatmentExperimental:laboratory1` to `treatmentExperimental:laboratory4` estimate their treatment-effect deviations. Laboratory E's deviations are minus the sums of the corresponding four coefficients.
 
-The interaction coefficient for a laboratory is its **deviation from the average treatment effect**. The simple treatment effect in that laboratory combines this deviation with the treatment coefficient. The coefficient table's p-value for an interaction coefficient therefore tests a different hypothesis from a test that the laboratory's treatment effect is zero.
+The interaction coefficient for a laboratory is its **deviation from the average treatment effect**. Its p-value tests whether that deviation is zero. The simple treatment effect in that laboratory combines this deviation with the treatment coefficient.
 
 ::: {.callout-important icon=false title="Question 3"}
 Interpret the intercept and the treatment coefficient. Use the coefficients to calculate the estimated experimental-minus-standard treatment effect in Laboratory A. How would you calculate the corresponding effect in Laboratory E?
 :::
 
-# Test the interaction by comparing two models
-
-The full model allows a separate treatment effect in every laboratory. To test whether that additional flexibility is needed, fit a **reduced model** that retains laboratory differences in baseline closure but assumes one common treatment effect.
-
-```{r}
-#| label: interaction-test
-model_reduced <- lm(closure ~ treatment + laboratory, data = wound)
-anova(model_reduced, model_full)
-```
-
-The models are **nested**: the reduced model is obtained by setting all treatment-effect deviations to zero. Both models use the same observations. The full model always fits at least as well; the F-test assesses whether its improvement is larger than expected from sampling variation under the reduced model.
-
-In the comparison table:
-
-- `Res.Df` is the residual degrees of freedom for each model.
-- `RSS` is the residual sum of squares, measuring the variation left unexplained.
-- `Df` and `Sum of Sq` show the additional parameters and the reduction in residual sum of squares.
-- `F` and `Pr(>F)` give the interaction test statistic and p-value.
-
-The null hypothesis is that the treatment effect is the same in all five laboratories. This is a joint test of the interaction terms.
-
-::: {.callout-important icon=false title="Question 4"}
-How many additional parameters does the full model estimate? Report the F statistic and p-value. What do they tell you about variation in treatment effects across laboratories?
-:::
-
 # Estimate the simple treatment effects
+
+We have used the regression coefficients to calculate treatment effects manually. We now use R to obtain the effects and their uncertainty for all five laboratories from the fitted model.
 
 ## Obtain estimated marginal means
 
-**Estimated marginal means (EMMs)** are model-based estimates of group means, averaged over other factors where appropriate. We obtain these means from the fitted full model, then compare them to estimate treatment effects.
+**Estimated marginal means (EMMs)** are model-based estimates of group means, averaged over other factors where appropriate. We obtain these means from the fitted interaction model, then compare them to estimate treatment effects.
 
 For simple treatment effects, keep laboratories separate and estimate the standard and experimental mean within each laboratory.
 
@@ -220,64 +196,45 @@ treatment_means <- emmeans(model_full, ~ treatment | laboratory)
 treatment_means
 ```
 
-Here, `model_full` supplies the fitted model and `~ treatment | laboratory` requests treatment means **separately within each laboratory**. The command summarizes the fitted model; it does not fit a new regression model.
+Here, `model_full` supplies the fitted model and `~ treatment | laboratory` requests treatment means **separately within each laboratory**. The command calculates these means from the fitted model.
 
-In the output, `emmean` is the estimated mean closure, `SE` is its estimated standard error, and `lower.CL` and `upper.CL` are its 95% confidence limits. The full interaction model fits a separate mean for every treatment-laboratory combination, so these estimated means equal the observed cell means in the exploratory summary.
+In the output, `emmean` is the estimated mean closure, `SE` is its estimated standard error, and `lower.CL` and `upper.CL` are its 95% confidence limits. The interaction model fits a separate mean for every treatment-laboratory combination, so these estimated means equal the observed cell means in the exploratory summary.
 
 ## Compare treatments within laboratories
 
-Use `pairs()` to compare the two predicted means within each laboratory.
+Use `pairs()` to compare the two predicted means within each laboratory, then `summary()` to display the treatment differences with **pointwise 95% confidence intervals** and **unadjusted p-values**.
 
 ```{r}
 #| label: simple-effects
-simple_effects <- pairs(treatment_means, reverse = TRUE)
-simple_effects
+simple_effects <- pairs(treatment_means, reverse = TRUE, adjust = "none")
+summary(simple_effects, infer = c(TRUE, TRUE), by = NULL)
 ```
 
 Because the treatment levels are ordered Standard then Experimental, `reverse = TRUE` gives **experimental minus standard**. The column `estimate` contains the simple treatment effect in each laboratory, measured in percentage points.
 
-The standard error for a **difference** describes uncertainty about that treatment effect. It accounts for the covariance between the predicted means. Use this standard error when interpreting the treatment comparison, rather than the standard error of either mean separately.
+In `pairs()`, `adjust = "none"` specifies pointwise intervals and unadjusted p-values. The `summary()` call uses this setting: `infer = c(TRUE, TRUE)` requests both confidence intervals and tests, and `by = NULL` displays the five comparisons together. Each p-value tests whether the treatment effect in that laboratory is zero.
 
-## Confidence intervals and adjusted p-values
+The standard error for a **difference** describes uncertainty about that treatment effect. It accounts for the covariance between the predicted means. Use this standard error when interpreting the treatment comparison.
 
-As in the lecture, calculate **pointwise 95% confidence intervals** for the differences and **Bonferroni-adjusted p-values** across the five laboratory comparisons. Each p-value tests whether the treatment effect in that laboratory is zero.
-
-```{r}
-#| label: simple-inference
-# Pointwise confidence intervals for individual treatment differences.
-simple_intervals <- as.data.frame(
-  confint(simple_effects, adjust = "none")
-)
-
-# Adjust the tests across all five laboratory comparisons.
-simple_tests <- as.data.frame(
-  test(simple_effects, by = NULL, adjust = "bonferroni")
-)
-
-# Combine the intervals and adjusted p-values in one table.
-simple_results <- left_join(
-  simple_intervals,
-  simple_tests |> select(laboratory, contrast, p.value),
-  by = c("laboratory", "contrast")
-)
-simple_results
-```
-
-`as.data.frame()` converts the output to a table. `left_join()` combines the two tables by matching their laboratory and contrast labels. The resulting table contains the estimated differences, their standard errors and degrees of freedom, the confidence limits, and the adjusted p-values.
-
-For the tests, `by = NULL` makes the five laboratory comparisons one family. The Bonferroni adjustment multiplies each unadjusted p-value by five, with a maximum of one. Keeping separate families within laboratories would not adjust across laboratories when each has only one treatment comparison.
-
-The confidence intervals are pointwise and the p-values are adjusted. A pointwise interval can therefore exclude zero while the corresponding adjusted p-value exceeds 0.05.
-
-::: {.callout-important icon=false title="Question 5"}
-Interpret the estimated treatment effect and its 95% confidence interval in Laboratory A. Check that its estimate agrees with your calculation from the regression coefficients. Which laboratories show evidence of a nonzero treatment effect using the Bonferroni-adjusted p-values at 0.05? Describe both the size and uncertainty of the estimated effects.
+::: {.callout-important icon=false title="Question 4"}
+Interpret the estimated treatment effect and its 95% confidence interval in Laboratory A. Check that its estimate agrees with your calculation from the regression coefficients. What do the estimates, confidence intervals, and unadjusted p-values suggest about the treatment effect within each laboratory? Describe the size and uncertainty of the estimated effects.
 :::
 
-A significant comparison in one laboratory and a nonsignificant comparison in another does not by itself establish that their effects differ. The joint interaction test addresses whether the treatment effects are equal across laboratories.
+::: {.callout-note icon=false title="Optional: considering multiple comparisons" collapse="true"}
+When several treatment comparisons are interpreted together, an adjustment can help control the probability of at least one false-positive finding across the set. Whether this is appropriate depends on the scientific questions and how the comparisons will be used.
+
+The **Bonferroni correction** multiplies each p-value by the number of comparisons, with a maximum of 1. Compare the adjusted p-values with 0.05. For example, across five comparisons, a p-value of 0.008 becomes 0.040.
+
+To apply the correction, change `adjust = "none"` to `adjust = "bonferroni"` in the `pairs()` call above and rerun it, followed by the same `summary()` call. With `by = NULL`, the correction applies across all five laboratory comparisons. This also adjusts the confidence intervals.
+:::
+
+```{=latex}
+\clearpage
+```
 
 # Check the model assumptions
 
-Use the full interaction model to create the same two residual plots used in Week 1.
+Use the interaction model to create the same two residual plots used in Week 1.
 
 ```{r}
 #| label: model-diagnostics
@@ -287,8 +244,8 @@ plot(model_full, which = 2)  # Normal Q-Q plot
 
 The residuals-versus-fitted plot helps assess whether residual spread changes with fitted closure. Vertical groups of points are expected because plates in the same treatment-laboratory group share a fitted mean. The Normal Q-Q plot assesses whether the residual distribution is approximately Normal.
 
-The full model estimates each group's mean, so residuals average to zero within every group by construction. Look for changes in spread and departures from the Normal reference line. These plots do not establish independence, which also depends on how the experimental units were generated and measured.
+The interaction model estimates each group's mean, so residuals average to zero within every group by construction. Look for changes in spread and departures from the Normal reference line. Assess independence using the experimental design and how the plates were handled and measured.
 
-::: {.callout-important icon=false title="Question 6"}
+::: {.callout-important icon=false title="Question 5"}
 Do the plots suggest clear violations of the constant-variance or Normality assumptions? Describe the patterns that support your answer.
 :::

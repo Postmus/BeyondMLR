@@ -1,6 +1,6 @@
 # Week 2 planning notes
 
-Week 2 develops treatment effects that vary between centers, then briefly introduces crossed random effects. Build directly on the Week 1 multicenter setting. Keep cluster randomization at the start of Week 3 to introduce context-level predictors before observational multilevel analysis, predictors at both levels and cross-level interactions. Nested grouping variables are also covered in Week 3. The current 39-slide lecture contains the completed fixed and random treatment-effect sections, followed by the Part 3 divider and introductory slide on multiple grouping variables. Slides 35–38 now present the radiologist setting, exploratory plot, crossed random-intercept model and estimated variance components with a single-measurement absolute-agreement ICC. Slide 39 closes with Questions in the Week 1 style. Lab 3 is drafted around wound healing; the Lab 4 break is present but the lab itself remains to be developed. The earlier cluster-first starter is preserved in `build_cluster_starter.js`.
+Week 2 develops treatment effects that vary between centers, then briefly introduces crossed random effects. Build directly on the Week 1 multicenter setting. Keep cluster randomization at the start of Week 3 to introduce context-level predictors before observational multilevel analysis, predictors at both levels and cross-level interactions. Nested grouping variables are also covered in Week 3. The current 38-slide lecture contains the completed fixed and random treatment-effect sections, followed by the Part 3 divider and introductory slide on multiple grouping variables. Slides 34–37 now present the radiologist setting, exploratory plot, crossed random-intercept model and estimated variance components with a single-measurement absolute-agreement ICC. Slide 38 closes with Questions in the Week 1 style. Labs 3 and 4 use the wound-healing experiment for fixed interaction and random-intercept/slope analyses, respectively. Lab 4 reuses the rendered exploratory plot, ends with residual diagnostics, and leaves model comparisons to the lecture and conclusion writing to the assignment. The earlier cluster-first starter is preserved in `build_cluster_starter.js`.
 
 ## Opening and theoretical emphasis
 
@@ -20,7 +20,7 @@ Begin Part 1 with the known-means two-center additive example on slide 8. Its ta
 Then restore balanced allocation before introducing treatment heterogeneity and
 the distinction between included-center and population-average uncertainty.
 
-After the toy examples, slide 10 introduces the conceptual choice between fixed center parameters and a population distribution of random center effects. Slide 11 begins the empirical six-center analysis in the usual text-left/image-right layout, explicitly moving from known means to estimation from patient data. Slide 12 shows a traditional interaction plot with centers on the horizontal axis and one line per treatment connecting its observed means, with only a title and plot. Slide 13 then introduces the grouped treatment-slope formulation, parameter definitions and enlarged sum-to-zero constraints. Slide 14 then presents all fitted coefficients in the Week 1 estimate/SE/95% CI/p-value format before the nested-model interaction test on slide 15. Compare full and reduced model RSS using the annotated partial F formula, then introduce simple versus marginal effects and define estimated marginal means on slide 16. Slide 17 pairs a coding explanation with predicted means, simple effects, pointwise 95% CIs and Bonferroni-adjusted p-values across the six centers. Slide 18 closes the empirical analysis with residuals versus fitted values and a Normal Q-Q plot from the full interaction model. Keep software names and syntax for the lab. Slide 19 pauses for Lab 3 in the Week 1 break-slide style. Finish Part 1 with a wound-healing debrief: the additive/interaction average-effect comparison on slide 20 and a hypothetical unequal-laboratory-size illustration on slide 21. The population-center section begins Part 2 on slide 22.
+After the toy examples, slide 10 introduces the conceptual choice between fixed center parameters and a population distribution of random center effects. Slide 11 begins the empirical six-center analysis in the usual text-left/image-right layout, explicitly moving from known means to estimation from patient data. Slide 12 shows a traditional interaction plot with centers on the horizontal axis and one line per treatment connecting its observed means, with only a title and plot. Slide 13 then introduces the grouped treatment-slope formulation, parameter definitions and enlarged sum-to-zero constraints. Slide 14 presents all fitted coefficients in the Week 1 estimate/SE/95% CI/p-value format, followed directly by simple versus marginal effects and the definition of estimated marginal means on slide 15. Formal interaction testing is deferred to model-building discussions in Weeks 3 and 4. Lab 3 follows the same progression, moving from manual calculations of simple effects to estimated marginal means and their contrasts. Slide 16 pairs a coding explanation with predicted means, simple effects, pointwise 95% CIs and unadjusted p-values for each center. Lab 3 uses the same main analysis and introduces Bonferroni adjustment in an optional callout. Slide 17 closes the empirical analysis with residuals versus fitted values and a Normal Q-Q plot from the full interaction model. Keep software names and syntax for the lab. Slide 18 pauses for Lab 3 in the Week 1 break-slide style. Finish Part 1 with a wound-healing debrief: the additive/interaction average-effect comparison on slide 19 and a hypothetical unequal-laboratory-size illustration on slide 20. The population-center section begins Part 2 on slide 21.
 
 Keep effects coding for center in the fixed interaction. Explain the consequences
 of omitting interaction in plain language: equal cell sizes preserve the average
@@ -31,22 +31,22 @@ more weight in the fixed-allocation example. Retain its allocation condition in
 speaker notes only; do not add weighting formulas to the slide. Then contrast
 repeating the study in the same centers with sampling different centers in Part 2.
 
-Part 2 now begins with the population target on slide 23, followed by a 2 × 2
-grid on slide 24. Rows show new samples of centers; columns show random intercepts
+Part 2 now begins with the population target on slide 22, followed by a 2 × 2
+grid on slide 23. Rows show new samples of centers; columns show random intercepts
 versus random intercepts and slopes. Plot hypothetical true means, use distinct
 center names across rows, retain a common outcome scale, and do not recenter the
-sampled treatment deviations. Slide 25 then reuses the grouped model formula and
+sampled treatment deviations. Slide 24 then reuses the grouped model formula and
 explains the population-average parameters and joint distribution of center
 deviations, explicitly showing the variance-covariance matrix and individual-error
-distribution with independence assumptions. Slide 26 illustrates positive and
+distribution with independence assumptions. Slide 25 illustrates positive and
 negative covariance using hypothetical true center means and treatment effects
 on identical axes. Defer variance derivations. The empirical sequence then presents
-variance components and the calculated baseline/treatment-effect correlation (27),
-population-average coefficients (28), and the
-fixed-versus-random comparison (29). Add Time for Lab 4 as slide 30, retaining the
-usual break-slide style; the lab itself remains to be developed. After the break,
+variance components and the calculated baseline/treatment-effect correlation (26),
+population-average coefficients (27), and the
+fixed-versus-random comparison (28). Add Time for Lab 4 as slide 29, retaining the
+usual break-slide style; Lab 4 now continues the wound-healing case study. After the break,
 return to the rehabilitation data for a random-intercept-only versus random-slope
-comparison (31), then use the conceptual variance-decomposition and ICC slide (32)
+comparison (30), then use the conceptual variance-decomposition and ICC slide (31)
 to explain the structural difference. Both post-lab models target the population
 average; they differ in whether treatment heterogeneity is represented. The
 separate lecture diagnostics slide and earlier standalone target/uncertainty
@@ -95,7 +95,7 @@ The lecture dataset is now generated by `generate_interaction_data.R`, with pati
 
 ## 2. Multiple grouping variables and crossed random effects
 
-Part 3 starts on slide 33 with the crossed-random-effects section divider. Slide 34
+Part 3 starts on slide 32 with the crossed-random-effects section divider. Slide 33
 begins from one grouping variable, center, and asks what changes with two or more.
 Keep the definitions specific to grouping variables. A random intercept and slope
 still involve one grouping variable, not two.
@@ -108,7 +108,7 @@ still involve one grouping variable, not two.
   radiologists and radiologists assess several patients.
 
 The slide explicitly points ahead to crossed effects next and nested grouping
-variables in Week 3. Slides 35–38 reuse the old simulated radiologist-agreement
+variables in Week 3. Slides 34–37 reuse the old simulated radiologist-agreement
 example: a two-column setting slide with a generated image, a plot of measurements
 by patient and radiologist, the crossed random-intercept specification, and the
 estimated variance components with an absolute-agreement ICC for one measurement.

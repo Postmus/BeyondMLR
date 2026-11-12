@@ -1,0 +1,69 @@
+---
+title: "Week 2 assignment: Comparing postoperative pain-management protocols"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Study description
+
+A clinical research team compares a standard postoperative pain-management protocol with an enhanced protocol for patients undergoing elective knee replacement surgery. The team wants to estimate the average effect of the enhanced protocol across hospitals and understand how much its effect varies between hospitals.
+
+The study includes **12 hospitals** representing a wider population of hospitals treating similar patients. Within each hospital, **30 patients** are randomly assigned to the two protocols: 15 receive standard care and 15 receive the enhanced protocol. Each patient receives one protocol and contributes one pain measurement 24 hours after surgery, giving **360 observations**.
+
+Pain is measured using a visual analogue scale, recorded from **0 to 10**, where 0 represents no pain and 10 represents the worst imaginable pain. Scores are recorded to one decimal place. Lower scores indicate less pain. These are simulated teaching data.
+
+# Dataset
+
+Each row represents one patient.
+
+| Variable | Description |
+| --- | --- |
+| `patient_id` | Unique identifier for the patient |
+| `hospital` | Hospital, labelled Hospital 01 to Hospital 12 |
+| `protocol` | Pain-management protocol: Standard or Enhanced |
+| `pain_score` | Pain score 24 hours after surgery, on the 0–10 scale |
+
+Express protocol differences as **enhanced minus standard**, in pain-score points. A negative difference indicates lower pain under the enhanced protocol.
+
+# Analysis tasks
+
+1. **Describe the design.** Identify the experimental unit and grouping variable, and explain how the protocols were assigned within hospitals. Describe the population to which the research team aims to generalize.
+2. **Explore the data.** Calculate the number of patients, mean pain score, and standard deviation for each protocol within each hospital. Create an interaction plot with hospitals on the horizontal axis and one line per protocol connecting the observed means. Discuss the patterns in standard-care pain levels and protocol differences across hospitals.
+3. **Fit a random-intercept and treatment-slope model.** Include protocol as a fixed effect and a correlated random intercept and protocol slope for hospital.
+4. **Report and interpret the results.** Report and interpret the fixed and random effects to answer the research team's questions about the average protocol effect and variation between hospitals. Support your conclusions with appropriate statistical evidence.
+5. **Check the model and conclude.** Examine the conditional-residual-versus-fitted plot and the Normal Q-Q plot, and comment on the model assumptions. Write a short conclusion answering the research team's question. Include the average protocol difference, its uncertainty, appropriate units, and what the analysis suggests about variation in effects across hospitals.
+
+Explain your findings in the context of postoperative pain management and include units where appropriate.
+
+# Report and submission
+
+Submit a report created using Quarto that presents your analysis, results, and interpretations, using the template provided in the Downloads section below.
+
+The template follows the Week 1 report format. It includes a setup chunk that uses `pak` to install the required packages if needed and then loads them. Follow the installation instructions in [Lab 1](../../BLR_lab_center_fixed.html#install-pak-once) to prepare `pak`. The setup chunk runs during rendering and stays hidden in the report.
+
+Submit both the completed **Quarto source file (`.qmd`)** and the **rendered HTML report**. Keep your analysis code, results, and figures visible, and accompany them with your interpretations.
+
+::: {#help-with-quarto .callout-note icon=false title="Help with Quarto" collapse="true"}
+Save the report template in your `week2` folder and the dataset in `week2/data`. Read the dataset using `read.csv("data/postoperative_pain.csv")`.
+
+Open the template in RStudio. Replace `Your name` with your name and replace the italic prompts with your own writing. Add your analysis code to the labelled chunks. To run code as you work, use the Run button in a chunk or select lines and press **Ctrl+Enter** on Windows/Linux or **Cmd+Enter** on macOS.
+
+To produce the complete HTML report, save the file and press **Render**. Alternatively, with `week2` as the current directory in the RStudio Terminal, run:
+
+```bash
+quarto render report_template.qmd
+```
+
+If you rename the template, use your chosen filename in this command. Rendering executes your code in a fresh R session, so include the data import and all analysis steps in the document.
+
+Keep `eval: true` and `echo: true` in the YAML header so your analysis runs and its code and results appear in the report. The setup chunk uses `include: false` to install and load packages while keeping that preparation hidden. Leave warnings visible while developing the analysis so you can investigate any fitting issues.
+
+See [Help with Quarto in the Week 1 assignment](../week1/assignment.html#help-with-quarto) for more detail about document structure and execution settings.
+:::
+
+# Downloads
+
+- [Download the dataset](downloads/postoperative_pain.csv){download="postoperative_pain.csv"}
+- [Download the report template](downloads/report_template.qmd){download="report_template.qmd"}
