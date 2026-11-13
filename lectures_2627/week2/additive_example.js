@@ -2,27 +2,27 @@ const path = require('path');
 const { COLORS, FONT_FAMILIES, LAYOUT } = require('../../slides-common/js/blr_theme');
 const { addBase, addSlideTitle, addAssetFrame, addFooter } = require('../../slides-common/js/pptx_layout_primitives');
 
-const equation = String.raw`Y_{ij}=\underbrace{\beta_0+c_j}_{\text{Standard-care mean in center }j}+\underbrace{\beta_1T_{ij}}_{\text{Treatment contribution}}+\underbrace{\varepsilon_{ij}}_{\text{Individual deviation}}`;
-const interactionEquation = String.raw`Y_{ij}=\underbrace{\beta_0+c_j}_{\text{Standard-care mean in center }j}+\underbrace{(\beta_1+d_j)T_{ij}}_{\text{Treatment contribution}}+\underbrace{\varepsilon_{ij}}_{\text{Individual deviation}}`;
+const equation = String.raw`Y_{ij}=\underbrace{\beta_0+c_j}_{\text{Standard-protocol mean for donor }j}+\underbrace{\beta_1T_{ij}}_{\text{Protocol contribution}}+\underbrace{\varepsilon_{ij}}_{\text{Aliquot deviation}}`;
+const interactionEquation = String.raw`Y_{ij}=\underbrace{\beta_0+c_j}_{\text{Standard-protocol mean for donor }j}+\underbrace{(\beta_1+d_j)T_{ij}}_{\text{Protocol contribution}}+\underbrace{\varepsilon_{ij}}_{\text{Aliquot deviation}}`;
 
 function addKnownMeansExample(pptx, drawEquation, interaction = false) {
   const slide = pptx.addSlide();
   addBase(slide);
-  addSlideTitle(slide, interaction ? 'Different treatment effects across centers' : 'A common treatment effect in both centers');
+  addSlideTitle(slide, interaction ? 'Different protocol effects across donors' : 'The additive model: a common protocol effect across donors');
   const body = LAYOUT.body;
   const text = (value, y, h, options = {}) => slide.addText(value, {
     x: body.x, y, w: body.w, h, fontFace: FONT_FAMILIES.sans,
     fontSize: 20, color: COLORS.text, margin: 0, breakLine: false, ...options
   });
   // A custom full-width figure plus model: the shared primitives own framing and type.
-  text('Hypothetical example: assume the four true group means are known.', body.y + .04, .42,
+  text(interaction ? 'Illustration with two donors and true protocol effects of 2 and 10 µg/mg.' : 'Illustration with two donors and a true protocol effect of 6 µg/mg in each donor.', body.y + .04, .42,
     { bold: true, color: COLORS.primary });
   addAssetFrame(slide, { box: { x: body.x, y: 1.63, w: body.w, h: 3.65 },
     assetPath: path.join(__dirname, 'assets/additive-example', interaction ? 'interaction-means.png' : 'additive-means.png'), framed: false });
   drawEquation(slide, interaction ? interactionEquation : equation, body.x + .25, 5.48, body.w - .50, .86);
-  text('Tᵢⱼ = 0 for standard care and 1 for enhanced care.  i = patient; j = center.', 6.49, .33,
+  text('Tᵢⱼ = 0 for Standard and 1 for Modified.  i = aliquot; j = donor.', 6.49, .33,
     { fontSize: 18, align: 'center' });
-  text('Individual patient outcomes vary around their group mean through εᵢⱼ.', 6.89, .26,
+  text('Individual aliquot yields vary around their group mean through εᵢⱼ.', 6.89, .26,
     { fontSize: 17, color: COLORS.muted, align: 'center' });
   slide.addNotes('');
   addFooter(slide);

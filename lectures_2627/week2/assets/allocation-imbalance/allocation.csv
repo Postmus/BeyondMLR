@@ -1,7 +1,11 @@
-"center","standard","enhanced","true_standard_mean"
-"Center A",5,15,343
-"Center B",8,12,376
-"Center C",10,10,368
-"Center D",10,10,331
-"Center E",12,8,387
-"Center F",15,5,355
+"donor","standard","modified","true_standard_mean"
+"Donor 01",1,7,69.3036525435924
+"Donor 02",2,6,61.7113738443881
+"Donor 03",3,5,63.0339119689053
+"Donor 04",3,5,72.8055264580477
+"Donor 05",4,4,52.8767015535977
+"Donor 06",4,4,32.8877272545263
+"Donor 07",5,3,63.4371148361616
+"Donor 08",5,3,58.1020814925943
+"Donor 09",6,2,72.9682716910984
+"Donor 10",7,1,52.9441382192192

@@ -20,7 +20,6 @@ pptx.lang = 'en-GB';
 pptx.theme = { headFontFace: FONT_FAMILIES.sans, bodyFontFace: FONT_FAMILIES.sans, lang: 'en-GB' };
 defineTemplateMasters(pptx);
 const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
-const week1 = read('../week1/assets/model_results.json');
 const results = read('assets/fixed-interaction/model_results.json');
 const allocation = read('assets/allocation-imbalance/model_results.json');
 const lab3 = read('assets/lab3-debrief/model_results.json');
@@ -39,7 +38,7 @@ addBrandedTitleSlide(pptx, {
   affiliation: 'UMCG · Department of Epidemiology',
   badge: 'BLR'
 });
-addWeek2Opening(pptx, drawEquation, week1, results, allocation, lab3, randomInteraction);
+addWeek2Opening(pptx, drawEquation, results, allocation, lab3, randomInteraction);
 addCrossedEffectsIntroduction(pptx);
 addCrossedCaseStudy(pptx, drawEquation, read('assets/radiologists/model_results.json'));
 addSectionSlide(pptx, { sectionLabel: 'The End', sectionTitle: 'Questions' });

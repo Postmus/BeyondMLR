@@ -1,15 +1,28 @@
 # Week 2 planning notes
 
-Week 2 develops treatment effects that vary between centers, then briefly introduces crossed random effects. Use rehabilitation for the Week 1 recap and introductory examples, then introduce a HIPARCO-inspired CPAP case for Parts 1 and 2. Keep cluster randomization at the start of Week 3 to introduce context-level predictors before observational multilevel analysis, predictors at both levels and cross-level interactions. Nested grouping variables are also covered in Week 3. The current 37-slide lecture contains the completed fixed and random treatment-effect sections, followed by the Part 3 divider and introductory slide on multiple grouping variables. Slides 33–36 now present the radiologist setting, exploratory plot, crossed random-intercept model and estimated variance components with a single-measurement absolute-agreement ICC. Slide 37 closes with Questions in the Week 1 style. Labs 3 and 4 use the wound-healing experiment for fixed interaction and random-intercept/slope analyses, respectively. Lab 4 reuses the rendered exploratory plot, ends with residual diagnostics, and leaves model comparisons to the lecture and conclusion writing to the assignment. The earlier cluster-first starter is preserved in `build_cluster_starter.js`.
+Week 2 develops treatment effects that vary between centers, then briefly introduces crossed random effects. Use Assignment 1 protein extraction for the recap and introductory examples, then introduce a HIPARCO-inspired CPAP case for Parts 1 and 2. Keep cluster randomization at the start of Week 3 to introduce context-level predictors before observational multilevel analysis, predictors at both levels and cross-level interactions. Nested grouping variables are also covered in Week 3. The current 39-slide lecture contains the completed fixed and random treatment-effect sections, followed by the Part 3 divider and introductory slide on multiple grouping variables. Slides 35–38 now present the radiologist setting, exploratory plot, crossed random-intercept model and estimated variance components with a single-measurement absolute-agreement ICC. Slide 39 closes with Questions in the Week 1 style. Labs 3 and 4 use the wound-healing experiment for fixed interaction and random-intercept/slope analyses, respectively. Lab 4 reuses the rendered exploratory plot, ends with residual diagnostics, and leaves model comparisons to the lecture and conclusion writing to the assignment. The earlier cluster-first starter is preserved in `build_cluster_starter.js`.
 
 ## Opening and theoretical emphasis
 
-After the title, begin with the model-comparison table from the final substantive Week 1
-slide. Slides 3–5 introduce unequal treatment proportions within centers while retaining equal overall group sizes and a common treatment effect. Show the allocation, fitted results and the comparisons used by the three models. Slide 5 ends with the question of what changes when treatment effects vary across centers, leading to the two-center examples and the conceptual comparison of fixed and random effects. Keep the allocation discussion formula-free and qualify the extra between-center information by the random-intercept assumptions. Use “estimated standard error” throughout the lecture.
-Continue the general introduction with the known-means two-center additive example on slide 6. Its table includes row and column averages, while its plot places center on the horizontal axis and annotates both 20 m treatment gaps. The matching interaction example on slide 7 changes the gaps to 10/30 m, retains the 20 m average effect, and labels center deviations of -10/+10 m before introducing the six-center dataset.
+After the title, slide 2 recalls Assignment 1's protein-extraction experiment,
+with study details on the left and a generated laboratory image on the right.
+Slide 3 makes the additive assumption explicit using two hypothetical donors,
+a common protocol effect of 6 µg/mg, a true-means table, parallel lines and the
+model formula. Slide 4 compares protocol-only, fixed-donor and random-donor fits
+to the original assignment data, including estimated SEs, 95% CIs and p-values.
+Slide 5 is a clearly marked placeholder for feedback based on the submissions.
+
+Slides 6–8 show a hypothetical change in protocol allocation within donors, its
+fitted results, and concise bullets explaining the three models' comparisons.
+The allocation generator preserves the original donor contributions and aliquot
+errors, verifies the original CSV, and keeps a common true protocol effect of
+6 µg/mg. The concluding callout leads straight to the interaction example on
+slide 9: donor effects of 2 and 10 µg/mg, an average effect of 6, and deviations
+of −4 and +4. Use “estimated standard error” throughout.
+
 The CPAP case has 240 patients in six hospitals of sizes 24, 32, 36, 44, 48 and 56. Treatment allocation is 50:50 within each hospital. The outcome is reduction in 24-hour mean blood pressure after 12 weeks. This retains a simple within-hospital comparison while allowing unequal precision across hospitals.
 
-After the toy examples, slide 8 introduces the conceptual choice between fixed center parameters and a population distribution of random center effects. The Part 1 divider on slide 9 then introduces the fixed-effects analysis. Slide 10 introduces the simulated CPAP study and begins the empirical six-hospital analysis in the usual text-left/image-right layout, explicitly moving from known means to estimation from patient data. Slide 11 shows a traditional interaction plot with centers on the horizontal axis and one line per treatment connecting its observed means, with only a title and plot. Slide 12 then introduces the grouped treatment-slope formulation, parameter definitions and enlarged sum-to-zero constraints. Slide 13 presents all fitted coefficients in the Week 1 estimate/SE/95% CI/p-value format, followed directly by simple versus marginal effects and the definition of estimated marginal means on slide 14. Formal interaction testing is deferred to model-building discussions in Weeks 3 and 4. Lab 3 follows the same progression, moving from manual calculations of simple effects to estimated marginal means and their contrasts. Slide 15 pairs a coding explanation with predicted means, simple effects, pointwise 95% CIs and unadjusted p-values for each center. Lab 3 uses the same main analysis and introduces Bonferroni adjustment in an optional callout. Slide 16 closes the empirical analysis with residuals versus fitted values and a Normal Q-Q plot from the full interaction model. Keep software names and syntax for the lab. Slide 17 pauses for Lab 3 in the Week 1 break-slide style. Finish Part 1 with a wound-healing debrief: the additive/interaction average-effect comparison on slide 18 and a hypothetical unequal-laboratory-size illustration on slide 19. The population-center section begins Part 2 on slide 20.
+After the toy examples, slide 10 introduces the conceptual choice between fixed group parameters and a population distribution of random group effects, linking donors to hospitals. The Part 1 divider on slide 11 then introduces the fixed-effects analysis. Slide 12 introduces the simulated CPAP study and begins the empirical six-hospital analysis in the usual text-left/image-right layout, explicitly moving from known means to estimation from patient data. Slide 13 shows a traditional interaction plot with centers on the horizontal axis and one line per treatment connecting its observed means, with only a title and plot. Slide 14 then introduces the grouped treatment-slope formulation, parameter definitions and enlarged sum-to-zero constraints. Slide 15 presents all fitted coefficients in the Week 1 estimate/SE/95% CI/p-value format, followed directly by simple versus marginal effects and the definition of estimated marginal means on slide 16. Formal interaction testing is deferred to model-building discussions in Weeks 3 and 4. Lab 3 follows the same progression, moving from manual calculations of simple effects to estimated marginal means and their contrasts. Slide 17 pairs a coding explanation with predicted means, simple effects, pointwise 95% CIs and unadjusted p-values for each center. Lab 3 uses the same main analysis and introduces Bonferroni adjustment in an optional callout. Slide 18 closes the empirical analysis with residuals versus fitted values and a Normal Q-Q plot from the full interaction model. Keep software names and syntax for the lab. Slide 19 pauses for Lab 3 in the Week 1 break-slide style. Finish Part 1 with a wound-healing debrief: the additive/interaction average-effect comparison on slide 20 and a hypothetical unequal-laboratory-size illustration on slide 21. The population-center section begins Part 2 on slide 22.
 
 Keep effects coding for center in the fixed interaction. Explain the consequences
 of omitting interaction in plain language: equal cell sizes preserve the average
@@ -20,22 +33,22 @@ more weight in the fixed-allocation example, which assumes a common treatment
 proportion across centers. Keep speaker notes empty and explain the example verbally. Then contrast
 repeating the study in the same centers with sampling different centers in Part 2.
 
-Part 2 now begins with the population target on slide 21, followed by a 2 × 2
-grid on slide 22. Rows show new samples of centers; columns show random intercepts
+Part 2 now begins with the population target on slide 23, followed by a 2 × 2
+grid on slide 24. Rows show new samples of centers; columns show random intercepts
 versus random intercepts and slopes. Plot hypothetical true means, use distinct
 center names across rows, retain a common outcome scale, and do not recenter the
-sampled treatment deviations. Slide 23 then reuses the grouped model formula and
+sampled treatment deviations. Slide 25 then reuses the grouped model formula and
 explains the population-average parameters and joint distribution of center
 deviations, explicitly showing the variance-covariance matrix and individual-error
-distribution with independence assumptions. Slide 24 illustrates positive and
+distribution with independence assumptions. Slide 26 illustrates positive and
 negative covariance using hypothetical true center means and treatment effects
 on identical axes. Defer variance derivations. The empirical sequence then presents
-variance components and the calculated control-mean/treatment-effect correlation (25),
-population-average coefficients (26), and the
-fixed-versus-random comparison (27). Explain that unequal hospital sizes allow their point estimates to differ, and population generalization adds uncertainty from hospital sampling. Follow with the CPAP random-intercept-only versus random-slope
-comparison (28) to motivate the model used in Lab 4. Add Time for Lab 4 as slide 29,
+variance components and the calculated control-mean/treatment-effect correlation (27),
+population-average coefficients (28), and the
+fixed-versus-random comparison (29). Explain that unequal hospital sizes allow their point estimates to differ, and population generalization adds uncertainty from hospital sampling. Follow with the CPAP random-intercept-only versus random-slope
+comparison (30) to motivate the model used in Lab 4. Add Time for Lab 4 as slide 31,
 retaining the usual break-slide style; Lab 4 continues the wound-healing case study.
-After the lab, use the conceptual variance-decomposition and ICC slide (30)
+After the lab, use the conceptual variance-decomposition and ICC slide (32)
 to explain the structural difference. Both models in the comparison target the population
 average; they differ in whether treatment heterogeneity is represented. The
 separate lecture diagnostics slide and earlier standalone target/uncertainty
@@ -44,7 +57,7 @@ before the lab, and the random-structure discussion together afterward.
 
 ## 1. Treatment effects that vary between centers
 
-Keep the Week 1 randomized block design, with patients assigned to both treatments within each center. Start from the model already established in Week 1: center-specific intercepts and a common treatment effect. There is no need to restart with the treatment-only analysis.
+Revisit the randomized block design through Assignment 1, with aliquots assigned to both protocols within each donor. Start from group-specific intercepts and a common protocol effect, compare the three fitted models, and then extend the argument to treatment effects across clinical centers.
 
 The Week 1 summary explicitly assumes the same explanatory-variable effect across groups (no interaction). Week 2 relaxes that assumption: what if the treatment effect also differs between centers?
 
@@ -84,7 +97,7 @@ The HIPARCO-inspired simulated lecture dataset is generated by `generate_interac
 
 ## 2. Multiple grouping variables and crossed random effects
 
-Part 3 starts on slide 31 with the crossed-random-effects section divider. Slide 32
+Part 3 starts on slide 33 with the crossed-random-effects section divider. Slide 34
 begins from one grouping variable, center, and asks what changes with two or more.
 Keep the definitions specific to grouping variables. A random intercept and slope
 still involve one grouping variable, not two.
@@ -97,7 +110,7 @@ still involve one grouping variable, not two.
   radiologists and radiologists assess several patients.
 
 The slide explicitly points ahead to crossed effects next and nested grouping
-variables in Week 3. Slides 33–36 reuse the old simulated radiologist-agreement
+variables in Week 3. Slides 35–38 reuse the old simulated radiologist-agreement
 example: a two-column setting slide with a generated image, a plot of measurements
 by patient and radiologist, the crossed random-intercept specification, and the
 estimated variance components with an absolute-agreement ICC for one measurement.

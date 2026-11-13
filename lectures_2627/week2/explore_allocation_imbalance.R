@@ -1,89 +1,82 @@
-# Reproduce the allocation-imbalance comparison used in the lecture opening.
-# Run from the repository root: Rscript lectures_2627/week2/explore_allocation_imbalance.R
-library(nlme)
+# Assignment 1 recap and a hypothetical change in allocation within donors.
+library(lmerTest)
+library(jsonlite)
 script_path <- sub('^--file=', '', commandArgs()[grepl('^--file=', commandArgs())][1])
 script_dir <- dirname(normalizePath(script_path))
-
-centers <- paste('Center', LETTERS[1:6])
-generation_centers <- centers[c(4, 1, 6, 3, 2, 5)]
-center_effects <- setNames(c(-29, -17, -5, 8, 16, 27), generation_centers)
-n_standard <- setNames(c(5, 8, 10, 10, 12, 15), centers)
+data_path <- file.path(script_dir, '../../labs_2627/assignments/week1/downloads/protein_yield.csv')
+original <- read.csv(data_path)
+donors <- unique(original$donor)
+protocols <- c('Standard', 'Modified')
+n_standard <- setNames(c(1, 2, 3, 3, 4, 4, 5, 5, 6, 7), donors)
 
 generate <- function(standard_counts) {
-  # Replay Week 1's seed, center order and randomization. Both allocations
-  # use the same random permutations and individual errors: only the number
-  # assigned to each treatment changes. Regenerate outcomes accordingly.
-  set.seed(158)
-  dat <- do.call(rbind, lapply(generation_centers, function(center) {
-    n0 <- standard_counts[[center]]
-    treatment <- sample(c(rep('Standard', n0), rep('Enhanced', 20 - n0)))
-    error <- rnorm(20, 0, 24)
-    data.frame(center, treatment, individual_error = error,
-      distance = round(360 + center_effects[[center]] +
-        10 * (treatment == 'Enhanced') + error, 1))
+  # Replay Assignment 1's seed and draws. The two allocations use identical
+  # random permutations, donor contributions and individual aliquot errors.
+  set.seed(262701)
+  donor_effects <- rnorm(length(donors), 0, 12)
+  dat <- do.call(rbind, lapply(seq_along(donors), function(j) {
+    n0 <- standard_counts[[donors[j]]]
+    protocol <- sample(c(rep('Standard', n0), rep('Modified', 8 - n0)))
+    error <- rnorm(8, 0, 8)
+    data.frame(aliquot = original$aliquot[original$donor == donors[j]],
+      donor = donors[j], protocol, individual_error = error,
+      protein_yield = round(60 + donor_effects[j] + 6 * (protocol == 'Modified') + error, 2))
   }))
-  dat$center <- factor(dat$center, levels = centers)
-  dat$treatment <- factor(dat$treatment, levels = c('Standard', 'Enhanced'))
-  contrasts(dat$center) <- contr.sum(length(centers))
+  attr(dat, 'donor_effects') <- donor_effects
   dat
 }
-
-balanced <- generate(setNames(rep(10, 6), centers))
+balanced_replay <- generate(setNames(rep(4, 10), donors))
 unbalanced <- generate(n_standard)
-original <- read.csv(file.path(script_dir, '../week1/assets/rehabilitation_data.csv'))
-stopifnot(identical(as.character(balanced$center), original$center),
-          identical(as.character(balanced$treatment), original$treatment),
-          isTRUE(all.equal(balanced$distance, original$distance)),
-          identical(balanced$individual_error, unbalanced$individual_error),
-          all(table(unbalanced$treatment) == 60))
+stopifnot(identical(balanced_replay$aliquot, original$aliquot),
+          identical(balanced_replay$donor, original$donor),
+          identical(balanced_replay$protocol, original$protocol),
+          identical(balanced_replay$protein_yield, original$protein_yield),
+          identical(balanced_replay$individual_error, unbalanced$individual_error),
+          all(table(original$donor, original$protocol) == 4),
+          all(table(unbalanced$protocol) == 40))
 
 fit_models <- function(dat, design) {
+  dat$donor <- factor(dat$donor)
+  dat$protocol <- factor(dat$protocol, levels = protocols)
+  contrasts(dat$donor) <- contr.sum(nlevels(dat$donor))
   models <- list(
-    'Treatment only' = lm(distance ~ treatment, data = dat),
-    'Fixed center effects' = lm(distance ~ treatment + center, data = dat),
-    'Random center effects' = lme(distance ~ treatment, random = ~1 | center,
-                                  data = dat, method = 'REML'))
+    'Protocol only' = lm(protein_yield ~ protocol, data = dat),
+    'Fixed donor effects' = lm(protein_yield ~ protocol + donor, data = dat),
+    'Random donor effects' = lmer(protein_yield ~ protocol + (1 | donor), data = dat, REML = TRUE))
   rows <- lapply(names(models), function(name) {
     model <- models[[name]]
-    if (inherits(model, 'lme')) {
-      estimate <- fixef(model)[['treatmentEnhanced']]
-      se <- summary(model)$tTable['treatmentEnhanced', 'Std.Error']
-      vc <- as.numeric(VarCorr(model)[1, 'Variance'])
-    } else {
-      estimate <- coef(model)[['treatmentEnhanced']]
-      se <- summary(model)$coefficients['treatmentEnhanced', 'Std. Error']
-      vc <- NA_real_
-    }
-    data.frame(design, model = name, estimate, se,
-               residual_sd = sigma(model), center_variance = vc)
+    co <- coef(summary(model))['protocolModified', ]
+    mixed <- inherits(model, 'merMod')
+    if (mixed) stopifnot(!isSingular(model), is.null(model@optinfo$conv$lme4$messages))
+    df <- if (mixed) co['df'] else df.residual(model)
+    estimate <- unname(co['Estimate']); se <- unname(co['Std. Error'])
+    data.frame(design, model = name, estimate, se, df = unname(df),
+      lower_95 = estimate - qt(.975, df) * se,
+      upper_95 = estimate + qt(.975, df) * se,
+      p = unname(co['Pr(>|t|)']), residual_sd = sigma(model),
+      donor_variance = if (mixed) as.numeric(VarCorr(model)$donor) else NA_real_)
   })
   do.call(rbind, rows)
 }
-
-results <- rbind(fit_models(balanced, 'Week 1 balanced'),
-                 fit_models(unbalanced, 'Unequal treatment proportions'))
-allocation <- data.frame(center = centers, standard = unname(n_standard),
-  enhanced = 20 - unname(n_standard),
-  true_standard_mean = 360 + unname(center_effects[centers]))
-# The pooled contrast also contains this baseline-composition contribution.
+results <- rbind(fit_models(original, 'Assignment 1 balanced'),
+                 fit_models(unbalanced, 'Unequal protocol proportions'))
+b <- subset(results, design == 'Assignment 1 balanced')
+stopifnot(diff(range(b$estimate)) < 1e-7,
+          abs(b$se[2] - b$se[3]) < 1e-5)
+allocation <- data.frame(donor = donors, standard = unname(n_standard),
+  modified = 8 - unname(n_standard),
+  true_standard_mean = 60 + attr(balanced_replay, 'donor_effects'))
 composition <- with(allocation,
-  sum(enhanced * true_standard_mean) / sum(enhanced) -
-  sum(standard * true_standard_mean) / sum(standard))
-
-output <- file.path(script_dir, 'assets/allocation-imbalance')
-dir.create(output, recursive = TRUE, showWarnings = FALSE)
-write.csv(results, file.path(output, 'model_results.csv'), row.names = FALSE)
-write.csv(allocation, file.path(output, 'allocation.csv'), row.names = FALSE)
-write.csv(unbalanced, file.path(output, 'rehabilitation_unbalanced.csv'), row.names = FALSE)
-jsonlite::write_json(list(
-  seed = 158, generating_treatment_effect = 10, individual_error_sd = 24,
-  allocation = allocation, results = results,
-  baseline_composition = composition
-), file.path(output, 'model_results.json'), auto_unbox = TRUE, digits = 10, pretty = TRUE)
-cat('Treatment effect is 10 m in every center; error SD is 24 m.\n')
-cat('Balanced data exactly reproduce Week 1; individual errors match across designs.\n\n')
-print(allocation, row.names = FALSE)
-cat('\n')
-print(results, row.names = FALSE, digits = 7)
-cat(sprintf('\nBaseline-composition contribution to expected pooled contrast: %.4f m\n', composition))
-cat(sprintf('Expected pooled contrast with unequal allocation: %.4f m\n', 10 + composition))
+  weighted.mean(true_standard_mean, modified) - weighted.mean(true_standard_mean, standard))
+out <- file.path(script_dir, 'assets/allocation-imbalance')
+dir.create(out, recursive = TRUE, showWarnings = FALSE)
+write.csv(results, file.path(out, 'model_results.csv'), row.names = FALSE)
+write.csv(allocation, file.path(out, 'allocation.csv'), row.names = FALSE)
+write.csv(unbalanced, file.path(out, 'protein_yield_unbalanced.csv'), row.names = FALSE)
+write_json(list(seed = 262701, assignment_data_md5 = unname(tools::md5sum(data_path)),
+  generating_treatment_effect = 6, individual_error_sd = 8,
+  inference = 'OLS t inference; random-intercept REML with Satterthwaite degrees of freedom, matching Lab 2.',
+  allocation = allocation, results = results, baseline_composition = composition),
+  file.path(out, 'model_results.json'), auto_unbox = TRUE, digits = 10, pretty = TRUE)
+cat('Assignment 1 replay and allocation checks passed. Common protocol effect: 6 µg/mg.\n')
+print(results, row.names = FALSE, digits = 6)

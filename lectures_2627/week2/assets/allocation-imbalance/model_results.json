@@ -1,90 +1,140 @@
 {
-  "seed": 158,
-  "generating_treatment_effect": 10,
-  "individual_error_sd": 24,
+  "seed": 262701,
+  "assignment_data_md5": "fdb936351fc7c97c9ea95fce0f369d59",
+  "generating_treatment_effect": 6,
+  "individual_error_sd": 8,
+  "inference": "OLS t inference; random-intercept REML with Satterthwaite degrees of freedom, matching Lab 2.",
   "allocation": [
     {
-      "center": "Center A",
+      "donor": "Donor 01",
+      "standard": 1,
+      "modified": 7,
+      "true_standard_mean": 69.3036525436
+    },
+    {
+      "donor": "Donor 02",
+      "standard": 2,
+      "modified": 6,
+      "true_standard_mean": 61.7113738444
+    },
+    {
+      "donor": "Donor 03",
+      "standard": 3,
+      "modified": 5,
+      "true_standard_mean": 63.0339119689
+    },
+    {
+      "donor": "Donor 04",
+      "standard": 3,
+      "modified": 5,
+      "true_standard_mean": 72.805526458
+    },
+    {
+      "donor": "Donor 05",
+      "standard": 4,
+      "modified": 4,
+      "true_standard_mean": 52.8767015536
+    },
+    {
+      "donor": "Donor 06",
+      "standard": 4,
+      "modified": 4,
+      "true_standard_mean": 32.8877272545
+    },
+    {
+      "donor": "Donor 07",
       "standard": 5,
-      "enhanced": 15,
-      "true_standard_mean": 343
+      "modified": 3,
+      "true_standard_mean": 63.4371148362
     },
     {
-      "center": "Center B",
-      "standard": 8,
-      "enhanced": 12,
-      "true_standard_mean": 376
+      "donor": "Donor 08",
+      "standard": 5,
+      "modified": 3,
+      "true_standard_mean": 58.1020814926
     },
     {
-      "center": "Center C",
-      "standard": 10,
-      "enhanced": 10,
-      "true_standard_mean": 368
+      "donor": "Donor 09",
+      "standard": 6,
+      "modified": 2,
+      "true_standard_mean": 72.9682716911
     },
     {
-      "center": "Center D",
-      "standard": 10,
-      "enhanced": 10,
-      "true_standard_mean": 331
-    },
-    {
-      "center": "Center E",
-      "standard": 12,
-      "enhanced": 8,
-      "true_standard_mean": 387
-    },
-    {
-      "center": "Center F",
-      "standard": 15,
-      "enhanced": 5,
-      "true_standard_mean": 355
+      "donor": "Donor 10",
+      "standard": 7,
+      "modified": 1,
+      "true_standard_mean": 52.9441382192
     }
   ],
   "results": [
     {
-      "design": "Week 1 balanced",
-      "model": "Treatment only",
-      "estimate": 11.03,
-      "se": 5.7740584056,
-      "residual_sd": 31.6258203708
+      "design": "Assignment 1 balanced",
+      "model": "Protocol only",
+      "estimate": 4.6135,
+      "se": 2.8943747199,
+      "df": 78,
+      "lower_95": -1.1487574272,
+      "upper_95": 10.3757574272,
+      "p": 0.11499077686,
+      "residual_sd": 12.9440372521
     },
     {
-      "design": "Week 1 balanced",
-      "model": "Fixed center effects",
-      "estimate": 11.03,
-      "se": 4.3388042274,
-      "residual_sd": 23.7646094796
+      "design": "Assignment 1 balanced",
+      "model": "Fixed donor effects",
+      "estimate": 4.6135,
+      "se": 1.7600358054,
+      "df": 69,
+      "lower_95": 1.1023246396,
+      "upper_95": 8.1246753604,
+      "p": 0.010768711335,
+      "residual_sd": 7.8711194073
     },
     {
-      "design": "Week 1 balanced",
-      "model": "Random center effects",
-      "estimate": 11.03,
-      "se": 4.3388042274,
-      "residual_sd": 23.7646094796,
-      "center_variance": 513.8143
+      "design": "Assignment 1 balanced",
+      "model": "Random donor effects",
+      "estimate": 4.6135,
+      "se": 1.7600358002,
+      "df": 69.0000002151,
+      "lower_95": 1.1023246501,
+      "upper_95": 8.1246753499,
+      "p": 0.010768711108,
+      "residual_sd": 7.8711193843,
+      "donor_variance": 114.3930501502
     },
     {
-      "design": "Unequal treatment proportions",
-      "model": "Treatment only",
-      "estimate": 3.87,
-      "se": 5.7471986953,
-      "residual_sd": 31.478703679
+      "design": "Unequal protocol proportions",
+      "model": "Protocol only",
+      "estimate": 5.6535,
+      "se": 2.8983636221,
+      "df": 78,
+      "lower_95": -0.1166987214,
+      "upper_95": 11.4236987214,
+      "p": 0.054698671545,
+      "residual_sd": 12.961876165
     },
     {
-      "design": "Unequal treatment proportions",
-      "model": "Fixed center effects",
-      "estimate": 8.3957564576,
-      "se": 4.5636988572,
-      "residual_sd": 23.7575484999
+      "design": "Unequal protocol proportions",
+      "model": "Fixed donor effects",
+      "estimate": 4.4394615385,
+      "se": 1.9523273183,
+      "df": 69,
+      "lower_95": 0.54467510597,
+      "upper_95": 8.334247971,
+      "p": 0.026084489794,
+      "residual_sd": 7.8700830247
     },
     {
-      "design": "Unequal treatment proportions",
-      "model": "Random center effects",
-      "estimate": 8.1341882484,
-      "se": 4.5508861969,
-      "residual_sd": 23.7573065315,
-      "center_variance": 509.2931
+      "design": "Unequal protocol proportions",
+      "model": "Random donor effects",
+      "estimate": 4.5320060414,
+      "se": 1.938155756,
+      "df": 70.9235321919,
+      "lower_95": 0.6673610187,
+      "upper_95": 8.3966510642,
+      "p": 0.022195452662,
+      "residual_sd": 7.8693961603,
+      "donor_variance": 115.4558047033
     }
   ],
-  "baseline_composition": -2.7333333333
+  "baseline_composition": 2.0432494689
 }

@@ -1,52 +1,55 @@
 # Beyond MLR: Week 2
 
-The revised lecture has 37 slides, empty speaker notes and no backup slides. It begins with a course title slide and the Week 1 model-comparison table,
-then examines unequal treatment allocation in three formula-free slides before
-introducing treatment-by-center interaction with dummy coding for treatment
-and effects coding for center. It compares additive and interaction models for the average treatment effect,
-then introduces uncertainty about a population average.
-See [PLANNING.md](PLANNING.md) for the rest of the proposed lecture.
+The lecture has 39 slides, empty speaker notes and no backup slides. The introduction
+revisits Assignment 1's protein-extraction experiment: setting, additive model,
+three-model results and a feedback placeholder. A hypothetical allocation change
+then motivates the within- and between-donor comparisons, followed by a known-means
+interaction example. Parts 1 and 2 use the simulated HIPARCO-inspired CPAP case.
+See [PLANNING.md](PLANNING.md) for the teaching sequence.
 
 ## Current lecture sequence
 
 | Slides | Content |
 | --- | --- |
 | 1 | Title: When treatment effects vary. Subtitle: Interactions, random slopes and crossed random effects. |
-| 2 | Week 1 recap: rehabilitation trial setting beside its closing comparison table. |
-| 3–4 | Unequal treatment allocation within centers and the fitted three-model comparison. |
-| 5 | Within- versus between-center comparisons, the random-intercept assumptions, and a transition to treatment effects that vary across centers. |
-| 6 | Known-means 2 × 2 additive example: marginal averages, parallel treatment lines, equal treatment-gap annotations and the individual-outcome model. |
-| 7 | Matching known-means interaction example: treatment gaps of 10/30 m, average effect of 20 m, center deviations of -10/+10 m and the interaction model. |
-| 8 | Conceptual comparison: fixed center parameters versus a population distribution of random center effects. |
-| 9 | Part 1 divider: Treatment-by-center interaction: fixed effects. |
-| 10 | Two-column empirical transition: trial setting and estimation task on the left, generated CPAP image on the right. |
-| 11 | Traditional interaction plot: hospitals on the horizontal axis, one line per treatment connecting its sample means; title and plot only. |
-| 12 | Grouped fixed-effects model with a center-specific treatment slope, parameter interpretations and enlarged effects-coding constraints. |
-| 13 | All 12 fitted regression coefficients: estimates, estimated SEs, 95% confidence intervals and p-values, in the Week 1 table format. |
-| 14 | Simple versus marginal treatment effects, links to beta_1 + d_j and beta_1, and the definition of estimated marginal means (EMMs). |
-| 15 | Coding explanation alongside predicted treatment means and simple effects, pointwise 95% CIs, and unadjusted p-values for each center. |
-| 16 | Full interaction model diagnostics: residuals versus fitted values and a Normal Q-Q plot, closing the case study. |
-| 17 | Time for Lab 3, with a generated illustration in Week 1's break-slide style. |
-| 18 | Wound-healing debrief: average treatment estimates, estimated SEs, 95% CIs and p-values under additive and interaction models. |
-| 19 | Hypothetical unequal laboratory sizes: equally weighted interaction average of 10 percentage points versus the additive average of 13. |
-| 20 | Part 2 divider: Treatment-by-center interaction: random effects. |
-| 21 | Population target: new patients in the same centers versus new centers from the same population. |
-| 22 | Two-by-two grid of true means: random intercepts versus random intercepts and slopes, for two independent samples of centers. |
-| 23 | Random-intercept and random-slope specification, population-average parameters, and jointly distributed center deviations. |
-| 24 | Positive and negative covariance illustrated with true center means and treatment effects. |
-| 25 | CPAP variance-component estimates, followed by the correlation formula, numerical substitution and interpretation. |
-| 26 | Population-average control reduction and CPAP effect estimates with estimated SEs, 95% CIs and p-values. |
-| 27 | Fixed versus random treatment estimates, estimated SEs and p-values, with different targets of inference. |
-| 28 | Random-intercept-only versus random-intercept-and-slope comparison on the CPAP data, motivating the model used in Lab 4. |
-| 29 | Time for Lab 4, using the Week 1 collaborative-learning illustration. Lab 4 continues the wound-healing study with random intercepts and slopes. |
-| 30 | Conceptual variance decomposition and ICC discussion, contrasting the two random-effects structures. |
-| 31 | Part 3 divider: Crossed random effects. |
-| 32 | From one grouping variable to multiple grouping variables: nested versus crossed, with crossed effects next and nested effects in Week 3. |
-| 33 | Radiologist case study: study setting beside a generated radiology illustration. |
-| 34 | Exploratory line plot: patients on the horizontal axis and one line per radiologist. |
-| 35 | Crossed patient and radiologist random intercepts, with distributions and interpretations. |
-| 36 | Estimated variance components and the absolute-agreement ICC for a single measurement. |
-| 37 | Closing Questions slide, matching the Week 1 closing style. |
+| 2 | Assignment 1 experiment: donor tissue aliquots randomized to Standard or Modified protocols, with a generated laboratory image. |
+| 3 | Known-means additive example: two donors, a common protocol effect of 6 µg/mg, row and column averages, parallel lines and the individual-outcome model. |
+| 4 | Full-width model comparison using the original Assignment 1 data: estimates, estimated SEs, 95% CIs and p-values. |
+| 5 | Explicit placeholder for two or three feedback observations after reviewing student submissions. |
+| 6 | Assignment 1 allocation beside a hypothetical unequal allocation within the same ten donors. |
+| 7 | Three-model results for the hypothetical allocation. |
+| 8 | Three columns of concise bullets explaining protocol-only, fixed-donor and random-donor comparisons, leading into interaction. |
+| 9 | Known-means interaction example: donor effects of 2/10 µg/mg, average effect 6, and deviations of −4/+4 µg/mg. |
+| 10 | Conceptual choice between fixed group parameters and a population distribution of random group effects; transition from donors to hospitals. |
+| 11 | Part 1 divider: Treatment-by-center interaction: fixed effects. |
+| 12 | Two-column empirical transition: trial setting and estimation task on the left, generated CPAP image on the right. |
+| 13 | Traditional interaction plot: hospitals on the horizontal axis, one line per treatment connecting its sample means; title and plot only. |
+| 14 | Grouped fixed-effects model with a center-specific treatment slope, parameter interpretations and enlarged effects-coding constraints. |
+| 15 | All 12 fitted regression coefficients: estimates, estimated SEs, 95% confidence intervals and p-values, in the Week 1 table format. |
+| 16 | Simple versus marginal treatment effects, links to beta_1 + d_j and beta_1, and the definition of estimated marginal means (EMMs). |
+| 17 | Coding explanation alongside predicted treatment means and simple effects, pointwise 95% CIs, and unadjusted p-values for each center. |
+| 18 | Full interaction model diagnostics: residuals versus fitted values and a Normal Q-Q plot, closing the case study. |
+| 19 | Time for Lab 3, with a generated illustration in Week 1's break-slide style. |
+| 20 | Wound-healing debrief: average treatment estimates, estimated SEs, 95% CIs and p-values under additive and interaction models. |
+| 21 | Hypothetical unequal laboratory sizes: equally weighted interaction average of 10 percentage points versus the additive average of 13. |
+| 22 | Part 2 divider: Treatment-by-center interaction: random effects. |
+| 23 | Population target: new patients in the same centers versus new centers from the same population. |
+| 24 | Two-by-two grid of true means: random intercepts versus random intercepts and slopes, for two independent samples of centers. |
+| 25 | Random-intercept and random-slope specification, population-average parameters, and jointly distributed center deviations. |
+| 26 | Positive and negative covariance illustrated with true center means and treatment effects. |
+| 27 | CPAP variance-component estimates, followed by the correlation formula, numerical substitution and interpretation. |
+| 28 | Population-average control reduction and CPAP effect estimates with estimated SEs, 95% CIs and p-values. |
+| 29 | Fixed versus random treatment estimates, estimated SEs and p-values, with different targets of inference. |
+| 30 | Random-intercept-only versus random-intercept-and-slope comparison on the CPAP data, motivating the model used in Lab 4. |
+| 31 | Time for Lab 4, using the Week 1 collaborative-learning illustration. Lab 4 continues the wound-healing study with random intercepts and slopes. |
+| 32 | Conceptual variance decomposition and ICC discussion, contrasting the two random-effects structures. |
+| 33 | Part 3 divider: Crossed random effects. |
+| 34 | From one grouping variable to multiple grouping variables: nested versus crossed, with crossed effects next and nested effects in Week 3. |
+| 35 | Radiologist case study: study setting beside a generated radiology illustration. |
+| 36 | Exploratory line plot: patients on the horizontal axis and one line per radiologist. |
+| 37 | Crossed patient and radiologist random intercepts, with distributions and interpretations. |
+| 38 | Estimated variance components and the absolute-agreement ICC for a single measurement. |
+| 39 | Closing Questions slide, matching the Week 1 closing style. |
 
 The title and section dividers use the same shared layouts as Week 1. The
 population-model section is followed by the opening of Part 3 on crossed effects.
@@ -55,6 +58,7 @@ at the start of Week 3, before observational multilevel analysis. Labs remain se
 
 Current sources and outputs:
 
+- `assignment_recap.js`: experiment setting, additive illustration, original-data results and feedback placeholder.
 - `additive_example.js` and `generate_additive_example.R`: the paired known-means introductory slides and reproducible PNG/SVG table-and-plot assets.
 - `allocation_imbalance.js`: three formula-free main slides; the precision-backup helper remains in source but is no longer included in the deck.
 - `fixed_interaction.js`: slide content and equation definitions, using the
@@ -155,8 +159,8 @@ to the population-average CPAP effect.
 
 ### Figures and teaching continuity
 
-- Slides 2–7 retain rehabilitation for the Week 1 recap, allocation discussion and
-  known-means introductory examples. Slide 10 explicitly introduces the new CPAP case.
+- Slides 2–9 use Assignment 1 protein extraction for the recap, allocation discussion
+  and known-means examples. Slide 12 introduces the CPAP case.
 - The empirical interaction plot shows treatment means across hospitals, with a
   title and plot only. The two residual plots close the fixed-effects case study.
 - The Part 2 hypothetical sampling and covariance illustrations use CPAP/control
@@ -179,13 +183,44 @@ conditional predictions and the random-intercept weighted contrast.
 The OOXML validator and a read-only native PowerPoint open verify the delivery file;
 rendered changed slides are inspected for layout and classroom readability.
 
-## Introductory rehabilitation and separate teaching cases
+## Assignment 1 introduction and separate teaching cases
 
-`explore_allocation_imbalance.R` reproduces the Week 1 generating model while changing
-standard/enhanced allocations to 5/15, 8/12, 10/10, 10/10, 12/8 and 15/5. Its treatment-only,
-fixed-center and random-intercept estimates remain 3.87, 8.40 and 8.13 m.
-`generate_additive_example.R` retains the known-means two-center illustrations:
-350/370 and 390/410 m for the additive case, and 350/360 and 390/420 m with interaction.
-`generate_lab3_debrief.R` maintains the separate wound-healing comparisons.
+`explore_allocation_imbalance.R` reads the original Assignment 1 CSV at
+`labs_2627/assignments/week1/downloads/protein_yield.csv`. There are ten donors,
+eight aliquots per donor and four aliquots per protocol within every donor.
+The lecture fits protocol-only OLS, fixed-donor OLS with effects coding, and a
+random-donor-intercept model by REML. Random-model inference uses Satterthwaite
+degrees of freedom, matching the Week 1 lab.
+
+| Model | Estimate (µg/mg) | Estimated SE | 95% CI | p-value |
+| --- | ---: | ---: | --- | ---: |
+| Protocol only | 4.6135 | 2.89437 | −1.1488 to 10.3758 | 0.114991 |
+| Fixed donor effects | 4.6135 | 1.76004 | 1.1023 to 8.1247 | 0.010769 |
+| Random donor effects | 4.6135 | 1.76004 | 1.1023 to 8.1247 | 0.010769 |
+
+For the explicitly hypothetical allocation comparison, Standard counts are
+1, 2, 3, 3, 4, 4, 5, 5, 6 and 7 in donor order. Modified counts complete each
+donor's total of eight. Each protocol still has 40 aliquots overall. The generator
+replays seed 262701 and verifies exact agreement with the original balanced data,
+then changes allocation while preserving the donor contributions and individual
+errors. The true protocol effect remains 6 µg/mg. Results and the hypothetical CSV
+are in `assets/allocation-imbalance/`; the assignment source data remain unchanged.
+The hypothetical protocol-only, fixed-donor and random-donor estimates are 5.6535,
+4.4395 and 4.5320 µg/mg, with estimated SEs 2.8984, 1.9523 and 1.9382.
+
+`generate_additive_example.R` draws hypothetical true means for donors A and B:
+50/56 and 70/76 µg/mg for the additive case; 50/52 and 70/80 µg/mg for interaction.
+Both examples have an equally weighted average protocol effect of 6 µg/mg.
+`µ_tj` identifies the true cell means. These figures illustrate the model assumptions.
+
+The laboratory scene was generated with the built-in image-generation tool and
+saved to `assets/assignment1-recap/protein-extraction.png`; its exact prompt is in
+`assets/assignment1-recap/protein-extraction.prompt.txt`. It matches the square
+image frame in the usual two-column setting slide.
+
+Slide 5 is a feedback placeholder. Replace its text with observations from the
+submitted reports after reviewing them.
+
+`generate_lab3_debrief.R` maintains the separate wound-healing comparisons, and
 `generate_radiologist_data.R` maintains the crossed patient/radiologist example.
-These assets are independent of the new CPAP simulation.
+These assets are independent of the introductory and CPAP examples.

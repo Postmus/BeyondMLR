@@ -27,14 +27,14 @@ draw <- function(interaction = FALSE) {
   top <- 3.35
   heights <- c(.60, .66, .66, .72)
   rows <- list(
-    c("Center", "Standard", "Enhanced", "Row\naverage"),
-    list("A", expression(mu[0*A] == 350),
-      if (interaction) expression(mu[1*A] == 360) else expression(mu[1*A] == 370),
-      if (interaction) "355" else "360"),
-    list("B", expression(mu[0*B] == 390),
-      if (interaction) expression(mu[1*B] == 420) else expression(mu[1*B] == 410),
-      if (interaction) "405" else "400"),
-    list("Column\naverage", expression(beta[0] == 370), "390", "380")
+    c("Donor", "Standard", "Modified", "Row\naverage"),
+    list("A", expression(mu[0*A] == 50),
+      if (interaction) expression(mu[1*A] == 52) else expression(mu[1*A] == 56),
+      if (interaction) "51" else "53"),
+    list("B", expression(mu[0*B] == 70),
+      if (interaction) expression(mu[1*B] == 80) else expression(mu[1*B] == 76),
+      if (interaction) "75" else "73"),
+    list("Column\naverage", expression(beta[0] == 60), "66", "63")
   )
   for (r in seq_along(rows)) {
     cy <- top - sum(heights[seq_len(r)]) + heights[r] / 2
@@ -49,27 +49,27 @@ draw <- function(interaction = FALSE) {
         face = if (r == 1 || k == 1 || k == 4) "bold" else "plain")
     }
   }
-  label(expression(mu[tj]*": expected outcome for treatment "*t*" in center "*j),
+  label(expression(mu[tj]*": true mean for protocol "*t*" in donor "*j),
     tx + sum(widths) / 2, .34, size = 16)
 
   # Right: center on x, treatment in color. Repeated brackets are the focal annotations.
-  label("Expected walking distance (m)", 6.52, 3.48, size = 18, just = "left")
+  label("Expected protein yield (µg/mg)", 6.52, 3.48, size = 18, just = "left")
   for (k in 1:2) {
     lx <- c(6.65, 9.05)[k]
     col <- c(color_primary, color_accent)[k]
     segment(lx, 3.14, lx + .35, 3.14, col, 2.6)
-    label(c("Standard", "Enhanced")[k], lx + .46, 3.14, size = 17, just = "left")
+    label(c("Standard", "Modified")[k], lx + .46, 3.14, size = 17, just = "left")
   }
-  if (interaction) label(expression("Average treatment effect: "*beta[1]*" = 20 m"),
-    9.12, 2.80, size = 17)
+  if (interaction) label(expression("Average protocol effect: "*beta[1]*" = 6 µg/mg"),
+    9.12, 2.80, size = 16)
   # Reserve a full label width outside each bracket; share coordinates across examples.
   x <- c(8.25, 10.40)
-  y <- function(value) .80 + (value - 340) / 80 * 1.75
-  for (value in seq(350, 410, 20)) {
+  y <- function(value) .80 + (value - 46) / 36 * 1.75
+  for (value in seq(50, 80, 10)) {
     segment(6.70, y(value), 11.86, y(value), color_grid, .7)
     label(as.character(value), 6.55, y(value), size = 16, col = color_muted, just = "right")
   }
-  means <- list(c(350, 390), if (interaction) c(360, 420) else c(370, 410))
+  means <- list(c(50, 70), if (interaction) c(52, 80) else c(56, 76))
   for (k in 1:2) {
     col <- c(color_primary, color_accent)[k]
     segment(x[1], y(means[[k]][1]), x[2], y(means[[k]][2]), col, 2.8)
@@ -82,13 +82,13 @@ draw <- function(interaction = FALSE) {
     segment(bx, low, bx, high, color_text, 1.5)
     segment(bx - .06, low, bx + .06, low, color_text, 1.5)
     segment(bx - .06, high, bx + .06, high, color_text, 1.5)
-    gap_label <- if (!interaction) expression(beta[1] == 20) else if (j == 1)
-      expression(beta[1] + d[A] == 10) else expression(beta[1] + d[B] == 30)
+    gap_label <- if (!interaction) expression(beta[1] == 6) else if (j == 1)
+      expression(beta[1] + d[A] == 2) else expression(beta[1] + d[B] == 10)
     label(gap_label, bx + if (j == 1) -.14 else .14,
       (low + high) / 2, size = 18, just = if (j == 1) "right" else "left")
-    label(c("Center A", "Center B")[j], x[j], .45, size = 18)
-    if (interaction) label(if (j == 1) expression(d[A]*" = -10 m") else expression(d[B]*" = +10 m"),
-      x[j], .13, size = 17)
+    label(c("Donor A", "Donor B")[j], x[j], .45, size = 18)
+    if (interaction) label(if (j == 1) expression(d[A]*" = -4 µg/mg") else expression(d[B]*" = +4 µg/mg"),
+      x[j], .17, size = 17)
   }
 }
 for (interaction in c(FALSE, TRUE)) {

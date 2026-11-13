@@ -6,7 +6,8 @@ const { addTeachingTableSlide } = require('../../slides-common/js/teaching_table
 const { addFigureSlide, addSectionSlide, addBulletVisualSlide } = require('../../slides-common/js/pptx_layout_primitives');
 const { addRandomInteractionResults } = require('./random_interaction');
 const { addAllocationImbalance } = require('./allocation_imbalance');
-const { addAdditiveExample, addInteractionExample } = require('./additive_example');
+const { addInteractionExample } = require('./additive_example');
+const { addAssignmentRecap } = require('./assignment_recap');
 
 const E = {
   additive: String.raw`Y_{ij}=\beta_0+c_j+\beta_1T_{ij}+\varepsilon_{ij}`,
@@ -46,7 +47,7 @@ const E = {
   randomLimit: String.raw`\frac{\sigma_d^2}{J}+\frac{2\sigma^2}{Jn}\longrightarrow\frac{\sigma_d^2}{J}`,
 };
 
-function addWeek2Opening(pptx, drawEquation, week1, results, allocation, lab3, randomInteraction) {
+function addWeek2Opening(pptx, drawEquation, results, allocation, lab3, randomInteraction) {
   const f = (v, digits = 1) => Number(v).toFixed(digits);
   const panels = (title, content, takeaway, options = {}) => addConceptPanelsSlide(pptx, {
     title, panels: content, takeaway, drawEquation, ...options
@@ -55,48 +56,22 @@ function addWeek2Opening(pptx, drawEquation, week1, results, allocation, lab3, r
   const eq = (key, h = .65, gap = .18) => ({ equation: E[key], h, gap });
   const assets = path.join(__dirname, 'assets/fixed-interaction');
 
-  // Recap the original trial alongside the closing Week 1 comparison table.
-  panels('Week 1 recap: comparing the models', [
-    { title: 'THE REHABILITATION TRIAL', blocks: [
-      text('Simulated trial: 120 patients after knee replacement at six centers.', .70, { fontSize: 21 }),
-      text('Within each center: 10 patients randomized to each treatment.', .70, { fontSize: 21 }),
-      text('Standard care: weekly physiotherapy and home exercises.', .70, { fontSize: 21 }),
-      text('Enhanced care: standard care plus a weekly supervised session.', .70, { fontSize: 21 }),
-      text('Outcome: six-minute walk distance at 12 weeks.', .70, { fontSize: 21 })
-    ] },
-    { title: 'THE TREATMENT COMPARISON', blocks: [
-    { table: {
-      columns: [
-        { label: 'Model', weight: 2.4 },
-        { label: 'Estimate\n(m)', weight: 1.6, align: 'center' },
-        { label: 'Estimated\nSE (m)', weight: 1.9, align: 'center' }
-      ], rows: [
-        ['Treatment only', f(week1.pooled.estimate), f(week1.pooled.se, 2)],
-        ['Fixed center effects', f(week1.fixed.estimate), f(week1.fixed.se, 2)],
-        ['Random center effects', f(week1.random.estimate), f(week1.random.se, 2)]
-      ], fontSize: 21, headerFontSize: 18, headerHeight: .80, firstColumnBold: false
-    }, h: 2.90, gap: .25 },
-    text('All three models assumed a common treatment effect across centers.', .75, { fontSize: 21 })
-  ] }], 'Fixed center parameters and a random center distribution gave the same treatment estimate and estimated standard error in this setting.');
-
+  addAssignmentRecap(pptx, drawEquation, allocation);
   addAllocationImbalance(pptx, allocation);
-
-  // General introduction: treatment variation and ways to represent centers.
-  addAdditiveExample(pptx, drawEquation);
   addInteractionExample(pptx, drawEquation);
 
   // Choose how centers enter the model before formalizing the fixed-effects route.
-  const representationSlide = panels('How should we represent differences between centers?', [
-    { title: 'FIXED CENTER EFFECTS', blocks: [
-      text('Give each included center its own baseline deviation and treatment-effect deviation.', 1.35, { gap: .30 }),
-      text('Express the average treatment effect across the included centers.', 1.20)
+  const representationSlide = panels('How should we represent differences between groups?', [
+    { title: 'FIXED GROUP EFFECTS', blocks: [
+      text('Give each included group its own baseline deviation and treatment-effect deviation.', 1.35, { gap: .30 }),
+      text('Express the average treatment effect across the included groups.', 1.20)
     ] },
-    { title: 'RANDOM CENTER EFFECTS', blocks: [
+    { title: 'RANDOM GROUP EFFECTS', blocks: [
       text('Describe baseline deviations and treatment-effect deviations through a population distribution.', 1.35, { gap: .30 }),
-      text('Express the average treatment effect in the population represented by those centers.', 1.20)
+      text('Express the average treatment effect in the population represented by those groups.', 1.20)
     ] }
-  ], 'We start with fixed center effects and ask what we can learn about treatment in the included centers.', {
-    intro: 'Beyond two centers, we still allow differences in baseline outcome and treatment effect.'
+  ], 'We start with fixed effects for groups, using a multicenter clinical trial.', {
+    intro: 'Donors, hospitals and other groups can differ in baseline outcome and treatment effect.'
   });
   representationSlide.addNotes('');
 

@@ -7,61 +7,60 @@ function addAllocationImbalance(pptx, data) {
   const panels = (title, content, takeaway) => addConceptPanelsSlide(pptx, {
     title, panels: content, takeaway
   });
-  const results = data.results.filter(row => row.design === 'Unequal treatment proportions');
+  const results = data.results.filter(row => row.design === 'Unequal protocol proportions');
 
-  const allocationPanel = (title, allocation) => ({ title, blocks: [
+  const allocationPanel = (title, allocation) => ({ title, titleHeight: .30, blocks: [
       { table: {
         columns: [
-          { label: 'Center', weight: 1.2 },
-          { label: 'Standard\ncare', weight: 1.8, align: 'center' },
-          { label: 'Enhanced\ncare', weight: 1.8, align: 'center' }
+          { label: 'Donor', weight: 1.2 },
+          { label: 'Standard', weight: 1.8, align: 'center' },
+          { label: 'Modified', weight: 1.8, align: 'center' }
         ],
-        rows: [...allocation.map(row => [row.center.replace('Center ', ''), row.standard, row.enhanced]),
-          ['Total', allocation.reduce((s, r) => s + r.standard, 0), allocation.reduce((s, r) => s + r.enhanced, 0)]],
-        fontSize: 21, headerFontSize: 18, headerHeight: .72, firstColumnBold: false
-      }, h: 3.94 }
+        rows: [...allocation.map(row => [Number(row.donor.replace('Donor ', '')), row.standard, row.modified]),
+          ['Total', allocation.reduce((s, r) => s + r.standard, 0), allocation.reduce((s, r) => s + r.modified, 0)]],
+        fontSize: 18, headerFontSize: 18, headerHeight: .48, cellPaddingY: .01, firstColumnBold: false
+      }, h: 4.05 }
     ] });
-  // Week 1 split the same center totals equally between the two treatments.
+  // Assignment 1 split each donor’s aliquots equally between the two protocols.
   const originalAllocation = data.allocation.map(row => ({
-    center: row.center,
-    standard: (row.standard + row.enhanced) / 2,
-    enhanced: (row.standard + row.enhanced) / 2
+    donor: row.donor,
+    standard: (row.standard + row.modified) / 2,
+    modified: (row.standard + row.modified) / 2
   }));
-  panels('Changing treatment allocation within centers', [
-    allocationPanel('ORIGINAL ALLOCATION', originalAllocation),
-    allocationPanel('UNEQUAL ALLOCATION', data.allocation)
-  ], 'Only allocation changes: the underlying treatment effect remains 10 m in every center.');
+  panels('Changing protocol allocation within donors', [
+    allocationPanel('ASSIGNMENT 1 ALLOCATION', originalAllocation),
+    allocationPanel('HYPOTHETICAL ALLOCATION', data.allocation)
+  ], 'Only allocation changes: the true protocol effect remains 6 µg/mg in every donor.');
 
   addTeachingTableSlide(pptx, {
-    title: 'The models now give different treatment estimates',
-    intro: 'Unequal allocation within centers; estimated enhanced-minus-standard difference in walk distance.',
+    title: 'The models now give different protocol estimates',
+    intro: 'Unequal allocation within donors; estimated modified-minus-standard difference in protein yield.',
     introHeight: .55,
     columns: [
       { label: 'Model', weight: 3.3 },
-      { label: 'Estimate (m)', weight: 1.5, align: 'center' },
-      { label: 'Estimated SE (m)', weight: 1.8, align: 'center' }
+      { label: 'Estimate (µg/mg)', weight: 1.5, align: 'center' },
+      { label: 'Estimated SE (µg/mg)', weight: 1.8, align: 'center' }
     ],
     rows: results.map(row => [row.model, f(row.estimate), f(row.se)]),
     fontSize: 24,
-    takeaway: 'Accounting for center changes the estimate substantially. The two center models give slightly different estimates, with almost identical estimated standard errors.'
+    takeaway: 'Accounting for donor changes the estimate. The fixed and random donor models give slightly different estimates, with similar estimated standard errors.'
   });
 
   panels('The models use different comparisons', [
-    { title: 'TREATMENT ONLY', blocks: [
-      text('The model compares the average outcome of all enhanced-care patients with that of all standard-care patients.', 1.55, { fontSize: 20, gap: .25 }),
-      text('Unequal allocation gives the groups different mixtures of centers. Their difference reflects both treatment and differences in center baselines.', 2.10, { fontSize: 20 })
+    { title: 'PROTOCOL ONLY', blocks: [
+      text('Compare Standard and Modified across all aliquots.', 1.00, { fontSize: 20, bullet: true, gap: .12 }),
+      text('The groups may contain different mixtures of donors, so their difference also reflects donor baselines.', 2.10, { fontSize: 20, bullet: true })
     ] },
-    { title: 'FIXED CENTER EFFECTS', blocks: [
-      text('The model allows each center to have its own baseline outcome.', 1.10, { fontSize: 20, gap: .25 }),
-      text('It estimates treatment by combining comparisons between enhanced and standard care within the same center.', 1.55, { fontSize: 20, gap: .20 }),
-      text('These comparisons remove the shared center baseline.', .85, { fontSize: 20 })
+    { title: 'FIXED DONOR EFFECTS', blocks: [
+      text('Compare Standard and Modified within each donor.', 1.00, { fontSize: 20, bullet: true, gap: .12 }),
+      text('Aliquots in each comparison share the same donor baseline.', 2.10, { fontSize: 20, bullet: true })
     ] },
-    { title: 'RANDOM CENTER EFFECTS', blocks: [
-      text('The model uses comparisons both within and between centers.', 1.05, { fontSize: 20, gap: .15 }),
-      text('Do centers with more enhanced care have higher average outcomes?', 1.05, { fontSize: 20, gap: .15 }),
-      text('Using between-center information assumes baseline center effects are unrelated to treatment allocation.', 1.40, { fontSize: 20 })
+    { title: 'RANDOM DONOR EFFECTS', blocks: [
+      text('Within donors: compare Standard and Modified in the same donor.', 1.00, { fontSize: 20, bullet: true, gap: .12 }),
+      text('Between donors: relate average yield to the proportion assigned to Modified.', 1.70, { fontSize: 20, bullet: true, gap: .17 }),
+      text('Both sources contribute to the protocol-effect estimate.', 1.00, { fontSize: 20 })
     ] }
-  ], 'So far, we have assumed the same treatment effect in every center. What changes when the treatment effect varies across centers?')
+  ], 'So far: the same protocol effect in every donor. What if protocol effects vary?')
     .addNotes('');
 }
 
@@ -71,21 +70,21 @@ function addAllocationPrecisionBackup(pptx, data) {
   const panels = (title, content, takeaway) => addConceptPanelsSlide(pptx, {
     title, panels: content, takeaway
   });
-  const results = data.results.filter(row => row.design === 'Unequal treatment proportions');
-  const fixed = results.find(row => row.model === 'Fixed center effects');
-  const random = results.find(row => row.model === 'Random center effects');
+  const results = data.results.filter(row => row.design === 'Unequal protocol proportions');
+  const fixed = results.find(row => row.model === 'Fixed donor effects');
+  const random = results.find(row => row.model === 'Random donor effects');
   panels('Why are the estimated standard errors almost identical?', [
-    { title: 'MOST PRECISION COMES FROM WITHIN CENTERS', titleHeight: .52, blocks: [
-      text('Both models compare enhanced and standard care within each center.', .80, { fontSize: 21, gap: .20 }),
-      text('These comparisons are informative because the treatment groups share the same center baseline. Baseline differences between centers do not obscure these comparisons.', 1.55, { fontSize: 21, gap: .20 }),
+    { title: 'MOST PRECISION COMES FROM WITHIN DONORS', titleHeight: .52, blocks: [
+      text('Both models compare the two protocols within each donor.', .80, { fontSize: 21, gap: .20 }),
+      text('These comparisons are informative because the protocol groups share the same donor baseline. Baseline differences between donors do not obscure these comparisons.', 1.55, { fontSize: 21, gap: .20 }),
       text('Both models obtain most of their precision from this same source.', .80, { fontSize: 21 })
     ] },
-    { title: 'BETWEEN CENTERS: LITTLE EXTRA PRECISION HERE', titleHeight: .52, blocks: [
-      text('The random-intercept model can also use average outcomes from centers with different treatment proportions.', .95, { fontSize: 21, gap: .18 }),
-      text('Centers differ substantially in baseline outcomes. A higher center average could reflect its baseline as well as its treatment allocation.', 1.25, { fontSize: 21, gap: .18 }),
+    { title: 'BETWEEN DONORS: LITTLE EXTRA PRECISION HERE', titleHeight: .52, blocks: [
+      text('The random-intercept model can also use average outcomes from donors with different treatment proportions.', .95, { fontSize: 21, gap: .18 }),
+      text('Donors differ substantially in baseline outcomes. A higher donor average could reflect its baseline as well as its treatment allocation.', 1.25, { fontSize: 21, gap: .18 }),
       text('Under the random-intercept assumptions, this noisy evidence adds little precision: the estimated standard error barely decreases.', 1.25, { fontSize: 21 })
     ] }
-  ], `The additional evidence shifts the estimate slightly, but adds little precision: the estimated standard errors are ${f(fixed.se)} and ${f(random.se)} m.`);
+  ], `The additional evidence shifts the estimate slightly, but adds little precision: the estimated standard errors are ${f(fixed.se)} and ${f(random.se)} µg/mg.`);
 }
 
 module.exports = { addAllocationImbalance, addAllocationPrecisionBackup };
