@@ -1,6 +1,6 @@
 # Beyond MLR: Week 2
 
-The lecture has 39 slides, empty speaker notes and no backup slides. The introduction
+The lecture has 40 slides, empty speaker notes and no backup slides. The introduction
 revisits Assignment 1's protein-extraction experiment: setting, additive model,
 three-model results and a feedback placeholder. A hypothetical allocation change
 then motivates the within- and between-donor comparisons, followed by a known-means
@@ -26,30 +26,31 @@ See [PLANNING.md](PLANNING.md) for the teaching sequence.
 | 13 | Traditional interaction plot: hospitals on the horizontal axis, one line per treatment connecting its sample means; title and plot only. |
 | 14 | Grouped fixed-effects model with a center-specific treatment slope, parameter interpretations and enlarged effects-coding constraints. |
 | 15 | All 12 fitted regression coefficients: estimates, estimated SEs, 95% confidence intervals and p-values, in the Week 1 table format. |
-| 16 | Simple versus marginal treatment effects, links to beta_1 + d_j and beta_1, and the definition of estimated marginal means (EMMs). |
-| 17 | Coding explanation alongside predicted treatment means and simple effects, pointwise 95% CIs, and unadjusted p-values for each center. |
-| 18 | Full interaction model diagnostics: residuals versus fitted values and a Normal Q-Q plot, closing the case study. |
-| 19 | Time for Lab 3, with a generated illustration in Week 1's break-slide style. |
-| 20 | Wound-healing debrief: average treatment estimates, estimated SEs, 95% CIs and p-values under additive and interaction models. |
-| 21 | Hypothetical unequal laboratory sizes: equally weighted interaction average of 10 percentage points versus the additive average of 13. |
-| 22 | Part 2 divider: Treatment-by-center interaction: random effects. |
-| 23 | Population target: new patients in the same centers versus new centers from the same population. |
-| 24 | Two-by-two grid of true means: random intercepts versus random intercepts and slopes, for two independent samples of centers. |
-| 25 | Random-intercept and random-slope specification, population-average parameters, and jointly distributed center deviations. |
-| 26 | Positive and negative covariance illustrated with true center means and treatment effects. |
-| 27 | CPAP variance-component estimates, followed by the correlation formula, numerical substitution and interpretation. |
-| 28 | Population-average control reduction and CPAP effect estimates with estimated SEs, 95% CIs and p-values. |
-| 29 | Fixed versus random treatment estimates, estimated SEs and p-values, with different targets of inference. |
-| 30 | Random-intercept-only versus random-intercept-and-slope comparison on the CPAP data, motivating the model used in Lab 4. |
-| 31 | Time for Lab 4, using the Week 1 collaborative-learning illustration. Lab 4 continues the wound-healing study with random intercepts and slopes. |
-| 32 | Conceptual variance decomposition and ICC discussion, contrasting the two random-effects structures. |
-| 33 | Part 3 divider: Crossed random effects. |
-| 34 | From one grouping variable to multiple grouping variables: nested versus crossed, with crossed effects next and nested effects in Week 3. |
-| 35 | Radiologist case study: study setting beside a generated radiology illustration. |
-| 36 | Exploratory line plot: patients on the horizontal axis and one line per radiologist. |
-| 37 | Crossed patient and radiologist random intercepts, with distributions and interpretations. |
-| 38 | Estimated variance components and the absolute-agreement ICC for a single measurement. |
-| 39 | Closing Questions slide, matching the Week 1 closing style. |
+| 16 | Estimated marginal means: treatment-by-hospital grid, fitted-model equation for each cell, and equal-weight averaging across the six hospitals. |
+| 17 | Marginal and simple treatment effects as comparisons of estimated means, with effects-coded coefficients explained in the text. |
+| 18 | Full-width table of estimated treatment means and simple effects, pointwise 95% CIs and unadjusted p-values. |
+| 19 | Full interaction model diagnostics: residuals versus fitted values and a Normal Q-Q plot, closing the case study. |
+| 20 | Time for Lab 3, with a generated illustration in Week 1's break-slide style. |
+| 21 | Wound-healing debrief: average treatment estimates, estimated SEs, 95% CIs and p-values under additive and interaction models. |
+| 22 | Hypothetical unequal laboratory sizes: equally weighted interaction average of 10 percentage points versus the additive average of 13. |
+| 23 | Part 2 divider: Treatment-by-center interaction: random effects. |
+| 24 | Population target: new patients in the same centers versus new centers from the same population. |
+| 25 | Two-by-two grid of true means: random intercepts versus random intercepts and slopes, for two independent samples of centers. |
+| 26 | Random-intercept and random-slope specification, population-average parameters, and jointly distributed center deviations. |
+| 27 | Positive and negative covariance illustrated with true center means and treatment effects. |
+| 28 | CPAP variance-component estimates, followed by the correlation formula, numerical substitution and interpretation. |
+| 29 | Population-average control reduction and CPAP effect estimates with estimated SEs, 95% CIs and p-values. |
+| 30 | Fixed versus random treatment estimates, estimated SEs and p-values, with different targets of inference. |
+| 31 | Random-intercept-only versus random-intercept-and-slope comparison on the CPAP data, motivating the model used in Lab 4. |
+| 32 | Time for Lab 4, using the Week 1 collaborative-learning illustration. Lab 4 continues the wound-healing study with random intercepts and slopes. |
+| 33 | Conceptual variance decomposition and ICC discussion, contrasting the two random-effects structures. |
+| 34 | Part 3 divider: Crossed random effects. |
+| 35 | From one grouping variable to multiple grouping variables: nested versus crossed, with crossed effects next and nested effects in Week 3. |
+| 36 | Radiologist case study: study setting beside a generated radiology illustration. |
+| 37 | Exploratory line plot: patients on the horizontal axis and one line per radiologist. |
+| 38 | Crossed patient and radiologist random intercepts, with distributions and interpretations. |
+| 39 | Estimated variance components and the absolute-agreement ICC for a single measurement. |
+| 40 | Closing Questions slide, matching the Week 1 closing style. |
 
 The title and section dividers use the same shared layouts as Week 1. The
 population-model section is followed by the opening of Part 3 on crossed effects.
@@ -62,7 +63,7 @@ Current sources and outputs:
 - `additive_example.js` and `generate_additive_example.R`: the paired known-means introductory slides and reproducible PNG/SVG table-and-plot assets.
 - `allocation_imbalance.js`: three formula-free main slides; the precision-backup helper remains in source but is no longer included in the deck.
 - `fixed_interaction.js`: slide content and equation definitions, using the
-  shared concept-panel, teaching-table and figure layouts.
+  shared concept-panel, teaching-table and figure layouts. The EMM concept uses a full-width reference grid above the prediction and averaging panels.
 - `crossed_case_study.js` and `generate_radiologist_data.R`: the four-slide radiologist example, reproducible data, REML fit and exploratory plot.
 - `crossed_intro.js`: Part 3 divider and conceptual introduction to multiple grouping variables.
 - `build_week2.js`: deck construction and layout checks.

@@ -27,6 +27,10 @@ const E = {
   effect: String.raw`\delta_j=\mu_{1j}-\mu_{0j}=\beta_1+d_j`,
   simpleEffect: String.raw`\text{Effect in center }j:\quad\beta_1+d_j`,
   marginalEffect: String.raw`\text{Average effect:}\quad\beta_1`,
+  emmPrediction: String.raw`\widehat{\mu}_{tj}=\widehat{\beta}_0+\widehat{c}_j+(\widehat{\beta}_1+\widehat{d}_j)t`,
+  emmAverage: String.raw`\widehat{\mu}_{t\cdot}=\frac{\widehat{\mu}_{tA}+\widehat{\mu}_{tB}+\cdots+\widehat{\mu}_{tF}}{6}`,
+  estimatedMarginalEffect: String.raw`\widehat{\beta}_1`,
+  estimatedSimpleEffect: String.raw`\widehat{\beta}_1+\widehat{d}_j`,
   beta0: String.raw`\beta_0=\frac{1}{J}\sum_{j=1}^{J}\mu_{0j}`,
   beta1: String.raw`\beta_1=\frac{1}{J}\sum_{j=1}^{J}\delta_j`,
   deviations: String.raw`c_j=\mu_{0j}-\beta_0,\qquad d_j=\delta_j-\beta_1`,
@@ -46,6 +50,14 @@ const E = {
   fixedLimit: String.raw`\frac{2\sigma^2}{Jn}\longrightarrow 0\quad\text{as }n\longrightarrow\infty`,
   randomLimit: String.raw`\frac{\sigma_d^2}{J}+\frac{2\sigma^2}{Jn}\longrightarrow\frac{\sigma_d^2}{J}`,
 };
+
+// Symbols used in the treatment-by-hospital reference grid.
+for (const t of [0, 1]) {
+  for (const hospital of ['A', 'B', 'C', 'D', 'E', 'F']) {
+    E[`grid${t}${hospital}`] = String.raw`\widehat{\mu}_{${t}${hospital}}`;
+  }
+  E[`grid${t}Average`] = String.raw`\widehat{\mu}_{${t}\cdot}`;
+}
 
 function addWeek2Opening(pptx, drawEquation, results, allocation, lab3, randomInteraction) {
   const f = (v, digits = 1) => Number(v).toFixed(digits);
@@ -140,51 +152,86 @@ function addWeek2Opening(pptx, drawEquation, results, allocation, lab3, randomIn
   });
   coefficientSlide.addNotes('');
 
-  const effectConceptSlide = panels('Which treatment effect do we want to estimate?', [
-    { title: 'SIMPLE TREATMENT EFFECTS', blocks: [
-      text('How do treatments compare within a particular center?', .80, { bold: true, gap: .15 }),
-      text('Compare the CPAP and control means within each center.', 1.0, { fontSize: 21, gap: .15 }),
-      eq('simpleEffect', .50, .15),
-      text('One treatment effect per center.', .85, { fontSize: 20 })
+  const hospitals = ['A', 'B', 'C', 'D', 'E', 'F'];
+  const emmConceptSlide = panels('Estimated marginal means', [
+    { title: '2. PREDICT EACH CELL MEAN', blocks: [
+      text('Use the fitted model for each treatment–hospital combination.', .58, { fontSize: 20, gap: .15 }),
+      { ...eq('emmPrediction', .48, .20), equationAlign: 'left' },
+      text('t = 0 for Control; t = 1 for CPAP.\nj identifies the hospital.', .72, { fontSize: 20 })
     ] },
-    { title: 'MARGINAL TREATMENT EFFECT', blocks: [
-      text('How do treatments compare on average across centers?', .80, { bold: true, gap: .15 }),
-      text('Average each treatment’s mean equally across centers, then compare the averages.', 1.0, { fontSize: 21, gap: .15 }),
-      eq('marginalEffect', .50, .15),
-      text('With effects coding, the treatment deviations average to zero.', .85, { fontSize: 20 })
+    { title: '3. AVERAGE ACROSS HOSPITALS', blocks: [
+      text('Average each row, giving all six hospitals equal weight.', .58, { fontSize: 20, gap: .10 }),
+      { ...eq('emmAverage', .85, .08), equationAlign: 'left' },
+      text('This gives one estimated marginal mean per treatment.', .55, { fontSize: 20 })
     ] }
-  ], 'Estimated marginal means (EMMs) are model-based estimates of group means, averaged over other factors where appropriate. Comparing these means gives the treatment effects.', { takeawayHeight: 1.10 });
+  ], undefined, {
+    intro: 'Estimated marginal means (EMMs) are model-based means, averaged over selected factors.',
+    grid: { title: '1. DEFINE THE TREATMENT–HOSPITAL GRID', height: 1.40,
+      table: {
+        columns: [
+          { label: 'Treatment', weight: 1.5 },
+          ...hospitals.map(label => ({ label, weight: 1, align: 'center' })),
+          { label: '', weight: .4, align: 'center' },
+          { label: 'Row average', weight: 1.6, align: 'center' }
+        ],
+        rows: [0, 1].map(t => [t === 0 ? 'Control' : 'CPAP',
+          ...hospitals.map(j => ({ equation: E[`grid${t}${j}`], h: .35 })),
+          '→', { equation: E[`grid${t}Average`], h: .35 }]),
+        fontSize: 20, headerFontSize: 18, headerHeight: .45,
+        cellPaddingY: .06, cellPaddingX: .10, firstColumnBold: false
+      }
+    }
+  });
+  emmConceptSlide.addNotes('');
+
+  const effectInterpretation = (description, key) => ({
+    inlineMath: [
+      { text: description },
+      { image: path.join(__dirname, 'assets/equations', `eq_${crypto.createHash('sha1').update(E[key]).digest('hex').slice(0, 12)}.png`),
+        heightEm: 1.15, baselineFraction: .85 },
+      { text: '.' }
+    ], h: 1.45, fontSize: 21
+  });
+  const effectConceptSlide = panels('Which treatment effect do we want to estimate?', [
+    { title: 'MARGINAL TREATMENT EFFECT', blocks: [
+      text('How do treatments compare on average across hospitals?', .95, { bold: true, gap: .25 }),
+      text('Compare the two treatment means averaged equally across the six hospitals.', 1.15, { fontSize: 21, gap: .30 }),
+      effectInterpretation('With our effects-coded model, the estimated marginal treatment effect is ', 'estimatedMarginalEffect')
+    ] },
+    { title: 'SIMPLE TREATMENT EFFECTS', blocks: [
+      text('How do treatments compare within a particular hospital?', .95, { bold: true, gap: .25 }),
+      text('Compare the estimated CPAP and control means within that hospital.', 1.15, { fontSize: 21, gap: .30 }),
+      effectInterpretation('With our effects-coded model, the estimated simple treatment effect in hospital j is ', 'estimatedSimpleEffect')
+    ] }
+  ]);
   effectConceptSlide.addNotes('');
 
-  // Keep fitted means and their within-center contrasts together, with inference.
+  // Keep fitted means and their within-hospital contrasts together, with inference.
   const cell = (center, treatment) => results.fitted_cell_means.find(r => r.center === center && r.treatment === treatment).estimate;
-  const simpleEffectsSlide = panels('Estimating simple treatment effects with estimated marginal means', [
-    { title: 'CODING AND EFFECTS', weight: 1, blocks: [
-      text('Coding determines which effects appear directly as coefficients.', 1.10, { fontSize: 19, bullet: true, gap: .15 }),
-      text('Here, a center’s effect combines the average effect with its treatment deviation.', 1.25, { fontSize: 19, bullet: true, gap: .15 }),
-      text('Predict both treatment means within each center, then compare them.', 1.10, { fontSize: 19, bullet: true })
-    ] },
-    { weight: 2.5, blocks: [
-      { table: {
-        columns: [
-          { label: 'Center', weight: .90, align: 'center' },
-          { label: 'Control\nmean', weight: 1.15, align: 'center' },
-          { label: 'CPAP\nmean', weight: 1.30, align: 'center' },
-          { label: 'Difference', weight: 1.25, align: 'center', highlight: true },
-          { label: '95% CI', weight: 1.90, align: 'center', highlight: true },
-          { label: 'p-value', weight: 1.20, align: 'center', highlight: true }
-        ],
-        columnGroups: [{ label: '', count: 1 }, { label: 'Predicted means', count: 2 }, { label: 'Simple treatment effect', count: 3 }],
-        rows: results.within_center_comparisons.map(r => [
-          r.center.replace('Center ', ''), f(cell(r.center, 'Control')), f(cell(r.center, 'CPAP')),
-          f(r.estimate), `${f(r.lower_95)} to ${f(r.upper_95)}`,
-          r.p < .001 ? '< .001' : f(r.p, 3)
-        ]), fontSize: 18, headerFontSize: 16, headerHeight: .65,
-        cellPaddingX: .07, cellPaddingY: .04, firstColumnBold: false
-      }, h: 3.65, gap: .15 },
-      text('Means, differences and CIs in mmHg. Difference: CPAP minus control.\nPointwise 95% CIs and unadjusted p-values.', .70, { fontSize: 16 })
-    ] }
-  ], 'Equivalent coding schemes give different coefficients, but the same fitted means and treatment comparisons.');
+  const simpleEffectsSlide = addTeachingTableSlide(pptx, {
+    title: 'Estimated means and simple treatment effects',
+    columns: [
+      { label: 'Hospital', weight: 1, align: 'center' },
+      { label: 'Control', weight: 1.3, align: 'center' },
+      { label: 'CPAP', weight: 1.3, align: 'center' },
+      { label: 'Difference', weight: 1.4, align: 'center', highlight: true },
+      { label: '95% CI', weight: 2, align: 'center', highlight: true },
+      { label: 'p-value', weight: 1.3, align: 'center', highlight: true }
+    ],
+    rows: results.within_center_comparisons.map(r => [
+      r.center.replace('Center ', ''), f(cell(r.center, 'Control')), f(cell(r.center, 'CPAP')),
+      f(r.estimate), `${f(r.lower_95)} to ${f(r.upper_95)}`,
+      r.p < .001 ? '< .001' : f(r.p, 3)
+    ]),
+    fontSize: 23,
+    tableOptions: {
+      columnGroups: [{ label: '', count: 1 }, { label: 'Estimated means', count: 2 }, { label: 'Simple treatment effect', count: 3 }],
+      headerFontSize: 20, headerHeight: .60, groupHeaderHeight: .48,
+      cellPaddingX: .12, cellPaddingY: .06, firstColumnBold: false
+    },
+    takeaway: 'Means, differences and CIs in mmHg. Difference: CPAP minus control.\nPointwise 95% CIs and unadjusted p-values.',
+    takeawayHeight: .90
+  });
   simpleEffectsSlide.addNotes('');
 
   // Close the case study by checking residuals from the full interaction model.

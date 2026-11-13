@@ -24,11 +24,13 @@ const results = read('assets/fixed-interaction/model_results.json');
 const allocation = read('assets/allocation-imbalance/model_results.json');
 const lab3 = read('assets/lab3-debrief/model_results.json');
 const randomInteraction = read('assets/random-interaction/model_results.json');
-function drawEquation(slide, tex, x, y, w, h) {
+function drawEquation(slide, tex, x, y, w, h, { align = 'center' } = {}) {
   const hash = crypto.createHash('sha1').update(tex).digest('hex').slice(0, 12);
   const file = path.join(__dirname, 'assets/equations', 'eq_' + hash + '.png');
   if (!fs.existsSync(file)) throw new Error('Missing equation; run npm run equations: ' + file);
-  slide.addImage({ path: file, ...imageSizingContain(file, x, y, w, h) });
+  const placement = imageSizingContain(file, x, y, w, h);
+  if (align === 'left') placement.x = x;
+  slide.addImage({ path: file, ...placement });
 }
 addBrandedTitleSlide(pptx, {
   courseLabel: 'BEYOND MULTIPLE LINEAR REGRESSION · WEEK 2',

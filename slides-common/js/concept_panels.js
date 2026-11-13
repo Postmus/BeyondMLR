@@ -5,7 +5,7 @@ const { calcTextBox } = require('../../lectures_2627/week1/pptxgenjs_helpers/tex
 const { addTeachingTable } = require('./teaching_table');
 const { addInlineMathParagraph } = require('./inline_math');
 
-function addConceptPanelsSlide(pptx, { title, intro, lead, panels, takeaway, takeawayHeight = .82, drawEquation }) {
+function addConceptPanelsSlide(pptx, { title, intro, lead, grid, panels, takeaway, takeawayHeight = .82, drawEquation }) {
   const slide = pptx.addSlide();
   addBase(slide);
   addSlideTitle(slide, title);
@@ -24,6 +24,16 @@ function addConceptPanelsSlide(pptx, { title, intro, lead, panels, takeaway, tak
       align: 'center', margin: 0 });
     body.y += 1.3;
     body.h -= 1.3;
+  }
+  if (grid) {
+    const headingH = .35, gap = .15, tableH = grid.height || 1.55;
+    slide.addText(grid.title, { x: body.x, y: body.y, w: body.w, h: headingH,
+      fontFace: FONT_FAMILIES.sans, fontSize: 17, bold: true, color: COLORS.primary, margin: 0 });
+    addTeachingTable(slide, { ...grid.table, drawEquation,
+      box: { x: body.x, y: body.y + headingH + gap, w: body.w, h: tableH } });
+    const used = headingH + gap + tableH + .20;
+    body.y += used;
+    body.h -= used;
   }
   const noteH = takeaway ? takeawayHeight : 0;
   const panelH = body.h - (takeaway ? noteH + .16 : 0);
@@ -50,7 +60,7 @@ function addConceptPanelsSlide(pptx, { title, intro, lead, panels, takeaway, tak
       const h = block.h || (block.equation ? .55 : block.image ? 2.25 :
         calcTextBox(block.fontSize || 21, { text: block.text, w, fontFace: FONT_FAMILIES.sans,
           margin: 0, padding: .04 }).h + .07);
-      if (block.equation) drawEquation(slide, block.equation, x, y, w, h);
+      if (block.equation) drawEquation(slide, block.equation, x, y, w, h, { align: block.equationAlign });
       else if (block.inlineMath) addInlineMathParagraph(slide, { runs: block.inlineMath, box: { x, y, w, h }, fontSize: block.fontSize || 21 });
       else if (block.table) addTeachingTable(slide, { ...block.table, box: { x, y, w, h } });
       else if (block.image) addAssetFrame(slide, { box: { x, y, w, h }, assetPath: block.image, framed: false });
