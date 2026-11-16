@@ -632,11 +632,15 @@ function addBulletVisualSlide(pptx, {
 function addFigureSlide(pptx, {
   title,
   assetPath,
+  equation,
+  drawEquation,
+  equationHeight = .85,
   caption = "",
   captionFontSize = TYPOGRAPHY.caption.fontSize,
   captionMinFontSize = 9,
   captionHeight: requestedCaptionHeight = 0.48,
   takeaway = "",
+  takeawayTitle = "",
   takeawayHeight = 0.82,
   footerShortTitle = "",
   fit = "contain",
@@ -644,14 +648,17 @@ function addFigureSlide(pptx, {
   const captionHeight = caption ? requestedCaptionHeight : 0;
   const noteHeight = takeaway ? takeawayHeight : 0;
   const noteSpace = takeaway ? noteHeight + 0.16 : 0;
+  const equationSpace = equation ? equationHeight + .15 : 0;
   const slide = pptx.addSlide({ masterName: MASTERS.content });
   const figureBox = {
     ...LAYOUT.body,
-    h: LAYOUT.body.h - captionHeight - noteSpace,
+    h: LAYOUT.body.h - captionHeight - noteSpace - equationSpace,
   };
   addBase(slide);
   addSlideTitle(slide, title);
   addAssetFrame(slide, { box: figureBox, assetPath, fit });
+  if (equation) drawEquation(slide, equation, figureBox.x, figureBox.y + figureBox.h + .15,
+    figureBox.w, equationHeight);
   if (caption) {
     addCaption(slide, {
       box: {
@@ -668,7 +675,7 @@ function addFigureSlide(pptx, {
   if (takeaway) addNoteBox(slide, {
     box: { x: LAYOUT.body.x, y: LAYOUT.body.y + LAYOUT.body.h - noteHeight,
       w: LAYOUT.body.w, h: noteHeight },
-    text: takeaway, fontSize: 20, minFontSize: 20,
+    title: takeawayTitle, text: takeaway, fontSize: 20, minFontSize: 20, titleFontSize: 14,
   });
   addFooter(slide, footerShortTitle);
   return slide;

@@ -1,10 +1,15 @@
 const path = require('path');
-const { addBulletVisualSlide } = require('../../slides-common/js/pptx_layout_primitives');
-const { addTeachingTableSlide } = require('../../slides-common/js/teaching_table');
+const fs = require('fs');
+const { addBulletVisualSlide, addFigureSlide } = require('../../slides-common/js/pptx_layout_primitives');
 const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels');
-const { addAdditiveExample } = require('./additive_example');
+const { addDiagnosticsInterpretationSlide, addStructuredSummarySlide } = require('../../slides-common/js/course_builders');
+const { equation } = require('./additive_example');
 
-function addAssignmentRecap(pptx, drawEquation, allocation) {
+function addAssignmentRecap(pptx, drawEquation) {
+  const assets = path.join(__dirname, 'assets/assignment1-recap');
+  const results = JSON.parse(fs.readFileSync(path.join(assets, 'model_results.json'), 'utf8'));
+  const f = n => Number(n).toFixed(2);
+  const feedbackStyle = { takeawayTitle: 'FROM THE SUBMISSIONS', takeawayHeight: 1.35 };
   const setting = addBulletVisualSlide(pptx, {
     title: 'Assignment 1: comparing protein extraction protocols',
     bulletTitle: 'THE EXPERIMENT',
@@ -22,36 +27,100 @@ function addAssignmentRecap(pptx, drawEquation, allocation) {
     noteFontSize: 20, noteMinFontSize: 20, noteHeight: .88
   });
   setting.addNotes('');
-  addAdditiveExample(pptx, drawEquation);
 
-  const f = n => Number(n).toFixed(2);
-  const p = n => n < .001 ? '< .001' : Number(n).toFixed(3);
-  const results = allocation.results.filter(r => r.design === 'Assignment 1 balanced');
-  const recap = addTeachingTableSlide(pptx, {
-    title: 'Assignment 1 recap: comparing the models',
-    intro: 'Modified-minus-standard effects, estimated SEs and 95% CIs in µg/mg.',
-    introHeight: .55,
-    columns: [
-      { label: 'Model', weight: 3.4 },
-      { label: 'Estimate', weight: 1.45, align: 'center' },
-      { label: 'Estimated SE', weight: 1.65, align: 'center' },
-      { label: '95% CI', weight: 2.6, align: 'center' },
-      { label: 'p-value', weight: 1.35, align: 'center' }
+  addFigureSlide(pptx, {
+    title: 'Assignment 1: exploring protein yield',
+    assetPath: path.join(assets, 'eda.png')
+  }).addNotes('');
+
+  addFigureSlide(pptx, {
+    title: 'Assignment 1: the random-intercept model',
+    assetPath: path.join(assets, 'random-intercept-means.png'),
+    equation, drawEquation,
+    caption: 'Tᵢⱼ = 0 for Standard and 1 for Modified.  i = aliquot; j = donor.',
+    captionFontSize: 18, captionMinFontSize: 18, captionHeight: .38,
+    ...feedbackStyle,
+    takeaway: 'Most reports correctly explained that donors can differ in baseline protein yield, while the model assumes the same protocol difference across donors.'
+  }).addNotes('');
+
+  addConceptPanelsSlide(pptx, {
+    title: 'Assignment 1: the estimated protocol effect',
+    panels: [{ blocks: [
+      { table: {
+        columns: [
+          { label: 'Protocol comparison', weight: 3.8 },
+          { label: 'Estimate', weight: 1.7, align: 'center' },
+          { label: 'Estimated SE', weight: 2.0, align: 'center' },
+          { label: '95% CI', weight: 2.7, align: 'center' }
+        ],
+        rows: [['Modified − Standard', f(results.estimate), f(results.se),
+          `${f(results.lower_95)} to ${f(results.upper_95)}`]],
+        fontSize: 23, headerFontSize: 19, headerHeight: .65, firstColumnBold: false
+      }, h: 1.60, gap: .22 },
+      { text: `The intercept (${f(results.intercept)} µg/mg) is the expected Standard yield for a donor whose random intercept is zero.`, fontSize: 22, h: .85, gap: .15 },
+      { text: `After accounting for donor, Modified increases expected yield by ${f(results.estimate)} µg/mg. The 95% CI supports an increase of about ${f(results.lower_95)} to ${f(results.upper_95)} µg/mg.`, fontSize: 22, h: 1.00 }
+    ] }],
+    ...feedbackStyle,
+    takeaway: 'Most reports correctly estimated the protocol difference and used the confidence interval to support the conclusion that the modified protocol increases protein yield.'
+  }).addNotes('');
+
+  addConceptPanelsSlide(pptx, {
+    title: 'Assignment 1: variance components and ICC',
+    intro: 'Variance components describe how the variation remaining after accounting for protocol is divided between donors and residual variation.',
+    introHeight: .65,
+    panels: [
+      { blocks: [
+        { table: {
+          columns: [
+            { label: 'Component', weight: 2.3 },
+            { label: 'Variance', weight: 1.5, align: 'center' }
+          ],
+          rows: [['Donor', f(results.donor_variance)],
+            ['Residual', f(results.residual_variance)]],
+          fontSize: 22, headerFontSize: 18, headerHeight: .50, firstColumnBold: false
+        }, h: 1.35, gap: .12 },
+        { text: 'Variances: (µg/mg)².', fontSize: 18, h: .30, gap: .12 },
+        { text: 'Donor: variation between donors.\nResidual: variation among aliquots from the same donor receiving the same protocol.', fontSize: 20, h: .95 }
+      ] },
+      { title: 'INTRACLASS CORRELATION', blocks: [
+        { text: `${f(results.donor_variance)} / (${f(results.donor_variance)} + ${f(results.residual_variance)})\n= ${f(results.icc)}`, fontSize: 25, bold: true, h: .95, gap: .20 },
+        { text: 'About 65% of the variance remaining after accounting for protocol lies between donors.', fontSize: 22, h: 1.05 }
+      ] }
     ],
-    rows: results.map(r => [r.model, f(r.estimate), f(r.se), `${f(r.lower_95)} to ${f(r.upper_95)}`, p(r.p)]),
-    fontSize: 23, tableOptions: { headerFontSize: 19, headerHeight: .72, firstColumnBold: false },
-    takeaway: 'All three models estimate the same protocol effect. Accounting for donor reduces the estimated standard error.'
-  });
-  recap.addNotes('');
+    ...feedbackStyle,
+    takeawayHeight: 1.60,
+    takeaway: `Some reports described the random donor intercept itself as a variance. Each donor has its own intercept shift. The value ${f(results.donor_variance)} in the Variance column describes how much these shifts vary between donors.`
+  }).addNotes('');
 
-  const feedback = addConceptPanelsSlide(pptx, {
-    title: 'Assignment 1: feedback on your submissions',
-    panels: [{ title: 'PLACEHOLDER', blocks: [
-      { text: 'To be completed after reviewing the submissions.', h: .8, fontSize: 24, gap: .3 },
-      { text: 'Two or three observations about the analyses, interpretations and reporting.', h: 1.1, fontSize: 24 }
-    ] }]
-  });
-  feedback.addNotes('');
+  addDiagnosticsInterpretationSlide(pptx, {
+    title: 'Assignment 1: checking the random-intercept model',
+    plotHeight: 3.0,
+    explanationTitle: 'WHAT THE PLOT SUGGESTS',
+    diagnostics: [
+      { assetPath: path.join(assets, 'residuals-vs-fitted.png'),
+        purpose: 'No clear funnel or systematic trend in the conditional residuals.' },
+      { assetPath: path.join(assets, 'normal-qq.png'),
+        purpose: 'Approximate agreement in the centre, with departures in the lower tail.' }
+    ],
+    ...feedbackStyle,
+    takeawayHeight: 1.10,
+    takeaway: 'Some conclusions about model assumptions were stronger than the plots justified.'
+  }).addNotes('');
+
+  addStructuredSummarySlide(pptx, {
+    title: 'Assignment 1: working with Quarto',
+    sections: [
+      { title: 'WHAT WENT WELL', paragraphs: [
+        'Most reports brought together the analysis code, results, figures and written interpretations.'
+      ] },
+      { title: 'POINTS TO CONSIDER', paragraphs: [
+        'Some reports still contained the template instructions or assignment prompts.',
+        'The donor–protocol means were missing from one plot because of an error in their calculation. In another report, eval: false prevented plots and model output from appearing.',
+        'Some labels and results used µg/ml or um/mg. The outcome is measured in µg/mg.'
+      ] }
+    ],
+    takeaway: 'Check the rendered HTML: are all requested results and figures present, are warnings resolved, and are the labels and units correct?'
+  }).addNotes('');
 }
 
 module.exports = { addAssignmentRecap };

@@ -5,16 +5,16 @@ const { calcTextBox } = require('../../lectures_2627/week1/pptxgenjs_helpers/tex
 const { addTeachingTable } = require('./teaching_table');
 const { addInlineMathParagraph } = require('./inline_math');
 
-function addConceptPanelsSlide(pptx, { title, intro, lead, grid, panels, takeaway, takeawayHeight = .82, drawEquation }) {
+function addConceptPanelsSlide(pptx, { title, intro, introHeight = .48, lead, grid, panels, takeaway, takeawayTitle = '', takeawayHeight = .82, drawEquation }) {
   const slide = pptx.addSlide();
   addBase(slide);
   addSlideTitle(slide, title);
   const body = { ...LAYOUT.body };
   if (intro) {
-    slide.addText(intro, { x: body.x, y: body.y + .06, w: body.w, h: .48,
+    slide.addText(intro, { x: body.x, y: body.y + .06, w: body.w, h: introHeight,
       fontFace: FONT_FAMILIES.sans, fontSize: 20, color: COLORS.muted, margin: 0 });
-    body.y += .68;
-    body.h -= .68;
+    body.y += introHeight + .20;
+    body.h -= introHeight + .20;
   }
   if (lead) {
     // A shared equation and interpretation establish the comparison below.
@@ -73,7 +73,7 @@ function addConceptPanelsSlide(pptx, { title, intro, lead, grid, panels, takeawa
     if (y - .12 > box.y + box.h - .18) throw new Error(`Panel overflow: ${title} / ${panel.title} (${(y - .12 - box.y).toFixed(2)} in used; ${(box.h - .18).toFixed(2)} in available)`);
   });
   if (takeaway) addNoteBox(slide, { box: { x: body.x, y: body.y + body.h - noteH, w: body.w, h: noteH },
-    text: takeaway, fontSize: 20, minFontSize: 20 });
+    title: takeawayTitle, text: takeaway, fontSize: 20, minFontSize: 20, titleFontSize: 14 });
   addFooter(slide);
   return slide;
 }

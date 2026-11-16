@@ -8,7 +8,7 @@ const interactionEquation = String.raw`Y_{ij}=\underbrace{\beta_0+c_j}_{\text{St
 function addKnownMeansExample(pptx, drawEquation, interaction = false) {
   const slide = pptx.addSlide();
   addBase(slide);
-  addSlideTitle(slide, interaction ? 'Different protocol effects across donors' : 'The additive model: a common protocol effect across donors');
+  addSlideTitle(slide, interaction ? 'What if the protocol difference varies between donors?' : 'The additive model: a common protocol effect across donors');
   const body = LAYOUT.body;
   const text = (value, y, h, options = {}) => slide.addText(value, {
     x: body.x, y, w: body.w, h, fontFace: FONT_FAMILIES.sans,

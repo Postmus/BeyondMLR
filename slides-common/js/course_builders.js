@@ -64,12 +64,13 @@ function addAssumptionsDiagnosticsSlide(pptx, {
   return slide;
 }
 // Paired diagnostic plots above aligned explanations, with a shared limitation.
-function addDiagnosticsInterpretationSlide(pptx, { title, diagnostics, takeaway, plotHeight = 2.40 }) {
+function addDiagnosticsInterpretationSlide(pptx, { title, diagnostics, takeaway, plotHeight = 2.40,
+  takeawayTitle = '', takeawayHeight = .94, explanationTitle = 'WHAT WE USE THIS PLOT FOR' }) {
   const slide = pptx.addSlide();
   const { body } = getSlots();
   addBase(slide);
   addSlideTitle(slide, title);
-  const plotH = plotHeight, noteH = .94;
+  const plotH = plotHeight, noteH = takeawayHeight;
   const columnW = (body.w - SPACING.gutter) / 2;
   const explanationY = body.y + plotH + SPACING.smallGap;
   const explanationH = body.h - plotH - noteH - 2 * SPACING.smallGap;
@@ -78,12 +79,12 @@ function addDiagnosticsInterpretationSlide(pptx, { title, diagnostics, takeaway,
     addAssetFrame(slide, { box: { x, y: body.y, w: columnW, h: plotH }, assetPath: diagnostic.assetPath });
     addTextBox(slide, {
       box: { x, y: explanationY, w: columnW, h: explanationH },
-      title: 'WHAT WE USE THIS PLOT FOR', text: diagnostic.purpose,
+      title: explanationTitle, text: diagnostic.purpose,
       fontSize: 22, minFontSize: 22,
     });
   });
   addNoteBox(slide, { box: { ...body, y: body.y + body.h - noteH, h: noteH },
-    text: takeaway, fontSize: 20, minFontSize: 20 });
+    title: takeawayTitle, text: takeaway, fontSize: 20, minFontSize: 20, titleFontSize: 14 });
   addFooter(slide);
   return slide;
 }

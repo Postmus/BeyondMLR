@@ -1,10 +1,11 @@
 # Beyond MLR: Week 2
 
-The lecture has 40 slides, empty speaker notes and no backup slides. The introduction
-revisits Assignment 1's protein-extraction experiment: setting, additive model,
-three-model results and a feedback placeholder. A hypothetical allocation change
-then motivates the within- and between-donor comparisons, followed by a known-means
-interaction example. Parts 1 and 2 use the simulated HIPARCO-inspired CPAP case.
+The lecture has 40 slides and empty speaker notes. The introduction
+works through Assignment 1: setting, EDA, fitted random-intercept means, protocol
+results, variance components, diagnostics and Quarto feedback. Statistical feedback
+appears beneath the relevant worked example. The recap leads directly to a known-means
+interaction example asking what happens when the protocol difference varies between donors.
+The three allocation-comparison slides are retained in a separate supplement. Parts 1 and 2 use the simulated HIPARCO-inspired CPAP case.
 See [PLANNING.md](PLANNING.md) for the teaching sequence.
 
 ## Current lecture sequence
@@ -13,12 +14,12 @@ See [PLANNING.md](PLANNING.md) for the teaching sequence.
 | --- | --- |
 | 1 | Title: When treatment effects vary. Subtitle: Interactions, random slopes and crossed random effects. |
 | 2 | Assignment 1 experiment: donor tissue aliquots randomized to Standard or Modified protocols, with a generated laboratory image. |
-| 3 | Known-means additive example: two donors, a common protocol effect of 6 µg/mg, row and column averages, parallel lines and the individual-outcome model. |
-| 4 | Full-width model comparison using the original Assignment 1 data: estimates, estimated SEs, 95% CIs and p-values. |
-| 5 | Explicit placeholder for two or three feedback observations after reviewing student submissions. |
-| 6 | Assignment 1 allocation beside a hypothetical unequal allocation within the same ten donors. |
-| 7 | Three-model results for the hypothetical allocation. |
-| 8 | Three columns of concise bullets explaining protocol-only, fixed-donor and random-donor comparisons, leading into interaction. |
+| 3 | Assignment 1 EDA: individual aliquots, observed donor–protocol means and overall protocol means. |
+| 4 | Observed donor–protocol means and two fitted random-intercept profiles, separated by 4.61 µg/mg; annotated model equation and feedback on interpreting the random intercept. |
+| 5 | Random-intercept protocol estimate, estimated SE and 95% CI, with the baseline interpretation and positive feedback on estimation and use of the confidence interval. |
+| 6 | Definition of variance components, Donor and Residual variance estimates, and ICC calculation and interpretation; feedback distinguishes a donor-specific intercept shift from its reported variance. |
+| 7 | Conditional-residual diagnostics, brief interpretations and feedback about the strength of conclusions. |
+| 8 | Quarto feedback: what went well and points to consider in stacked sections. |
 | 9 | Known-means interaction example: donor effects of 2/10 µg/mg, average effect 6, and deviations of −4/+4 µg/mg. |
 | 10 | Conceptual choice between fixed group parameters and a population distribution of random group effects; transition from donors to hospitals. |
 | 11 | Part 1 divider: Treatment-by-center interaction: fixed effects. |
@@ -59,15 +60,17 @@ at the start of Week 3, before observational multilevel analysis. Labs remain se
 
 Current sources and outputs:
 
-- `assignment_recap.js`: experiment setting, additive illustration, original-data results and feedback placeholder.
-- `additive_example.js` and `generate_additive_example.R`: the paired known-means introductory slides and reproducible PNG/SVG table-and-plot assets.
-- `allocation_imbalance.js`: three formula-free main slides; the precision-backup helper remains in source but is no longer included in the deck.
+- `assignment_recap.js`: the worked Assignment 1 opening and integrated submission feedback.
+- `generate_assignment_recap.R`: original-data REML fit, observed/fitted means, EDA and conditional-residual figures in `assets/assignment1-recap/`.
+- `additive_example.js` and `generate_additive_example.R`: the known-means interaction example and its reproducible assets; the earlier hypothetical additive example remains available in source.
+- `allocation_imbalance.js`: three supplementary allocation-comparison slides, built with `npm run slides:allocation-supplement` from this directory; the precision-backup helper remains in source.
 - `fixed_interaction.js`: slide content and equation definitions, using the
   shared concept-panel, teaching-table and figure layouts. The EMM concept uses a full-width reference grid above the prediction and averaging panels.
 - `crossed_case_study.js` and `generate_radiologist_data.R`: the four-slide radiologist example, reproducible data, REML fit and exploratory plot.
 - `crossed_intro.js`: Part 3 divider and conceptual introduction to multiple grouping variables.
 - `build_week2.js`: deck construction and layout checks.
 - `generate_equations.js`: optional TeX/MathJax equation regeneration.
+- `Beyond_MLR_Week_2_Allocation_Supplement.pptx`: the three allocation-comparison slides retained separately for optional discussion.
 - `Beyond_MLR_Week_2.pptx`: editable slide text and tables, with raster equations
   and statistical figures.
 - `../../output/pdf/Beyond_MLR_Week_2.pdf`: rendered review copy.
@@ -160,8 +163,7 @@ to the population-average CPAP effect.
 
 ### Figures and teaching continuity
 
-- Slides 2–9 use Assignment 1 protein extraction for the recap, allocation discussion
-  and known-means examples. Slide 12 introduces the CPAP case.
+- Slides 2–9 use Assignment 1 protein extraction for the recap and known-means interaction example. Slide 12 introduces the CPAP case.
 - The empirical interaction plot shows treatment means across hospitals, with a
   title and plot only. The two residual plots close the fixed-effects case study.
 - The Part 2 hypothetical sampling and covariance illustrations use CPAP/control
@@ -212,15 +214,30 @@ The hypothetical protocol-only, fixed-donor and random-donor estimates are 5.653
 `generate_additive_example.R` draws hypothetical true means for donors A and B:
 50/56 and 70/76 µg/mg for the additive case; 50/52 and 70/80 µg/mg for interaction.
 Both examples have an equally weighted average protocol effect of 6 µg/mg.
-`µ_tj` identifies the true cell means. These figures illustrate the model assumptions.
+`µ_tj` identifies the true cell means. The lecture shows the interaction example
+on slide 9; the earlier hypothetical additive example is retained in source.
+
+The worked example on slides 3–7 uses the actual assignment data. Run
+`Rscript lectures_2627/week2/generate_assignment_recap.R` to regenerate its four
+PNG figures, `observed_and_fitted_means.csv` and `model_results.json` under
+`assets/assignment1-recap/`. The script fits the random-intercept model by REML
+using `nlme`, verifies the protocol estimate, SE and interval against the saved
+assignment results, and checks that all ten fitted protocol gaps equal 4.6135.
+The treatment interval uses 69 degrees of freedom, agreeing with the balanced
+Satterthwaite analysis. Figures use the shared course palette and physical slide
+dimensions. EDA and fitted means share donor order and a 15–95 µg/mg scale.
+The fitted profiles include the estimated donor random intercepts; diamonds show
+the observed donor–protocol means. Conditional-residual plots use the same fit.
 
 The laboratory scene was generated with the built-in image-generation tool and
 saved to `assets/assignment1-recap/protein-extraction.png`; its exact prompt is in
 `assets/assignment1-recap/protein-extraction.prompt.txt`. It matches the square
 image frame in the usual two-column setting slide.
 
-Slide 5 is a feedback placeholder. Replace its text with observations from the
-submitted reports after reviewing them.
+Slides 4–7 integrate one general feedback observation in a full-width band labelled
+“From the submissions”. Slide 8 presents Quarto feedback in stacked sections.
+The feedback summarises 18 students' submissions, using the latest resubmission,
+and contains no student identifiers. Speaker notes remain empty.
 
 `generate_lab3_debrief.R` maintains the separate wound-healing comparisons, and
 `generate_radiologist_data.R` maintains the crossed patient/radiologist example.

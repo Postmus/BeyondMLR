@@ -47,6 +47,7 @@ lectures_*/**/assets/equations/*.synctex.gz
 Thumbs.db
 
 # Edition-specific preview builds and private submission folders
+/assignments_2627/
 **/_site/
 **/student_submissions/
 **/Final_assignment_submissions/

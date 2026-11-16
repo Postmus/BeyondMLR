@@ -1,0 +1,16 @@
+{
+  "data_md5": "fdb936351fc7c97c9ea95fce0f369d59",
+  "fitting": "Random-intercept REML via nlme; protocol t interval with 69 df.",
+  "intercept": 60.2995,
+  "modified_mean": 64.913,
+  "estimate": 4.6135,
+  "se": 1.760035805383,
+  "df": 69,
+  "lower_95": 1.102324639626,
+  "upper_95": 8.124675360374,
+  "donor_variance": 114.39304,
+  "residual_variance": 61.95452,
+  "donor_sd": 10.695468199195,
+  "residual_sd": 7.871119361311,
+  "icc": 0.648679460039
+}

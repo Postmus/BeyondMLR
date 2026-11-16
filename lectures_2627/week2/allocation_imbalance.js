@@ -8,6 +8,8 @@ function addAllocationImbalance(pptx, data) {
     title, panels: content, takeaway
   });
   const results = data.results.filter(row => row.design === 'Unequal protocol proportions');
+  const balancedResults = data.results.filter(row => row.design === 'Assignment 1 balanced');
+  const estimateSE = row => `${f(row.estimate)} (${f(row.se)})`;
 
   const allocationPanel = (title, allocation) => ({ title, titleHeight: .30, blocks: [
       { table: {
@@ -33,17 +35,20 @@ function addAllocationImbalance(pptx, data) {
   ], 'Only allocation changes: the true protocol effect remains 6 µg/mg in every donor.');
 
   addTeachingTableSlide(pptx, {
-    title: 'The models now give different protocol estimates',
-    intro: 'Unequal allocation within donors; estimated modified-minus-standard difference in protein yield.',
+    title: 'Protocol estimates under equal and unequal allocation',
+    intro: 'Modified-minus-standard difference in protein yield (µg/mg). SE = estimated standard error.',
     introHeight: .55,
     columns: [
       { label: 'Model', weight: 3.3 },
-      { label: 'Estimate (µg/mg)', weight: 1.5, align: 'center' },
-      { label: 'Estimated SE (µg/mg)', weight: 1.8, align: 'center' }
+      { label: 'Equal allocation\nEstimate (SE)', weight: 2.6, align: 'center' },
+      { label: 'Unequal allocation\nEstimate (SE)', weight: 2.6, align: 'center' }
     ],
-    rows: results.map(row => [row.model, f(row.estimate), f(row.se)]),
+    rows: results.map(row => [row.model,
+      estimateSE(balancedResults.find(balanced => balanced.model === row.model)),
+      estimateSE(row)]),
     fontSize: 24,
-    takeaway: 'Accounting for donor changes the estimate. The fixed and random donor models give slightly different estimates, with similar estimated standard errors.'
+    tableOptions: { headerFontSize: 20, headerHeight: .95 },
+    takeaway: 'With equal allocation, all three protocol estimates agree. With unequal allocation, the estimates differ across models.'
   });
 
   panels('The models use different comparisons', [

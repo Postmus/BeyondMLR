@@ -5,24 +5,35 @@ Week 2 develops treatment effects that vary between centers, then briefly introd
 ## Opening and theoretical emphasis
 
 After the title, slide 2 recalls Assignment 1's protein-extraction experiment,
-with study details on the left and a generated laboratory image on the right.
-Slide 3 makes the additive assumption explicit using two hypothetical donors,
-a common protocol effect of 6 µg/mg, a true-means table, parallel lines and the
-model formula. Slide 4 compares protocol-only, fixed-donor and random-donor fits
-to the original assignment data, including estimated SEs, 95% CIs and p-values.
-Slide 5 is a clearly marked placeholder for feedback based on the submissions.
+with study details on the left and a laboratory image on the right. Slide 3 shows
+the requested EDA plot: aliquot observations, donor–protocol means and overall
+protocol means. Slide 4 retains the observed group means and overlays two fitted
+random-intercept profiles, separated by the common estimated effect of 4.61 µg/mg.
+It replaces the hypothetical additive table and figure with the fitted assignment
+model, with the annotated model equation and protocol coding beneath the plot.
+The two plots use the same donor order, protocol colours and outcome scale.
 
-Slides 6–8 show a hypothetical change in protocol allocation within donors, its
-fitted results, and concise bullets explaining the three models' comparisons.
-The allocation generator preserves the original donor contributions and aliquot
-errors, verifies the original CSV, and keeps a common true protocol effect of
-6 µg/mg. The concluding callout leads straight to the interaction example on
-slide 9: donor effects of 2 and 10 µg/mg, an average effect of 6, and deviations
-of −4 and +4. Use “estimated standard error” throughout.
+Slides 5–7 present the requested random-intercept results: protocol effect and
+confidence interval, variance components/ICC, and conditional-residual diagnostics.
+A full-width band labelled “From the submissions” places one specific feedback
+observation beneath each worked example on slides 4–7. The model slide recognises
+correct explanations of donor baselines and the common protocol effect; the results slide recognises correct
+estimation and use of confidence intervals in most reports; the variance-components
+slide distinguishes the donor-specific shift from its variance; the diagnostic slide
+qualifies the conclusions.
+Slide 8 gives Quarto feedback in stacked sections with a short positive assessment
+and practical points to consider. Keep all speaker notes empty.
+
+The recap leads directly to the hypothetical interaction example: donor effects
+of 2 and 10 µg/mg, an average effect of 6, and deviations of −4 and +4.
+Its title asks what happens when the protocol difference varies between donors,
+linking back to the common protocol effect on slide 4. Use “estimated standard
+error” throughout. The allocation patterns, three-model results and explanation
+of their comparisons are retained in a separate three-slide allocation supplement.
 
 The CPAP case has 240 patients in six hospitals of sizes 24, 32, 36, 44, 48 and 56. Treatment allocation is 50:50 within each hospital. The outcome is reduction in 24-hour mean blood pressure after 12 weeks. This retains a simple within-hospital comparison while allowing unequal precision across hospitals.
 
-After the toy examples, slide 10 introduces the conceptual choice between fixed group parameters and a population distribution of random group effects, linking donors to hospitals. The Part 1 divider on slide 11 then introduces the fixed-effects analysis. Slide 12 introduces the simulated CPAP study and begins the empirical six-hospital analysis in the usual text-left/image-right layout, explicitly moving from known means to estimation from patient data. Slide 13 shows a traditional interaction plot with centers on the horizontal axis and one line per treatment connecting its observed means, with only a title and plot. Slide 14 then introduces the grouped treatment-slope formulation, parameter definitions and enlarged sum-to-zero constraints. Slide 15 presents all fitted coefficients in the Week 1 estimate/SE/95% CI/p-value format, followed by the definition of estimated marginal means on slide 16. Show the treatment-by-hospital grid, predict each cell mean using the fitted model, and average equally across the six hospitals. Slide 17 then compares marginal and simple treatment effects, with their effects-coded coefficient interpretations integrated into the text. Formal interaction testing is deferred to model-building discussions in Weeks 3 and 4. Lab 3 follows the same progression, moving from manual calculations of simple effects to estimated marginal means and their contrasts. Slide 18 presents the estimated means and simple treatment effects in a full-width table, with pointwise 95% CIs and unadjusted p-values for each hospital. Lab 3 uses the same main analysis and introduces Bonferroni adjustment in an optional callout. Slide 19 closes the empirical analysis with residuals versus fitted values and a Normal Q-Q plot from the full interaction model. Keep software names and syntax for the lab. Slide 20 pauses for Lab 3 in the Week 1 break-slide style. Finish Part 1 with a wound-healing debrief: the additive/interaction average-effect comparison on slide 21 and a hypothetical unequal-laboratory-size illustration on slide 22. The population-center section begins Part 2 on slide 23.
+After the interaction example, slide 10 introduces the conceptual choice between fixed group parameters and a population distribution of random group effects, linking donors to hospitals. The Part 1 divider on slide 11 then introduces the fixed-effects analysis. Slide 12 introduces the simulated CPAP study and begins the empirical six-hospital analysis in the usual text-left/image-right layout, explicitly moving from known means to estimation from patient data. Slide 13 shows a traditional interaction plot with centers on the horizontal axis and one line per treatment connecting its observed means, with only a title and plot. Slide 14 then introduces the grouped treatment-slope formulation, parameter definitions and enlarged sum-to-zero constraints. Slide 15 presents all fitted coefficients in the Week 1 estimate/SE/95% CI/p-value format, followed by the definition of estimated marginal means on slide 16. Show the treatment-by-hospital grid, predict each cell mean using the fitted model, and average equally across the six hospitals. Slide 17 then compares marginal and simple treatment effects, with their effects-coded coefficient interpretations integrated into the text. Formal interaction testing is deferred to model-building discussions in Weeks 3 and 4. Lab 3 follows the same progression, moving from manual calculations of simple effects to estimated marginal means and their contrasts. Slide 18 presents the estimated means and simple treatment effects in a full-width table, with pointwise 95% CIs and unadjusted p-values for each hospital. Lab 3 uses the same main analysis and introduces Bonferroni adjustment in an optional callout. Slide 19 closes the empirical analysis with residuals versus fitted values and a Normal Q-Q plot from the full interaction model. Keep software names and syntax for the lab. Slide 20 pauses for Lab 3 in the Week 1 break-slide style. Finish Part 1 with a wound-healing debrief: the additive/interaction average-effect comparison on slide 21 and a hypothetical unequal-laboratory-size illustration on slide 22. The population-center section begins Part 2 on slide 23.
 
 Keep effects coding for center in the fixed interaction. Explain the consequences
 of omitting interaction in plain language: equal cell sizes preserve the average

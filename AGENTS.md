@@ -1,3 +1,8 @@
+# Git workflow
+
+- Work directly on `master`. Create or switch to a feature branch only when the user explicitly requests it.
+- Before continuing existing work, check whether newer commits are present on other remote branches and reconcile the intended version with `master` while preserving local changes.
+
 # Writing preferences
 
 Apply these preferences throughout the repository, including lectures, labs, assignments, and explanatory text.

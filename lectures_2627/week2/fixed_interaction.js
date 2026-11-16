@@ -5,7 +5,6 @@ const { addDiagnosticsInterpretationSlide } = require('../../slides-common/js/co
 const { addTeachingTableSlide } = require('../../slides-common/js/teaching_table');
 const { addFigureSlide, addSectionSlide, addBulletVisualSlide } = require('../../slides-common/js/pptx_layout_primitives');
 const { addRandomInteractionResults } = require('./random_interaction');
-const { addAllocationImbalance } = require('./allocation_imbalance');
 const { addInteractionExample } = require('./additive_example');
 const { addAssignmentRecap } = require('./assignment_recap');
 
@@ -59,7 +58,7 @@ for (const t of [0, 1]) {
   E[`grid${t}Average`] = String.raw`\widehat{\mu}_{${t}\cdot}`;
 }
 
-function addWeek2Opening(pptx, drawEquation, results, allocation, lab3, randomInteraction) {
+function addWeek2Opening(pptx, drawEquation, results, lab3, randomInteraction) {
   const f = (v, digits = 1) => Number(v).toFixed(digits);
   const panels = (title, content, takeaway, options = {}) => addConceptPanelsSlide(pptx, {
     title, panels: content, takeaway, drawEquation, ...options
@@ -68,8 +67,7 @@ function addWeek2Opening(pptx, drawEquation, results, allocation, lab3, randomIn
   const eq = (key, h = .65, gap = .18) => ({ equation: E[key], h, gap });
   const assets = path.join(__dirname, 'assets/fixed-interaction');
 
-  addAssignmentRecap(pptx, drawEquation, allocation);
-  addAllocationImbalance(pptx, allocation);
+  addAssignmentRecap(pptx, drawEquation);
   addInteractionExample(pptx, drawEquation);
 
   // Choose how centers enter the model before formalizing the fixed-effects route.

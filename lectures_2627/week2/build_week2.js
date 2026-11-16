@@ -10,20 +10,19 @@ const { warnIfSlideHasOverlaps, warnIfSlideElementsOutOfBounds } = require('../w
 const { addWeek2Opening } = require('./fixed_interaction');
 const { addCrossedEffectsIntroduction } = require('./crossed_intro');
 const { addCrossedCaseStudy } = require('./crossed_case_study');
+const { addAllocationImbalance } = require('./allocation_imbalance');
+const allocationSupplement = process.argv.includes('--allocation-supplement');
+const outputName = allocationSupplement ? 'Beyond_MLR_Week_2_Allocation_Supplement' : 'Beyond_MLR_Week_2';
 process.chdir(__dirname);
 const pptx = new pptxgen();
 pptx.layout = 'LAYOUT_WIDE';
 pptx.author = 'Dr Douwe Postmus';
 pptx.subject = 'Week 2: treatment interactions, random slopes and multiple grouping variables';
-pptx.title = 'Beyond MLR | Week 2';
+pptx.title = allocationSupplement ? 'Beyond MLR | Week 2 allocation supplement' : 'Beyond MLR | Week 2';
 pptx.lang = 'en-GB';
 pptx.theme = { headFontFace: FONT_FAMILIES.sans, bodyFontFace: FONT_FAMILIES.sans, lang: 'en-GB' };
 defineTemplateMasters(pptx);
 const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
-const results = read('assets/fixed-interaction/model_results.json');
-const allocation = read('assets/allocation-imbalance/model_results.json');
-const lab3 = read('assets/lab3-debrief/model_results.json');
-const randomInteraction = read('assets/random-interaction/model_results.json');
 function drawEquation(slide, tex, x, y, w, h, { align = 'center' } = {}) {
   const hash = crypto.createHash('sha1').update(tex).digest('hex').slice(0, 12);
   const file = path.join(__dirname, 'assets/equations', 'eq_' + hash + '.png');
@@ -32,24 +31,29 @@ function drawEquation(slide, tex, x, y, w, h, { align = 'center' } = {}) {
   if (align === 'left') placement.x = x;
   slide.addImage({ path: file, ...placement });
 }
-addBrandedTitleSlide(pptx, {
-  courseLabel: 'BEYOND MULTIPLE LINEAR REGRESSION · WEEK 2',
-  mainTitle: 'When treatment effects vary',
-  subtitle: 'Interactions, random slopes and crossed random effects',
-  author: 'Dr Douwe Postmus',
-  affiliation: 'UMCG · Department of Epidemiology',
-  badge: 'BLR'
-});
-addWeek2Opening(pptx, drawEquation, results, allocation, lab3, randomInteraction);
-addCrossedEffectsIntroduction(pptx);
-addCrossedCaseStudy(pptx, drawEquation, read('assets/radiologists/model_results.json'));
-addSectionSlide(pptx, { sectionLabel: 'The End', sectionTitle: 'Questions' });
+if (allocationSupplement) {
+  addAllocationImbalance(pptx, read('assets/allocation-imbalance/model_results.json'));
+} else {
+  addBrandedTitleSlide(pptx, {
+    courseLabel: 'BEYOND MULTIPLE LINEAR REGRESSION · WEEK 2',
+    mainTitle: 'When treatment effects vary',
+    subtitle: 'Interactions, random slopes and crossed random effects',
+    author: 'Dr Douwe Postmus',
+    affiliation: 'UMCG · Department of Epidemiology',
+    badge: 'BLR'
+  });
+  addWeek2Opening(pptx, drawEquation, read('assets/fixed-interaction/model_results.json'),
+    read('assets/lab3-debrief/model_results.json'), read('assets/random-interaction/model_results.json'));
+  addCrossedEffectsIntroduction(pptx);
+  addCrossedCaseStudy(pptx, drawEquation, read('assets/radiologists/model_results.json'));
+  addSectionSlide(pptx, { sectionLabel: 'The End', sectionTitle: 'Questions' });
+}
 pptx._slides.forEach((slide, index) => {
   if (!slide._slideObjects.some(object => object._type === 'notes')) slide.addNotes('');
   // The shared title layout has intentional decorative overlaps, as in Week 1.
-  if (index > 0) warnIfSlideHasOverlaps(slide, pptx, { ignoreLines: true });
+  if (allocationSupplement || index > 0) warnIfSlideHasOverlaps(slide, pptx, { ignoreLines: true });
   warnIfSlideElementsOutOfBounds(slide, pptx);
 });
-writePresentation(pptx, path.join(__dirname, 'Beyond_MLR_Week_2.pptx'))
-  .then(() => console.log(`Built Week 2 opening: ${pptx._slides.length} slides.`))
+writePresentation(pptx, path.join(__dirname, `${outputName}.pptx`))
+  .then(() => console.log(`Built ${outputName}: ${pptx._slides.length} slides.`))
   .catch(error => { console.error(error); process.exitCode = 1; });
