@@ -48,17 +48,18 @@ function addAssignmentRecap(pptx, drawEquation) {
     panels: [{ blocks: [
       { table: {
         columns: [
-          { label: 'Protocol comparison', weight: 3.8 },
-          { label: 'Estimate', weight: 1.7, align: 'center' },
-          { label: 'Estimated SE', weight: 2.0, align: 'center' },
-          { label: '95% CI', weight: 2.7, align: 'center' }
+          { label: 'Term', weight: 3.0 },
+          { label: 'Estimate\n(µg/mg)', weight: 1.8, align: 'center' },
+          { label: 'Estimated\nSE (µg/mg)', weight: 1.9, align: 'center' },
+          { label: '95% CI (µg/mg)', weight: 2.8, align: 'center' },
+          { label: 'p-value', weight: 1.3, align: 'center' }
         ],
-        rows: [['Modified − Standard', f(results.estimate), f(results.se),
-          `${f(results.lower_95)} to ${f(results.upper_95)}`]],
-        fontSize: 23, headerFontSize: 19, headerHeight: .65, firstColumnBold: false
-      }, h: 1.60, gap: .22 },
-      { text: `The intercept (${f(results.intercept)} µg/mg) is the expected Standard yield for a donor whose random intercept is zero.`, fontSize: 22, h: .85, gap: .15 },
-      { text: `After accounting for donor, Modified increases expected yield by ${f(results.estimate)} µg/mg. The 95% CI supports an increase of about ${f(results.lower_95)} to ${f(results.upper_95)} µg/mg.`, fontSize: 22, h: 1.00 }
+        rows: results.regression_coefficients.map(row => [row.term, f(row.estimate), f(row.standard_error),
+          `${f(row.lower_95)} to ${f(row.upper_95)}`, row.p < .001 ? '< .001' : row.p.toFixed(3)]),
+        fontSize: 22, headerFontSize: 19, headerHeight: .70, firstColumnBold: false
+      }, h: 1.95, gap: .18 },
+      { text: `The intercept (${f(results.intercept)} µg/mg) is the expected Standard yield for a donor whose random intercept is zero.`, fontSize: 22, h: .80, gap: .10 },
+      { text: `After accounting for donor, Modified increases expected yield by ${f(results.estimate)} µg/mg. The 95% CI supports an increase of about ${f(results.lower_95)} to ${f(results.upper_95)} µg/mg.`, fontSize: 22, h: .95 }
     ] }],
     ...feedbackStyle,
     takeaway: 'Most reports correctly estimated the protocol difference and used the confidence interval to support the conclusion that the modified protocol increases protein yield.'

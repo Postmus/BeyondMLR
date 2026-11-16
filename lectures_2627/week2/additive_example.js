@@ -1,9 +1,14 @@
 const path = require('path');
 const { COLORS, FONT_FAMILIES, LAYOUT } = require('../../slides-common/js/blr_theme');
 const { addBase, addSlideTitle, addAssetFrame, addFooter } = require('../../slides-common/js/pptx_layout_primitives');
+const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels');
 
 const equation = String.raw`Y_{ij}=\underbrace{\beta_0+c_j}_{\text{Standard-protocol mean for donor }j}+\underbrace{\beta_1T_{ij}}_{\text{Protocol contribution}}+\underbrace{\varepsilon_{ij}}_{\text{Aliquot deviation}}`;
 const interactionEquation = String.raw`Y_{ij}=\underbrace{\beta_0+c_j}_{\text{Standard-protocol mean for donor }j}+\underbrace{(\beta_1+d_j)T_{ij}}_{\text{Protocol contribution}}+\underbrace{\varepsilon_{ij}}_{\text{Aliquot deviation}}`;
+const comparisonEquations = [
+  String.raw`Y_{ij}=\beta_0+c_j+\beta_1T_{ij}+\varepsilon_{ij}`,
+  String.raw`Y_{ij}=\beta_0+c_j+(\beta_1+{\color{orange}d_j})T_{ij}+\varepsilon_{ij}`
+];
 
 function addKnownMeansExample(pptx, drawEquation, interaction = false) {
   const slide = pptx.addSlide();
@@ -30,5 +35,26 @@ function addKnownMeansExample(pptx, drawEquation, interaction = false) {
 }
 
 const addAdditiveExample = (pptx, drawEquation) => addKnownMeansExample(pptx, drawEquation);
-const addInteractionExample = (pptx, drawEquation) => addKnownMeansExample(pptx, drawEquation, true);
-module.exports = { addAdditiveExample, addInteractionExample, equation, interactionEquation };
+function addInteractionExample(pptx, drawEquation) {
+  const slide = addConceptPanelsSlide(pptx, {
+    title: 'What if the protocol difference varies between donors?',
+    drawEquation,
+    panels: [
+      { title: 'COMMON PROTOCOL EFFECT', blocks: [
+        { image: path.join(__dirname, 'assets/additive-example/additive-profile.png'), h: 3.0 },
+        { equation: comparisonEquations[0], h: .50 },
+        { text: 'Protocol difference: 6 µg/mg in both donors.', fontSize: 20, h: .40 }
+      ] },
+      { title: 'PROTOCOL EFFECT VARIES', blocks: [
+        { image: path.join(__dirname, 'assets/additive-example/interaction-profile.png'), h: 3.0 },
+        { equation: comparisonEquations[1], h: .50 },
+        { text: 'Protocol differences: 2 and 10 µg/mg.', fontSize: 20, h: .40 }
+      ] }
+    ],
+    takeaway: 'Tᵢⱼ = 0 for Standard and 1 for Modified.  i = aliquot; j = donor.',
+    takeawayHeight: .62
+  });
+  slide.addNotes('');
+  return slide;
+}
+module.exports = { addAdditiveExample, addInteractionExample, equation, interactionEquation, comparisonEquations };

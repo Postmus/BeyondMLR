@@ -1,6 +1,26 @@
 {
   "data_md5": "fdb936351fc7c97c9ea95fce0f369d59",
-  "fitting": "Random-intercept REML via nlme; protocol t interval with 69 df.",
+  "fitting": "Random-intercept REML via nlme; coefficient table via lmerTest with Satterthwaite t intervals and p-values.",
+  "regression_coefficients": [
+    {
+      "term": "(Intercept)",
+      "estimate": 60.2995,
+      "standard_error": 3.603910102109,
+      "df": 10.172167424098,
+      "lower_95": 52.287872305244,
+      "upper_95": 68.311127694756,
+      "p": 9.838748068358e-09
+    },
+    {
+      "term": "protocolModified",
+      "estimate": 4.6135,
+      "standard_error": 1.76003580024,
+      "df": 69.000000215127,
+      "lower_95": 1.102324650083,
+      "upper_95": 8.124675349917,
+      "p": 0.01076871110849
+    }
+  ],
   "intercept": 60.2995,
   "modified_mean": 64.913,
   "estimate": 4.6135,

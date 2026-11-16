@@ -99,3 +99,59 @@ for (interaction in c(FALSE, TRUE)) {
   draw(interaction); invisible(dev.off())
 }
 cat("Generated both known-means examples.\n")
+
+# Plot-only versions for the side-by-side comparison on slide 9.
+# Match the inner width and image height of the shared two-panel layout.
+profile_width <- 5.405
+profile_height <- 3.0
+profile <- function(interaction = FALSE) {
+  grid.newpage()
+  label <- function(value, x, y, size = 18, col = color_text, just = "centre") {
+    grid.text(value, x = unit(x, "in"), y = unit(y, "in"), just = just,
+      gp = gpar(fontfamily = "Liberation Sans", fontsize = size, col = col))
+  }
+  segment <- function(x0, y0, x1, y1, col = color_grid, width = 1) {
+    grid.lines(unit(c(x0, x1), "in"), unit(c(y0, y1), "in"),
+      gp = gpar(col = col, lwd = width))
+  }
+  label("Expected protein yield (µg/mg)", profile_width / 2, 2.80, size = 19)
+  for (k in 1:2) {
+    lx <- c(1.0, 3.05)[k]; col <- c(color_primary, color_accent)[k]
+    segment(lx, 2.43, lx + .30, 2.43, col, 2.6)
+    label(c("Standard", "Modified")[k], lx + .40, 2.43, size = 18, col = col, just = "left")
+  }
+  x <- c(1.60, 3.80)
+  y <- function(value) .58 + (value - 45) / 40 * 1.45
+  for (value in seq(50, 80, 10)) {
+    segment(.65, y(value), 5.10, y(value))
+    label(value, .50, y(value), size = 17, col = color_muted, just = "right")
+  }
+  standard <- c(50, 70)
+  modified <- if (interaction) c(52, 80) else c(56, 76)
+  for (k in 1:2) {
+    means <- if (k == 1) standard else modified
+    col <- c(color_primary, color_accent)[k]
+    segment(x[1], y(means[1]), x[2], y(means[2]), col, 2.8)
+    grid.points(unit(x, "in"), unit(y(means), "in"), pch = 21, size = unit(.12, "in"),
+      gp = gpar(fill = col, col = col))
+  }
+  for (j in 1:2) {
+    bx <- x[j] + if (j == 1) -.18 else .18
+    low <- y(standard[j]); high <- y(modified[j])
+    segment(bx, low, bx, high, color_text, 1.5)
+    segment(bx - .055, low, bx + .055, low, color_text, 1.5)
+    segment(bx - .055, high, bx + .055, high, color_text, 1.5)
+    label(modified[j] - standard[j], bx + if (j == 1) -.15 else .15,
+          (low + high) / 2, size = 22, just = if (j == 1) "right" else "left")
+    label(c("Donor A", "Donor B")[j], x[j], .25, size = 20)
+  }
+}
+for (interaction in c(FALSE, TRUE)) {
+  stem <- if (interaction) "interaction-profile" else "additive-profile"
+  png(file.path(out, paste0(stem, ".png")), width = profile_width, height = profile_height,
+      units = "in", res = 220, type = "cairo", bg = color_bg)
+  profile(interaction); invisible(dev.off())
+  svg(file.path(out, paste0(stem, ".svg")), width = profile_width, height = profile_height, bg = color_bg)
+  profile(interaction); invisible(dev.off())
+}
+cat("Generated the paired additive and interaction profiles.\n")

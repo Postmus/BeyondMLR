@@ -94,7 +94,6 @@ function addRandomInteractionResults(pptx, drawEquation, results, equations, fix
   const interceptOnly = results.random_intercept_model.fixed_coefficients.find(r => r.term === 'T');
   const omittedSlope = addConceptPanelsSlide(pptx, {
     title: 'What if we omit the random treatment slope?',
-    intro: 'Back to the CPAP study: both models target the population-average treatment effect.',
     panels: [{ blocks: [
       { table: {
         columns: [

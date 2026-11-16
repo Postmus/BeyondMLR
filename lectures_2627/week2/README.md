@@ -16,28 +16,28 @@ See [PLANNING.md](PLANNING.md) for the teaching sequence.
 | 2 | Assignment 1 experiment: donor tissue aliquots randomized to Standard or Modified protocols, with a generated laboratory image. |
 | 3 | Assignment 1 EDA: individual aliquots, observed donor–protocol means and overall protocol means. |
 | 4 | Observed donor–protocol means and two fitted random-intercept profiles, separated by 4.61 µg/mg; annotated model equation and feedback on interpreting the random intercept. |
-| 5 | Random-intercept protocol estimate, estimated SE and 95% CI, with the baseline interpretation and positive feedback on estimation and use of the confidence interval. |
+| 5 | Coefficient table for `(Intercept)` and `protocolModified`: estimates, estimated SEs, 95% CIs and p-values, with interpretations and positive feedback on estimation and use of the confidence interval. |
 | 6 | Definition of variance components, Donor and Residual variance estimates, and ICC calculation and interpretation; feedback distinguishes a donor-specific intercept shift from its reported variance. |
 | 7 | Conditional-residual diagnostics, brief interpretations and feedback about the strength of conclusions. |
 | 8 | Quarto feedback: what went well and points to consider in stacked sections. |
-| 9 | Known-means interaction example: donor effects of 2/10 µg/mg, average effect 6, and deviations of −4/+4 µg/mg. |
-| 10 | Conceptual choice between fixed group parameters and a population distribution of random group effects; transition from donors to hospitals. |
+| 9 | Side-by-side additive and interaction profiles with matching donor baselines and axes: protocol differences of 6/6 versus 2/10 µg/mg, with model equations and the additional donor-specific treatment term highlighted. |
+| 10 | Fixed versus random donor-specific protocol-effect deviations dⱼ, with the corresponding interpretations of β₁; transition to a multicenter clinical trial. |
 | 11 | Part 1 divider: Treatment-by-center interaction: fixed effects. |
 | 12 | Two-column empirical transition: trial setting and estimation task on the left, generated CPAP image on the right. |
 | 13 | Traditional interaction plot: hospitals on the horizontal axis, one line per treatment connecting its sample means; title and plot only. |
 | 14 | Grouped fixed-effects model with a center-specific treatment slope, parameter interpretations and enlarged effects-coding constraints. |
 | 15 | All 12 fitted regression coefficients: estimates, estimated SEs, 95% confidence intervals and p-values, in the Week 1 table format. |
 | 16 | Estimated marginal means: treatment-by-hospital grid, fitted-model equation for each cell, and equal-weight averaging across the six hospitals. |
-| 17 | Marginal and simple treatment effects as comparisons of estimated means, with effects-coded coefficients explained in the text. |
-| 18 | Full-width table of estimated treatment means and simple effects, pointwise 95% CIs and unadjusted p-values. |
-| 19 | Full interaction model diagnostics: residuals versus fitted values and a Normal Q-Q plot, closing the case study. |
-| 20 | Time for Lab 3, with a generated illustration in Week 1's break-slide style. |
-| 21 | Wound-healing debrief: average treatment estimates, estimated SEs, 95% CIs and p-values under additive and interaction models. |
-| 22 | Hypothetical unequal laboratory sizes: equally weighted interaction average of 10 percentage points versus the additive average of 13. |
+| 17 | Marginal and simple treatment effects, with effects-coded coefficient interpretations and a callout linking simple effects to significant interaction while retaining interest in the average effect. |
+| 18 | Joint F-test of treatment-by-hospital interaction: null hypothesis, reduced/full model RSS and residual df, F calculation and CPAP result. |
+| 19 | Estimated marginal means and treatment effects: hospital-specific results above a separate single-row table averaged equally across hospitals, with pointwise 95% CIs and unadjusted p-values. |
+| 20 | Full interaction model diagnostics: residuals versus fitted values and a Normal Q-Q plot, closing the case study. |
+| 21 | Time for Lab 3, with a generated illustration in Week 1's break-slide style. |
+| 22 | Wound-healing debrief: average treatment estimates, estimated SEs, 95% CIs and p-values under additive and interaction models; callout explains that unequal laboratory sizes can also change the estimate. |
 | 23 | Part 2 divider: Treatment-by-center interaction: random effects. |
 | 24 | Population target: new patients in the same centers versus new centers from the same population. |
-| 25 | Two-by-two grid of true means: random intercepts versus random intercepts and slopes, for two independent samples of centers. |
-| 26 | Random-intercept and random-slope specification, population-average parameters, and jointly distributed center deviations. |
+| 25 | Population distribution of intercept and treatment-effect deviations on the left, with true control/CPAP means for two independent samples of four hospitals on the right; A–D are labels within each sample. |
+| 26 | Random-intercept and random-slope specification, population-average parameters, and jointly distributed center deviations; callout explains their zero population means, variances and covariance. |
 | 27 | Positive and negative covariance illustrated with true center means and treatment effects. |
 | 28 | CPAP variance-component estimates, followed by the correlation formula, numerical substitution and interpretation. |
 | 29 | Population-average control reduction and CPAP effect estimates with estimated SEs, 95% CIs and p-values. |
@@ -62,7 +62,7 @@ Current sources and outputs:
 
 - `assignment_recap.js`: the worked Assignment 1 opening and integrated submission feedback.
 - `generate_assignment_recap.R`: original-data REML fit, observed/fitted means, EDA and conditional-residual figures in `assets/assignment1-recap/`.
-- `additive_example.js` and `generate_additive_example.R`: the known-means interaction example and its reproducible assets; the earlier hypothetical additive example remains available in source.
+- `additive_example.js` and `generate_additive_example.R`: the paired known-means additive and interaction plots and their reproducible assets; the earlier table-and-plot versions remain available in source.
 - `allocation_imbalance.js`: three supplementary allocation-comparison slides, built with `npm run slides:allocation-supplement` from this directory; the precision-backup helper remains in source.
 - `fixed_interaction.js`: slide content and equation definitions, using the
   shared concept-panel, teaching-table and figure layouts. The EMM concept uses a full-width reference grid above the prediction and averaging panels.
@@ -166,8 +166,8 @@ to the population-average CPAP effect.
 - Slides 2–9 use Assignment 1 protein extraction for the recap and known-means interaction example. Slide 12 introduces the CPAP case.
 - The empirical interaction plot shows treatment means across hospitals, with a
   title and plot only. The two residual plots close the fixed-effects case study.
-- The Part 2 hypothetical sampling and covariance illustrations use CPAP/control
-  blood-pressure reductions on a consistent mmHg scale.
+- The Part 2 sampling illustration shows the joint population distribution of `c_j` and `d_j` beside two independent four-hospital samples. Labels A–D are local to each sample. The population is bivariate Normal with zero means, SDs of 4 mmHg and correlation 0.5; control means are `2 + c_j` and CPAP means are `5.1 + c_j + d_j`. Both sample plots share one outcome scale.
+- Run `Rscript lectures_2627/week2/generate_random_center_samples.R --samples-only` to regenerate the sampling illustration independently. The full script also generates the separate covariance illustration. All deviations and blood-pressure reductions use mmHg.
 - Labs 3 and 4 and their break/debrief slides retain the wound-healing setting.
 - The crossed-effects section retains the radiologist case study.
 - Speaker notes remain empty throughout.
@@ -214,8 +214,10 @@ The hypothetical protocol-only, fixed-donor and random-donor estimates are 5.653
 `generate_additive_example.R` draws hypothetical true means for donors A and B:
 50/56 and 70/76 µg/mg for the additive case; 50/52 and 70/80 µg/mg for interaction.
 Both examples have an equally weighted average protocol effect of 6 µg/mg.
-`µ_tj` identifies the true cell means. The lecture shows the interaction example
-on slide 9; the earlier hypothetical additive example is retained in source.
+Slide 9 compares the plot-only `additive-profile` and `interaction-profile` assets,
+using the same donor baselines, colours and outcome scale. Matching model equations
+sit beneath the plots, with the additional `d_j` term highlighted in orange.
+The earlier table-and-plot versions are retained in source.
 
 The worked example on slides 3–7 uses the actual assignment data. Run
 `Rscript lectures_2627/week2/generate_assignment_recap.R` to regenerate its four
@@ -223,8 +225,9 @@ PNG figures, `observed_and_fitted_means.csv` and `model_results.json` under
 `assets/assignment1-recap/`. The script fits the random-intercept model by REML
 using `nlme`, verifies the protocol estimate, SE and interval against the saved
 assignment results, and checks that all ten fitted protocol gaps equal 4.6135.
-The treatment interval uses 69 degrees of freedom, agreeing with the balanced
-Satterthwaite analysis. Figures use the shared course palette and physical slide
+The coefficient table is calculated with `lmerTest`, using Satterthwaite degrees
+of freedom for each term (about 10.17 for the intercept and 69 for protocol).
+Its estimates and SEs are checked against the `nlme` fit. Figures use the shared course palette and physical slide
 dimensions. EDA and fitted means share donor order and a 15–95 µg/mg scale.
 The fitted profiles include the estimated donor random intercepts; diamonds show
 the observed donor–protocol means. Conditional-residual plots use the same fit.

@@ -46,7 +46,7 @@ function addTeachingTable(slide, { box, columns, rows, fontSize = 21, headerFont
 }
 
 // Editable teaching table with a short introduction and a shared conclusion.
-function addTeachingTableSlide(pptx, { title, intro, introHeight = .48, columns, rows, takeaway, takeawayHeight = .90, fontSize = 21, tableOptions = {}, leadEquation, drawEquation }) {
+function addTeachingTableSlide(pptx, { title, intro, introHeight = .48, columns, rows, takeaway, takeawayHeight = .90, fontSize = 21, tableOptions = {}, leadEquation, drawEquation, summaryTable, footnote }) {
   const slide = pptx.addSlide();
   addBase(slide); addSlideTitle(slide, title);
   const body = { ...LAYOUT.body };
@@ -60,8 +60,28 @@ function addTeachingTableSlide(pptx, { title, intro, introHeight = .48, columns,
     body.y += .73; body.h -= .73;
   }
   const noteH = takeaway ? takeawayHeight : 0;
-  addTeachingTable(slide, { box: { ...body, h: body.h - noteH - (takeaway ? .18 : 0) },
+  const footnoteH = footnote ? .48 : 0;
+  const summaryH = summaryTable ? (summaryTable.height || 1.70) : 0;
+  const tableH = body.h - noteH - (takeaway ? .18 : 0)
+    - (summaryTable ? summaryH + .18 : 0) - (footnote ? footnoteH + .12 : 0);
+  addTeachingTable(slide, { box: { ...body, h: tableH },
     columns, rows, fontSize, drawEquation, ...tableOptions });
+  if (summaryTable) {
+    const y = body.y + tableH + .18;
+    slide.addText(summaryTable.title, { x: body.x, y, w: body.w, h: .32,
+      fontFace: FONT_FAMILIES.sans, fontSize: 20, bold: true, color: COLORS.primary, margin: 0 });
+    const captionH = summaryTable.caption ? .30 : 0;
+    addTeachingTable(slide, { columns, fontSize, drawEquation, ...summaryTable.tableOptions,
+      rows: summaryTable.rows,
+      box: { x: body.x, y: y + .40, w: body.w, h: summaryH - .40 - (captionH ? captionH + .10 : 0) } });
+    if (summaryTable.caption) slide.addText(summaryTable.caption, {
+      x: body.x, y: y + summaryH - captionH, w: body.w, h: captionH,
+      fontFace: FONT_FAMILIES.sans, fontSize: 18, color: COLORS.text, margin: 0 });
+  }
+  if (footnote) slide.addText(footnote, {
+    x: body.x, y: body.y + body.h - noteH - (takeaway ? .18 : 0) - footnoteH,
+    w: body.w, h: footnoteH, fontFace: FONT_FAMILIES.sans,
+    fontSize: 15, color: COLORS.muted, margin: 0 });
   if (takeaway) addNoteBox(slide, { box: { x: body.x, y: body.y + body.h - noteH, w: body.w, h: noteH },
     text: takeaway, fontSize: 20, minFontSize: 20 });
   addFooter(slide);

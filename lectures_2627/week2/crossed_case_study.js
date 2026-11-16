@@ -26,8 +26,8 @@ function addCrossedCaseStudy(pptx, drawEquation, results) {
     ],
     bulletFontSize: 21, bulletMinFontSize: 21,
     assetPath: path.join(assets, 'radiology-setting.png'),
-    note: 'Do different radiologists obtain similar measurements for the same patients?',
-    noteFontSize: 20, noteHeight: 1.0
+    note: 'How well do radiologists agree when\nmeasuring the same patient’s tumor?',
+    noteFontSize: 21, noteMinFontSize: 21, noteHeight: 1.0
   });
   setting.addNotes('');
 
@@ -43,15 +43,15 @@ function addCrossedCaseStudy(pptx, drawEquation, results) {
     panels: [
       { title: 'WHAT CONTRIBUTES TO A MEASUREMENT?', blocks: [
         { text: 'μ: overall mean tumor diameter.', h: .50, fontSize: 22, gap: .12 },
-        { text: 'uᵢ: patient i’s deviation from the mean.', h: .55, fontSize: 22, gap: .12 },
-        { text: 'vⱼ: radiologist j’s tendency to measure higher or lower.', h: .75, fontSize: 22, gap: .12 },
+        { text: 'uᵢ: patient i’s deviation from μ.', h: .55, fontSize: 22, gap: .12 },
+        { text: 'vⱼ: radiologist j’s tendency to\nmeasure higher or lower.', h: .75, fontSize: 22, gap: .12 },
         { text: 'εᵢⱼ: remaining measurement variation.', h: .50, fontSize: 22 }
       ] },
       { title: 'TWO RANDOM INTERCEPTS', blocks: [
         { equation: E.patients, h: .50, gap: .12 },
         { equation: E.radiologists, h: .50, gap: .12 },
         { equation: E.errors, h: .50, gap: .15 },
-        { text: 'Patient effects, radiologist effects and residual errors are mutually independent.', h: .75, fontSize: 21 }
+        { text: 'Patient effects, radiologist effects and\nresidual errors are mutually independent.', h: .75, fontSize: 21 }
       ] }
     ],
     takeaway: 'Measurements are related when they share the same patient or the same radiologist.',

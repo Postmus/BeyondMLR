@@ -50,6 +50,13 @@ const E = {
   randomLimit: String.raw`\frac{\sigma_d^2}{J}+\frac{2\sigma^2}{Jn}\longrightarrow\frac{\sigma_d^2}{J}`,
 };
 
+function interactionFEquation(results) {
+  const a = results.additive_model, m = results.interaction_model;
+  const rss = value => Math.round(value).toLocaleString('en-US').replaceAll(',', '{,}');
+  return String.raw`F=\frac{(\mathrm{RSS}_{\mathrm{reduced}}-\mathrm{RSS}_{\mathrm{full}})/(\mathrm{df}_{\mathrm{reduced}}-\mathrm{df}_{\mathrm{full}})}{\mathrm{RSS}_{\mathrm{full}}/\mathrm{df}_{\mathrm{full}}}` +
+    String.raw`=\frac{(${rss(a.residual_sum_squares)}-${rss(m.residual_sum_squares)})/(${a.residual_df}-${m.residual_df})}{${rss(m.residual_sum_squares)}/${m.residual_df}}\approx ${results.interaction_test.F.toFixed(2)}`;
+}
+
 // Symbols used in the treatment-by-hospital reference grid.
 for (const t of [0, 1]) {
   for (const hospital of ['A', 'B', 'C', 'D', 'E', 'F']) {
@@ -71,18 +78,16 @@ function addWeek2Opening(pptx, drawEquation, results, lab3, randomInteraction) {
   addInteractionExample(pptx, drawEquation);
 
   // Choose how centers enter the model before formalizing the fixed-effects route.
-  const representationSlide = panels('How should we represent differences between groups?', [
-    { title: 'FIXED GROUP EFFECTS', blocks: [
-      text('Give each included group its own baseline deviation and treatment-effect deviation.', 1.35, { gap: .30 }),
-      text('Express the average treatment effect across the included groups.', 1.20)
+  const representationSlide = panels('How should we model the donor-specific deviations dⱼ?', [
+    { title: 'FIXED EFFECTS', blocks: [
+      text('Estimate a separate dⱼ for each included donor.', 1.35, { gap: .30 }),
+      text('β₁ is the average protocol effect across the included donors.', 1.20)
     ] },
-    { title: 'RANDOM GROUP EFFECTS', blocks: [
-      text('Describe baseline deviations and treatment-effect deviations through a population distribution.', 1.35, { gap: .30 }),
-      text('Express the average treatment effect in the population represented by those groups.', 1.20)
+    { title: 'RANDOM EFFECTS', blocks: [
+      text('Model the dⱼ’s as draws from a population distribution.', 1.35, { gap: .30 }),
+      text('β₁ is the average protocol effect in the population of donors.', 1.20)
     ] }
-  ], 'We start with fixed effects for groups, using a multicenter clinical trial.', {
-    intro: 'Donors, hospitals and other groups can differ in baseline outcome and treatment effect.'
-  });
+  ], 'We first consider fixed effects, using a multicenter clinical trial.');
   representationSlide.addNotes('');
 
   addSectionSlide(pptx, {
@@ -102,9 +107,7 @@ function addWeek2Opening(pptx, drawEquation, results, lab3, randomInteraction) {
     ],
     bulletFontSize: 20, bulletMinFontSize: 20,
     assetPath: path.join(assets, 'cpap-case-study.png'),
-    fit: 'cover',
-    note: 'Positive values indicate a blood-pressure reduction. Inspired by HIPARCO (Martínez-García et al., JAMA, 2013); simulated patient data.',
-    noteFontSize: 17, noteHeight: 1.0
+    fit: 'cover'
   });
   empiricalSlide.addNotes('');
 
@@ -188,28 +191,51 @@ function addWeek2Opening(pptx, drawEquation, results, lab3, randomInteraction) {
       { image: path.join(__dirname, 'assets/equations', `eq_${crypto.createHash('sha1').update(E[key]).digest('hex').slice(0, 12)}.png`),
         heightEm: 1.15, baselineFraction: .85 },
       { text: '.' }
-    ], h: 1.45, fontSize: 21
+    ], h: 1.15, fontSize: 21
   });
   const effectConceptSlide = panels('Which treatment effect do we want to estimate?', [
     { title: 'MARGINAL TREATMENT EFFECT', blocks: [
-      text('How do treatments compare on average across hospitals?', .95, { bold: true, gap: .25 }),
-      text('Compare the two treatment means averaged equally across the six hospitals.', 1.15, { fontSize: 21, gap: .30 }),
+      text('How do treatments compare on average across hospitals?', .80, { bold: true, gap: .15 }),
+      text('Compare the two treatment means\naveraged equally across the six\nhospitals.', .95, { fontSize: 21, gap: .15 }),
       effectInterpretation('With our effects-coded model, the estimated marginal treatment effect is ', 'estimatedMarginalEffect')
     ] },
     { title: 'SIMPLE TREATMENT EFFECTS', blocks: [
-      text('How do treatments compare within a particular hospital?', .95, { bold: true, gap: .25 }),
-      text('Compare the estimated CPAP and control means within that hospital.', 1.15, { fontSize: 21, gap: .30 }),
+      text('How do treatments compare within a particular hospital?', .80, { bold: true, gap: .15 }),
+      text('Compare the estimated CPAP and control means within that hospital.', .95, { fontSize: 21, gap: .15 }),
       effectInterpretation('With our effects-coded model, the estimated simple treatment effect in hospital j is ', 'estimatedSimpleEffect')
     ] }
-  ]);
+  ], 'Simple treatment effects are especially relevant when the interaction is significant: they show how the treatment effect differs between hospitals. The average treatment effect may still be of primary interest.', { takeawayHeight: 1.20 });
   effectConceptSlide.addNotes('');
+
+  const a = results.additive_model, m = results.interaction_model;
+  const interactionTest = results.interaction_test;
+  const interactionTestSlide = panels('Does the treatment effect differ between hospitals?', [{ blocks: [
+    text('H₀: d₁ = ⋯ = d₆ = 0: the treatment effect is the same in all six hospitals.', .40, { fontSize: 21, gap: .12 }),
+    { table: {
+      columns: [
+        { label: 'Model', weight: 6.1 },
+        { label: 'Residual sum\nof squares (RSS)', weight: 3.3, align: 'center' },
+        { label: 'Residual df', weight: 1.9, align: 'center' }
+      ],
+      rows: [
+        ['Reduced: common treatment effect', Math.round(a.residual_sum_squares).toLocaleString('en-US'), a.residual_df],
+        ['Full: hospital-specific treatment effects', Math.round(m.residual_sum_squares).toLocaleString('en-US'), m.residual_df]
+      ], fontSize: 20, headerFontSize: 17, headerHeight: .60, cellPaddingY: .045, firstColumnBold: false
+    }, h: 1.40, gap: .10 },
+    text('df: residual degrees of freedom.', .28, { fontSize: 18, gap: .10 }),
+    { equation: interactionFEquation(results), h: .80, gap: .12 },
+    text('The F-test compares the improvement in fit per added parameter with the estimated residual variance.', .58, { fontSize: 20, gap: .10 }),
+    text(`F(${interactionTest.numerator_df}, ${interactionTest.denominator_df}) = ${f(interactionTest.F, 2)}, p < .001`, .36, { fontSize: 22, bold: true })
+  ] }], 'There is evidence that the CPAP effect differs between hospitals. We therefore examine the simple treatment effects alongside the average effect.', { takeawayHeight: 1.05 });
+  interactionTestSlide.addNotes('');
 
   // Keep fitted means and their within-hospital contrasts together, with inference.
   const cell = (center, treatment) => results.fitted_cell_means.find(r => r.center === center && r.treatment === treatment).estimate;
+  const marginalMean = treatment => hospitals.reduce((sum, hospital) => sum + cell(hospital, treatment), 0) / hospitals.length;
   const simpleEffectsSlide = addTeachingTableSlide(pptx, {
-    title: 'Estimated means and simple treatment effects',
+    title: 'Estimated marginal means and treatment effects',
     columns: [
-      { label: 'Hospital', weight: 1, align: 'center' },
+      { label: 'Hospital', weight: 2, align: 'center' },
       { label: 'Control', weight: 1.3, align: 'center' },
       { label: 'CPAP', weight: 1.3, align: 'center' },
       { label: 'Difference', weight: 1.4, align: 'center', highlight: true },
@@ -221,14 +247,31 @@ function addWeek2Opening(pptx, drawEquation, results, lab3, randomInteraction) {
       f(r.estimate), `${f(r.lower_95)} to ${f(r.upper_95)}`,
       r.p < .001 ? '< .001' : f(r.p, 3)
     ]),
-    fontSize: 23,
+    fontSize: 22,
     tableOptions: {
       columnGroups: [{ label: '', count: 1 }, { label: 'Estimated means', count: 2 }, { label: 'Simple treatment effect', count: 3 }],
-      headerFontSize: 20, headerHeight: .60, groupHeaderHeight: .48,
-      cellPaddingX: .12, cellPaddingY: .06, firstColumnBold: false
+      headerFontSize: 20, headerHeight: .48, groupHeaderHeight: .36,
+      cellPaddingX: .12, cellPaddingY: .04, firstColumnBold: false
     },
-    takeaway: 'Means, differences and CIs in mmHg. Difference: CPAP minus control.\nPointwise 95% CIs and unadjusted p-values.',
-    takeawayHeight: .90
+    summaryTable: {
+      title: 'Averaged across hospitals',
+      rows: [['Across hospitals', f(marginalMean('Control')), f(marginalMean('CPAP')),
+        f(m.estimate), `${f(m.lower_95)} to ${f(m.upper_95)}`, m.p < .001 ? '< .001' : f(m.p, 3)]],
+      tableOptions: {
+        columns: [
+          { label: '', weight: 2, align: 'center' },
+          { label: 'Control', weight: 1.3, align: 'center' },
+          { label: 'CPAP', weight: 1.3, align: 'center' },
+          { label: 'Difference', weight: 1.4, align: 'center', highlight: true },
+          { label: '95% CI', weight: 2, align: 'center', highlight: true },
+          { label: 'p-value', weight: 1.3, align: 'center', highlight: true }
+        ],
+        fontSize: 21, headerFontSize: 20, headerHeight: .42,
+        cellPaddingX: .12, cellPaddingY: .04, firstColumnBold: false
+      },
+      caption: 'Each hospital receives equal weight.'
+    },
+    footnote: 'Means, differences and CIs in mmHg. Difference: CPAP minus control. Pointwise 95% CIs and unadjusted p-values.'
   });
   simpleEffectsSlide.addNotes('');
 
@@ -255,7 +298,7 @@ function addWeek2Opening(pptx, drawEquation, results, lab3, randomInteraction) {
   // Return from Lab 3 to discuss its wound-healing analysis, without derivations.
   const labAdditive = lab3.additive_model, labInteraction = lab3.interaction_model;
   const omissionSlide = panels('Lab 3: what if we leave out the interaction?', [{ blocks: [
-    text('Average effect across the five laboratories\nExperimental minus standard, in percentage points of wound closure', .75, { fontSize: 21, gap: .10 }),
+    text('Average effect across the five laboratories\nExperimental minus standard, in percentage points of wound closure', .65, { fontSize: 21, gap: .10 }),
     { table: {
       columns: [
         { label: 'Model', weight: 3.0 },
@@ -269,36 +312,11 @@ function addWeek2Opening(pptx, drawEquation, results, lab3, randomInteraction) {
         model.p < .001 ? '< .001' : f(model.p, 3)
       ]), fontSize: 22, headerFontSize: 18, headerHeight: .70, cellPaddingY: .06,
       firstColumnBold: false
-    }, h: 1.80, gap: .18 },
-    text('Same estimate: 10 plates per treatment in every laboratory make both models estimate the average of the five within-laboratory treatment differences.', .75, { fontSize: 21, gap: .18 }),
-    text('Larger estimated SE: without interaction, differences in treatment effects remain in the residuals, increasing the estimated residual variation.', .75, { fontSize: 21 })
-  ] }], 'In this balanced study, omitting interaction leaves the average treatment estimate unchanged but increases its estimated uncertainty.');
+    }, h: 1.80, gap: .14 },
+    text('Same estimate: 10 plates per treatment in every laboratory make both models estimate the average of the five within-laboratory treatment differences.', .65, { fontSize: 21, gap: .14 }),
+    text('Larger estimated SE: without interaction, differences in treatment effects remain in the residuals, increasing the estimated residual variation.', .65, { fontSize: 21 })
+  ] }], 'In this balanced study, omitting the interaction leaves the average treatment estimate unchanged but increases its estimated standard error. With unequal laboratory sizes, the estimate itself can also change.', { takeawayHeight: 1.20 });
   omissionSlide.addNotes('');
-
-  const sizeExample = lab3.unequal_size_example;
-  const sizeSlide = panels('What if laboratory sizes differ?', [
-    { title: 'WHAT THE MODELS ESTIMATE', weight: 1.15, blocks: [
-      text('With our effects coding, the interaction model estimates the equally weighted average treatment effect, regardless of laboratory sizes.', 1.40, { fontSize: 21, bullet: true, gap: .18 }),
-      text('If laboratories have equal sizes, the additive model estimates this same average.', .95, { fontSize: 21, bullet: true, gap: .18 }),
-      text('If laboratory sizes differ, the additive model gives larger laboratories more weight.', .95, { fontSize: 21, bullet: true })
-    ] },
-    { title: 'HYPOTHETICAL EXAMPLE', weight: 1, blocks: [
-      text('Effects in percentage points', .35, { fontSize: 19, gap: .05 }),
-      { table: {
-        columns: [
-          { label: 'Laboratory', weight: 1.5 },
-          { label: 'Plates', weight: 1.0, align: 'center' },
-          { label: 'Treatment\neffect', weight: 1.6, align: 'center' }
-        ], rows: ['Small', 'Large'].map((label, j) =>
-          [label, String(sizeExample.plates[j]), String(sizeExample.effects[j])]),
-        fontSize: 22, headerFontSize: 17, headerHeight: .75,
-        cellPaddingX: .10, cellPaddingY: .06, firstColumnBold: false
-      }, h: 1.85, gap: .20 },
-      text(`Interaction model: ${f(sizeExample.interaction_average, 0)} points`, .55, { fontSize: 22, bold: true, gap: .20 }),
-      text(`Additive model: ${f(sizeExample.additive_average, 0)} points`, .55, { fontSize: 22, bold: true })
-    ] }
-  ], 'When treatment effects differ across laboratories, omitting interaction can change both the interpretation of the treatment coefficient and its estimated uncertainty.', { takeawayHeight: 1.05 });
-  sizeSlide.addNotes('');
 
   // Part 2: a bridge to the later random-slope fitting section.
   addSectionSlide(pptx, {
@@ -320,34 +338,35 @@ function addWeek2Opening(pptx, drawEquation, results, lab3, randomInteraction) {
   populationTargetSlide.addNotes('');
 
   const sampleGridSlide = addFigureSlide(pptx, {
-    title: 'What changes when we sample new centers?',
+    title: 'The population distribution of hospital effects',
     assetPath: path.join(__dirname, 'assets/random-center-samples/two-center-samples.png'),
-    caption: 'Hypothetical true mean blood-pressure reductions (mmHg) across hospitals.',
+    caption: 'Hypothetical population and hospital samples. Deviations and true mean reductions in mmHg.',
     captionFontSize: 18, captionMinFontSize: 18, captionHeight: .42,
-    takeaway: 'The population model stays the same, but each sample contains centers with different realized effects.',
-    takeawayHeight: .82
+    takeaway: 'Each hospital’s control mean and treatment effect follow from its intercept and treatment-effect deviations, drawn from the population distribution.',
+    takeawayHeight: 1.05
   });
   sampleGridSlide.addNotes('');
 
-  const varianceLabel = (key, description) => ({
+  const varianceLabel = (key, description, height = .67) => ({
     inlineMath: [
       { image: path.join(__dirname, 'assets/equations', `eq_${crypto.createHash('sha1').update(E[key]).digest('hex').slice(0, 12)}.png`), heightEm: 1.05, baselineFraction: .9 },
       { text: `: ${description}` }
-    ], h: .67, gap: .01, fontSize: 20
+    ], h: height, gap: .01, fontSize: 20
   });
-  const randomModelSlide = panels('The center effects follow a population distribution', [
+  const randomModelSlide = panels('The random-slope model', [
     { title: 'DISTRIBUTIONAL ASSUMPTIONS', blocks: [
-      eq('randomCenterDistribution', .95, .12),
-      eq('individualErrorDistribution', .45, .12),
-      text('Effect pairs are independent across centers.\nErrors are mutually independent and independent of the center effects.', 1.05, { fontSize: 19 })
+      eq('randomCenterDistribution', .95, .06),
+      eq('individualErrorDistribution', .45, .06),
+      text('Effect pairs are independent across centers.\nErrors are mutually independent and independent of the center effects.', .95, { fontSize: 19 })
     ] },
     { title: 'VARIANCES AND COVARIANCE', blocks: [
-      varianceLabel('centerVarianceSymbol', 'variance of control means across hospitals.'),
+      varianceLabel('centerVarianceSymbol', 'variance of hospital control means.', .35),
       varianceLabel('slopeVarianceSymbol', 'variance of treatment effects across centers.'),
       varianceLabel('covarianceSymbol', 'covariance of control-mean and treatment-effect deviations.'),
       varianceLabel('errorVarianceSymbol', 'individual variance around the center-specific treatment mean.')
     ] }
-  ], 'Center deviations have population means of zero. Their average varies across samples of hospitals.', {
+  ], 'The hospital-specific deviations cⱼ and dⱼ have population means of zero. Their variances and covariance describe how control means and treatment effects vary between hospitals.', {
+    takeawayHeight: 1.05,
     lead: { equation: E.model, text: 'β₀ and β₁ are population averages. Tᵢⱼ = 0 (control) or 1 (CPAP).' }
   });
   randomModelSlide.addNotes('');
@@ -366,4 +385,4 @@ function addWeek2Opening(pptx, drawEquation, results, lab3, randomInteraction) {
 
 }
 
-module.exports = { addWeek2Opening, equations: Object.values(E) };
+module.exports = { addWeek2Opening, equations: Object.values(E), interactionFEquation };

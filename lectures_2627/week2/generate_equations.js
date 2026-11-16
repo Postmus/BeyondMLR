@@ -4,13 +4,14 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const execFile = require('util').promisify(require('child_process').execFile);
-const { equations } = require('./fixed_interaction');
+const { equations, interactionFEquation } = require('./fixed_interaction');
+equations.push(interactionFEquation(require('./assets/fixed-interaction/model_results.json')));
 const { correlationEquation } = require('./random_interaction');
 equations.push(correlationEquation(require('./assets/random-interaction/model_results.json')));
 const examples = require('./additive_example');
 const crossed = require('./crossed_case_study');
 equations.push(...crossed.equations, crossed.agreementEquation(require('./assets/radiologists/model_results.json')));
-equations.push(examples.equation, examples.interactionEquation);
+equations.push(examples.equation, examples.interactionEquation, ...examples.comparisonEquations);
 const { latexToSvgDataUri } = require('../week1/pptxgenjs_helpers/latex');
 const dir = path.join(__dirname, 'assets/equations');
 
@@ -22,7 +23,7 @@ async function main() {
       const hash = crypto.createHash('sha1').update(tex).digest('hex').slice(0, 12);
       const stem = 'eq_' + hash;
       if (fs.existsSync(path.join(dir, stem + '.png'))) continue;
-      const source = '\\documentclass[border=1pt]{standalone}\n\\usepackage{amsmath,amssymb}\n\\begin{document}\n$\\displaystyle ' + tex + '$\n\\end{document}\n';
+      const source = '\\documentclass[border=1pt]{standalone}\n\\usepackage{amsmath,amssymb,xcolor}\n\\begin{document}\n$\\displaystyle ' + tex + '$\n\\end{document}\n';
       fs.writeFileSync(path.join(dir, stem + '.tex'), source);
       fs.writeFileSync(path.join(temp, stem + '.tex'), source);
       fs.writeFileSync(path.join(dir, 'mathjax_' + hash + '.svg'),

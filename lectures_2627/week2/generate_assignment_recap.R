@@ -17,9 +17,27 @@ means$fitted <- as.numeric(predict(model, newdata = means, level = 1))
 coef <- summary(model)$tTable["protocolModified", ]
 v <- as.numeric(nlme::VarCorr(model)[, "Variance"])
 ci <- coef["Value"] + c(-1, 1) * qt(.975, coef["DF"]) * coef["Std.Error"]
+# Match the assignment's R coefficient output, including Satterthwaite df
+# for the intercept as well as the protocol coefficient.
+coefficient_model <- lmerTest::lmer(protein_yield ~ protocol + (1 | donor),
+                                   data = d, REML = TRUE)
+coefficient_table <- coef(summary(coefficient_model))
+critical_values <- qt(.975, coefficient_table[, "df"])
+regression_coefficients <- data.frame(
+  term = rownames(coefficient_table),
+  estimate = coefficient_table[, "Estimate"],
+  standard_error = coefficient_table[, "Std. Error"],
+  df = coefficient_table[, "df"],
+  lower_95 = coefficient_table[, "Estimate"] - critical_values * coefficient_table[, "Std. Error"],
+  upper_95 = coefficient_table[, "Estimate"] + critical_values * coefficient_table[, "Std. Error"],
+  p = coefficient_table[, "Pr(>|t|)"], row.names = NULL
+)
+stopifnot(max(abs(coefficient_table[, "Estimate"] - nlme::fixef(model))) < 1e-6,
+          max(abs(coefficient_table[, "Std. Error"] - summary(model)$tTable[, "Std.Error"])) < 1e-5)
 results <- list(
   data_md5 = unname(tools::md5sum(input)),
-  fitting = "Random-intercept REML via nlme; protocol t interval with 69 df.",
+  fitting = "Random-intercept REML via nlme; coefficient table via lmerTest with Satterthwaite t intervals and p-values.",
+  regression_coefficients = regression_coefficients,
   intercept = unname(nlme::fixef(model)[1]),
   modified_mean = unname(sum(nlme::fixef(model))),
   estimate = unname(coef["Value"]), se = unname(coef["Std.Error"]),
