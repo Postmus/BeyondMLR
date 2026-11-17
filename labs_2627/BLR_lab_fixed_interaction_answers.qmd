@@ -1,0 +1,486 @@
+---
+title: "Beyond MLR Lab 3: Treatment effects across laboratories"
+subtitle: "Model answers · Week 2"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    embed-resources: true
+format-links: false
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true
+---
+
+```{r}
+#| label: model-answer-calculations
+#| eval: true
+#| include: false
+library(ggplot2)
+library(dplyr)
+library(emmeans)
+
+setwd("/home/simalgo/Projects/BeyondMLR/labs_2627")
+
+wound <- read.csv("data/wound_healing_week2.csv")
+wound$treatment <- factor(wound$treatment,
+                           levels = c("Standard", "Experimental"))
+wound$laboratory <- factor(wound$laboratory)
+
+head(wound)
+str(wound)
+table(wound$laboratory, wound$treatment)
+
+laboratory_summary <- wound |>
+  group_by(laboratory, treatment) |>
+  summarise(
+    n = n(),
+    mean_closure = mean(closure),
+    sd_closure = sd(closure),
+    .groups = "drop"
+  )
+laboratory_summary
+
+interaction_plot <- ggplot(
+  laboratory_summary,
+  aes(x = laboratory, y = mean_closure,
+      color = treatment, group = treatment)
+) +
+  geom_line(linewidth = 0.9) +
+  geom_point(size = 3) +
+  scale_color_manual(values = c(Standard = "#173F48",
+                                Experimental = "#D58A3D")) +
+  labs(x = "Laboratory", y = "Mean wound closure (%)",
+       color = "Treatment") +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "top")
+
+interaction_plot
+
+contrasts(wound$treatment) <- contr.treatment(levels(wound$treatment))
+contrasts(wound$laboratory) <- contr.sum(levels(wound$laboratory))
+
+contrasts(wound$treatment)
+contrasts(wound$laboratory)
+
+model_full <- lm(closure ~ treatment * laboratory, data = wound)
+summary(model_full)
+confint(model_full)
+
+treatment_means <- emmeans(model_full, ~ treatment | laboratory)
+treatment_means
+
+simple_effects <- pairs(treatment_means, reverse = TRUE, adjust = "none")
+summary(simple_effects, infer = c(TRUE, TRUE), by = NULL)
+
+fmt <- function(x) formatC(x, format = "f", digits = 2)
+b <- coef(model_full)
+effect_A <- unname(b["treatmentExperimental"] +
+                   b["treatmentExperimental:laboratory1"])
+deviation_E <- -sum(b[paste0("treatmentExperimental:laboratory", 1:4)])
+effect_E <- unname(b["treatmentExperimental"] + deviation_E)
+simple_results <- as.data.frame(
+  summary(simple_effects, infer = c(TRUE, TRUE), by = NULL)
+)
+```
+
+
+# A wound-healing experiment
+
+Five laboratories compare a **standard treatment** with an **experimental treatment** in a simulated wound-healing experiment. Each laboratory uses 20 independent cell-culture plates and randomly assigns 10 plates to each treatment. Each plate is measured once, 48 hours after treatment. The outcome is the **percentage of the original wound area that has closed**. Higher values indicate more closure.
+
+This is a randomized block design, with laboratory as the blocking factor. The experimental unit is the cell-culture plate. The dataset contains 100 observations simulated for teaching.
+
+Our question is: **How do the estimated treatment effects vary across laboratories, and how much improvement is estimated within each laboratory?** We treat the five laboratories as fixed and focus on treatment comparisons within these laboratories.
+
+By the end of this lab, you should be able to explore an interaction, fit and interpret a fixed interaction model, estimate simple treatment effects, and assess the model assumptions.
+
+::: {.callout-note icon=false title="Working through the lab"}
+Run the code in order in an R script, and record your answers to the questions. The lab page shows the code; you generate the results yourself.
+:::
+
+# Setup and data
+
+Create a `week2` folder with a `data` subfolder. [Download the wound-healing dataset](data/wound_healing_week2.csv) and save it as `week2/data/wound_healing_week2.csv`. Save your analysis script as `lab3.R` inside `week2` and set `week2` as your working directory, following the instructions in [Lab 1](BLR_lab_center_fixed.html#organize-your-work).
+
+We use `ggplot2` for figures, `dplyr` for summaries, and `emmeans` to calculate estimated marginal means and comparisons between them. Use `pak` as introduced in [Lab 1](BLR_lab_center_fixed.html#install-pak-once). If it asks whether to proceed, confirm the installation and wait for it to finish.
+
+```{r}
+#| label: setup
+library(pak)
+pkg_install(c("ggplot2", "dplyr", "emmeans"))
+```
+
+Load the analysis packages in each new R session.
+
+```{r}
+#| label: load-analysis-packages
+library(ggplot2)
+library(dplyr)
+library(emmeans)
+```
+
+Read the data and specify the order of the factor levels.
+
+```{r}
+#| label: read-data
+wound <- read.csv("data/wound_healing_week2.csv")
+wound$treatment <- factor(wound$treatment,
+                           levels = c("Standard", "Experimental"))
+wound$laboratory <- factor(wound$laboratory)
+
+head(wound)
+str(wound)
+table(wound$laboratory, wound$treatment)
+```
+
+Each row represents one plate. The variables are:
+
+| Variable | Meaning |
+| --- | --- |
+| `plate_id` | Unique identifier for the plate |
+| `laboratory` | Laboratory A, B, C, D, or E |
+| `treatment` | Standard or Experimental |
+| `closure` | Wound closure after 48 hours, as a percentage of the original area |
+
+Differences between treatment means are measured in **percentage points**. For example, a mean closure of 60% compared with 50% is a difference of 10 percentage points.
+
+::: {.callout-important icon=false title="Question 1"}
+Check the allocation table. How many plates receive each treatment in each laboratory? What is the experimental unit, and why are treatment comparisons made within laboratories?
+:::
+
+::: {.callout-tip icon=false title="Model answer 1"}
+```{r}
+#| label: answer-allocation
+#| eval: true
+#| echo: false
+knitr::kable(as.data.frame.matrix(table(wound$laboratory, wound$treatment)),
+             caption = "Number of plates in each laboratory and treatment group")
+```
+
+Each laboratory assigns 10 plates to standard treatment and 10 to experimental treatment. There are 20 plates per laboratory, 50 per treatment, and 100 in total.
+
+The experimental unit is the **cell-culture plate**, because treatment is assigned to individual plates and each plate is measured once. Randomization within laboratories allows treatments to be compared among plates handled in the same laboratory. These comparisons account for differences in baseline closure between laboratories. Equal allocation gives both treatments the same representation in every laboratory.
+:::
+
+
+# Explore treatment differences across laboratories
+
+Calculate the number of plates, mean closure, and standard deviation for each treatment within each laboratory.
+
+```{r}
+#| label: laboratory-summaries
+laboratory_summary <- wound |>
+  group_by(laboratory, treatment) |>
+  summarise(
+    n = n(),
+    mean_closure = mean(closure),
+    sd_closure = sd(closure),
+    .groups = "drop"
+  )
+laboratory_summary
+```
+
+Create an **interaction plot** of these observed means. Laboratories are on the horizontal axis. Each line represents one treatment and connects its means across laboratories.
+
+```{r}
+#| label: interaction-plot
+#| fig-width: 8
+#| fig-height: 5
+interaction_plot <- ggplot(
+  laboratory_summary,
+  aes(x = laboratory, y = mean_closure,
+      color = treatment, group = treatment)
+) +
+  geom_line(linewidth = 0.9) +
+  geom_point(size = 3) +
+  scale_color_manual(values = c(Standard = "#173F48",
+                                Experimental = "#D58A3D")) +
+  labs(x = "Laboratory", y = "Mean wound closure (%)",
+       color = "Treatment") +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "top")
+
+interaction_plot
+```
+
+The vertical gap between the experimental and standard lines at each laboratory is its observed treatment difference. Parallel lines would indicate equal observed differences. Varying gaps suggest that the effects may vary. Sampling variation also contributes to differences between the observed means.
+
+::: {.callout-important icon=false title="Question 2"}
+Does the plot suggest a similar treatment effect in all five laboratories? Identify laboratories with relatively large or small observed treatment differences. Use the summary table to distinguish differences in mean closure from variation among plates.
+:::
+
+::: {.callout-tip icon=false title="Model answer 2"}
+```{r}
+#| label: answer-laboratory-summary
+#| eval: true
+#| echo: false
+knitr::kable(laboratory_summary, digits = 2,
+             col.names = c("Laboratory", "Treatment", "Plates",
+                           "Mean closure (%)", "SD (percentage points)"),
+             caption = "Observed wound closure by laboratory and treatment")
+```
+
+```{r}
+#| label: answer-interaction-plot
+#| eval: true
+#| echo: false
+#| fig-width: 8
+#| fig-height: 5
+#| fig-alt: "Treatment means across five laboratories. Experimental treatment has the largest advantage in C and E, a smaller advantage in A and B, and a slightly lower mean than standard treatment in D."
+interaction_plot
+```
+
+The gaps between the lines vary substantially. The observed experimental-minus-standard differences are 7.02 percentage points in A, 2.31 in B, 20.66 in C, −1.33 in D, and 17.76 in E. Laboratories C and E have the largest observed improvements; B has a small positive difference, and D has a small negative difference. Laboratory A lies between these groups.
+
+The standard-treatment means also vary, from 42.15% in A to 56.56% in D. These describe differences in baseline mean closure. The treatment differences describe how much the mean changes between treatments within each laboratory.
+
+The within-group standard deviations range from 4.71 to 10.88 percentage points. They describe variation among individual plates receiving the same treatment in the same laboratory. The nonparallel lines suggest an interaction, with sampling variation contributing to the observed differences.
+:::
+
+
+# Fit and interpret the interaction model
+
+## Specify the model and coding
+
+Use the same model structure as in the lecture, replacing center with laboratory. Let $Y_{ij}$ be the wound closure for plate $i$ in laboratory $j$, and let $T_{ij}=0$ for standard treatment and $T_{ij}=1$ for experimental treatment:
+
+$$
+Y_{ij} = \beta_0 + c_j + (\beta_1+d_j)T_{ij} + \varepsilon_{ij}.
+$$
+
+With effects coding for laboratory, the deviations satisfy
+
+$$
+\sum_{j=1}^{5} c_j = 0, \qquad \sum_{j=1}^{5} d_j = 0.
+$$
+
+- $\beta_0$ is the standard-treatment mean averaged equally across laboratories.
+- $c_j$ is laboratory $j$'s deviation from that standard-treatment average.
+- $\beta_1$ is the treatment effect averaged equally across laboratories.
+- $d_j$ is laboratory $j$'s deviation from that average treatment effect.
+- $\varepsilon_{ij}$ is the plate's individual error. The model assumes independent Normal errors with mean zero and a common variance.
+
+Thus, the treatment effect in laboratory $j$ is $\beta_1+d_j$. Set dummy coding for treatment and effects coding for laboratory explicitly, as in Week 1.
+
+```{r}
+#| label: factor-coding
+contrasts(wound$treatment) <- contr.treatment(levels(wound$treatment))
+contrasts(wound$laboratory) <- contr.sum(levels(wound$laboratory))
+contrasts(wound$laboratory) <- contr.treatment(levels(wound$laboratory))
+
+contrasts(wound$treatment)
+contrasts(wound$laboratory)
+```
+
+## Fit the interaction model
+
+```{r}
+#| label: full-model
+model_full <- lm(closure ~ treatment * laboratory, data = wound)
+summary(model_full)
+confint(model_full)
+```
+
+The `*` includes treatment, laboratory, and their interaction. It is shorthand for `treatment + laboratory + treatment:laboratory`.
+
+In the coefficient table, `(Intercept)` estimates $\beta_0$ and `treatmentExperimental` estimates $\beta_1$. The rows `laboratory1` to `laboratory4` estimate the baseline deviations for Laboratories A to D. The rows `treatmentExperimental:laboratory1` to `treatmentExperimental:laboratory4` estimate their treatment-effect deviations. Laboratory E's deviations are minus the sums of the corresponding four coefficients.
+
+The interaction coefficient for a laboratory is its **deviation from the average treatment effect**. Its p-value tests whether that deviation is zero. The simple treatment effect in that laboratory combines this deviation with the treatment coefficient.
+
+::: {.callout-important icon=false title="Question 3"}
+Interpret the intercept and the treatment coefficient. Use the coefficients to calculate the estimated experimental-minus-standard treatment effect in Laboratory A. How would you calculate the corresponding effect in Laboratory E?
+:::
+
+::: {.callout-tip icon=false title="Model answer 3"}
+```{r}
+#| label: answer-model-output
+#| eval: true
+#| echo: false
+summary(model_full)
+```
+
+- **Intercept:** `r fmt(b["(Intercept)"])`%. This is the estimated standard-treatment mean closure, averaged equally across the five laboratories.
+- **Treatment coefficient:** `r fmt(b["treatmentExperimental"])` percentage points. This is the estimated experimental-minus-standard effect, averaged equally across the five laboratories.
+
+For Laboratory A, add its interaction deviation to the treatment coefficient:
+
+$$
+\widehat\beta_1+\widehat d_A
+= 9.284 + (-2.264)
+= 7.02\text{ percentage points}.
+$$
+
+For Laboratory E, use the sum-to-zero constraint to recover its deviation:
+
+$$
+\widehat d_E
+= -(\widehat d_A+\widehat d_B+\widehat d_C+\widehat d_D)
+= -(-2.264-6.974+11.376-10.614)
+= 8.476.
+$$
+
+Its estimated treatment effect is therefore
+
+$$
+\widehat\beta_1+\widehat d_E
+= 9.284+8.476
+= 17.76\text{ percentage points}.
+$$
+
+Use the unrounded coefficients in R:
+
+```{r}
+#| label: answer-coefficient-calculations
+#| eval: true
+b <- coef(model_full)
+b["treatmentExperimental"] + b["treatmentExperimental:laboratory1"]
+b["treatmentExperimental"] -
+  sum(b[paste0("treatmentExperimental:laboratory", 1:4)])
+```
+
+The interaction coefficients describe each laboratory's deviation from the average treatment effect. Adding the treatment coefficient gives the treatment effect within that laboratory.
+:::
+
+
+# Estimate the simple treatment effects
+
+We have used the regression coefficients to calculate treatment effects manually. We now use R to obtain the effects and their uncertainty for all five laboratories from the fitted model.
+
+## Obtain estimated marginal means
+
+**Estimated marginal means (EMMs)** are model-based estimates of group means, averaged over other factors where appropriate. We obtain these means from the fitted interaction model, then compare them to estimate treatment effects.
+
+For simple treatment effects, keep laboratories separate and estimate the standard and experimental mean within each laboratory.
+
+```{r}
+#| label: estimated-means
+treatment_means <- emmeans(model_full, ~ treatment | laboratory)
+treatment_means
+```
+
+Here, `model_full` supplies the fitted model and `~ treatment | laboratory` requests treatment means **separately within each laboratory**. The command calculates these means from the fitted model.
+
+In the output, `emmean` is the estimated mean closure, `SE` is its estimated standard error, and `lower.CL` and `upper.CL` are its 95% confidence limits. The interaction model fits a separate mean for every treatment-laboratory combination, so these estimated means equal the observed cell means in the exploratory summary.
+
+## Compare treatments within laboratories
+
+Use `pairs()` to compare the two predicted means within each laboratory, then `summary()` to display the treatment differences with **pointwise 95% confidence intervals** and **unadjusted p-values**.
+
+```{r}
+#| label: simple-effects
+simple_effects <- pairs(treatment_means, reverse = TRUE, adjust = "none")
+summary(simple_effects, infer = c(TRUE, TRUE), by = NULL)
+```
+
+Because the treatment levels are ordered Standard then Experimental, `reverse = TRUE` gives **experimental minus standard**. The column `estimate` contains the simple treatment effect in each laboratory, measured in percentage points.
+
+In `pairs()`, `adjust = "none"` specifies pointwise intervals and unadjusted p-values. The `summary()` call uses this setting: `infer = c(TRUE, TRUE)` requests both confidence intervals and tests, and `by = NULL` displays the five comparisons together. Each p-value tests whether the treatment effect in that laboratory is zero.
+
+The standard error for a **difference** describes uncertainty about that treatment effect. It accounts for the covariance between the predicted means. Use this standard error when interpreting the treatment comparison.
+
+::: {.callout-important icon=false title="Question 4"}
+Interpret the estimated treatment effect and its 95% confidence interval in Laboratory A. Check that its estimate agrees with your calculation from the regression coefficients. What do the estimates, confidence intervals, and unadjusted p-values suggest about the treatment effect within each laboratory? Describe the size and uncertainty of the estimated effects.
+:::
+
+::: {.callout-tip icon=false title="Model answer 4"}
+```{r}
+#| label: answer-estimated-means
+#| eval: true
+#| echo: false
+knitr::kable(as.data.frame(treatment_means)[,
+               c("laboratory", "treatment", "emmean", "SE", "lower.CL", "upper.CL")],
+             digits = 2,
+             col.names = c("Laboratory", "Treatment", "Mean closure (%)",
+                           "Estimated SE", "95% CI: lower", "95% CI: upper"),
+             caption = "Estimated treatment means and pointwise 95% confidence intervals")
+```
+
+```{r}
+#| label: answer-simple-effects
+#| eval: true
+#| echo: false
+knitr::kable(data.frame(
+  Laboratory = simple_results$laboratory,
+  Estimate = simple_results$estimate,
+  `Estimated SE` = simple_results$SE,
+  `95% CI: lower` = simple_results$lower.CL,
+  `95% CI: upper` = simple_results$upper.CL,
+  `Unadjusted p-value` = format.pval(simple_results$p.value,
+                                     digits = 3, eps = 0.001),
+  check.names = FALSE), digits = 2,
+  caption = "Experimental minus standard: effects and uncertainty in percentage points")
+```
+
+In **Laboratory A**, experimental treatment is estimated to increase mean closure by `r fmt(effect_A)` percentage points, agreeing with the calculation from the regression coefficients. Its estimated standard error is `r fmt(simple_results$SE[1])` percentage points, and its pointwise 95% confidence interval is `r fmt(simple_results$lower.CL[1])` to `r fmt(simple_results$upper.CL[1])` percentage points. The interval includes values close to zero and improvements of around 14 percentage points. With an unadjusted p-value of 0.055, there is uncertainty about the direction and size of the effect.
+
+- **Laboratory B:** the estimated improvement is 2.31 percentage points (95% CI −4.87 to 9.49; p = 0.524). The interval includes both reduced closure and improved closure.
+- **Laboratory C:** the estimated improvement is 20.66 percentage points (95% CI 13.48 to 27.84; p < 0.001). The interval supports a positive effect, with a substantial increase in mean closure on the percentage-point scale.
+- **Laboratory D:** the estimated difference is −1.33 percentage points (95% CI −8.51 to 5.85; p = 0.714). The estimate is close to zero, and the interval allows effects in either direction.
+- **Laboratory E:** the estimated improvement is 17.76 percentage points (95% CI 10.58 to 24.94; p < 0.001). The interval supports a positive effect, with a substantial increase in mean closure.
+
+All five comparisons have the same estimated standard error because every treatment–laboratory group contains 10 plates and the model uses a common residual variance. The intervals and p-values describe each treatment comparison separately, using the pointwise intervals and unadjusted tests requested in the lab. For A, B, and D, the intervals show the range of effects compatible with the data under the model, including zero.
+:::
+
+
+::: {.callout-note icon=false title="Optional: considering multiple comparisons" collapse="true"}
+When several treatment comparisons are interpreted together, an adjustment can help control the probability of at least one false-positive finding across the set. Whether this is appropriate depends on the scientific questions and how the comparisons will be used.
+
+The **Bonferroni correction** multiplies each p-value by the number of comparisons, with a maximum of 1. Compare the adjusted p-values with 0.05. For example, across five comparisons, a p-value of 0.008 becomes 0.040.
+
+To apply the correction, change `adjust = "none"` to `adjust = "bonferroni"` in the `pairs()` call above and rerun it, followed by the same `summary()` call. With `by = NULL`, the correction applies across all five laboratory comparisons. This also adjusts the confidence intervals.
+:::
+
+```{=latex}
+\clearpage
+```
+
+# Check the model assumptions
+
+Use the interaction model to create the same two residual plots used in Week 1.
+
+```{r}
+#| label: model-diagnostics
+plot(model_full, which = 1)  # Residuals versus fitted values
+plot(model_full, which = 2)  # Normal Q-Q plot
+```
+
+The residuals-versus-fitted plot helps assess whether residual spread changes with fitted closure. Vertical groups of points are expected because plates in the same treatment-laboratory group share a fitted mean. The Normal Q-Q plot assesses whether the residual distribution is approximately Normal.
+
+The interaction model estimates each group's mean, so residuals average to zero within every group by construction. Look for changes in spread and departures from the Normal reference line. Assess independence using the experimental design and how the plates were handled and measured.
+
+::: {.callout-important icon=false title="Question 5"}
+Do the plots suggest clear violations of the constant-variance or Normality assumptions? Describe the patterns that support your answer.
+:::
+
+::: {.callout-tip icon=false title="Model answer 5"}
+```{r}
+#| label: answer-residuals
+#| eval: true
+#| echo: false
+#| fig-width: 8
+#| fig-height: 5
+#| fig-alt: "Residuals versus fitted closure, with vertical groups around zero, a nearly horizontal smooth, no clear funnel, and observation 18 having a large negative residual."
+plot(model_full, which = 1)
+```
+
+**Residuals versus fitted values:** the smooth is nearly horizontal around zero, and there is no clear increase or decrease in spread with fitted closure. Some groups have a wider spread than others, but the plot shows no systematic funnel. Constant variance appears reasonable as a working assumption.
+
+The vertical groups occur because plates in the same treatment–laboratory group share a fitted mean. Residuals average to zero within each group because the interaction model estimates a separate mean for every group.
+
+```{r}
+#| label: answer-normal-qq
+#| eval: true
+#| echo: false
+#| fig-width: 8
+#| fig-height: 5
+#| fig-alt: "Normal Q-Q plot with most residuals close to the reference line, observation 18 below the line in the lower tail, and upper-tail points below the line."
+plot(model_full, which = 2)
+```
+
+**Normal Q–Q plot:** most points follow the reference line through the middle of the distribution. There are departures in the tails: observation 18 has a particularly large negative residual, and the upper-tail points fall below the line. A Normal error distribution is a reasonable working approximation, with some tail departures worth checking, especially observation 18.
+:::
+
