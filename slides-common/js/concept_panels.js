@@ -42,7 +42,9 @@ function addConceptPanelsSlide(pptx, { title, intro, introHeight = .48, lead, gr
   let panelX = body.x;
   panels.forEach((panel, index) => {
     const panelW = availableW * (panel.weight || 1) / totalWeight;
-    const box = { x: panelX, y: body.y, w: panelW, h: panelH };
+    const callout = panel.callout;
+    const calloutSpace = callout ? callout.height + SPACING.smallGap : 0;
+    const box = { x: panelX, y: body.y, w: panelW, h: panelH - calloutSpace };
     panelX += panelW + SPACING.gutter;
     // Backgrounds intentionally contain all panel content.
     slide.addShape('roundRect', { ...box, rectRadius: RADII.card,
@@ -71,6 +73,10 @@ function addConceptPanelsSlide(pptx, { title, intro, introHeight = .48, lead, gr
       y += h + (block.gap === undefined ? .12 : block.gap);
     }
     if (y - .12 > box.y + box.h - .18) throw new Error(`Panel overflow: ${title} / ${panel.title} (${(y - .12 - box.y).toFixed(2)} in used; ${(box.h - .18).toFixed(2)} in available)`);
+    if (callout) addNoteBox(slide, {
+      box: { x: box.x, y: box.y + box.h + SPACING.smallGap, w: box.w, h: callout.height },
+      text: callout.text, fontSize: callout.fontSize, minFontSize: callout.fontSize,
+    });
   });
   if (takeaway) addNoteBox(slide, { box: { x: body.x, y: body.y + body.h - noteH, w: body.w, h: noteH },
     title: takeawayTitle, text: takeaway, fontSize: 20, minFontSize: 20, titleFontSize: 14 });

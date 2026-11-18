@@ -18,7 +18,12 @@
     "render:week2": "node scripts/render_lecture.js lectures_2627/week2/Beyond_MLR_Week_2.pptx",
     "build:week2": "npm run slides:week2 && npm run render:week2",
     "figures:week2": "Rscript lectures_2627/week2/explore_allocation_imbalance.R && Rscript lectures_2627/week2/generate_assignment_recap.R && Rscript lectures_2627/week2/generate_interaction_data.R && Rscript lectures_2627/week2/generate_additive_example.R && Rscript lectures_2627/week2/generate_lab3_debrief.R && Rscript lectures_2627/week2/generate_random_center_samples.R && Rscript lectures_2627/week2/fit_random_interaction.R && Rscript lectures_2627/week2/generate_radiologist_data.R",
-    "rebuild:week2": "npm run figures:week2 && node lectures_2627/week2/generate_equations.js && npm run build:week2"
+    "rebuild:week2": "npm run figures:week2 && node lectures_2627/week2/generate_equations.js && npm run build:week2",
+    "slides:week3": "node lectures_2627/week3/build_week3.js",
+    "render:week3": "node scripts/render_lecture.js lectures_2627/week3/Beyond_MLR_Week_3.pptx",
+    "build:week3": "npm run slides:week3 && npm run render:week3",
+    "figures:week3": "Rscript lectures_2627/week3/generate_cluster_trial.R",
+    "rebuild:week3": "npm run figures:week3 && npm run build:week3"
   },
   "dependencies": {
     "skia-canvas": "3.0.8"

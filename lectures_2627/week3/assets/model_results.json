@@ -1,0 +1,99 @@
+{
+  "patients": 120,
+  "centers": 6,
+  "patients_per_center": 20,
+  "cci_range": [0, 5],
+  "center_mean_cci_range": [1.3, 2.3],
+  "ordinary": [
+    {
+      "estimate": 22.26908837,
+      "se": 6.07773498,
+      "p_value": 0.00037445
+    },
+    {
+      "estimate": -7.21223096,
+      "se": 2.05142829,
+      "p_value": 0.00062491
+    }
+  ],
+  "random_intercept": {
+    "terms": [
+      {
+        "estimate": 370.29862022,
+        "se": 15.61694069,
+        "lower": 339.35864405,
+        "upper": 401.23859639,
+        "p_value": 1.11800793e-45
+      },
+      {
+        "estimate": 21.82083344,
+        "se": 21.60822064,
+        "lower": -38.17320499,
+        "upper": 81.81487188,
+        "p_value": 0.3696974
+      },
+      {
+        "estimate": -8.13965494,
+        "se": 1.58459647,
+        "lower": -11.27902636,
+        "upper": -5.00028353,
+        "p_value": 1.1789413e-06
+      }
+    ],
+    "center_variance": 668.3046,
+    "residual_variance": 623.7657,
+    "icc": 0.51723548
+  },
+  "interaction": {
+    "terms": [
+      {
+        "estimate": 377.91871213,
+        "se": 15.55780109,
+        "lower": 347.09292355,
+        "upper": 408.74450071,
+        "p_value": 1.87255886e-46
+      },
+      {
+        "estimate": 7.28258103,
+        "se": 21.87129507,
+        "lower": -53.44186912,
+        "upper": 68.00703119,
+        "p_value": 0.75587453
+      },
+      {
+        "estimate": -11.82679619,
+        "se": 2.1006727,
+        "lower": -15.98900987,
+        "upper": -7.66458251,
+        "p_value": 1.35256688e-07
+      },
+      {
+        "estimate": 8.05650577,
+        "se": 3.10526098,
+        "lower": 1.90382919,
+        "upper": 14.20918235,
+        "p_value": 0.01074036
+      }
+    ],
+    "center_sd": 25.29555,
+    "residual_sd": 24.3834,
+    "treatment_effects": [
+      {
+        "cci": 1,
+        "standard": 366.09191594,
+        "enhanced": 381.43100274,
+        "estimate": 15.33908681,
+        "lower": -43.76695085,
+        "upper": 74.44512446
+      },
+      {
+        "cci": 4,
+        "standard": 330.61152736,
+        "enhanced": 370.12013149,
+        "estimate": 39.50860412,
+        "lower": -22.16553376,
+        "upper": 101.18274201
+      }
+    ]
+  }
+}

@@ -83,6 +83,16 @@ helpers. Run `npm run build:week2` for its PowerPoint and PDF, or
 first. Its scripts invoke the Week 2 builder directly; Week 2 is not yet a root
 npm workspace. See `lectures_2627/week2/README.md` for the current slide sequence.
 
+The Week 3 draft covers cluster randomization and the introduction to grouped
+observational data before the Chicago Airbnb lab. Run `npm run build:week3`
+to build its PowerPoint and PDF from the existing assets. Run `npm run rebuild:week3`
+to regenerate the teaching dataset, model results and figures first. Regeneration
+uses R with `ggplot2`, `nlme`, `emmeans` and `jsonlite`.
+The simulated trial uses raw baseline scores on the
+[Charlson Comorbidity Index](https://pubmed.ncbi.nlm.nih.gov/3558716/) without age
+points. Each patient's CCI is drawn independently from the same distribution,
+so the observed mean CCI varies across centers by chance.
+
 PDF export requires LibreOffice on `PATH` (or set `LIBREOFFICE_BIN` to its executable).
 The renderer creates its own isolated profile and runtime under ignored `.cache/lecture-build/`,
 uses a memory-backed settings store, and removes these disposable files afterwards.

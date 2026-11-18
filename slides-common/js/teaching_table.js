@@ -46,7 +46,12 @@ function addTeachingTable(slide, { box, columns, rows, fontSize = 21, headerFont
 }
 
 // Editable teaching table with a short introduction and a shared conclusion.
-function addTeachingTableSlide(pptx, { title, intro, introHeight = .48, columns, rows, takeaway, takeawayHeight = .90, fontSize = 21, tableOptions = {}, leadEquation, drawEquation, summaryTable, footnote }) {
+function addTeachingTableSlide(pptx, {
+  title, intro, introHeight = .48, columns, rows,
+  takeaway, takeawayHeight = .90, takeawayPosition = 'bottom',
+  fontSize = 21, tableOptions = {}, leadEquation, drawEquation, summaryTable,
+  footnote, footnoteHeight = .48, footnoteFontSize = 15,
+}) {
   const slide = pptx.addSlide();
   addBase(slide); addSlideTitle(slide, title);
   const body = { ...LAYOUT.body };
@@ -59,15 +64,22 @@ function addTeachingTableSlide(pptx, { title, intro, introHeight = .48, columns,
     drawEquation(slide, leadEquation, body.x, body.y, body.w, .55);
     body.y += .73; body.h -= .73;
   }
-  const noteH = takeaway ? takeawayHeight : 0;
-  const footnoteH = footnote ? .48 : 0;
+  const noteSpace = takeaway ? takeawayHeight + .18 : 0;
+  const noteAtTop = takeawayPosition === 'top';
+  const placeTakeaway = y => addNoteBox(slide, {
+    box: { x: body.x, y, w: body.w, h: takeawayHeight },
+    text: takeaway, fontSize: 20, minFontSize: 20,
+  });
+  if (takeaway && noteAtTop) placeTakeaway(body.y);
+  const tableY = body.y + (noteAtTop ? noteSpace : 0);
+  const footnoteH = footnote ? footnoteHeight : 0;
   const summaryH = summaryTable ? (summaryTable.height || 1.70) : 0;
-  const tableH = body.h - noteH - (takeaway ? .18 : 0)
+  const tableH = body.h - noteSpace
     - (summaryTable ? summaryH + .18 : 0) - (footnote ? footnoteH + .12 : 0);
-  addTeachingTable(slide, { box: { ...body, h: tableH },
+  addTeachingTable(slide, { box: { ...body, y: tableY, h: tableH },
     columns, rows, fontSize, drawEquation, ...tableOptions });
   if (summaryTable) {
-    const y = body.y + tableH + .18;
+    const y = tableY + tableH + .18;
     slide.addText(summaryTable.title, { x: body.x, y, w: body.w, h: .32,
       fontFace: FONT_FAMILIES.sans, fontSize: 20, bold: true, color: COLORS.primary, margin: 0 });
     const captionH = summaryTable.caption ? .30 : 0;
@@ -79,11 +91,10 @@ function addTeachingTableSlide(pptx, { title, intro, introHeight = .48, columns,
       fontFace: FONT_FAMILIES.sans, fontSize: 18, color: COLORS.text, margin: 0 });
   }
   if (footnote) slide.addText(footnote, {
-    x: body.x, y: body.y + body.h - noteH - (takeaway ? .18 : 0) - footnoteH,
+    x: body.x, y: body.y + body.h - (noteAtTop ? 0 : noteSpace) - footnoteH,
     w: body.w, h: footnoteH, fontFace: FONT_FAMILIES.sans,
-    fontSize: 15, color: COLORS.muted, margin: 0 });
-  if (takeaway) addNoteBox(slide, { box: { x: body.x, y: body.y + body.h - noteH, w: body.w, h: noteH },
-    text: takeaway, fontSize: 20, minFontSize: 20 });
+    fontSize: footnoteFontSize, color: COLORS.muted, margin: 0 });
+  if (takeaway && !noteAtTop) placeTakeaway(body.y + body.h - takeawayHeight);
   addFooter(slide);
   return slide;
 }
