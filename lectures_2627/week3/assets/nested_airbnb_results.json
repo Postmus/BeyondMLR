@@ -1,0 +1,68 @@
+{
+  "listings": 1561,
+  "neighborhoods": 43,
+  "districts": 9,
+  "two": {
+    "neighborhood": 0.166740012150091,
+    "Residual": 0.310871660911106
+  },
+  "three": {
+    "neighborhood:district": 0.0702994175630173,
+    "district": 0.140495521007129,
+    "Residual": 0.310916834574524
+  },
+  "three_listing": {
+    "neighborhood:district": 0.0358886707315435,
+    "district": 0.0498498574532283,
+    "Residual": 0.140633052482491
+  },
+  "three_adjusted": {
+    "neighborhood:district": 0.0380074841743538,
+    "district": 0.00100306527760039,
+    "Residual": 0.141064544461215
+  },
+  "two_fixed": [
+    {
+      "term": "capacity_c",
+      "estimate": 0.0890392803929453,
+      "se": 0.00498308659627425
+    },
+    {
+      "term": "room_typePrivate room",
+      "estimate": -0.500445163362387,
+      "se": 0.0239440193408647
+    },
+    {
+      "term": "room_typeShared room",
+      "estimate": -1.11833164951986,
+      "se": 0.0591415722227655
+    },
+    {
+      "term": "walk10",
+      "estimate": 0.154946443958965,
+      "se": 0.0349056146655919
+    }
+  ],
+  "three_fixed": [
+    {
+      "term": "capacity_c",
+      "estimate": 0.0890330933050559,
+      "se": 0.00498273995941856
+    },
+    {
+      "term": "room_typePrivate room",
+      "estimate": -0.50045836968333,
+      "se": 0.0239419733276406
+    },
+    {
+      "term": "room_typeShared room",
+      "estimate": -1.11776775179909,
+      "se": 0.0591387533853607
+    },
+    {
+      "term": "walk10",
+      "estimate": 0.151144440186993,
+      "se": 0.03548017191545
+    }
+  ]
+}

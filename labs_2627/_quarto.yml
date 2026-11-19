@@ -33,6 +33,12 @@ website:
             href: BLR_lab_random_interaction.qmd
           - text: "Assignment: Postoperative pain management"
             href: assignments/week2/assignment.qmd
+      - text: Week 3
+        menu:
+          - text: "Lab 5: Nightly prices in Chicago neighborhoods"
+            href: BLR_lab_airbnb.qmd
+          - text: "Lab 6: Guest capacity and neighborhood walkability"
+            href: BLR_lab_airbnb_slopes.qmd
       - text: Lab answers
         menu:
           - text: "Week 1 · Lab 1: Center as a fixed effect"
@@ -43,6 +49,10 @@ website:
             href: BLR_lab_fixed_interaction_answers.qmd
           - text: "Week 2 · Lab 4: Random intercepts and treatment slopes"
             href: BLR_lab_random_interaction_answers.qmd
+          - text: "Week 3 · Lab 5: Nightly prices in Chicago neighborhoods"
+            href: BLR_lab_airbnb_answers.qmd
+          - text: "Week 3 · Lab 6: Guest capacity and neighborhood walkability"
+            href: BLR_lab_airbnb_slopes_answers.qmd
   search: true
 
 format:

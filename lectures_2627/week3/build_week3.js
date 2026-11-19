@@ -2,7 +2,7 @@ const pptxgen = require('pptxgenjs');
 const path = require('node:path');
 const { COLORS, FONT_FAMILIES, LAYOUT, SPACING } = require('../../slides-common/js/blr_theme');
 const {
-  defineTemplateMasters, addBrandedTitleSlide, addSectionSlide,
+  defineTemplateMasters, addBrandedTitleSlide, addSectionSlide, addFigureSlide,
   addBase, addSlideTitle, addTeachingCards, addNoteBox, addAssetFrame, addFooter,
 } = require('../../slides-common/js/pptx_layout_primitives');
 const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels');
@@ -46,7 +46,7 @@ addSectionSlide(pptx, { sectionLabel: 'PART 1', sectionTitle: 'Cluster randomiza
 const [minCci, maxCci] = results.cci_range;
 addConceptPanelsSlide(pptx, {
   title: 'A cluster-randomized rehabilitation trial',
-  intro: 'Does enhanced care improve walking distance at 12 weeks after knee replacement, and does its effect vary with baseline comorbidity?',
+  intro: 'Accounting for baseline comorbidity, does enhanced care improve walking distance 12 weeks after knee replacement?',
   introHeight: .75,
   panels: [
     {
@@ -191,67 +191,6 @@ addConceptPanelsSlide(pptx, {
       { text: 'Ordinary regression includes center differences in the residual spread. Here it gives a larger CCI SE.', bold: true, fontSize: 20 },
     ] },
   ],
-});
-
-addConceptPanelsSlide(pptx, {
-  title: 'Cross-level interaction',
-  intro: 'A cross-level interaction occurs when the relationship between an individual-level variable and the outcome depends on a context-level variable.',
-  introHeight: .78,
-  panels: [
-    { title: 'REHABILITATION EXAMPLE', blocks: [
-      { text: 'Does the relationship between baseline CCI and walking distance differ between standard and enhanced care?', fontSize: 20, gap: .25 },
-      { text: 'HOW WE TEST IT', fontSize: 17, bold: true, h: .32, gap: .10 },
-      { text: 'Add the interaction term TⱼXᵢⱼ to the model. Its coefficient, β₃, estimates the difference between the two CCI slopes. We test whether that coefficient is zero.', fontSize: 20 },
-    ] },
-    { weight: 1.18, blocks: [
-      { image: asset('program_comorbidity_interaction.png'), h: 4.50 },
-    ] },
-  ],
-});
-
-const interaction = results.interaction;
-const interactionTerms = [...fixedEffectTerms, 'Treatment × Baseline CCI'];
-addTeachingTableSlide(pptx, {
-  title: 'Fitted interaction model',
-  columns: [
-    { label: 'Term', weight: 3.2 },
-    { label: 'Estimate', weight: 1.15, align: 'center' },
-    { label: 'SE', weight: .85, align: 'center' },
-    { label: '95% CI', weight: 2.25, align: 'center' },
-    { label: 'p-value', weight: 1.0, align: 'center', highlight: true },
-  ],
-  rows: interaction.terms.map((row, i) => coefficientRow(interactionTerms[i], row)),
-  footnote: `The treatment coefficient compares enhanced with standard care at CCI 0.\nEstimated SDs are ${fmt(interaction.center_sd, 1)} m for the center intercept and ${fmt(interaction.residual_sd, 1)} m for the patient residual.`,
-  footnoteHeight: .72,
-  footnoteFontSize: 17,
-  takeaway: `The interaction test provides evidence that the treatment effect increases with CCI. The estimated increase is ${fmt(interaction.terms.at(-1).estimate, 1)} m per CCI point.`,
-  takeawayHeight: 1.02,
-});
-
-addTeachingTableSlide(pptx, {
-  title: 'Treatment effects at selected CCI scores',
-  columns: [
-    { label: 'Baseline CCI', weight: 1.45, align: 'center' },
-    { label: 'Standard care', weight: 1.55, align: 'center' },
-    { label: 'Enhanced care', weight: 1.55, align: 'center' },
-    { label: 'Difference', weight: 1.45, align: 'center', highlight: true },
-    { label: 'Pointwise 95% CI', weight: 2.1, align: 'center' },
-  ],
-  rows: interaction.treatment_effects.map(row => [
-    row.cci, fmt(row.standard, 1), fmt(row.enhanced, 1), fmt(row.estimate, 1), ci(row, 1),
-  ]),
-  tableOptions: {
-    columnGroups: [
-      { label: '', count: 1 },
-      { label: 'ESTIMATED MARGINAL MEANS', count: 2 },
-      { label: 'SIMPLE TREATMENT EFFECT', count: 2 },
-    ],
-    headerHeight: .62, groupHeaderHeight: .55,
-  },
-  footnote: 'Means, differences and confidence intervals are in meters.',
-  footnoteFontSize: 17,
-  takeaway: 'The interaction provides evidence that the advantage of enhanced care grows\nwith baseline CCI. At CCI 1 and 4, both confidence intervals include zero, so\nwhether enhanced care improves walking distance at either score remains uncertain.',
-  takeawayHeight: 1.30,
 });
 
 addSectionSlide(pptx, { sectionLabel: 'PART 2', sectionTitle: 'Grouped observational data' });
@@ -408,16 +347,15 @@ addTeachingTableSlide(pptx, {
   takeawayHeight: 1.05,
 });
 
-addConceptPanelsSlide(pptx, {
-  title: 'Lab 5 · Chicago Airbnb listings',
-  panels: [
-    { weight: 1.16, blocks: [
-      { text: 'How much do log nightly prices vary within and between neighborhoods?', fontSize: 25, bold: true, h: 1.22, gap: .28 },
-      { text: 'Fit the null model, then see how the two variance components change as you add listing-level and neighborhood-level variables.', fontSize: 21 },
-    ] },
-    { blocks: [{ image: path.join(__dirname, '../../lectures_2526/R-lab.png'), h: 4.90 }] },
-  ],
+addFigureSlide(pptx, {
+  title: 'Time for Lab 5',
+  assetPath: asset('lab5-chicago-break.png'),
 });
+
+addSectionSlide(pptx, { sectionLabel: 'PART 3', sectionTitle: 'Random slopes and cross-level interactions' });
+require('./hba1c_slides')(pptx);
+require('./nested_airbnb_slides')(pptx);
+addSectionSlide(pptx, { sectionLabel: 'The End', sectionTitle: 'Questions' });
 
 pptx._slides.forEach((slide, index) => {
   slide.addNotes('');

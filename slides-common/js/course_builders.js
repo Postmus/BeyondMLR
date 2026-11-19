@@ -2,9 +2,9 @@ const { getSlots, addBase, addSlideTitle, addBulletBox, addNoteBox, addTextBox, 
 const { COLORS, RADII, STROKES, TYPOGRAPHY, SPACING } = require('./blr_theme');
 
 // Study layout used whenever a scientific question and design need a shared visual hierarchy.
-function addStudyOverviewSlide(pptx, { title, studyTitle, bullets, groupsTitle, groups, question, assetPath }) {
+function addStudyOverviewSlide(pptx, { title, studyTitle, bullets, groupsTitle, groups, question, assetPath, questionHeight = 1.15 }) {
   const slide = pptx.addSlide();
-  const slots = getSlots({ noteHeight: 1.15 });
+  const slots = getSlots({ noteHeight: questionHeight });
   addBase(slide);
   addSlideTitle(slide, title);
   addBulletBox(slide, { box: slots.text, title: studyTitle, bullets, fontSize: 19, minFontSize: 17 });
