@@ -23,9 +23,9 @@ execute:
 
 # Chicago Airbnb listings
 
-**How much do nightly prices vary within and between Chicago neighborhoods?**
+**How much do nightly prices for entire homes vary within and between Chicago neighborhoods?**
 
-The Chicago Airbnb data contain 1,561 listings in 43 neighborhoods. They were compiled by Trinh and Ameri for a St. Olaf College project and are included with *Beyond Multiple Linear Regression* by Roback and Legler. Each row describes one listing.
+The Chicago Airbnb data contain 1,561 listings in 43 neighborhoods. They were compiled by Trinh and Ameri for a St. Olaf College project and are included with *Beyond Multiple Linear Regression* by Roback and Legler. Each row describes one listing. We focus on the 826 entire homes or apartments in 36 neighborhoods. Guests rent the whole place, so capacity describes how many people the home can accommodate.
 
 In Lab 2 we used a random center intercept to describe differences in walking distance between centers. Here we use the same idea to describe differences in nightly price between neighborhoods. We begin with price and neighborhood alone. This gives us a baseline for asking how much variation remains once we know more about the listings.
 
@@ -47,6 +47,7 @@ library(lme4)
 library(lmerTest)
 
 airbnb <- read.csv("data/airbnb.csv")
+airbnb <- filter(airbnb, room_type == "Entire home/apt")
 airbnb$neighborhood <- factor(airbnb$neighborhood)
 ```
 
@@ -57,7 +58,7 @@ airbnb$neighborhood <- factor(airbnb$neighborhood)
 
 # How are the listings distributed across neighborhoods?
 
-Before comparing prices, we want to know how much information we have about each neighborhood. Are the 1,561 listings spread fairly evenly across the city, or do a few neighborhoods account for a large share of the sample? We can see this by counting listings in each neighborhood and plotting the counts from largest to smallest.
+Before comparing prices, we want to know how much information we have about each neighborhood. Are the 826 entire homes spread fairly evenly across the city, or do a few neighborhoods account for a large share of the sample? We can see this by counting listings in each neighborhood and plotting the counts from largest to smallest.
 
 ```{r}
 #| label: neighborhood-counts
@@ -77,7 +78,7 @@ top_six
 summary(neighborhood_counts$n)
 ```
 
-Each bar represents one neighborhood. The six highlighted bars correspond to the six rows in `top_six`. The summary describes the counts across all 43 neighborhoods.
+Each bar represents one neighborhood. The six highlighted bars correspond to the six rows in `top_six`. The summary describes the counts across all 36 neighborhoods.
 
 ::: {.callout-important icon=false title="Question 1"}
 How does the number of listings in the largest neighborhood compare with the median neighborhood count? What does this suggest about how well we can describe the spread of prices in different neighborhoods?
@@ -89,7 +90,7 @@ How does the number of listings in the largest neighborhood compare with the med
 
 # Nightly prices within and between neighborhoods
 
-How much do nightly prices differ among listings in the same neighborhood, and how far apart are the neighborhood averages? We’ll plot the individual prices and the mean for each of the six neighborhoods highlighted above. These neighborhoods have the most observations for comparing the spread within each one. The models use all 43 neighborhoods.
+How much do nightly prices differ among listings in the same neighborhood, and how far apart are the neighborhood averages? We’ll plot the individual prices and the mean for each of the six neighborhoods highlighted above. These neighborhoods have the most observations for comparing the spread within each one. The models use all 36 neighborhoods.
 
 ```{r}
 #| label: observed-prices
@@ -189,16 +190,19 @@ How does the spread change from left to right in each plot? Which scale would yo
 
 ```{=latex}
 \clearpage
+\small
 ```
 
 # Covariates in the Chicago Airbnb data
 
-Two listings in the same neighborhood might differ in how many guests they accommodate or whether guests rent a private room or an entire home. These are **individual-level covariates** because they describe each listing. **Context-level covariates** describe the neighborhood that listings share. For example, every listing in the same neighborhood has the same walkability score.
+Two homes in the same neighborhood can differ in how many guests they accommodate and how many bedrooms they have. These are **individual-level covariates** because they describe each listing. **Context-level covariates** describe the neighborhood that listings share. For example, every listing in the same neighborhood has the same walkability score.
 
 | Level | Covariates in the dataset |
 |---|---|
-| Individual (listing) | Guest capacity (`accommodates`), room type (`room_type`), number of bedrooms (`bedrooms`), minimum stay in nights (`minstay`), number of reviews (`reviews`), and average guest rating (`overall_satisfaction`). |
+| Individual (listing) | Guest capacity (`accommodates`), number of bedrooms (`bedrooms`), minimum stay in nights (`minstay`), number of reviews (`reviews`), and average guest rating (`overall_satisfaction`). |
 | Context (neighborhood) | Walkability (`WalkScore`), access to public transit (`TransitScore`), and bikeability (`BikeScore`). |
+
+WalkScore rates how easily everyday destinations can be reached on foot, on a scale from 0 to 100. A higher score means that places such as shops, cafés, and restaurants are easier to walk to. For an Airbnb guest, having these places nearby may be part of what makes a neighborhood an attractive place to stay.
 
 ## How complete are the covariates?
 
@@ -206,61 +210,59 @@ Each row represents one listing. Counting missing values in each column tells us
 
 ```{r}
 #| label: check-missing
-covariates <- c("accommodates", "room_type", "bedrooms", "minstay",
+covariates <- c("accommodates", "bedrooms", "minstay",
                 "reviews", "overall_satisfaction",
                 "WalkScore", "TransitScore", "BikeScore")
 colSums(is.na(airbnb[covariates]))
 ```
 
-Eight of the nine covariates are complete. Minimum stay is missing for 138 of the 1,561 listings (8.8%).
+Seven of the eight covariates are complete. Minimum stay is missing for 104 of the 826 homes (12.6%).
 
 ::: {.callout-note icon=false title="What can you do about missing values?"}
 If we wanted to study minimum stay, we would first want to know what a blank entry means. The data documentation may distinguish a listing with no minimum stay from one whose minimum stay is unknown.
 
-**Complete-case analysis.** We could use the 1,423 listings with a recorded minimum stay. How do their prices and room types compare with those of listings whose minimum stay is missing? The smaller sample contains less information, and estimates can be biased depending on why values are missing. Fitting models with and without minimum stay to the same 1,423 listings lets us assess its contribution.
+**Complete-case analysis.** We could use the 722 homes with a recorded minimum stay. How do their prices and guest capacities compare with those of listings whose minimum stay is missing? The smaller sample contains less information, and estimates can be biased depending on why values are missing. Fitting models with and without minimum stay to the same 722 homes lets us assess its contribution.
 
 **Multiple imputation.** We can also use the observed data to generate several plausible completed datasets. We fit the same model to each dataset and combine the estimates, accounting for the uncertainty in the missing values. Here the imputation model would need to account for the grouping of listings within neighborhoods.
 :::
 
 ```{=latex}
 \clearpage
+\normalsize
 ```
 
 # How much variation do the predictors explain?
 
-We’ll begin with guest capacity and room type. Listings in the same neighborhood can differ in both characteristics, and neighborhoods can differ in their mix of listings. **How much of the variation in log nightly price do these two characteristics explain within and between neighborhoods? After accounting for them, how much of the remaining between-neighborhood variation can walkability explain?**
+Homes in the same neighborhood can accommodate different numbers of guests. **How does the variation in log nightly price within and between neighborhoods change when we account for guest capacity? How much of the remaining between-neighborhood variation does WalkScore explain?**
 
-All three covariates are available for all 1,561 listings, so we can compare the models using the same sample.
+Guest capacity and WalkScore are available for all 826 homes, so each model uses the same sample.
 
 ## Centering guest capacity
 
-In the log-price null model, the fixed intercept represented the overall mean log price. In the listing model, an entire home or apartment is our reference room type. With capacity recorded as the number of guests, the intercept would refer to an entire home that accommodates zero guests. A two-guest home gives us a more useful reference.
+In the log-price null model, the fixed intercept represented the overall mean log price. With capacity recorded as the number of guests, the intercept in a model with capacity would refer to a home that accommodates zero guests. Four guests is both the median and the most common capacity among these homes.
 
-**Centering at two guests** means subtracting two from each listing’s capacity. We call the result $C_{ij}$.
+**Centering at four guests** means subtracting four from each home’s capacity. We call the result $C_{ij}$.
 
 | Guest capacity | Centered capacity, $C_{ij}$ |
 |---:|---:|
-| 1 | −1 |
-| 2 | 0 |
-| 3 | 1 |
+| 3 | −1 |
+| 4 | 0 |
+| 5 | 1 |
 
 The zero point has moved, but one step on either scale is still one additional guest place. Centering changes the intercept. The capacity slope and the fitted log price for each listing stay the same.
 
-The indicators $P_{ij}$ and $S_{ij}$ equal 1 for a private room and a shared room, respectively. Both equal 0 for an entire home. The listing model is
+The model with guest capacity is
 
 $$
-L_{ij}=\beta_0+\beta_1 C_{ij}+\beta_2 P_{ij}+\beta_3 S_{ij}+c_j+\varepsilon_{ij}.
+L_{ij}=\beta_0+\beta_1 C_{ij}+c_j+\varepsilon_{ij}.
 $$
 
-R creates the two indicators from `room_type`. For a two-guest entire home, all three predictors are zero. Its expected log price is $\beta_0+c_j$ in neighborhood $j$ and $\beta_0$ in a neighborhood with $c_j=0$.
+For a four-guest home, centered capacity is zero. Its expected log price is $\beta_0+c_j$ in neighborhood $j$ and $\beta_0$ in a neighborhood with $c_j=0$.
 
 ```{r}
 #| label: log-listing-model
-airbnb$room_type <- relevel(factor(airbnb$room_type),
-                            ref = "Entire home/apt")
-contrasts(airbnb$room_type) <- contr.treatment(levels(airbnb$room_type))
-airbnb$capacity_c <- airbnb$accommodates - 2
-model_listing <- lmer(log_price ~ capacity_c + room_type + (1 | neighborhood),
+airbnb$capacity_c <- airbnb$accommodates - 4
+model_listing <- lmer(log_price ~ capacity_c + (1 | neighborhood),
                       data = airbnb)
 ```
 
@@ -278,11 +280,11 @@ Could walkability explain some of the remaining differences between neighborhood
 The model with walkability is
 
 $$
-L_{ij}=\beta_0+\beta_1 C_{ij}+\beta_2 P_{ij}+\beta_3 S_{ij}
-      +\beta_4 W_j+c_j+\varepsilon_{ij}.
+L_{ij}=\beta_0+\beta_1 C_{ij}
+      +\beta_2 W_j+c_j+\varepsilon_{ij}.
 $$
 
-The fixed intercept $\beta_0$ now refers to a two-guest entire home at WalkScore 80 in a neighborhood with $c_j=0$. The coefficient $\beta_4$ gives the expected difference in log price for a ten-point increase in neighborhood WalkScore at the same capacity and room type, averaged over the random neighborhood effects.
+The fixed intercept $\beta_0$ now refers to a four-guest home at WalkScore 80 in a neighborhood with $c_j=0$. The coefficient $\beta_2$ gives the expected difference in log price for a ten-point increase in neighborhood WalkScore at the same guest capacity, averaged over the random neighborhood effects.
 
 ```{r}
 #| label: log-walkability-model
@@ -290,7 +292,7 @@ airbnb$walk10 <- (airbnb$WalkScore - 80) / 10
 model_walk <- update(model_listing, . ~ . + walk10)
 ```
 
-In `update()`, `. ~ . + walk10` adds $\beta_4 W_j$ while keeping the listing characteristics and the random neighborhood intercept.
+In `update()`, `. ~ . + walk10` adds $\beta_2 W_j$ while keeping guest capacity and the random neighborhood intercept.
 
 ```{=latex}
 \clearpage
@@ -311,18 +313,18 @@ variance_summary <- function(model) {
 
 variance_table <- rbind(
   Null = variance_summary(model_null),
-  Listing = variance_summary(model_listing),
+  Capacity = variance_summary(model_listing),
   Walkability = variance_summary(model_walk)
 )
 round(variance_table, 3)
 ```
 
 ::: {.callout-important icon=false title="Question 6"}
-How many listings contributed to each model? Use the table to summarize your results. What does the null-model ICC tell you about two listings in the same neighborhood? Why might capacity and room type explain variation at both levels? Where do you see the largest change when walkability enters the model?
+How many listings contributed to each model? Use the table to summarize your results. What does the null-model ICC tell you about two listings in the same neighborhood? How do the within- and between-neighborhood variances change when we add guest capacity? Where do you see the largest change when walkability enters the model?
 :::
 
 | Model for log price | Within variance | Between variance | ICC (%) |
 |---|---:|---:|---:|
 | Null | | | |
-| Add capacity and room type | | | |
+| Add guest capacity | | | |
 | Then add WalkScore | | | |

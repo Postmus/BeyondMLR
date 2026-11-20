@@ -16,15 +16,15 @@ module.exports = function addNestedAirbnbSlides(pptx) {
   addFigureSlide(pptx, {
     title: 'Chicago neighborhoods are nested within districts',
     assetPath: hierarchy,
-    caption: 'Four illustrative listings from three neighborhoods in the Chicago Airbnb data.',
+    caption: 'Four illustrative entire homes from three neighborhoods in the Chicago Airbnb data.',
     captionFontSize: 17, captionMinFontSize: 17,
-    takeaway: `Each neighborhood belongs to one district. The sample has ${r.listings.toLocaleString('en-US')} listings in ${r.neighborhoods} neighborhoods across ${r.districts} districts.`,
+    takeaway: `Each neighborhood belongs to one district. The sample has ${r.listings.toLocaleString('en-US')} entire homes in ${r.neighborhoods} neighborhoods across ${r.districts} districts.`,
   });
 
   addFigureSlide(pptx, {
     title: 'Neighborhood mean log nightly prices by district',
     assetPath: asset('eda'),
-    caption: 'Each circle shows one neighborhood mean. Larger circles represent more listings.',
+    caption: 'Each circle shows one neighborhood mean. Larger circles represent more entire homes.',
     captionFontSize: 17, captionMinFontSize: 17,
     takeaway: 'Does the plot suggest that some districts tend to have higher neighborhood mean log prices than others?',
     takeawayHeight: .95,
@@ -32,7 +32,7 @@ module.exports = function addNestedAirbnbSlides(pptx) {
 
   addConceptPanelsSlide(pptx, {
     title: 'A random intercept for district and neighborhood',
-    intro: 'Lᵢⱼₖ is the log nightly price of listing i in neighborhood j of district k.',
+    intro: 'Lᵢⱼₖ is the log nightly price of home i in neighborhood j of district k.',
     panels: [
       { title: 'THREE-LEVEL NULL MODEL', blocks: [
         { image: asset('eq_model'), h: .75, gap: .42 },
@@ -50,7 +50,7 @@ module.exports = function addNestedAirbnbSlides(pptx) {
 
   addTeachingTableSlide(pptx, {
     title: 'Neighborhood variation before and after accounting for district',
-    intro: 'Both null models describe log nightly prices for the same Chicago listings.',
+    intro: 'Both null models describe log nightly prices for the same entire homes as in Lab 5.',
     columns: [{ label: 'Source of variation', weight: 1.65 }, column('Neighborhood only (Lab 5)', 1.28),
       column('District and neighborhood', 1.4)],
     rows: [
@@ -59,41 +59,33 @@ module.exports = function addNestedAirbnbSlides(pptx) {
       ['Between listings within a neighborhood', r.two.Residual.toFixed(4), r.three.Residual.toFixed(4)],
       ['Total variance', (r.two.neighborhood + r.two.Residual).toFixed(4), total.toFixed(4)],
     ],
-    takeaway: `In the three-level model, about two-thirds of the variance between neighborhood means lies between districts.\n${r.three.district.toFixed(4)} / (${r.three.district.toFixed(4)} + ${neighborhood.toFixed(4)}) ≈ ${Math.round(100 * r.three.district / (r.three.district + neighborhood))}%`,
+    takeaway: `District share of the variance between neighborhood means: ${r.three.district.toFixed(4)} / (${r.three.district.toFixed(4)} + ${neighborhood.toFixed(4)}) ≈ ${Math.round(100 * r.three.district / (r.three.district + neighborhood))}%`,
     takeawayHeight: 1.20,
   });
 
-  addFigureSlide(pptx, {
-    title: 'Which pair of listings would you expect to be most alike?',
-    assetPath: hierarchy,
-    caption: 'Compare listing A with B, then with C, then with D.',
-    captionFontSize: 19, captionMinFontSize: 19,
-    takeaway: 'For each pair, identify the district and neighborhood effects the two listings share. How would you rank the three correlations?',
-    takeawayHeight: .98,
-  });
-
+  const districtVariance = r.three.district.toFixed(4);
+  const totalVariance = total.toFixed(4);
   addConceptPanelsSlide(pptx, {
-    title: 'Two correlations from the same model',
-    intro: 'For two distinct listings, the correlation in log nightly prices equals their shared variance divided by the total variance.',
-    introHeight: .75,
-    panels: [
-      { title: 'A AND B · SAME NEIGHBORHOOD', blocks: [
-        { text: 'Both listings are in Humboldt Park, so they share the West district effect and the Humboldt Park effect.', fontSize: 21 },
-        { image: asset('eq_same_neighborhood'), h: .96 },
-      ] },
-      { title: 'A AND C · SAME DISTRICT', blocks: [
-        { text: 'Humboldt Park and West Town are different neighborhoods, so these listings share only the West district effect.', fontSize: 21 },
-        { image: asset('eq_same_district'), h: .96 },
-      ] },
-    ],
-    takeaway: 'A and D are in different districts. Their shared variance is zero, so the model implies a correlation of zero.',
-    takeawayHeight: 1,
+    title: 'Correlations between log nightly prices of Chicago listings',
+    panels: [{ blocks: [
+      { image: hierarchy, h: 2.63, gap: .22 },
+      { h: 2.55, table: {
+        columns: [{ label: 'Listings', weight: .75 }, { label: 'Shared effects', weight: 1.95 },
+          column('Correlation = shared variance / total variance', 3.3)],
+        rows: [
+          ['A and B', 'West and Humboldt Park',
+            `(${districtVariance} + ${neighborhood.toFixed(4)}) / ${totalVariance} ≈ ${((r.three.district + neighborhood) / total).toFixed(3)}`],
+          ['A and C', 'West district only',
+            `${districtVariance} / ${totalVariance} ≈ ${(r.three.district / total).toFixed(3)}`],
+          ['A and D', 'None', `0 / ${totalVariance} = 0`],
+        ],
+        fontSize: 20, headerFontSize: 16, cellPaddingX: .12,
+      } },
+    ] }],
   });
 
   const predictorLabels = {
     capacity_c: 'Guest capacity (per additional guest place)',
-    'room_typePrivate room': 'Private room vs. entire home/apartment',
-    'room_typeShared room': 'Shared room vs. entire home/apartment',
     walk10: 'WalkScore (per 10 points)',
   };
   addTeachingTableSlide(pptx, {
@@ -114,14 +106,21 @@ module.exports = function addNestedAirbnbSlides(pptx) {
     title: 'Variation in log nightly price after adjustment',
     intro: 'Each model includes random intercepts for districts and for neighborhoods within districts.',
     columns: [{ label: 'Source of variation', weight: 1.8 }, column('Null model'),
-      column('Add guest capacity and room type', 1.48), column('Then add WalkScore', 1.12)],
+      column('Add guest capacity', 1.48), column('Then add WalkScore', 1.12)],
     rows: [
       ['Between districts', 'district'],
       ['Between neighborhoods within a district', 'neighborhood:district'],
       ['Between listings within a neighborhood', 'Residual'],
     ].map(([label, level]) => [label, ...[r.three, r.three_listing, r.three_adjusted].map(model => model[level].toFixed(4))]),
     tableOptions: { headerHeight: .76, headerFontSize: 17 },
-    takeaway: `Adding WalkScore reduces the remaining district variance from ${r.three_listing.district.toFixed(4)} to ${r.three_adjusted.district.toFixed(4)}. With so little district variation left, adding a district intercept makes little difference to the estimates or their SEs in these Chicago data.`,
+    takeaway: 'After adjusting for capacity and WalkScore, the estimated district variance is zero. This explains why the two models give the same fixed-effect estimates and SEs to the precision shown.',
     takeawayHeight: 1.32,
+  });
+
+  addFigureSlide(pptx, {
+    title: 'Neighborhood WalkScores across Chicago districts',
+    assetPath: asset('walkscores'),
+    takeaway: 'Districts with higher average WalkScores tend to have higher mean log prices. After accounting for capacity and WalkScore, the model estimates zero remaining district variance in log price.',
+    takeawayHeight: 1.05,
   });
 };

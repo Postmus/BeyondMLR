@@ -4,10 +4,10 @@ library(jsonlite)
 source("slides-common/R/common_fig.R")
 assets <- "lectures_2627/week3/assets"
 airbnb <- read.csv("labs_2627/data/airbnb.csv")
+airbnb <- subset(airbnb, room_type == "Entire home/apt")
 airbnb$log_price <- log(airbnb$price)
-airbnb$capacity_c <- airbnb$accommodates - 2
+airbnb$capacity_c <- airbnb$accommodates - 4
 airbnb$walk10 <- (airbnb$WalkScore - 80) / 10
-airbnb$room_type <- relevel(factor(airbnb$room_type), "Entire home/apt")
 areas <- unique(airbnb[c("district", "neighborhood")])
 stopifnot(!anyDuplicated(areas$neighborhood))
 district_for <- setNames(areas$district, areas$neighborhood)
@@ -22,13 +22,43 @@ eda <- ggplot(means, aes(log_price, district)) +
   geom_point(aes(size = listings), shape = 21, fill = color_secondary,
              colour = color_primary, alpha = 0.8, stroke = 0.7,
              position = position_jitter(width = 0, height = 0.11, seed = 3)) +
-  scale_size_area(name = "Listings per\nneighborhood", max_size = 10, breaks = c(10, 100, 300)) +
+  scale_size_area(name = "Homes per\nneighborhood", max_size = 10, breaks = c(10, 50, 150)) +
   labs(x = "Mean log nightly price in each neighborhood", y = NULL) +
   theme_minimal(base_size = 18, base_family = "Liberation Sans") +
   theme(panel.grid.minor = element_blank(), axis.text = element_text(colour = color_text),
         legend.position = "right", legend.title = element_text(size = 15),
         axis.title.x = element_text(margin = margin(t = 8)))
 ggsave(file.path(assets, "nested_airbnb_eda.png"), eda, width = 11, height = 4.55, dpi = 170, bg = "white")
+
+# Give each neighborhood one observation when comparing district WalkScores.
+walk <- unique(airbnb[c("district", "neighborhood", "WalkScore")])
+stopifnot(!anyDuplicated(walk$neighborhood))
+district_walk <- aggregate(WalkScore ~ district, walk, mean)
+district_walk <- district_walk[order(district_walk$WalkScore, district_walk$district), ]
+district_walk$row <- seq_len(nrow(district_walk))
+walk$row <- district_walk$row[match(walk$district, district_walk$district)]
+# Separate ties vertically so their observed scores remain visible.
+walk$offset <- ave(walk$row, walk$row, walk$WalkScore,
+                   FUN = function(x) (seq_along(x) - mean(seq_along(x))) * 0.26)
+walk_plot <- ggplot(walk, aes(WalkScore, row)) +
+  geom_line(aes(y = row + 0.13, group = district), colour = color_grid, linewidth = 0.8) +
+  geom_point(aes(y = row + 0.13 + offset, shape = "Neighborhood"),
+             colour = color_pvalue, size = 2.8) +
+  geom_point(data = district_walk, aes(y = row - 0.23, shape = "District mean"),
+             colour = "#AB4F24", size = 3.4) +
+  scale_shape_manual(name = NULL, values = c("Neighborhood" = 16, "District mean" = 18),
+                     breaks = c("Neighborhood", "District mean")) +
+  scale_x_continuous(breaks = seq(50, 95, 5), limits = c(46, 97), expand = c(0, 0)) +
+  scale_y_continuous(breaks = district_walk$row, labels = district_walk$district,
+                     expand = expansion(add = 0.35)) +
+  labs(x = "Neighborhood WalkScore", y = NULL) +
+  theme_minimal(base_size = 17, base_family = "Liberation Sans") +
+  theme(legend.position = "top", legend.justification = "left",
+        legend.margin = margin(0, 0, 0, 0), legend.box.spacing = unit(0, "pt"),
+        panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(),
+        axis.text = element_text(colour = color_text))
+ggsave(file.path(assets, "nested_airbnb_walkscores.png"), walk_plot,
+       width = 11.5, height = 4.65, dpi = 170, bg = "white")
 
 # A schematic of four illustrative listings, reused for the pairwise discussion.
 nodes <- data.frame(
@@ -52,8 +82,8 @@ ggsave(file.path(assets, "nested_airbnb_hierarchy.png"), diagram, width = 11, he
 
 two <- lmer(log_price ~ 1 + (1 | neighborhood), airbnb)
 three <- lmer(log_price ~ 1 + (1 | district/neighborhood), airbnb)
-two_adjusted <- update(two, . ~ . + capacity_c + room_type + walk10)
-three_listing <- update(three, . ~ . + capacity_c + room_type)
+two_adjusted <- update(two, . ~ . + capacity_c + walk10)
+three_listing <- update(three, . ~ . + capacity_c)
 three_adjusted <- update(three_listing, . ~ . + walk10)
 stopifnot(length(unique(vapply(list(two, three, three_listing, two_adjusted, three_adjusted), nobs, integer(1)))) == 1)
 variance <- function(model) {
