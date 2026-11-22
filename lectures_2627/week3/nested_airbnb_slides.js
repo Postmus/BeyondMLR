@@ -37,14 +37,14 @@ module.exports = function addNestedAirbnbSlides(pptx) {
       { title: 'THREE-LEVEL NULL MODEL', blocks: [
         { image: asset('eq_model'), h: .75, gap: .42 },
         { text: 'β₀ is the overall mean log nightly price.', fontSize: 21 },
-        { text: 'The expected log price in Humboldt Park is the overall mean plus the West district effect and the Humboldt Park neighborhood effect.', fontSize: 20 },
+        { text: 'The West district effect shifts the mean for every neighborhood in West. The Humboldt Park effect shifts its mean further up or down within West.', fontSize: 20 },
       ] },
       { title: 'RANDOM INTERCEPTS AND RESIDUAL', blocks: [
         { image: asset('eq_distributions'), h: 1.7, gap: .22 },
         { text: 'Listings in the same district share uₖ. Listings in the same neighborhood also share vⱼₖ.', fontSize: 20 },
       ] },
     ],
-    takeaway: 'The model assumes independence across districts, across neighborhoods and across listing residuals, as well as between the three levels.',
+    takeaway: 'The model assumes the district effects, neighborhood deviations and individual listing errors are mutually independent.',
     takeawayHeight: 1,
   });
 
@@ -59,7 +59,7 @@ module.exports = function addNestedAirbnbSlides(pptx) {
       ['Between listings within a neighborhood', r.two.Residual.toFixed(4), r.three.Residual.toFixed(4)],
       ['Total variance', (r.two.neighborhood + r.two.Residual).toFixed(4), total.toFixed(4)],
     ],
-    takeaway: `District share of the variance between neighborhood means: ${r.three.district.toFixed(4)} / (${r.three.district.toFixed(4)} + ${neighborhood.toFixed(4)}) ≈ ${Math.round(100 * r.three.district / (r.three.district + neighborhood))}%`,
+    takeaway: `In the three-level model, differences between districts account for about ${Math.round(100 * r.three.district / (r.three.district + neighborhood))}% of the variation between neighborhood means: ${r.three.district.toFixed(4)} / (${r.three.district.toFixed(4)} + ${neighborhood.toFixed(4)}) ≈ ${(r.three.district / (r.three.district + neighborhood)).toFixed(2)}`,
     takeawayHeight: 1.20,
   });
 
@@ -113,7 +113,7 @@ module.exports = function addNestedAirbnbSlides(pptx) {
       ['Between listings within a neighborhood', 'Residual'],
     ].map(([label, level]) => [label, ...[r.three, r.three_listing, r.three_adjusted].map(model => model[level].toFixed(4))]),
     tableOptions: { headerHeight: .76, headerFontSize: 17 },
-    takeaway: 'After adjusting for capacity and WalkScore, the estimated district variance is zero. This explains why the two models give the same fixed-effect estimates and SEs to the precision shown.',
+    takeaway: 'With guest capacity and WalkScore in the model, the estimated district variance is zero. Adding a district intercept therefore leaves the capacity and WalkScore estimates and their SEs unchanged to the precision shown on slide 31.',
     takeawayHeight: 1.32,
   });
 

@@ -132,10 +132,12 @@ write_json(list(
   chisq = lrt$Chisq[2], df = lrt$Df[2], lrt_p = lrt[["Pr(>Chisq)"]][2]
 ), file.path(assets, "hba1c_results.json"), pretty = TRUE, auto_unbox = TRUE, digits = NA)
 
-# Typeset the three model equations using the same LaTeX/PNG format as Week 2.
+# Typeset the model equations and distributions using the same LaTeX/PNG format as Week 2.
 equations <- c(
   intercept = r"(Y_{ij}=(\beta_0+c_j)+\beta_1 B_{ij}+\beta_2 P_j+\varepsilon_{ij})",
   slope = r"(Y_{ij}=(\beta_0+c_j)+(\beta_1+d_j) B_{ij}+\beta_2 P_j+\varepsilon_{ij})",
+  practice = r"(\displaystyle \begin{pmatrix}c_j\\d_j\end{pmatrix}\overset{\mathrm{iid}}{\sim}\mathcal{N}_2\!\left(\begin{pmatrix}0\\0\end{pmatrix},\begin{pmatrix}\sigma_c^2 & \sigma_{cd}\\ \sigma_{cd} & \sigma_d^2\end{pmatrix}\right))",
+  errors = r"(\displaystyle \varepsilon_{ij}\overset{\mathrm{iid}}{\sim}\mathcal{N}(0,\sigma^2))",
   interaction = r"(Y_{ij}=(\beta_0+c_j)+(\beta_1+\beta_3 P_j+d_j) B_{ij}+\beta_2 P_j+\varepsilon_{ij})"
 )
 for (name in names(equations)) {

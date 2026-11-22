@@ -1,7 +1,8 @@
 const path = require('node:path');
 const { addStudyOverviewSlide } = require('../../slides-common/js/course_builders');
 const { imageSizingContain } = require('../week1/pptxgenjs_helpers/image');
-const { addFigureSlide } = require('../../slides-common/js/pptx_layout_primitives');
+const { COLORS, FONT_FAMILIES, LAYOUT } = require('../../slides-common/js/blr_theme');
+const { addBase, addSlideTitle, addBulletBox, addFooter, addFigureSlide } = require('../../slides-common/js/pptx_layout_primitives');
 const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels');
 const r = require('./assets/hba1c_results.json');
 
@@ -52,25 +53,35 @@ module.exports = function addHbA1cSlides(pptx) {
     'Each dot is one patient. Each line is fitted separately within one of the three largest practices per program.',
     'How does six-month change relate to HbA1c at diagnosis within practices? Do the six lines suggest a common slope?');
 
-  addConceptPanelsSlide(pptx, {
-    title: 'Random slope model',
-    lead: { equation: asset('hba1c_eq_slope.png'),
-      text: 'Yᵢⱼ is six-month change for patient i in practice j. Pⱼ is 0 for usual care and 1 for structured follow-up.' },
-    drawEquation,
-    panels: [
-      { title: 'AT A BASELINE HbA1c OF 8%', blocks: [
-        { text: 'Bᵢⱼ = baseline HbA1c − 8', bold: true, fontSize: 22 },
-        { text: 'At 8%, Bᵢⱼ = 0. The intercept β₀ is the expected change under usual care for a practice with average random effects.', fontSize: 19 },
-        { text: 'cⱼ is the practice’s deviation from its program mean at 8%.', fontSize: 19 },
-      ] },
-      { title: 'BASELINE HbA1c OF 9% VERSUS 8%', blocks: [
-        { text: 'Two patients in one practice', bold: true, fontSize: 22 },
-        { text: 'The slope for baseline HbA1c is the expected six-month change at 9% minus the expected change at 8%.', fontSize: 19 },
-        { text: 'β₁ is the average slope and β₁ + dⱼ is this practice’s slope.', fontSize: 19 },
-      ] },
-    ],
-    takeaway: 'β₂ compares structured follow-up with usual care at the same starting HbA1c.',
-  });
+  {
+    const slide = pptx.addSlide();
+    addBase(slide);
+    addSlideTitle(slide, 'Random slope model');
+    const { body, left, right } = LAYOUT;
+    const textStyle = { fontFace: FONT_FAMILIES.sans, fontSize: 19, color: COLORS.text,
+      margin: 0, align: 'center', valign: 'mid' };
+    drawEquation(slide, asset('hba1c_eq_slope.png'), body.x, body.y, body.w, .56);
+    slide.addText('Yᵢⱼ is six-month HbA1c change for patient i in practice j. Pⱼ = 0 (usual care) or 1 (structured follow-up).',
+      { ...textStyle, x: body.x, y: 1.70, w: body.w, h: .46 });
+
+    const headingStyle = { ...textStyle, bold: true, color: COLORS.primary, fontSize: 17, y: 2.43, h: .36 };
+    slide.addText('Practice-level random effects', { ...headingStyle, x: left.x, w: left.w });
+    slide.addText('Patient-level errors', { ...headingStyle, x: right.x, w: right.w });
+    drawEquation(slide, asset('hba1c_eq_practice.png'), left.x + .12, 2.99, left.w - .24, 1.18);
+    drawEquation(slide, asset('hba1c_eq_errors.png'), right.x, 3.01, right.w, .52);
+    slide.addText('Independent of the practice random effects.',
+      { ...textStyle, x: right.x, y: 3.70, w: right.w, h: .42 });
+
+    addBulletBox(slide, {
+      box: { x: body.x, y: 4.50, w: body.w, h: 2.41 }, fontSize: 20, minFontSize: 20, paraSpaceAfter: 8,
+      bullets: [
+        'We center baseline HbA1c at 8%, so Bᵢⱼ = 0 for a patient who starts at 8%.',
+        'β₁ is the average slope across practices. It gives the difference in expected six-month change for a one-percentage-point higher starting HbA1c.',
+        'dⱼ is how far practice j’s slope lies above or below the average, so its slope is β₁ + dⱼ.',
+      ],
+    });
+    addFooter(slide);
+  }
 
   function resultsSlide(title, fixed, interceptSD, slopeSD, residualSD, correlation, takeaway) {
     addConceptPanelsSlide(pptx, {
@@ -116,7 +127,7 @@ module.exports = function addHbA1cSlides(pptx) {
 
   resultsSlide('Interaction between baseline HbA1c and program', r.interaction_fixed,
     r.full_intercept_sd, r.full_slope_sd, r.full_residual_sd, r.full_correlation,
-    `For each percentage point higher in baseline HbA1c, the additional fall with structured follow-up is ${fmt(-r.interaction)} points larger (${p(r.interaction_p)}). Within programs, practice slopes have an SD of ${fmt(r.full_slope_sd)}.`);
+    `At a starting HbA1c of 8%, the fitted drop is ${fmt(-r.means[0].difference)} points greater with structured follow-up than with usual care. At 9%, that gap widens by ${fmt(-r.interaction)} percentage points (interaction ${p(r.interaction_p)}).`);
 
   addConceptPanelsSlide(pptx, {
     title: 'Estimated marginal means of six-month HbA1c change',

@@ -13,11 +13,13 @@ const {
 } = require('../week1/pptxgenjs_helpers/layout');
 const results = require('./assets/model_results.json');
 
+const lectureTitle = 'Analyzing multilevel observational data';
+const lectureSubtitle = 'Explaining variation within and between groups';
 const pptx = new pptxgen();
 pptx.layout = 'LAYOUT_WIDE';
 pptx.author = 'Dr Douwe Postmus';
-pptx.subject = 'Week 3: cluster randomization and cross-level interactions';
-pptx.title = 'Beyond MLR | Week 3';
+pptx.subject = lectureSubtitle;
+pptx.title = `Beyond MLR | Week 3 | ${lectureTitle}`;
 pptx.lang = 'en-GB';
 pptx.theme = { headFontFace: FONT_FAMILIES.sans, bodyFontFace: FONT_FAMILIES.sans, lang: 'en-GB' };
 defineTemplateMasters(pptx);
@@ -34,8 +36,8 @@ const randomInterceptDistributions = path.join(__dirname, '../week1/assets/equat
 
 addBrandedTitleSlide(pptx, {
   courseLabel: 'BEYOND MULTIPLE LINEAR REGRESSION · WEEK 3',
-  mainTitle: 'Variables at different levels',
-  subtitle: 'Cluster randomization and cross-level interactions',
+  mainTitle: lectureTitle,
+  subtitle: lectureSubtitle,
   author: 'Dr Douwe Postmus',
   affiliation: 'UMCG · Department of Epidemiology',
   badge: 'BLR',
@@ -65,7 +67,25 @@ addConceptPanelsSlide(pptx, {
         height: 1.48, fontSize: 18,
       },
     },
-    { blocks: [{ image: asset('center_allocation.png'), h: 4.55 }] },
+    { title: 'PATIENTS WITHIN TWO EXAMPLE CENTERS', blocks: [
+      { h: 3.68, table: {
+        columns: [
+          { label: 'Center', weight: .78, align: 'center' },
+          { label: 'Assigned\ntreatment', weight: 1.38 },
+          { label: 'Patient', weight: .83, align: 'center' },
+          { label: 'Baseline\nCCI', weight: .99, align: 'center' },
+          { label: '12-week\nwalk (m)', weight: 1.02, align: 'center' },
+        ],
+        rows: [
+          [1, 'Standard care', 1, 3, 325],
+          [1, 'Standard care', 2, 1, 388],
+          [3, 'Enhanced care', 41, 1, 370],
+          [3, 'Enhanced care', 42, 1, 409],
+        ],
+        rowFills: [COLORS.card, COLORS.card, COLORS.surfaceMuted, COLORS.surfaceMuted],
+        fontSize: 17, headerFontSize: 15, headerHeight: .72, cellPaddingX: .045,
+      } },
+    ] },
   ],
 });
 
@@ -73,12 +93,10 @@ addConceptPanelsSlide(pptx, {
   title: 'Exploratory data analysis',
   panels: [
     { title: 'WALKING DISTANCE BY CENTER', blocks: [
-      { image: asset('walking_distance_by_center.png'), h: 3.72 },
-      { text: 'Boxes show the middle 50% of distances.\nThe line inside each box marks the median.', fontSize: 19 },
+      { image: asset('walking_distance_by_center.png'), h: 4.95 },
     ] },
     { title: 'WALKING DISTANCE BY BASELINE CCI', blocks: [
-      { image: asset('walking_distance_by_cci.png'), h: 3.72 },
-      { text: 'Each dot shows one patient.\nThe line shows the overall linear trend.', fontSize: 19 },
+      { image: asset('walking_distance_by_cci.png'), h: 4.95 },
     ] },
   ],
 });
@@ -140,12 +158,10 @@ addConceptPanelsSlide(pptx, {
 });
 
 const variables = fixedEffectTerms.slice(1);
-const [minCenterCci, maxCenterCci] = results.center_mean_cci_range;
 addTeachingTableSlide(pptx, {
   title: 'What happens to the estimates and SEs when we omit center?',
   intro: 'Fit ordinary regression with the same treatment and baseline CCI terms.',
   takeaway: 'Accounting for center increases the treatment SE and decreases the CCI SE in this example.',
-  takeawayPosition: 'top',
   takeawayHeight: .82,
   columns: [
     { label: 'Variable', weight: 2.5 },
@@ -170,35 +186,32 @@ addTeachingTableSlide(pptx, {
     ],
     headerHeight: .66, groupHeaderHeight: .55,
   },
-  footnote: `Average baseline CCI ranged from ${fmt(minCenterCci)} to ${fmt(maxCenterCci)} points across centers. Accounting for the shared center effect gives comparisons between center averages less influence on the fitted CCI slope, so the estimate can shift slightly.`,
-  footnoteHeight: 1.14,
-  footnoteFontSize: 20,
 });
 
 addConceptPanelsSlide(pptx, {
-  title: 'Why do the SEs move in opposite directions?',
+  title: 'Why do the standard errors move in opposite directions?',
   panels: [
-    { title: 'TREATMENT · BETWEEN CENTERS', blocks: [
-      { text: 'Enhanced centers − standard centers', fontSize: 21, bold: true },
-      equation('c̄ (enhanced) − c̄ (standard)'),
-      { text: 'Chance differences between those sets of centers contribute to uncertainty about the treatment effect.' },
-      { text: 'Ordinary regression treats patients as independent and gives too small an SE.', bold: true, fontSize: 20 },
-    ] },
-    { title: 'CCI · MOSTLY WITHIN CENTERS', blocks: [
-      { text: 'Two patients in the same center', fontSize: 21, bold: true },
-      equation('cⱼ − cⱼ = 0'),
-      { text: 'Most CCI variation is within centers. The shared center effect cancels in those comparisons.' },
-      { text: 'Ordinary regression includes center differences in the residual spread. Here it gives a larger CCI SE.', bold: true, fontSize: 20 },
-    ] },
+    { title: 'TREATMENT', blocks: [
+      'Treatment varies between centers, with three centers assigned to each arm.',
+      'Chance differences between those centers contribute to uncertainty about the treatment effect.',
+      'Ordinary regression understates that uncertainty by treating all 120 patients as independent.',
+      `Accounting for center raises the treatment SE from ${fmt(results.ordinary[0].se)} to ${fmt(additive.terms[1].se)} metres.`,
+    ].map(text => ({ text, bullet: true, fontSize: 19, h: 1.08, gap: .16 })) },
+    { title: 'BASELINE CCI', blocks: [
+      'Most of the variation in CCI is among patients within centers.',
+      'A center-wide shift in walking distance leaves the CCI pattern within that center intact.',
+      'Ordinary regression includes center differences in its residual variation.',
+      `Separating out the center variation lowers the CCI slope’s SE here from ${fmt(results.ordinary[1].se)} to ${fmt(additive.terms[2].se)} metres per CCI point.`,
+    ].map(text => ({ text, bullet: true, fontSize: 19, h: 1.08, gap: .16 })) },
   ],
 });
 
 addSectionSlide(pptx, { sectionLabel: 'PART 2', sectionTitle: 'Grouped observational data' });
 
 const variationModels = [
-  { within: 70, between: 30, fixed: 0 },
-  { within: 50, between: 25, fixed: 20 },
-  { within: 50, between: 15, fixed: 30 },
+  { within: 70, between: 30 },
+  { within: 50, between: 25 },
+  { within: 50, between: 15 },
 ];
 const remainingVariance = model => model.within + model.between;
 const groupShare = model => model.between / remainingVariance(model);
@@ -310,18 +323,17 @@ addConceptPanelsSlide(pptx, {
 });
 
 addTeachingTableSlide(pptx, {
-  title: 'Which variation can each variable help explain?',
-  intro: 'Marginal R² is the share of total outcome variation explained by the fixed effects.',
+  title: 'Which differences in math scores can each predictor explain?',
   columns: [
     { label: 'Variable', weight: 1.84 },
-    { label: 'Within groups', weight: 3.00 },
-    { label: 'Between groups', weight: 3.31 },
+    { label: 'Within a school', weight: 3.00 },
+    { label: 'Between schools', weight: 3.31 },
   ],
   rows: [
-    ['Individual-level', 'Can explain differences among individuals in the same group.',
-      'Can also explain differences between group means when groups differ in their mix of individuals.'],
-    ['Context-level', 'Everyone in the group shares the same value.',
-      'Can explain differences between group means by shifting the fitted mean for the whole group.'],
+    ['Prior-year score (individual level)', 'Differences in students’ prior scores can help explain why their end-of-year scores differ within the same school.',
+      'If students at one school started the year with higher scores on average, that may help explain a higher end-of-year mean.'],
+    ['Student–teacher ratio (context level)', 'All students at a school share its ratio, so it explains none of the differences among classmates in this model.',
+      'Schools have different ratios, which may help explain differences in their mean end-of-year scores.'],
   ],
   fontSize: 21,
   tableOptions: { headerHeight: .62, headerFontSize: 18, cellPaddingX: .25 },
@@ -340,10 +352,9 @@ addTeachingTableSlide(pptx, {
     ['Within-school variance', ...variationModels.map(model => model.within)],
     ['Between-school variance', ...variationModels.map(model => model.between)],
     ['ICC', ...variationModels.map(model => percent(groupShare(model)))],
-    ['Marginal R²', ...variationModels.map(model => percent(model.fixed / (model.fixed + remainingVariance(model))))],
   ],
   tableOptions: { headerHeight: .85, headerFontSize: 18 },
-  takeaway: 'Where does the remaining variation decrease at each step?\nWhy does the ICC rise when we add prior-year math score?',
+  takeaway: 'Both variances fall when we add prior-year score. Why does the ICC rise?\nWhich variance decreases when we then add the student–teacher ratio?',
   takeawayHeight: 1.05,
 });
 

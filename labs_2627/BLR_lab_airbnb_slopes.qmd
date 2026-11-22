@@ -10,9 +10,6 @@ format:
     pdf-engine: xelatex
     geometry: margin=0.9in
     toc: false
-    include-in-header:
-      text: |
-        \usepackage{needspace}
 format-links: [pdf]
 execute:
   warning: false
@@ -23,13 +20,15 @@ execute:
 
 # Guest capacity and nightly price
 
-**For entire homes in Chicago, how much does the association between guest capacity and log nightly price vary across neighborhoods, and how does it relate to neighborhood walkability?**
+We study the same 826 entire-home listings in 36 Chicago neighborhoods as in Lab 5. The outcome is the natural logarithm of the listed price in dollars per night. Guest capacity is the number of people a home can accommodate.
 
-Lab 5 used a common slope for guest capacity across neighborhoods. We’ll work with the same 826 entire homes here. Here we’ll explore whether the difference in expected log price between a four-guest and a five-guest home in the same neighborhood is similar across the city.
+Lab 5 estimated the difference in expected log nightly price associated with one additional guest place. The model assumed the same capacity slope in every neighborhood. WalkScore shifted the fitted lines up or down, and the lines were parallel.
 
-## Setup and data
+Here we allow each neighborhood to have its own capacity slope. We estimate how much the slopes vary across neighborhoods and ask whether they tend to be steeper in more walkable neighborhoods.
 
-Save your script as `lab6.R` in the `week3` folder and set that folder as your working directory. The code below starts from the [Chicago Airbnb data](data/airbnb.csv) in the `data` subfolder and can be run in a fresh R session. Install the packages with `pak` if needed, as in [Lab 1](BLR_lab_center_fixed.html#install-pak-once).
+# Setup and data
+
+Save your script as `lab6.R` in the `week3` folder and set that folder as your working directory. Save the [Chicago Airbnb data](data/airbnb.csv) as `data/airbnb.csv` inside `week3`. Install the packages with `pak` if needed, as in [Lab 1](BLR_lab_center_fixed.html#install-pak-once).
 
 ```{r}
 #| label: setup
@@ -51,14 +50,14 @@ airbnb$capacity_c <- airbnb$accommodates - 4
 airbnb$walk10 <- (airbnb$WalkScore - 80) / 10
 ```
 
-A centered capacity of zero represents four guests, and a one-unit difference still represents one guest place. A value of zero for `walk10` represents a WalkScore of 80, and one unit represents ten WalkScore points.
+A four-guest home has `capacity_c = 0`, and a five-guest home has `capacity_c = 1`. A neighborhood with WalkScore 80 has `walk10 = 0`. Each additional ten WalkScore points increases `walk10` by one.
 
 ```{=latex}
 \clearpage
 ```
-# Do the neighborhoods have similar slopes for guest capacity?
+# Plot log nightly price against guest capacity
 
-How does log nightly price change as guest capacity increases within a neighborhood? We’ll plot the listings in the six neighborhoods with the most entire homes, as in Lab 5, giving each neighborhood its own panel and using the same axes throughout.
+The six neighborhoods with the most entire-home listings each have their own panel. All six panels use the same axis scales, so a steeper line indicates a larger difference in log price per additional guest place.
 
 ```{r}
 #| label: capacity-by-neighborhood
@@ -76,25 +75,25 @@ ggplot(homes, aes(accommodates, log_price)) +
   theme_minimal(base_size = 13)
 ```
 
-Each dot represents one entire home. The horizontal jitter helps separate homes with the same capacity. Each line is fitted to the original observations in its own neighborhood.
+Each dot represents a listing. Homes with the same capacity are spread slightly apart on the horizontal axis so that individual listings are easier to see. The fitted line in each panel comes from a separate regression using the original guest capacities.
 
 ::: {.callout-important icon=false title="Question 1"}
-Which two neighborhoods would you choose to illustrate a difference in slopes? Describe how log price changes with capacity in each and where the observations supporting each line are concentrated.
+Compare Humboldt Park and Rogers Park. In which neighborhood does log nightly price rise more steeply with guest capacity? Looking across all six fitted lines, does a common capacity slope seem reasonable? Explain your judgment.
 :::
 
 ```{=latex}
 \clearpage
 ```
-# How much do capacity slopes vary across neighborhoods?
+# Fit a random intercept and a random capacity slope
 
-In the additive model from Lab 5, WalkScore shifts the expected log price for the whole neighborhood. To allow neighborhoods to differ in how price relates to capacity, we give each neighborhood its own intercept and its own capacity slope. The model uses all 826 entire homes from the 36 neighborhoods.
+The fitted lines suggest that an additional guest place is associated with a larger difference in log nightly price in some neighborhoods than in others. A random capacity slope lets us estimate how much the slopes vary. As in Lab 5, the model includes WalkScore and a random neighborhood intercept.
 
 $$
 L_{ij}=(\beta_0+c_j)+(\beta_1+b_j)C_{ij}
        +\beta_2 W_j+\varepsilon_{ij}.
 $$
 
-Here $L_{ij}$ is log nightly price, $C_{ij}$ is centered capacity and $W_j$ is centered and rescaled WalkScore. Neighborhood $j$ has a capacity slope of $\beta_1+b_j$, where $\beta_1$ is the average slope and $b_j$ is that neighborhood’s deviation.
+For listing $i$ in neighborhood $j$, $L_{ij}$ is log nightly price and $C_{ij}$ is centered guest capacity. $W_j$ is the centered and rescaled WalkScore. For a four-guest home, $c_j$ is the amount by which the neighborhood mean log price differs from the mean predicted by WalkScore. The capacity slope in that neighborhood is $\beta_1+b_j$, where $\beta_1$ is the average slope and $b_j$ is the neighborhood’s deviation from that average.
 
 ```{r}
 #| label: random-capacity-slope
@@ -103,66 +102,79 @@ model_slope <- lmer(log_price ~ capacity_c + walk10 +
 summary(model_slope)
 ```
 
-The `capacity_c` row appears twice in the output. Under **Fixed effects**, its estimate gives the average slope. Under **Random effects**, its `Std.Dev.` describes how much neighborhood slopes vary around that average.
+We can judge the size of the differences between neighborhood slopes by comparing their standard deviation (SD) with the average slope. The standard deviation is the square root of the slope variance, so both the SD and the average slope are in log-price units per additional guest place. In the `capacity_c` row, read the average slope under **Fixed effects** and the SD under **Random effects** (`Std.Dev.`).
 
 ::: {.callout-important icon=false title="Question 2"}
-For two entire homes in the same neighborhood, what is the estimated difference in expected log price between a five-guest and a four-guest home, on average across neighborhoods? What does the estimated standard deviation of the neighborhood slopes tell you about that comparison?
+Report the estimated average capacity slope and its standard error. On average across neighborhoods, how much higher or lower is the expected log nightly price for a five-guest home than for a four-guest home in the same neighborhood?
+:::
+
+::: {.callout-important icon=false title="Question 3"}
+How large is the estimated standard deviation of the neighborhood slopes compared with the average slope? Use both estimates to explain whether a random capacity slope is useful here.
+:::
+
+::: {.callout-important icon=false title="Question 4"}
+Read the intercept–slope correlation from the `Corr` column under **Random effects**. After accounting for WalkScore, do neighborhoods with higher expected log prices for four-guest homes tend to have steeper or flatter capacity slopes? Interpret the sign and magnitude of the estimate.
 :::
 
 ```{=latex}
 \clearpage
 ```
-# Does the association with capacity depend on WalkScore?
+# Add the interaction between capacity and WalkScore
 
-Could the difference between a four-guest and a five-guest home be larger in more walkable neighborhoods? Guest capacity describes the listing and WalkScore describes its neighborhood. Their product, $C_{ij}W_j$, gives a **cross-level interaction**. With this term, the slope for guest capacity in neighborhood $j$ is
+In the random-slope model, individual neighborhoods have their own capacity slopes. At every WalkScore, those slopes vary around the same average, $\beta_1$. Adding $\beta_3 C_{ij}W_j$ lets us ask whether the average difference in log price between a five-guest and a four-guest home changes with neighborhood walkability. This is a **cross-level interaction** because capacity describes a listing and WalkScore describes its neighborhood. The full model for log nightly price is
 
 $$
-\beta_1+\beta_3 W_j+b_j.
+L_{ij}=(\beta_0+c_j)+(\beta_1+b_j)C_{ij}
+       +\beta_2 W_j+\beta_3 C_{ij}W_j+\varepsilon_{ij}.
 $$
 
-At WalkScore 80, $W_j=0$ and the average capacity slope is $\beta_1$. The interaction coefficient $\beta_3$ describes how much the average slope changes per ten additional WalkScore points. The neighborhood’s deviation from the average slope at its WalkScore is $b_j$.
+Collecting the terms that multiply $C_{ij}$ gives the capacity slope in neighborhood $j$, $\beta_1+b_j+\beta_3 W_j$. At WalkScore 80, $W_j=0$ and the average slope is $\beta_1$. At WalkScore 90, $W_j=1$ and the average slope is $\beta_1+\beta_3$. The neighborhood deviation $b_j$ tells us how far a particular slope lies above or below the average at that WalkScore.
 
 ```{r}
 #| label: capacity-walk-interaction
-model_interaction <- update(model_slope, . ~ . + capacity_c:walk10)
+model_interaction <- lmer(
+  log_price ~ capacity_c + walk10 + capacity_c:walk10 +
+    (1 + capacity_c | neighborhood),
+  data = airbnb
+)
 summary(model_interaction)
 ```
 
-In the **Fixed effects** table, the `capacity_c:walk10` row gives the interaction estimate and the two-sided p-value for $H_0:\beta_3=0$.
-
-::: {.callout-important icon=false title="Question 3"}
-Does the fitted model provide evidence that the average guest-capacity slope varies with neighborhood walkability? Use the interaction estimate and its p-value to explain what a ten-point difference in WalkScore means for that slope.
+::: {.callout-important icon=false title="Question 5"}
+Report the p-value for `capacity_c:walk10` under **Fixed effects**. Is the interaction between guest capacity and WalkScore statistically significant at the 5% level?
 :::
 
-# Comparing four-guest and five-guest homes
+Under **Random effects**, the `capacity_c` variance now describes how much neighborhood slopes vary around the average slope at their WalkScore.
 
-The interaction test gives evidence of a steeper capacity slope in more walkable neighborhoods. How large is the predicted difference between a four-guest and a five-guest home in a less walkable neighborhood? How large is it in a more walkable one? We’ll use estimated marginal means to put numbers to those two comparisons.
+::: {.callout-important icon=false title="Question 6"}
+Compare the `capacity_c` variances in the two model summaries. By what percentage does the estimated slope variance decrease when the interaction is added? Interpret the remaining variance in terms of neighborhood capacity slopes.
+:::
 
-In Lab 3, treatment and laboratory were factors, so their levels supplied the combinations for `emmeans()`. Here, capacity and WalkScore are numerical, so we choose the values at which we want predictions.
+```{=latex}
+\clearpage
+```
 
-Which WalkScores describe the settings of relatively less and more walkable listings in this sample? We use the lower and upper quartiles of WalkScore, giving each of the 826 entire homes equal weight.
+# Compare four-guest and five-guest homes at two WalkScores
+
+The significant interaction indicates that the association between guest capacity and log nightly price depends on neighborhood walkability. We interpret the interaction by examining the **simple effects of guest capacity**. At a given WalkScore, the simple effect is the difference in expected log nightly price between a five-guest home and a four-guest home.
+
+We want to see how large this price gap is in less walkable and more walkable neighborhoods. We therefore estimate it at the lower and upper quartiles of WalkScore among the listings.
 
 ```{r}
 #| label: listing-walkscore-quartiles
 quantile(airbnb$WalkScore, c(0.25, 0.75))
 ```
 
-The quartiles are 85 and 91. Irving Park has a WalkScore of 85, and West Town has a WalkScore of 91.
+## Estimate mean log nightly prices
 
-```{=latex}
-\clearpage
-```
+A **reference grid** lists the combinations of predictor values at which `emmeans()` makes predictions from the fitted model. Guest capacity and WalkScore are both numerical predictors in this model. By default, `emmeans()` sets each of them to its sample mean, so the grid contains just one combination and gives us one estimated mean log nightly price.
 
-## Specifying the reference grid in `emmeans()`
-
-The **reference grid** is the set of predictor combinations for which we want fitted means. At each WalkScore, we’ll compare a four-guest entire home with a five-guest entire home.
-
-The `at` argument gives the values to use for each predictor, on the scale used to fit the model.
+For the simple effect at WalkScore 85, we need a fitted mean for four-guest homes and another for five-guest homes. We need the same pair at WalkScore 91. We use `at` to supply the two values of each predictor on the scales used to fit the model. This gives us all four combinations.
 
 - `capacity_c = c(4, 5) - 4` requests centered capacities 0 and 1, representing homes for four and five guests.
 - `walk10 = (c(85, 91) - 80) / 10` requests 0.5 and 1.1 on the model scale, representing WalkScores 85 and 91.
 
-`emmeans()` combines **each** capacity with **each** WalkScore, giving four predictions. The formula `~ capacity_c | walk10` requests the capacity means separately at each WalkScore. As in Lab 4, `lmer.df` selects the Satterthwaite method for inference.
+In `~ capacity_c | walk10`, the vertical bar groups the fitted means by WalkScore. These fitted means use the fixed effects and describe the expected log price averaged over neighborhoods at the specified WalkScore. Setting `lmer.df = "satterthwaite"` uses the same degrees-of-freedom method as the model summary.
 
 ```{r}
 #| label: capacity-means
@@ -175,13 +187,33 @@ capacity_means <- emmeans(
 print(capacity_means, digits = 4)
 ```
 
-In the output, the row with `capacity_c = 1` in the `walk10 = 0.5` group describes a five-guest entire home at WalkScore 85. Its `emmean` is the expected log nightly price averaged over the neighborhood random effects. Its `SE` is the standard error of that estimated mean.
+::: {.callout-important icon=false title="Question 7"}
+Which row in the `emmeans` output represents a five-guest home at WalkScore 85? Report its estimated mean log nightly price from the `emmean` column.
+:::
 
-```{=latex}
-\clearpage
+## Compare the capacity contrasts
+
+We plot the four fitted means to compare the simple effects of guest capacity at WalkScores 85 and 91. We join the four-guest and five-guest means at each WalkScore. The vertical change from the first point to the second gives the estimated difference in mean log nightly price at that WalkScore.
+
+```{r}
+#| label: fitted-capacity-slopes
+plot_means <- as.data.frame(capacity_means)
+plot_means$guests <- plot_means$capacity_c + 4
+plot_means$WalkScore <- factor(80 + 10 * plot_means$walk10)
+
+ggplot(plot_means, aes(guests, emmean, color = WalkScore, linetype = WalkScore)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  scale_x_continuous(breaks = c(4, 5)) +
+  scale_color_manual(values = c("#175C65", "#A54B16")) +
+  labs(x = "Guest capacity", y = "Predicted mean log nightly price") +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "top")
 ```
 
-How much does the fitted mean rise from four guests to five at each WalkScore? As in Lab 3, `pairs()` with `reverse = TRUE` subtracts the four-guest mean from the five-guest mean within each group. The `estimate` column gives that difference in log-price units.
+![](assets/lab6/fitted-capacity-slopes.png){fig-alt="Five-guest homes have higher fitted mean log prices than four-guest homes at both WalkScores. The gap between capacities is larger at WalkScore 91 than at 85." width=80%}
+
+At each WalkScore, `pairs()` with `reverse = TRUE` subtracts the four-guest mean from the five-guest mean. The `estimate` column reports that simple effect in log-price units.
 
 ```{r}
 #| label: capacity-contrasts
@@ -189,19 +221,6 @@ capacity_effects <- pairs(capacity_means, reverse = TRUE)
 print(capacity_effects)
 ```
 
-::: {.callout-important icon=false title="Question 4"}
-For entire homes, how much higher is the expected log nightly price for a five-guest listing than for a four-guest listing at WalkScore 85? What is the corresponding difference at WalkScore 91? Use the two estimates to explain what the interaction means for these listings.
-:::
-
-```{=latex}
-\Needspace{9\baselineskip}
-```
-
-::: {.callout-note icon=false title="Optional · What do the capacity slopes mean on the nightly price scale?" collapse="true"}
-Exponentiating each capacity contrast gives the ratio of fitted geometric mean nightly prices for five-guest and four-guest entire homes at that WalkScore. The fitted geometric mean is about **10.1% higher** for a five-guest home at WalkScore 85 and **12.7% higher** at WalkScore 91.
-
-```{r}
-#| label: capacity-percentages
-100 * (exp(summary(capacity_effects)$estimate) - 1)
-```
+::: {.callout-important icon=false title="Question 8"}
+Report the estimated difference in mean log nightly price between five-guest and four-guest homes at each WalkScore. How much larger or smaller is this gap at 91 than at 85?
 :::

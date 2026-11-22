@@ -2,15 +2,15 @@ const { COLORS, FONT_FAMILIES, LAYOUT, STROKES } = require('./blr_theme');
 const { addBase, addSlideTitle, addFooter, addNoteBox } = require('./pptx_layout_primitives');
 
 // Shared editable table for full slides and smaller conceptual panels.
-function addTeachingTable(slide, { box, columns, rows, fontSize = 21, headerFontSize = 16, headerHeight = .55, firstColumnBold = true, cellPaddingY = .10, cellPaddingX = .18, columnGroups, groupHeaderHeight = .38, drawEquation }) {
+function addTeachingTable(slide, { box, columns, rows, rowFills = [], fontSize = 21, headerFontSize = 16, headerHeight = .55, firstColumnBold = true, cellPaddingY = .10, cellPaddingX = .18, columnGroups, groupHeaderHeight = .38, drawEquation }) {
   const groupH = columnGroups ? groupHeaderHeight : 0;
   const rowH = (box.h - headerHeight - groupH) / rows.length;
   const totalWeight = columns.reduce((sum, column) => sum + column.weight, 0);
   const widths = columns.map(column => box.w * column.weight / totalWeight);
-  const drawRow = (values, y, h, header) => {
+  const drawRow = (values, y, h, header, fillColor = COLORS.card) => {
     // Each row background intentionally contains all cell text.
     slide.addShape('rect', { x: box.x, y, w: box.w, h,
-      fill: { color: header ? COLORS.primary : COLORS.card }, line: STROKES.card });
+      fill: { color: header ? COLORS.primary : fillColor }, line: STROKES.card });
     let x = box.x;
     values.forEach((value, i) => {
       if (!header && columns[i].highlight) {
@@ -42,7 +42,7 @@ function addTeachingTable(slide, { box, columns, rows, fontSize = 21, headerFont
     }
   }
   drawRow(columns.map(column => column.label), box.y + groupH, headerHeight, true);
-  rows.forEach((row, index) => drawRow(row, box.y + groupH + headerHeight + index * rowH, rowH, false));
+  rows.forEach((row, index) => drawRow(row, box.y + groupH + headerHeight + index * rowH, rowH, false, rowFills[index]));
 }
 
 // Editable teaching table with a short introduction and a shared conclusion.
