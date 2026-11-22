@@ -222,26 +222,28 @@ const nullIcc = groupShare(nullModel);
 {
   const slide = pptx.addSlide();
   addBase(slide);
-  addSlideTitle(slide, 'From randomized trials to grouped observational data');
+  addSlideTitle(slide, 'From treatment effects to variation within and between groups');
 
-  const { x, y, w, h } = LAYOUT.left;
-  const trialCardHeight = 2.81;
+  const { x, y, h } = LAYOUT.body;
+  const w = 7.15;
+  const trialCardHeight = 2.64;
   addTeachingCards(slide, {
     x, y, w, h: trialCardHeight,
-    cards: [{ title: 'Randomized trials so far', body: [
-      { text: 'How does treatment affect the outcome?', options: { bold: true, breakLine: true } },
-      { text: 'We accounted for grouping when quantifying uncertainty in the treatment effect.' },
+    cards: [{ title: 'Randomized trials', fontSize: 19, body: [
+      { text: 'What is the treatment effect?', options: { bold: true, breakLine: true } },
+      { text: 'We estimate the treatment effect and use a model that reflects the trial design so that we get the standard error right.' },
     ] }],
   });
   addTeachingCards(slide, {
     x, y: y + trialCardHeight + SPACING.gutter, w, h: h - trialCardHeight - SPACING.gutter,
-    cards: [{ title: 'Grouped observational data', body: [
-      { text: 'How much does the outcome vary within and between groups?', options: { bold: true, breakLine: true } },
-      { text: 'Which individual-level and context-level variables help explain that variation?', options: { bold: true } },
+    cards: [{ title: 'Descriptive and exploratory analysis of grouped observational data', fontSize: 19, body: [
+      { text: 'How much do outcomes vary within and between groups?', options: { bold: true, breakLine: true } },
+      { text: 'We describe how much variation lies at each level, then explore which individual and group characteristics help account for it.' },
     ] }],
   });
   addAssetFrame(slide, {
-    box: LAYOUT.right, assetPath: asset('grouped-observational-data.png'), framed: false,
+    box: { x: x + w + SPACING.gutter, y, w: LAYOUT.body.w - w - SPACING.gutter, h },
+    assetPath: asset('grouped-observational-data.png'), framed: false,
   });
   addFooter(slide);
 }
