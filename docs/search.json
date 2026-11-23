@@ -242,7 +242,7 @@
     "href": "BLR_lab_airbnb.html#compare-the-variance-components",
     "title": "Beyond MLR Lab 5: Nightly prices in Chicago neighborhoods",
     "section": "Compare the variance components",
-    "text": "Compare the variance components\nFor each log-price model, record the estimated within-neighborhood and between-neighborhood variances.\n\n\n\n\n\n\n\n\nModel for log price\nWithin-neighborhood variance\nBetween-neighborhood variance\n\n\n\n\nNull\n\n\n\n\nAdd guest capacity\n\n\n\n\nThen add WalkScore\n\n\n\n\n\n\n\n\n\n\n\nImportantQuestion 8\n\n\n\nHow do the two variance components change when you add guest capacity? What changes when you then add WalkScore?\n\n\n\n\n\n\n\n\nImportantQuestion 9\n\n\n\nUse the estimated variance components from the model with guest capacity and WalkScore to calculate the ICC."
+    "text": "Compare the variance components\nFor each log-price model, record the estimated within-neighborhood and between-neighborhood variances.\n\n\n\n\n\n\n\n\nModel for log price\nWithin-neighborhood variance\nBetween-neighborhood variance\n\n\n\n\nNull\n\n\n\n\nAdd guest capacity\n\n\n\n\nThen add WalkScore\n\n\n\n\n\n\n\n\n\n\n\nImportantQuestion 8\n\n\n\nHow do the two variance components change when you add guest capacity? What changes when you then add WalkScore?"
   },
   {
     "objectID": "index.html",

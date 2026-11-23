@@ -378,19 +378,3 @@ Adding guest capacity reduces the within-neighborhood variance from 0.208 to 0.1
 
 Adding WalkScore reduces the between-neighborhood variance from 0.061 to 0.034, or about 45%. WalkScore is shared by all listings in a neighborhood, so it shifts the fitted mean for the whole neighborhood. The within-neighborhood variance stays close to 0.151.
 :::
-
-::: {.callout-important icon=false title="Question 9"}
-Use the estimated variance components from the model with guest capacity and WalkScore to calculate the ICC.
-:::
-
-::: {.callout-tip icon=false title="Model answer 9"}
-```{r}
-#| label: final-icc
-#| include: false
-between <- as.numeric(VarCorr(model_walk)$neighborhood)
-within <- sigma(model_walk)^2
-icc <- between / (between + within)
-```
-
-The ICC is the between-neighborhood variance divided by the total remaining variance. Using the unrounded estimates gives **`r round(100 * icc, 1)`%**. This is the share of the remaining variation in log nightly price that lies between neighborhoods after accounting for capacity and WalkScore.
-:::

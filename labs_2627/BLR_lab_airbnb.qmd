@@ -296,7 +296,3 @@ For each log-price model, record the estimated within-neighborhood and between-n
 ::: {.callout-important icon=false title="Question 8"}
 How do the two variance components change when you add guest capacity? What changes when you then add WalkScore?
 :::
-
-::: {.callout-important icon=false title="Question 9"}
-Use the estimated variance components from the model with guest capacity and WalkScore to calculate the ICC.
-:::
