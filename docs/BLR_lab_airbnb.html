@@ -4073,7 +4073,7 @@ overflow-x: auto;
 </section>
 <section id="how-are-the-listings-distributed-across-neighborhoods" class="level1">
 <h1>Count the listings in each neighborhood</h1>
-<p>Some neighborhoods contribute many more listings than others. The bars show how many entire homes each neighborhood contributes, with the six largest counts highlighted.</p>
+<p>The bars show how many entire homes each neighborhood contributes, with the six largest counts highlighted.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>neighborhood_counts <span class="ot">&lt;-</span> <span class="fu">count</span>(airbnb, neighborhood, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">rank =</span> <span class="fu">row_number</span>())</span>
@@ -4100,7 +4100,7 @@ overflow-x: auto;
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Which neighborhood contributes the most listings? Compare its count with the median of the 36 neighborhood counts. What percentage of the 826 listings comes from the six highlighted neighborhoods together?</p>
+<p>How evenly are the listings distributed across neighborhoods? What does this suggest about how precisely we can estimate each neighborhood’s mean price?</p>
 </div>
 </div>
 </section>
@@ -4131,7 +4131,7 @@ overflow-x: auto;
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Which neighborhood has the higher mean nightly price, West Town or Rogers Park, and by about how many dollars? Looking at the individual listings, give an example of a nightly price you could find in either neighborhood.</p>
+<p>How do the differences between neighborhood mean prices compare with the spread of listing prices within neighborhoods? What does the plot suggest about allowing each neighborhood to have its own intercept?</p>
 </div>
 </div>
 <div id="neighborhood-effect-discussion" class="callout callout-style-default callout-note no-icon callout-titled" title="Neighborhood as a fixed or random effect">
@@ -4159,21 +4159,7 @@ Y_{ij}=\beta_0+c_j+\varepsilon_{ij}.
 </annotation></semantics></math></p>
 <p>Neighborhood <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>j</mi><annotation encoding="application/x-tex">j</annotation></semantics></math> has mean nightly price <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>c</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">\beta_0+c_j</annotation></semantics></math>. The between-neighborhood variance <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>σ</mi><mi>c</mi><mn>2</mn></msubsup><annotation encoding="application/x-tex">\sigma_c^2</annotation></semantics></math> describes variation in these means. The within-neighborhood variance <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>σ</mi><mn>2</mn></msup><annotation encoding="application/x-tex">\sigma^2</annotation></semantics></math> describes variation among listing prices around their neighborhood mean.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>model_dollars <span class="ot">&lt;-</span> <span class="fu">lmer</span>(price <span class="sc">~</span> <span class="dv">1</span> <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> neighborhood), <span class="at">data =</span> airbnb)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">VarCorr</span>(model_dollars), <span class="at">comp =</span> <span class="st">&quot;Variance&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 3">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 3
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Use the neighborhood and residual variances to calculate the intraclass correlation coefficient (ICC). Express it as a percentage and interpret it for nightly prices of entire homes in Chicago.</p>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>model_dollars <span class="ot">&lt;-</span> <span class="fu">lmer</span>(price <span class="sc">~</span> <span class="dv">1</span> <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> neighborhood), <span class="at">data =</span> airbnb)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="examine-the-residuals-on-the-dollar-scale" class="level2">
@@ -4185,23 +4171,23 @@ Y_{ij}=\beta_0+c_j+\varepsilon_{ij}.
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">col =</span> <span class="st">&quot;#173F484D&quot;</span>)</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 4">
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 3">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 4
+<span class="screen-reader-only">Important</span>Question 3
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>How does the spread of residuals in neighborhoods with lower fitted prices compare with the spread in neighborhoods with higher fitted prices? Does a common residual variance seem reasonable on the dollar scale?</p>
+<p>How does the spread of the residuals change as the fitted nightly price increases? Does a common within-neighborhood variance seem reasonable on the dollar scale?</p>
 </div>
 </div>
 </section>
 <section id="fit-the-null-model-to-log-nightly-price" class="level2">
 <h2 class="anchored" data-anchor-id="fit-the-null-model-to-log-nightly-price">Fit the null model to log nightly price</h2>
-<p>The dollar residuals spread out as fitted prices increase. A log transformation expresses price differences in relative terms. For example, doubling the nightly price gives the same increase in log price whether the price rises from $50 to $100 or from $150 to $300. Fit the null model again using <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mo>log</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>Y</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">L_{ij}=\log(Y_{ij})</annotation></semantics></math>.</p>
+<p>A log transformation expresses price differences in relative terms. For example, doubling the nightly price gives the same increase in log price whether the price rises from $50 to $100 or from $150 to $300. Fit the null model again using <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mo>log</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>Y</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">L_{ij}=\log(Y_{ij})</annotation></semantics></math>.</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>c</mi><mi>j</mi></msub><mo>+</mo><msub><mi>ε</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mi>.</mi></mrow><annotation encoding="application/x-tex">
 L_{ij}=\beta_0+c_j+\varepsilon_{ij}.
 </annotation></semantics></math></p>
@@ -4216,34 +4202,21 @@ L_{ij}=\beta_0+c_j+\varepsilon_{ij}.
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">col =</span> <span class="st">&quot;#173F484D&quot;</span>)</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 5">
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 4">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 5
+<span class="screen-reader-only">Important</span>Question 4
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Has taking the log of nightly price addressed the widening residual spread you saw in Question 4? Support your answer by describing the vertical spread of the points as fitted log price increases.</p>
+<p>Compare the two residual plots. On which scale does the assumption of a common within-neighborhood variance look more reasonable? What do you see that supports your choice?</p>
 </div>
 </div>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">VarCorr</span>(model_null), <span class="at">comp =</span> <span class="st">&quot;Variance&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 6">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 6
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Calculate the ICC for the log-price null model. What percentage of the variation in log nightly price lies between neighborhoods? Compare this with the percentage you found for nightly price in dollars in Question 3.</p>
-</div>
 </div>
 </section>
 </section>
@@ -4284,7 +4257,7 @@ L_{ij}=\beta_0+c_j+\varepsilon_{ij}.
 </div>
 <p>Guest capacity and WalkScore are recorded for all 826 listings. Only minimum stay has missing values (104 listings).</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled" title="Optional reading: Missing minimum stays">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -4293,7 +4266,7 @@ L_{ij}=\beta_0+c_j+\varepsilon_{ij}.
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>An analysis of minimum stay would first require checking how the data record listings with no minimum stay and those whose minimum stay is unknown.</p>
 <p><strong>Complete-case analysis.</strong> To assess the contribution of minimum stay, fit the models with and without it to the same 722 listings with a recorded value. The estimates can be biased if listings with a recorded minimum stay differ systematically from those with a missing value in ways relevant to price.</p>
@@ -4343,34 +4316,21 @@ L_{ij}=\beta_0+\beta_1 C_{ij}+c_j+\varepsilon_{ij}.
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">data =</span> airbnb)</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_listing)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 7">
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 5">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 7
+<span class="screen-reader-only">Important</span>Question 5
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Report and interpret the fixed intercept for a four-guest home. Within the same neighborhood, what difference in expected log nightly price does the model predict for a five-guest home compared with a four-guest home?</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 8">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 8
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Use the two entries in the <code>Variance</code> column under <code>Random effects</code> to calculate the ICC. After accounting for guest capacity, what percentage of the remaining variation in log nightly price lies between neighborhoods?</p>
+<p>What is the expected log nightly price for a four-guest home in a neighborhood with a random intercept of zero? How much higher or lower is the expected log price for a five-guest home in that same neighborhood?</p>
 </div>
 </div>
 <div id="log-price-in-dollars" class="callout callout-style-default callout-note no-icon callout-titled" title="Optional reading: From log price to dollars">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -4379,7 +4339,7 @@ L_{ij}=\beta_0+\beta_1 C_{ij}+c_j+\varepsilon_{ij}.
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Under the model, log nightly prices are Normally distributed for homes with the same guest capacity in the same neighborhood. On the log scale, the mean and median coincide. Exponentiating the fitted mean log price therefore gives the fitted <strong>median nightly price in dollars</strong>.</p>
 <p>For example, a fitted log price of 4.6 corresponds to a median of about $99 per night (<code>exp(4.6)</code>). A fitted log price of 4.7 corresponds to about $110. The difference of 0.1 on the log scale translates to a price ratio of <code>exp(0.1)</code>, or about a 10.5% higher median nightly price.</p>
@@ -4406,55 +4366,34 @@ L_{ij}=\beta_0+\beta_1 C_{ij}
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_walk)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>In <code>update()</code>, <code>. ~ . + walk10</code> adds <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>2</mn></msub><msub><mi>W</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">\beta_2 W_j</annotation></semantics></math> while keeping guest capacity and the random neighborhood intercept.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 9">
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 6">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 9
+<span class="screen-reader-only">Important</span>Question 6
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Compare two four-guest homes, one in a neighborhood with WalkScore 80 and one in a neighborhood with WalkScore 90. Use the fixed effects to estimate the difference in expected log nightly price (90 minus 80). Explain how the ten-point increase enters your calculation through <code>walk10</code>.</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 10">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 10
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Calculate the ICC from the updated variance estimates. After accounting for guest capacity and WalkScore, what percentage of the remaining variation in log nightly price lies between neighborhoods?</p>
+<p>For four-guest homes, what difference in mean log nightly price does the model predict between neighborhoods with WalkScores of 90 and 80 (90 minus 80)?</p>
 </div>
 </div>
 </section>
 <section id="compare-the-variance-components" class="level2">
 <h2 class="anchored" data-anchor-id="compare-the-variance-components">Compare the variance components</h2>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 11">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 11
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Complete the table using your results from Questions 6, 8, and 10. Which variance component decreases when you add guest capacity? Which decreases when you then add WalkScore? Use the two variance components to explain why the ICC rises in the first step and falls in the second.</p>
-</div>
-</div>
+<p>For each log-price model, record the estimated within-neighborhood and between-neighborhood variances.</p>
 <table class="caption-top table">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 36%">
+<col style="width: 36%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>Model for log price</th>
-<th style="text-align: right;">Within variance</th>
-<th style="text-align: right;">Between variance</th>
-<th style="text-align: right;">ICC (%)</th>
+<th style="text-align: right;">Within-neighborhood variance</th>
+<th style="text-align: right;">Between-neighborhood variance</th>
 </tr>
 </thead>
 <tbody>
@@ -4462,11 +4401,9 @@ L_{ij}=\beta_0+\beta_1 C_{ij}
 <td>Null</td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
 </tr>
 <tr class="even">
 <td>Add guest capacity</td>
-<td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 </tr>
@@ -4474,10 +4411,35 @@ L_{ij}=\beta_0+\beta_1 C_{ij}
 <td>Then add WalkScore</td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
 </tr>
 </tbody>
 </table>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 7">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question 7
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>How do the two variance components change when you add guest capacity? What changes when you then add WalkScore?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 8">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question 8
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the estimated variance components from the model with guest capacity and WalkScore to calculate the intraclass correlation coefficient (ICC).</p>
+</div>
+</div>
 
 
 </section>

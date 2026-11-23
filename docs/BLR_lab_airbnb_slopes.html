@@ -4093,7 +4093,7 @@ overflow-x: auto;
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Compare Humboldt Park and Rogers Park. In which neighborhood does log nightly price rise more steeply with guest capacity? Looking across all six fitted lines, does a common capacity slope seem reasonable? Explain your judgment.</p>
+<p>Looking across the six neighborhoods, does a common capacity slope seem reasonable? Explain which features of the fitted lines inform your judgment.</p>
 </div>
 </div>
 </section>
@@ -4121,7 +4121,7 @@ L_{ij}=(\beta_0+c_j)+(\beta_1+b_j)C_{ij}
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Report the estimated average capacity slope and its standard error. On average across neighborhoods, how much higher or lower is the expected log nightly price for a five-guest home than for a four-guest home in the same neighborhood?</p>
+<p>Within the same neighborhood, what is the estimated difference in expected log nightly price between a five-guest and a four-guest home, on average across neighborhoods? Report the estimate and its standard error.</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 3">
@@ -4147,7 +4147,7 @@ L_{ij}=(\beta_0+c_j)+(\beta_1+b_j)C_{ij}
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Read the intercept–slope correlation from the <code>Corr</code> column under <strong>Random effects</strong>. After accounting for WalkScore, do neighborhoods with higher expected log prices for four-guest homes tend to have steeper or flatter capacity slopes? Interpret the sign and magnitude of the estimate.</p>
+<p>After accounting for WalkScore, what does the estimated intercept–slope correlation tell you about the relationship between a neighborhood’s expected log price for a four-guest home and its capacity slope?</p>
 </div>
 </div>
 </section>
@@ -4177,7 +4177,7 @@ L_{ij}=(\beta_0+c_j)+(\beta_1+b_j)C_{ij}
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Report the p-value for <code>capacity_c:walk10</code> under <strong>Fixed effects</strong>. Is the interaction between guest capacity and WalkScore statistically significant at the 5% level?</p>
+<p>For a ten-point increase in WalkScore, by how much does the estimated capacity slope change? Interpret the direction of the change and use the p-value to assess the evidence for the interaction.</p>
 </div>
 </div>
 <p>Under <strong>Random effects</strong>, the <code>capacity_c</code> variance now describes how much neighborhood slopes vary around the average slope at their WalkScore.</p>
@@ -4191,7 +4191,7 @@ L_{ij}=(\beta_0+c_j)+(\beta_1+b_j)C_{ij}
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Compare the <code>capacity_c</code> variances in the two model summaries. By what percentage does the estimated slope variance decrease when the interaction is added? Interpret the remaining variance in terms of neighborhood capacity slopes.</p>
+<p>How does adding the interaction change the estimated between-neighborhood variance in capacity slopes? Express the change as a percentage. What does the remaining variance tell you about neighborhoods with the same WalkScore?</p>
 </div>
 </div>
 </section>
@@ -4220,19 +4220,7 @@ L_{ij}=(\beta_0+c_j)+(\beta_1+b_j)C_{ij}
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(capacity_means, <span class="at">digits =</span> <span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 7">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 7
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Which row in the <code>emmeans</code> output represents a five-guest home at WalkScore 85? Report its estimated mean log nightly price from the <code>emmean</code> column.</p>
-</div>
-</div>
+<p>For example, the row with <code>capacity_c = 1</code> and <code>walk10 = 0.5</code> represents a five-guest home at WalkScore 85. Its fitted mean log nightly price is 4.88.</p>
 </section>
 <section id="compare-the-capacity-contrasts" class="level2">
 <h2 class="anchored" data-anchor-id="compare-the-capacity-contrasts">Compare the capacity contrasts</h2>
@@ -4257,17 +4245,17 @@ L_{ij}=(\beta_0+c_j)+(\beta_1+b_j)C_{ij}
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>capacity_effects <span class="ot">&lt;-</span> <span class="fu">pairs</span>(capacity_means, <span class="at">reverse =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(capacity_effects)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 8">
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 7">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 8
+<span class="screen-reader-only">Important</span>Question 7
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Report the estimated difference in mean log nightly price between five-guest and four-guest homes at each WalkScore. How much larger or smaller is this gap at 91 than at 85?</p>
+<p>Compare five-guest and four-guest homes at WalkScores 85 and 91. What is the estimated difference in mean log nightly price at each WalkScore? What do these two estimates tell you about the interaction?</p>
 </div>
 </div>
 
