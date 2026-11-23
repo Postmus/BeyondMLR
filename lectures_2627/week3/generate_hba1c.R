@@ -103,6 +103,9 @@ ggsave(file.path(assets, "hba1c_interaction.png"), program_plot,
        width = 6.0, height = 4.8, units = "in", dpi = 170, bg = "white")
 
 slope_sd <- function(model) unname(attr(VarCorr(model)$practice, "stddev")["baseline_c"])
+source("lectures_2627/week3/slope_distribution.R")
+save_slope_distribution(file.path(assets, "hba1c_practice_slopes.png"),
+                        fixef(slope)[["baseline_c"]], slope_sd(slope), "Practice slope for baseline HbA1c")
 comparison <- data.frame(
   baseline = contrasts$baseline_c + 8, usual = mean_table$emmean[mean_table$program == programs[1]],
   structured = mean_table$emmean[mean_table$program == programs[2]], difference = contrasts$estimate,

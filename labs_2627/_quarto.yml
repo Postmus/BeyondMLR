@@ -39,6 +39,8 @@ website:
             href: BLR_lab_airbnb.qmd
           - text: "Lab 6: Guest capacity and neighborhood walkability"
             href: BLR_lab_airbnb_slopes.qmd
+          - text: "Assignment: Exam performance in Inner London schools"
+            href: assignments/week3/assignment.qmd
       - text: Lab answers
         menu:
           - text: "Week 1 · Lab 1: Center as a fixed effect"

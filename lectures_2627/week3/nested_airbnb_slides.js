@@ -26,7 +26,7 @@ module.exports = function addNestedAirbnbSlides(pptx) {
     assetPath: asset('eda'),
     caption: 'Each circle shows one neighborhood mean. Larger circles represent more entire homes.',
     captionFontSize: 17, captionMinFontSize: 17,
-    takeaway: 'Does the plot suggest that some districts tend to have higher neighborhood mean log prices than others?',
+    takeaway: 'The neighborhood means shift noticeably from one district to another, suggesting substantial between-district variation in mean log nightly price.',
     takeawayHeight: .95,
   });
 
@@ -113,7 +113,7 @@ module.exports = function addNestedAirbnbSlides(pptx) {
       ['Between listings within a neighborhood', 'Residual'],
     ].map(([label, level]) => [label, ...[r.three, r.three_listing, r.three_adjusted].map(model => model[level].toFixed(4))]),
     tableOptions: { headerHeight: .76, headerFontSize: 17 },
-    takeaway: 'With guest capacity and WalkScore in the model, the estimated district variance is zero. Adding a district intercept therefore leaves the capacity and WalkScore estimates and their SEs unchanged to the precision shown on slide 31.',
+    takeaway: 'With guest capacity and WalkScore in the model, the estimated district variance is zero. Adding a district intercept therefore leaves the capacity and WalkScore estimates and their SEs unchanged to the precision shown on the preceding slide.',
     takeawayHeight: 1.32,
   });
 

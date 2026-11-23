@@ -83,11 +83,11 @@ helpers. Run `npm run build:week2` for its PowerPoint and PDF, or
 first. Its scripts invoke the Week 2 builder directly; Week 2 is not yet a root
 npm workspace. See `lectures_2627/week2/README.md` for the current slide sequence.
 
-The Week 3 draft covers cluster randomization and the introduction to grouped
-observational data before the Chicago Airbnb lab. Run `npm run build:week3`
+Week 3 opens with feedback on Assignment 2 using the postoperative pain data,
+then covers cluster randomization and grouped observational data. Run `npm run build:week3`
 to build its PowerPoint and PDF from the existing assets. Run `npm run rebuild:week3`
 to regenerate the teaching dataset, model results and figures first. Regeneration
-uses R with `ggplot2`, `nlme`, `emmeans` and `jsonlite`.
+uses R with `ggplot2`, `lme4`, `nlme`, `emmeans` and `jsonlite`.
 The simulated trial uses raw baseline scores on the
 [Charlson Comorbidity Index](https://pubmed.ncbi.nlm.nih.gov/3558716/) without age
 points. Each patient's CCI is drawn independently from the same distribution,

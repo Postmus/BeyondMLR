@@ -100,9 +100,9 @@ Which neighborhood has the higher mean nightly price, West Town or Rogers Park, 
 :::
 
 ::: {#neighborhood-effect-discussion .callout-note icon=false title="Neighborhood as a fixed or random effect"}
-West Town and Rogers Park are distinct places in Chicago. If the question is how their mean nightly prices differ, the identities of the two neighborhoods matter. Treating neighborhood as a fixed effect lets us estimate that specific difference.
+**How much do mean nightly prices differ between West Town and Rogers Park?** Treating neighborhood as a fixed effect lets us estimate this specific comparison.
 
-In earlier labs, we motivated random effects by viewing the centers or laboratories as a sample from a wider population. Here our interest can stay within Chicago. We want to estimate how much mean nightly prices vary from one neighborhood to another. A random-intercept model describes the neighborhood deviations with a common distribution and estimates its variance, the **between-neighborhood variance**.
+**How much do mean nightly prices for entire-home Airbnb listings vary across urban neighborhoods?** This is the broader question we study in this lab. We use observations from 36 Chicago neighborhoods and model their mean prices as draws from a common distribution. The **between-neighborhood variance** describes the spread of that distribution.
 :::
 
 # Choose a scale for nightly price

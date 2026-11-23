@@ -109,7 +109,7 @@ Report the estimated average capacity slope and its standard error. On average a
 :::
 
 ::: {.callout-important icon=false title="Question 3"}
-How large is the estimated standard deviation of the neighborhood slopes compared with the average slope? Use both estimates to explain whether a random capacity slope is useful here.
+Under the model’s Normal distribution, what range contains the middle 68% of neighborhood capacity slopes? Use this range to explain how much the association between guest capacity and nightly price varies across neighborhoods.
 :::
 
 ::: {.callout-important icon=false title="Question 4"}

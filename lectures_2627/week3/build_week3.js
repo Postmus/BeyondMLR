@@ -43,9 +43,54 @@ addBrandedTitleSlide(pptx, {
   badge: 'BLR',
 });
 
+const recap = require('./assets/assignment2_results.json');
+addFigureSlide(pptx, {
+  title: 'Assignment 2: postoperative pain across 12 hospitals',
+  assetPath: asset('assignment2_interaction.png'),
+  takeawayTitle: 'FROM THE SUBMISSIONS',
+  takeaway: 'Many reports picked out both patterns. Mean pain was lower with enhanced care in every hospital, and the size of the reduction varied across hospitals.',
+  takeawayHeight: 1.25,
+});
+
+const meanReduction = Number(fmt(-recap.varying.estimate));
+const slopeSD = Number(fmt(recap.slope_sd));
+const lowerReduction = fmt(meanReduction - slopeSD);
+const upperReduction = fmt(meanReduction + slopeSD);
+addConceptPanelsSlide(pptx, {
+  title: 'How much does the pain reduction vary across hospitals?',
+  panels: [
+    { title: 'RANDOM-SLOPE MODEL', blocks: [
+      { text: 'Average pain reduction', fontSize: 20, gap: .06 },
+      { text: `${fmt(meanReduction)} points`, fontSize: 32, bold: true, gap: .35 },
+      { text: 'Between-hospital SD of the protocol effect', fontSize: 20, gap: .06 },
+      { text: `${fmt(slopeSD)} points`, fontSize: 32, bold: true },
+    ] },
+    { title: 'MODELLED DISTRIBUTION ACROSS HOSPITALS', blocks: [
+      { image: asset('assignment2_hospital_effects.png'), h: 3.3 },
+    ] },
+  ],
+  takeaway: `Under the fitted Normal model, about 68% of comparable hospitals would have a mean pain reduction between ${lowerReduction} and ${upperReduction} points (mean ± 1 SD).`,
+  takeawayHeight: 1.15,
+});
+
+addTeachingTableSlide(pptx, {
+  title: 'How does a random slope affect the estimate and its SE?',
+  columns: [
+    { label: 'Hospital random effects', weight: 3.5 },
+    { label: 'Mean pain difference (points)\nEnhanced − Standard', weight: 3.5, align: 'center' },
+    { label: 'SE (points)', weight: 1.6, align: 'center', highlight: true },
+  ],
+  rows: [
+    ['Random intercept and protocol slope', fmt(recap.varying.estimate), fmt(recap.varying.se, 3)],
+    ['Random intercept only', fmt(recap.common.estimate), fmt(recap.common.se, 3)],
+  ],
+  fontSize: 25, tableOptions: { headerHeight: 1.1, headerFontSize: 21 },
+  takeaway: 'In Assignment 2, patients were randomized within each hospital.\nWhat changes when the whole hospital is randomized?',
+  takeawayHeight: 1.05,
+});
+
 addSectionSlide(pptx, { sectionLabel: 'PART 1', sectionTitle: 'Cluster randomization' });
 
-const [minCci, maxCci] = results.cci_range;
 addConceptPanelsSlide(pptx, {
   title: 'A cluster-randomized rehabilitation trial',
   intro: 'Accounting for baseline comorbidity, does enhanced care improve walking distance 12 weeks after knee replacement?',
@@ -63,7 +108,7 @@ addConceptPanelsSlide(pptx, {
         { text: 'Outcome: Distance on the six-minute walk test at 12 weeks', bullet: true, fontSize: 19 },
       ],
       callout: {
-        text: `The Charlson Comorbidity Index (CCI) sums weights for a patient’s pre-existing conditions. We use the score without age points. Scores in this dataset range from ${minCci} to ${maxCci}.`,
+        text: 'The Charlson Comorbidity Index (CCI) measures a patient’s burden of illness before surgery, with higher scores indicating more or more serious pre-existing conditions.',
         height: 1.48, fontSize: 18,
       },
     },
@@ -102,9 +147,7 @@ addConceptPanelsSlide(pptx, {
 });
 
 addConceptPanelsSlide(pptx, {
-  title: 'Additive random-intercept model',
-  intro: 'The model estimates a common treatment effect across CCI scores and a common CCI slope across treatments.',
-  introHeight: .75,
+  title: 'Random-intercept model',
   panels: [
     { title: 'FIXED EFFECTS', blocks: [
       { text: 'β₀ is the expected walking distance under standard care at CCI 0.', fontSize: 20, gap: .15 },
@@ -124,7 +167,7 @@ addConceptPanelsSlide(pptx, {
 const fixedEffectTerms = ['Intercept', 'Treatment', 'Baseline CCI'];
 const additive = results.random_intercept;
 addConceptPanelsSlide(pptx, {
-  title: 'Results from the additive model',
+  title: 'Results from the random-intercept model',
   panels: [
     { title: 'FIXED EFFECTS', weight: 1.60, blocks: [
       { h: 2.95, table: {
@@ -204,6 +247,22 @@ addConceptPanelsSlide(pptx, {
       `Separating out the center variation lowers the CCI slope’s SE here from ${fmt(results.ordinary[1].se)} to ${fmt(additive.terms[2].se)} metres per CCI point.`,
     ].map(text => ({ text, bullet: true, fontSize: 19, h: 1.08, gap: .16 })) },
   ],
+});
+
+addConceptPanelsSlide(pptx, {
+  title: 'Should we add a random treatment slope for center?',
+  panels: [
+    { title: 'ASSIGNMENT 2', blocks: [
+      { text: 'Each hospital delivered both protocols.', fontSize: 22, gap: .24 },
+      { text: 'We could compare mean pain scores within each hospital and estimate how much the protocol effect varied across hospitals.', fontSize: 22 },
+    ] },
+    { title: 'CLUSTER-RANDOMIZED TRIAL', blocks: [
+      { text: 'Each center delivered one treatment. Suppose patients at an enhanced-care center walk 10 m farther on average than expected.', fontSize: 21, gap: .24 },
+      { text: 'Would they also have walked farther under standard care, or did they benefit more from enhanced care?', fontSize: 23, bold: true },
+    ] },
+  ],
+  takeaway: 'Comparing trial arms estimates the average treatment effect. The random intercept captures each center’s overall deviation under its assigned treatment. Usual walking distance and treatment benefit can both contribute to that deviation.',
+  takeawayHeight: 1.48,
 });
 
 addSectionSlide(pptx, { sectionLabel: 'PART 2', sectionTitle: 'Grouped observational data' });

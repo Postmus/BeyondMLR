@@ -112,7 +112,7 @@ Report the estimated average capacity slope and its standard error. On average a
 :::
 
 ::: {.callout-important icon=false title="Question 3"}
-How large is the estimated standard deviation of the neighborhood slopes compared with the average slope? Use both estimates to explain whether a random capacity slope is useful here.
+Under the model’s Normal distribution, what range contains the middle 68% of neighborhood capacity slopes? Use this range to explain how much the association between guest capacity and nightly price varies across neighborhoods.
 :::
 
 ::: {.callout-important icon=false title="Question 4"}
@@ -124,7 +124,9 @@ Across neighborhoods, a five-guest home has an expected log nightly price **0.09
 :::
 
 ::: {.callout-tip icon=false title="Model answer 3"}
-The slope SD is **0.052 log-price units per guest place**, more than half the average slope of **0.090**. An additional guest place is associated with appreciably different changes in expected log price across neighborhoods. This supports including a random capacity slope.
+The middle 68% of neighborhood slopes lie within one SD of the average under the fitted Normal model. This gives $0.090 \pm 0.052$, or **0.038 to 0.142 log-price units per additional guest place**.
+
+At the lower end of this range, a five-guest home has a fitted nightly price about **4% higher** than a four-guest home in the same neighborhood ($100(e^{0.038}-1)$). At the upper end, the fitted price is about **15% higher**. A random capacity slope captures this variation across neighborhoods.
 :::
 
 ::: {.callout-tip icon=false title="Model answer 4"}

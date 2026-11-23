@@ -1,0 +1,53 @@
+---
+title: "Week 3 assignment: Exam performance in Inner London schools"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Study description
+
+In 1987, the Inner London Education Authority recorded examination results for pupils attending secondary schools in Inner London. The assignment dataset contains **5,921 pupils from 114 schools**. It includes each pupil's exam score and verbal reasoning band, as well as the percentage of pupils at each school who were eligible for free school meals.
+
+This assignment is more open-ended than the first two. Use the research questions to decide how to explore the data, which models to fit, and which results to report. Explain your choices and what your findings mean in the context of the schools.
+
+# Research questions
+
+1. How much do average exam scores vary across schools? What proportion of the total variation in pupils' scores lies between schools?
+2. Within a school, by how many points does mean exam score change per one-band increase in verbal reasoning, on average? How much does this change vary across schools?
+3. Is the change in mean exam score per one-band increase in verbal reasoning larger or smaller in schools where a higher percentage of pupils are eligible for free school meals?
+
+# Dataset
+
+Each row in `ilea_1987.csv` represents one pupil. The following variables are relevant to the research questions.
+
+| Variable | Description |
+| --- | --- |
+| `School` | School identifier. Pupils with the same identifier attend the same school. |
+| `ExamScore` | Pupil's examination score, in points. |
+| `VRBand` | Verbal reasoning band, coded −1 (lower), 0 (middle), and +1 (higher). |
+| `PercentFSM` | Percentage of pupils at the school who are eligible for free school meals. All pupils at the same school share this value. |
+
+The data come from the Inner London Education Authority. The University of Bristol's Centre for Multilevel Modelling distributes the original records and codebook in its [School effectiveness dataset](https://www.bristol.ac.uk/cmm/media/migrated/ilea567.zip).
+
+# For this assignment
+
+**Verbal reasoning band.** Verbal reasoning band is an ordinal variable. Use it directly as a numeric predictor. No conversion to a factor is needed. This assumes a linear trend within each school. Mean exam score changes by the same number of points from lower to middle as from middle to higher. You may take this assumption as given.
+
+**Exam-score scale.** Use the original exam scores throughout the assignment. When you plot the conditional residuals against the fitted school means, you may see a sloping lower edge. For this assignment, take 1 as the lowest exam score. In a school with a fitted mean of 15, a pupil who scores 1 is 14 points below the mean. In a school with a fitted mean of 30, the same score is 29 points below the mean. This explains why the lower edge slopes downwards. A linear mixed model can still give a useful description of average score differences on this scale, so you can describe the pattern and continue without transforming the scores.
+
+# Report and submission
+
+Write a Quarto report answering the three research questions, organized into four sections.
+
+1. **Introduction.** Briefly describe the study and the research questions.
+2. **Exploratory data analysis.** Present the summaries and figures that informed your analysis. Explain what you learned from them.
+3. **Model fitting and results.** Explain which models you fitted and why. Comment on model fit and interpret the estimates that answer the research questions. Include appropriate measures of uncertainty.
+4. **Conclusion.** Bring your findings together in a short paragraph answering the three research questions in the context of the schools.
+
+Submit both your completed **Quarto source file (`.qmd`)** and your **rendered HTML report**. Keep your analysis code, results, and figures visible.
+
+# Download
+
+[Download the 1987 exam dataset (CSV)](downloads/ilea_1987.csv){download="ilea_1987.csv"}

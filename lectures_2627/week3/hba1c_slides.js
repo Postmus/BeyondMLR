@@ -4,6 +4,7 @@ const { imageSizingContain } = require('../week1/pptxgenjs_helpers/image');
 const { COLORS, FONT_FAMILIES, LAYOUT } = require('../../slides-common/js/blr_theme');
 const { addBase, addSlideTitle, addBulletBox, addFooter, addFigureSlide } = require('../../slides-common/js/pptx_layout_primitives');
 const { addConceptPanelsSlide } = require('../../slides-common/js/concept_panels');
+const { addTeachingTableSlide } = require('../../slides-common/js/teaching_table');
 const r = require('./assets/hba1c_results.json');
 
 const fmt = (n, digits = 2) => n.toFixed(digits).replace('-', '−');
@@ -20,7 +21,7 @@ module.exports = function addHbA1cSlides(pptx) {
   };
   const coefficientColumns = [{ label: 'Fixed effect', weight: 2.5 }, { ...column('Estimate'), weight: 1.25 },
     { ...column('SE'), weight: .75 }, { ...column('95% CI'), weight: 1.95 }, column('p-value')];
-  const coefficientRows = terms => terms.map(term => [termLabels[term.term], fmt(term.estimate),
+  const coefficientRows = (terms, labels = termLabels) => terms.map(term => [labels[term.term], fmt(term.estimate),
     fmt(term.se), ci(term), term.p < .001 ? '< .001' : fmt(term.p, 3)]);
 
   function drawEquation(slide, file, x, y, w, h) {
@@ -39,19 +40,18 @@ module.exports = function addHbA1cSlides(pptx) {
     title: 'Diabetes follow-up in primary care',
     studyTitle: 'CLINICAL CONTEXT AND STUDY DESIGN',
     bullets: [
-      `This simulated study follows ${r.patients.toLocaleString('en-US')} patients newly diagnosed with diabetes across ${r.practices} primary care practices.`,
-      'Each practice provides either structured follow-up with a diabetes nurse or usual care.',
-      'The outcome is six-month HbA1c minus HbA1c at diagnosis, measured in percentage points.',
-      'A negative change indicates that HbA1c fell over the six months.',
+      `The study followed ${r.patients.toLocaleString('en-US')} patients with newly diagnosed diabetes across ${r.practices} primary care practices.`,
+      'Each practice provided either structured follow-up with a diabetes nurse or usual care.',
+      'The outcome was the change in HbA1c from diagnosis to six months, measured in percentage points.',
     ],
-    question: 'For patients with the same HbA1c at diagnosis, how does the average six-month change in HbA1c differ between structured follow-up and usual care?',
+    question: 'Do patients with newly diagnosed diabetes see a greater drop in HbA1c over six months with structured nurse follow-up than with usual care?',
     questionHeight: 1.42,
     assetPath: asset('hba1c_consultation.png'),
   });
 
   figure('Exploring six-month change in HbA1c', 'eda',
     'Each dot is one patient. Each line is fitted separately within one of the three largest practices per program.',
-    'How does six-month change relate to HbA1c at diagnosis within practices? Do the six lines suggest a common slope?');
+    'Looking at the slopes of the six fitted lines, would you include a random slope for baseline HbA1c across practices?');
 
   {
     const slide = pptx.addSlide();
@@ -83,6 +83,16 @@ module.exports = function addHbA1cSlides(pptx) {
     addFooter(slide);
   }
 
+  function variancePanel(interceptSD, slopeSD, residualSD, correlation, fontSize = 17) {
+    return { title: 'VARIANCE COMPONENTS', blocks: [
+      { h: 2.4, table: { columns: [{ label: 'Source', weight: 1.8 }, { ...column('Variance'), weight: 1.24 }, { ...column('SD'), weight: .76 }],
+        rows: [['Practice intercept', interceptSD], ['Practice slope', slopeSD], ['Patient residual', residualSD]]
+          .map(([label, sd]) => [label, fmt(sd * sd, 3), fmt(sd)]),
+        fontSize, headerFontSize: fontSize - 2, cellPaddingX: .06, firstColumnBold: false } },
+      { text: `Intercept–slope correlation: ${fmt(correlation)}.`, fontSize },
+    ] };
+  }
+
   function resultsSlide(title, fixed, interceptSD, slopeSD, residualSD, correlation, takeaway) {
     addConceptPanelsSlide(pptx, {
       title, panels: [
@@ -90,22 +100,40 @@ module.exports = function addHbA1cSlides(pptx) {
           { h: 3.40, table: { columns: coefficientColumns, rows: coefficientRows(fixed),
             fontSize: 17, headerFontSize: 15, cellPaddingX: .06, firstColumnBold: false } },
         ] },
-        { title: 'VARIANCE COMPONENTS', blocks: [
-          { h: 2.4, table: { columns: [{ label: 'Source', weight: 1.8 }, { ...column('Variance'), weight: 1.24 }, { ...column('SD'), weight: .76 }],
-            rows: [['Practice intercept', interceptSD], ['Practice slope', slopeSD], ['Patient residual', residualSD]]
-              .map(([label, sd]) => [label, fmt(sd * sd, 3), fmt(sd)]),
-            fontSize: 17, headerFontSize: 15, cellPaddingX: .06, firstColumnBold: false } },
-          { text: `Intercept–slope correlation: ${fmt(correlation)}.`, fontSize: 17 },
-        ] },
+        variancePanel(interceptSD, slopeSD, residualSD, correlation),
       ],
       takeaway, takeawayHeight: 1.13,
     });
   }
 
   const program = r.additive_fixed.find(term => term.term === 'programStructured follow-up');
-  resultsSlide('HbA1c change · Results from the random slope model', r.additive_fixed,
-    r.intercept_sd, r.slope_sd, r.residual_sd, r.slope_correlation,
-    `Practice slopes vary (SD ${fmt(r.slope_sd)}). At every starting HbA1c, the model estimates the same program difference: ${fmt(program.estimate)} percentage points (95% CI ${ci(program)}).`);
+  addConceptPanelsSlide(pptx, {
+    title: 'How much does the baseline HbA1c slope vary across practices?',
+    panels: [
+      variancePanel(r.intercept_sd, r.slope_sd, r.residual_sd, r.slope_correlation, 21),
+      { title: 'FITTED NORMAL DISTRIBUTION', blocks: [
+        { text: `Mean slope ${fmt(r.mean_slope)}   ·   Slope SD ${fmt(r.slope_sd)}`, fontSize: 21, bold: true, h: .4 },
+        { image: asset('hba1c_practice_slopes.png'), h: 2.85 },
+      ] },
+    ],
+    takeaway: `In about 68% of practices, the model predicts a six-month HbA1c drop ${fmt(-r.mean_slope - r.slope_sd)} to ${fmt(-r.mean_slope + r.slope_sd)} percentage points greater for a patient starting at 9% than for one starting at 8% in the same practice.`,
+    takeawayHeight: 1.25,
+  });
+
+  addTeachingTableSlide(pptx, {
+    title: 'How does six-month HbA1c change differ between follow-up programs?',
+    columns: [{ label: 'Fixed effect', weight: 3.6 }, ...coefficientColumns.slice(1)],
+    rows: coefficientRows(r.additive_fixed, {
+      '(Intercept)': 'Usual care at 8% baseline HbA1c (β₀)',
+      baseline_c: 'Baseline HbA1c, per percentage point (β₁)',
+      'programStructured follow-up': 'Structured follow-up versus usual care (β₂)',
+    }),
+    fontSize: 21,
+    tableOptions: { headerFontSize: 19, headerHeight: .65, firstColumnBold: false,
+      rowFills: r.additive_fixed.map(term => term === program ? COLORS.surfaceMuted : COLORS.card) },
+    takeaway: `At the same starting HbA1c, the estimated six-month drop was ${fmt(-program.estimate)} percentage points greater with structured follow-up than with usual care. The program difference was not statistically significant (${p(program.p)}).`,
+    takeawayHeight: 1.25,
+  });
 
   addConceptPanelsSlide(pptx, {
     title: 'Does the program difference depend on HbA1c at diagnosis?',
