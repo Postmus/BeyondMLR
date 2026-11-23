@@ -4218,6 +4218,19 @@ L_{ij}=\beta_0+c_j+\varepsilon_{ij}.
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">VarCorr</span>(model_null), <span class="at">comp =</span> <span class="st">&quot;Variance&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 5">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question 5
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the estimated variance components from the log-price null model to calculate the intraclass correlation coefficient (ICC).</p>
+</div>
+</div>
 </section>
 </section>
 <section id="identify-listing-and-neighborhood-covariates" class="level1">
@@ -4257,7 +4270,7 @@ L_{ij}=\beta_0+c_j+\varepsilon_{ij}.
 </div>
 <p>Guest capacity and WalkScore are recorded for all 826 listings. Only minimum stay has missing values (104 listings).</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled" title="Optional reading: Missing minimum stays">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -4266,7 +4279,7 @@ L_{ij}=\beta_0+c_j+\varepsilon_{ij}.
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>An analysis of minimum stay would first require checking how the data record listings with no minimum stay and those whose minimum stay is unknown.</p>
 <p><strong>Complete-case analysis.</strong> To assess the contribution of minimum stay, fit the models with and without it to the same 722 listings with a recorded value. The estimates can be biased if listings with a recorded minimum stay differ systematically from those with a missing value in ways relevant to price.</p>
@@ -4316,13 +4329,13 @@ L_{ij}=\beta_0+\beta_1 C_{ij}+c_j+\varepsilon_{ij}.
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">data =</span> airbnb)</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_listing)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 5">
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 6">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 5
+<span class="screen-reader-only">Important</span>Question 6
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -4330,7 +4343,7 @@ L_{ij}=\beta_0+\beta_1 C_{ij}+c_j+\varepsilon_{ij}.
 </div>
 </div>
 <div id="log-price-in-dollars" class="callout callout-style-default callout-note no-icon callout-titled" title="Optional reading: From log price to dollars">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -4339,7 +4352,7 @@ L_{ij}=\beta_0+\beta_1 C_{ij}+c_j+\varepsilon_{ij}.
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Under the model, log nightly prices are Normally distributed for homes with the same guest capacity in the same neighborhood. On the log scale, the mean and median coincide. Exponentiating the fitted mean log price therefore gives the fitted <strong>median nightly price in dollars</strong>.</p>
 <p>For example, a fitted log price of 4.6 corresponds to a median of about $99 per night (<code>exp(4.6)</code>). A fitted log price of 4.7 corresponds to about $110. The difference of 0.1 on the log scale translates to a price ratio of <code>exp(0.1)</code>, or about a 10.5% higher median nightly price.</p>
@@ -4366,13 +4379,13 @@ L_{ij}=\beta_0+\beta_1 C_{ij}
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_walk)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>In <code>update()</code>, <code>. ~ . + walk10</code> adds <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>2</mn></msub><msub><mi>W</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">\beta_2 W_j</annotation></semantics></math> while keeping guest capacity and the random neighborhood intercept.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 6">
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 7">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 6
+<span class="screen-reader-only">Important</span>Question 7
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -4414,19 +4427,6 @@ L_{ij}=\beta_0+\beta_1 C_{ij}
 </tr>
 </tbody>
 </table>
-<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 7">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question 7
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>How do the two variance components change when you add guest capacity? What changes when you then add WalkScore?</p>
-</div>
-</div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 8">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -4437,7 +4437,20 @@ L_{ij}=\beta_0+\beta_1 C_{ij}
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Use the estimated variance components from the model with guest capacity and WalkScore to calculate the intraclass correlation coefficient (ICC).</p>
+<p>How do the two variance components change when you add guest capacity? What changes when you then add WalkScore?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Question 9">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question 9
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the estimated variance components from the model with guest capacity and WalkScore to calculate the ICC.</p>
 </div>
 </div>
 

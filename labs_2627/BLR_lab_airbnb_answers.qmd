@@ -220,6 +220,22 @@ On the log scale, as fitted log price increases, the points show a more even ver
 print(VarCorr(model_null), comp = "Variance")
 ```
 
+::: {.callout-important icon=false title="Question 5"}
+Use the estimated variance components from the log-price null model to calculate the intraclass correlation coefficient (ICC).
+:::
+
+::: {.callout-tip icon=false title="Model answer 5"}
+```{r}
+#| label: null-icc
+#| include: false
+between_null <- as.numeric(VarCorr(model_null)$neighborhood)
+within_null <- sigma(model_null)^2
+icc_null <- between_null / (between_null + within_null)
+```
+
+The ICC is $\sigma_c^2/(\sigma_c^2 + \sigma^2)$. Using the unrounded variance estimates gives **`r round(100 * icc_null, 1)`%** of the variation in log nightly price between neighborhoods.
+:::
+
 # Identify listing and neighborhood covariates
 
 **Individual-level covariates** describe a listing. For example, homes in the same neighborhood can accommodate different numbers of guests. **Context-level covariates** describe a neighborhood. All listings in a given neighborhood share its walkability score.
@@ -287,11 +303,11 @@ model_listing <- lmer(log_price ~ capacity_c + (1 | neighborhood),
 summary(model_listing)
 ```
 
-::: {.callout-important icon=false title="Question 5"}
+::: {.callout-important icon=false title="Question 6"}
 What is the expected log nightly price for a four-guest home in a neighborhood with a random intercept of zero? How much higher or lower is the expected log price for a five-guest home in that same neighborhood?
 :::
 
-::: {.callout-tip icon=false title="Model answer 5"}
+::: {.callout-tip icon=false title="Model answer 6"}
 The estimated intercept, **`r round(fixef(model_listing)["(Intercept)"], 3)`**, is the expected log nightly price for a four-guest home in a neighborhood with $c_j=0$. Moving from four to five guests increases centered capacity from 0 to 1, so the fitted difference in log price is the capacity slope, **`r round(fixef(model_listing)["capacity_c"], 4)`**.
 :::
 
@@ -327,11 +343,11 @@ summary(model_walk)
 
 In `update()`, `. ~ . + walk10` adds $\beta_2 W_j$ while keeping guest capacity and the random neighborhood intercept.
 
-::: {.callout-important icon=false title="Question 6"}
+::: {.callout-important icon=false title="Question 7"}
 For four-guest homes, what difference in mean log nightly price does the model predict between neighborhoods with WalkScores of 90 and 80 (90 minus 80)?
 :::
 
-::: {.callout-tip icon=false title="Model answer 6"}
+::: {.callout-tip icon=false title="Model answer 7"}
 Moving from WalkScore 80 to 90 increases `walk10` from 0 to 1. Both homes have the same capacity, so the difference predicted by the fixed effects is the `walk10` coefficient, **`r round(fixef(model_walk)["walk10"], 4)`** on the log scale.
 :::
 
@@ -345,11 +361,11 @@ For each log-price model, record the estimated within-neighborhood and between-n
 | Add guest capacity | | |
 | Then add WalkScore | | |
 
-::: {.callout-important icon=false title="Question 7"}
+::: {.callout-important icon=false title="Question 8"}
 How do the two variance components change when you add guest capacity? What changes when you then add WalkScore?
 :::
 
-::: {.callout-tip icon=false title="Model answer 7"}
+::: {.callout-tip icon=false title="Model answer 8"}
 Both variance components are in squared log-price units.
 
 | Model for log price | Within-neighborhood variance | Between-neighborhood variance |
@@ -363,11 +379,11 @@ Adding guest capacity reduces the within-neighborhood variance from 0.208 to 0.1
 Adding WalkScore reduces the between-neighborhood variance from 0.061 to 0.034, or about 45%. WalkScore is shared by all listings in a neighborhood, so it shifts the fitted mean for the whole neighborhood. The within-neighborhood variance stays close to 0.151.
 :::
 
-::: {.callout-important icon=false title="Question 8"}
-Use the estimated variance components from the model with guest capacity and WalkScore to calculate the intraclass correlation coefficient (ICC).
+::: {.callout-important icon=false title="Question 9"}
+Use the estimated variance components from the model with guest capacity and WalkScore to calculate the ICC.
 :::
 
-::: {.callout-tip icon=false title="Model answer 8"}
+::: {.callout-tip icon=false title="Model answer 9"}
 ```{r}
 #| label: final-icc
 #| include: false

@@ -171,6 +171,10 @@ Compare the two residual plots. On which scale does the assumption of a common w
 print(VarCorr(model_null), comp = "Variance")
 ```
 
+::: {.callout-important icon=false title="Question 5"}
+Use the estimated variance components from the log-price null model to calculate the intraclass correlation coefficient (ICC).
+:::
+
 # Identify listing and neighborhood covariates
 
 **Individual-level covariates** describe a listing. For example, homes in the same neighborhood can accommodate different numbers of guests. **Context-level covariates** describe a neighborhood. All listings in a given neighborhood share its walkability score.
@@ -236,7 +240,7 @@ model_listing <- lmer(log_price ~ capacity_c + (1 | neighborhood),
 summary(model_listing)
 ```
 
-::: {.callout-important icon=false title="Question 5"}
+::: {.callout-important icon=false title="Question 6"}
 What is the expected log nightly price for a four-guest home in a neighborhood with a random intercept of zero? How much higher or lower is the expected log price for a five-guest home in that same neighborhood?
 :::
 
@@ -271,7 +275,7 @@ summary(model_walk)
 
 In `update()`, `. ~ . + walk10` adds $\beta_2 W_j$ while keeping guest capacity and the random neighborhood intercept.
 
-::: {.callout-important icon=false title="Question 6"}
+::: {.callout-important icon=false title="Question 7"}
 For four-guest homes, what difference in mean log nightly price does the model predict between neighborhoods with WalkScores of 90 and 80 (90 minus 80)?
 :::
 
@@ -289,10 +293,10 @@ For each log-price model, record the estimated within-neighborhood and between-n
 | Add guest capacity | | |
 | Then add WalkScore | | |
 
-::: {.callout-important icon=false title="Question 7"}
+::: {.callout-important icon=false title="Question 8"}
 How do the two variance components change when you add guest capacity? What changes when you then add WalkScore?
 :::
 
-::: {.callout-important icon=false title="Question 8"}
-Use the estimated variance components from the model with guest capacity and WalkScore to calculate the intraclass correlation coefficient (ICC).
+::: {.callout-important icon=false title="Question 9"}
+Use the estimated variance components from the model with guest capacity and WalkScore to calculate the ICC.
 :::
