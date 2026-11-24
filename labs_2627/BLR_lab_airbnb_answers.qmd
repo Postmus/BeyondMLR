@@ -82,13 +82,14 @@ Logan Square contributes 172 listings, while the median neighborhood contributes
 
 # Compare nightly prices within and between neighborhoods
 
-Plot the nightly prices for the six neighborhoods with the most listings. Each dot represents one listing, and the diamond marks the mean price for that neighborhood.
+Plot the nightly prices for the six neighborhoods with the most listings. Each dot represents one listing, and each diamond marks a neighborhood mean. The dashed horizontal line marks the grand mean nightly price across all 826 entire-home listings.
 
 ```{r}
 #| label: observed-prices
 example_listings <- filter(airbnb, neighborhood %in% top_six$neighborhood)
 
 price_plot <- ggplot(example_listings, aes(neighborhood, price)) +
+  geom_hline(yintercept = mean(airbnb$price), linetype = "dashed") +
   geom_point(position = position_jitter(width = 0.15, height = 0,
                                        seed = 5),
              alpha = 0.35, color = "#173F48") +
@@ -106,7 +107,7 @@ price_plot
 #| output: true
 #| fig-width: 7
 #| fig-height: 4
-#| fig-alt: "Nightly prices for listings in the six neighborhoods with the most observations. There is substantial spread within neighborhoods, and their mean prices range from about 115 to 218 dollars."
+#| fig-alt: "Nightly prices vary widely within the six neighborhoods shown. Diamonds mark neighborhood means from about 115 to 218 dollars. A dashed horizontal line marks the grand mean of about 152 dollars across all 826 listings."
 price_plot
 ```
 

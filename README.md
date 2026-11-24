@@ -22,7 +22,7 @@ quarto preview labs_2627
 quarto render labs_2627
 ```
 
-The website contains the Week 1–3 labs and assignments, grouped by week in the top navigation. The Lab answers menu contains the released Week 1 and Week 2 answer sheets. The Week 3 answer sheets are excluded from the website render in `labs_2627/_quarto.yml`. Assignment report templates are copied as downloadable source files and excluded from rendering.
+The website contains the Week 1–3 labs and assignments, grouped by week in the top navigation. The Lab answers menu contains the answer sheets for Labs 1–6. Assignment report templates are copied as downloadable source files and excluded from rendering.
 
 For a local HTML preview on a fixed port, run:
 

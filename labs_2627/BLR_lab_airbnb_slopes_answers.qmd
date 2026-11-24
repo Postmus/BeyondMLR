@@ -126,7 +126,7 @@ Across neighborhoods, a five-guest home has an expected log nightly price **0.09
 ::: {.callout-tip icon=false title="Model answer 3"}
 The middle 68% of neighborhood slopes lie within one SD of the average under the fitted Normal model. This gives $0.090 \pm 0.052$, or **0.038 to 0.142 log-price units per additional guest place**.
 
-At the lower end of this range, a five-guest home has a fitted nightly price about **4% higher** than a four-guest home in the same neighborhood ($100(e^{0.038}-1)$). At the upper end, the fitted price is about **15% higher**. A random capacity slope captures this variation across neighborhoods.
+In a neighborhood at the lower end of this range, the expected log nightly price is 0.038 units higher for a five-guest home than for a four-guest home. In a neighborhood at the upper end, the same comparison gives a difference of 0.142 units.
 :::
 
 ::: {.callout-tip icon=false title="Model answer 4"}
@@ -166,7 +166,7 @@ How does adding the interaction change the estimated between-neighborhood varian
 :::
 
 ::: {.callout-tip icon=false title="Model answer 5"}
-For each ten-point increase in WalkScore, the estimated capacity slope increases by **`r round(fixef(model_interaction)["capacity_c:walk10"], 4)` log-price units per additional guest place**. The estimated price difference associated with accommodating one more guest is therefore larger in more walkable neighborhoods. The interaction is statistically significant at the 5% level ($p=0.014$).
+For each ten-point increase in WalkScore, the estimated capacity slope increases by **`r round(fixef(model_interaction)["capacity_c:walk10"], 4)` log-price units per additional guest place**. The estimated difference in log nightly price associated with accommodating one more guest is therefore larger in more walkable neighborhoods. The interaction is statistically significant at the 5% level ($p=0.014$).
 :::
 
 ::: {.callout-tip icon=false title="Model answer 6"}
