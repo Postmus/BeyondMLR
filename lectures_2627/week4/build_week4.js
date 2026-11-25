@@ -15,7 +15,7 @@ const pptx = new pptxgen();
 pptx.layout = 'LAYOUT_WIDE';
 pptx.author = 'Dr Douwe Postmus';
 pptx.title = 'Beyond MLR | Week 4 | Modeling change over time';
-pptx.subject = 'Longitudinal models for infant growth';
+pptx.subject = 'Longitudinal models for infant growth and adolescent alcohol use';
 pptx.lang = 'en-GB';
 pptx.theme = { headFontFace: FONT_FAMILIES.sans, bodyFontFace: FONT_FAMILIES.sans, lang: 'en-GB' };
 defineTemplateMasters(pptx);
@@ -40,7 +40,7 @@ function table(columns, rows, h, options = {}) {
 
 addBrandedTitleSlide(pptx, {
   courseLabel: 'BEYOND MULTIPLE LINEAR REGRESSION · WEEK 4',
-  mainTitle: 'Modeling change over time', subtitle: 'Longitudinal models for infant growth',
+  mainTitle: 'Modeling change over time', subtitle: 'Infant growth and adolescent alcohol use',
   figurePath: asset('opening'), figureCaption: 'OBSERVED HEIGHTS OF THREE BOYS',
 });
 
@@ -56,11 +56,11 @@ addStudyOverviewSlide(pptx, {
   studyTitle: 'THE INFANT GROWTH STUDY',
   bullets: [
     `Researchers measured height repeatedly in ${r.children} boys between ${r.age_range[0]} and ${r.age_range[1]} weeks of age.`,
-    'They also recorded whether each boy was exclusively breastfed at four weeks.',
+    'They also recorded each boy’s birth weight.',
   ],
   question: [
     'How does height change with age, and how much do growth trajectories vary between boys?',
-    'How do mean growth trajectories differ by breastfeeding status at four weeks?',
+    'Is birth weight associated with the mean growth trajectory, and if so, does that association change with age?',
   ],
   questionHeight: 2.85,
   assetPath: asset('infant_length_visit'),
@@ -299,39 +299,196 @@ panels({
   ],
 });
 
-addSectionSlide(pptx, { sectionLabel: 'PART 2', sectionTitle: 'Comparing growth trajectories by breastfeeding status' });
+addSectionSlide(pptx, { sectionLabel: 'PART 2', sectionTitle: 'Birth weight and infant growth' });
 
-figure('Exploring growth trajectories by breastfeeding status', 'feeding_observed',
-  'Each point is a mean height at one week of age in one feeding group. Lines smooth the weekly means.',
-  'Feeding status was recorded at four weeks. How far apart are the groups at 26 weeks? Does their height gap change with age?');
+const [cut1, cut2] = r.birth_cutoffs.map(x => x.toLocaleString('en-US'));
+figure('Exploring growth by birth weight', 'birth_weight_tertiles',
+  `Each dot is a visit. Curves smooth heights in the three birth-weight groups, with cutoffs at ${cut1} g and ${cut2} g.`,
+  'At a given age, how does height differ across the birth-weight groups? How does the gap between the curves change as the boys grow?');
 
 panels({
-  title: 'Breastfeeding status and the age slope',
-  intro: 'Add feeding group and its interaction with centered age to the quadratic model. Both groups share the quadratic term.',
-  introHeight: .70,
+  title: 'Extending the growth model with birth weight',
+  intro: 'Use each boy’s recorded birth weight. Let w be birth weight in kg minus 3.5, and t be age in weeks minus 26.',
+  introHeight: .72,
   panels: [
-    panel('FITTED GROUP MEANS', plot('feeding_fitted', 3.30)),
-    panel('GROUP DIFFERENCE IN MEAN HEIGHT',
-      table([col('Age'), col('Difference'), col('95% CI', 1.50)],
-        r.contrasts.map((v, i) => [i === 0 ? '26 weeks' : '40 weeks', fmt(v.estimate) + ' cm',
-          fmt(v['asymp.LCL']) + ' to ' + fmt(v['asymp.UCL'])]), 1.78),
-      text('Differences compare exclusive breastfeeding minus other feeding. At 26 weeks this is the group coefficient.', 19),
-      text(`The age-by-group coefficient is ${fmt(r.interaction, 3)} cm/week. The estimated gap widens by ${fmt(-14 * r.interaction)} cm over 14 weeks.`, 19)),
+    panel('POPULATION MEAN HEIGHT',
+      metric('β₀ + β₁t + β₂t² + β₃w + β₄tw'),
+      text('For a boy born at 3.5 kg, the mean trajectory is β₀ + β₁t + β₂t².', 20),
+      text('Each boy still has a random intercept and a random linear age slope.', 20)),
+    panel('MEAN HEIGHT GAP PER KG AT BIRTH',
+      metric('β₃ + β₄t'),
+      text('At 26 weeks, β₃ is the mean height difference associated with a 1 kg higher birth weight.', 20),
+      text('Each additional week changes that difference by β₄ cm.', 20)),
+  ],
+});
+
+addFigureSlide(pptx, {
+  title: 'Defining the two model comparisons', assetPath: asset('birth_weight_models'),
+  caption: 'The lower (dashed) and higher (solid) birth-weight curves coincide in the age-only model.',
+  captionHeight: .62, captionFontSize: 17, captionMinFontSize: 17,
+  takeaway: 'For overall association, compare the full model (right) with age only (left). For the interaction, compare the full model with the constant-gap model (middle).',
+  takeawayHeight: 1.08,
+});
+
+function birthWeightTestSlide({ title, reduced, test, terms, nullHypothesis, decision, takeaway }) {
+  const p = test.p < .001 ? 'p < .001' : 'p = ' + fmt(test.p, 3).replace(/^0/, '');
+  panels({
+    title,
+    panels: [
+      panel('MODELS FITTED BY MAXIMUM LIKELIHOOD',
+        table([{ label: 'Model', weight: 1.7 }, col('Log likelihood', 1.18)], [
+          [reduced, fmt(test.reduced_loglik)],
+          ['Full interaction model', fmt(test.full_loglik)],
+        ], 2.28),
+        text(terms, 19)),
+      panel('LIKELIHOOD-RATIO TEST',
+        text(nullHypothesis, 20),
+        metric(`χ²(${test.df}) = ${fmt(test.chisq)},  ${p}`),
+        text(decision, 20)),
+    ],
+    takeaway, takeawayHeight: 1.05,
+  });
+}
+
+birthWeightTestSlide({
+  title: 'Testing the overall association with birth weight',
+  reduced: 'Age only', test: r.overall_test,
+  terms: 'Use ML because the fixed effects differ.\nχ² = 2 × gain in log likelihood.',
+  nullHypothesis: 'Under the null, both birth-weight coefficients are zero. All birth weights share one mean trajectory.',
+  decision: 'The data provide evidence that mean growth trajectories differ by birth weight.',
+  takeaway: 'With evidence of an association, proceed to test whether the gap changes with age. Otherwise, the planned testing sequence ends here.',
+});
+birthWeightTestSlide({
+  title: 'Testing whether the height gap changes with age',
+  reduced: 'Age + birth weight', test: r.interaction_test,
+  terms: 'Both models include birth weight. The full model adds the age-by-birth-weight interaction.',
+  nullHypothesis: 'Under the null, the interaction coefficient is zero. A constant height gap is allowed.',
+  decision: 'The data provide evidence that the mean height gap changes with age.',
+  takeaway: 'Use the interaction model to estimate the direction and size of that change.',
+});
+
+const birthTerms = {
+  '(Intercept)': ['Height at 26 weeks (cm)', 2],
+  t: ['Rate at 26 weeks (cm/week)', 3],
+  'I(t^2)': ['Squared age (cm/week²)', 4],
+  w: ['Birth weight (cm/kg)', 2],
+  't:w': ['Age × birth weight (cm/week/kg)', 3],
+};
+const weightEffect = r.birth_fixed.find(row => row.term === 'w').estimate;
+const weightInteraction = r.birth_fixed.find(row => row.term === 't:w').estimate;
+addTeachingTableSlide(pptx, {
+  title: 'Interpreting the fixed effects',
+  intro: 'REML estimates. The intercept and linear age coefficient describe a boy born at 3.5 kg.',
+  columns: [{ label: 'Fixed effect', weight: 2.75 }, col('Estimate'), col('SE'), col('95% CI', 1.8), col('p-value')],
+  rows: r.birth_fixed.map(row => {
+    const [label, digits] = birthTerms[row.term];
+    return [label, fmt(row.estimate, digits), fmt(row.se, digits),
+      `${fmt(row.lower, digits)} to ${fmt(row.upper, digits)}`, row.p < .001 ? '< .001' : fmt(row.p, 3)];
+  }),
+  tableOptions: { firstColumnBold: false, headerFontSize: 18, cellPaddingY: .03 },
+  fontSize: 18,
+  takeaway: `At 26 weeks, a 1 kg higher birth weight corresponds to ${fmt(weightEffect)} cm greater mean height. This gap narrows by ${fmt(-weightInteraction, 3)} cm each week.`,
+  takeawayHeight: 1.03,
+});
+
+const [lowWeight, highWeight] = r.birth_references.map(x => fmt(x));
+figure('Estimating mean growth at two reference birth weights', 'birth_weight_emms',
+  `The 1/6 and 5/6 quantiles (${lowWeight} and ${highWeight} kg) lie halfway through the lower and upper thirds in rank.`,
+  'The colored dots mark estimated marginal means at 8, 26 and 48 weeks. How does the height gap between the two curves change with age?');
+
+const [earlyGap, middleGap, lateGap] = r.birth_contrasts;
+figure('Interpreting the height difference across age', 'birth_weight_contrast',
+  `Birth weights of ${highWeight} kg versus ${lowWeight} kg (heavier minus lighter). Shading shows the pointwise 95% CI.`,
+  `The fitted gap narrows from ${fmt(earlyGap.estimate)} cm at ${earlyGap.age} weeks to ${fmt(middleGap.estimate)} cm at ${middleGap.age} weeks and ${fmt(lateGap.estimate)} cm at ${lateGap.age} weeks.`);
+
+addSectionSlide(pptx, { sectionLabel: 'PART 3', sectionTitle: 'Modeling time as a factor' });
+
+addStudyOverviewSlide(pptx, {
+  title: 'Alcohol use in adolescence',
+  studyTitle: 'THREE ANNUAL VISITS',
+  bullets: [
+    `The same ${r.alcohol_n} adolescents took part at ages 14, 15, and 16.`,
+    'At each visit, answers to several survey questions were combined into an alcohol-use score.',
+    'Higher scores indicate greater reported alcohol use.',
+    'These data accompany Singer and Willett (2003).',
+  ],
+  question: 'How much does the mean score change from age 14 to 15, and from age 15 to 16?',
+  questionHeight: 1.7,
+  assetPath: asset('adolescent_survey'),
+});
+
+panels({
+  title: 'Specifying age as a number or a factor',
+  intro: 'Both models include a random intercept for each adolescent. The fixed effects describe the population mean score.',
+  introHeight: .72,
+  panels: [
+    panel('LINEAR AGE TREND',
+      metric('Mean = β₀ + β₁t'),
+      text('Here t is age in years minus 14. The intercept is the mean score at age 14.'),
+      text('The slope β₁ is the increase or decrease in mean score for each one-year interval.')),
+    panel('AGE AS A FACTOR',
+      metric('Age 14 is the reference'),
+      text('The three means are α₀ at 14, α₀ + α₁ at 15, and α₀ + α₂ at 16.'),
+      text('The first annual change is α₁. The second is α₂ − α₁. The two changes can differ.')),
+  ],
+});
+
+const av = r.alcohol_visits;
+const annualChange = (k, term) => fmt(av[k][term] - av[k - 1][term]);
+addTeachingTableSlide(pptx, {
+  title: 'Estimated changes in mean alcohol-use score',
+  columns: [{ label: 'Model for age', weight: 2.3 }, col('Age 14'), col('Age 15'), col('Age 16'),
+    col('14 to 15', 1.15), col('15 to 16', 1.15)],
+  rows: [['Linear trend', 'linear'], ['Age as a factor', 'factor_mean']].map(([label, term]) =>
+    [label, ...av.map(visit => fmt(visit[term])), annualChange(1, term), annualChange(2, term)]),
+  tableOptions: { firstColumnBold: false, headerFontSize: 19 },
+  takeaway: `With age as a factor, the estimated mean score rises by ${annualChange(1, 'factor_mean')} points in the first year and ${annualChange(2, 'factor_mean')} in the second. The linear model estimates a common increase of ${annualChange(1, 'linear')} points per year.`,
+  takeawayHeight: 1.30,
+});
+
+panels({
+  title: 'A quadratic curve through three visit means',
+  panels: [
+    panel('AT THE SCHEDULED AGES', plot('alcohol_visit_means', 3.00),
+      text('Dots show the fitted means from the factor model. The line shows the fitted quadratic mean.', 18)),
+    panel('BETWEEN THE VISITS',
+      text('A quadratic has three coefficients. At three distinct ages, it can pass through any three visit means.', 21),
+      text('With the same random-effects structure, both models therefore fit the same means at ages 14, 15, and 16.', 21),
+      text('At age 15½, the quadratic supplies an interpolated mean. The factor model specifies means only at its three levels.', 21)),
+  ],
+});
+
+// Three closing slides connect assumptions, incomplete outcomes, and individual predictions.
+panels({
+  title: 'Residual variation across visits',
+  intro: 'After accounting for each adolescent’s trajectory, scores can still vary from one visit to the next.',
+  introHeight: .6,
+  panels: [
+    panel('UNEQUAL RESIDUAL VARIANCES', plot('visit_residual_spread', 2.05),
+      text('In this illustration, the bars span one residual SD on either side of zero. The model can allow a different residual variance at each visit.', 19)),
+    panel('RESIDUAL CORRELATION',
+      text('An adolescent who scores above their own trajectory at one visit might also score above it at the next.', 21),
+      text('A mixed model can allow residuals from nearby visits to be more strongly correlated than residuals farther apart.', 21)),
   ],
 });
 
 panels({
-  title: 'Interpreting the growth model',
+  title: 'Incomplete follow-up',
+  intro: 'Suppose one adolescent misses the final visit. What can we learn from the two earlier scores?',
+  introHeight: .65,
   panels: [
-    panel('OBSERVED GROWTH', plot('observed_panel', 3.55),
-      text('Return to the observed trajectories. What feature of growth does each model term describe?', 19)),
-    panel('INTERPRET THE MODEL',
-      text('Random intercepts describe differences in height at 26 weeks.', 20),
-      text('The slope SD describes variation in growth rates. The correlation relates growth rate to height at 26 weeks.', 20),
-      text('The quadratic age term describes slowing growth.', 20),
-      text('The feeding-group term gives the gap at 26 weeks. Its interaction with age gives the weekly change in that gap.', 20)),
+    panel('ONE HYPOTHETICAL VISIT RECORD',
+      table([col('Age 14'), col('Age 15'), col('Age 16')], [['Observed', 'Observed', 'Missing']], 1.5),
+      text('Both observed scores contribute to the likelihood. Other adolescents contribute information about mean alcohol use at 16.', 20)),
+    panel('WHY WAS THE VISIT MISSED?',
+      text('Under a missing-at-random assumption, attendance can depend on the scores already observed and on covariates in the model.', 20),
+      text('If attendance also depends on the unobserved score at 16 after accounting for that information, the estimated mean may be biased.', 20)),
   ],
 });
+
+figure('Partial pooling of individual growth trajectories', 'growth_partial_pooling',
+  'Zero is the age-specific population mean. Both fits share curvature. Dashed lines use each boy’s visits alone.',
+  'The mixed model draws each boy’s estimated slope toward the population slope. With fewer visits or a narrower age range, the population pattern generally carries more weight.');
 
 pptx._slides.forEach((slide, index) => {
   slide.addNotes('');

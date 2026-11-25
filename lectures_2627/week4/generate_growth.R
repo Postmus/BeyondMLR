@@ -12,9 +12,7 @@ dir.create(assets, showWarnings = FALSE)
 growth <- foreign::read.spss(file.path(root, "labs_2526/data/growth.sav"), to.data.frame = TRUE)
 growth$id <- factor(growth$id)
 growth$t <- growth$age - 26
-# The SPSS label defines breastfeeding status at four weeks.
-growth$bf <- factor(growth$bf, levels = c("otherwise", "exclusive breast feeding"),
-                    labels = c("Other feeding", "Exclusive breastfeeding"))
+growth$w <- growth$bw / 1000 - 3.5
 control <- lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000))
 ri <- lmerTest::lmer(height ~ t + (1 | id), data = growth, control = control)
 quad_ri <- lmerTest::lmer(height ~ t + I(t^2) + (1 | id), data = growth, control = control)
@@ -25,7 +23,16 @@ quad_full <- lmer(height ~ t + I(t^2) + (1 + t10 + I(t10^2) | id), data = growth
 comparison <- AIC(quad_full, quad_slope, quad_ri)
 rownames(comparison) <- NULL
 comparison$model <- c("full", "slope", "intercept")
-feeding <- lmer(height ~ t * bf + I(t^2) + (1 + t | id), data = growth, control = control)
+# Compare nested mean structures on the same visits using maximum likelihood.
+age_ml <- update(quad_slope, REML = FALSE)
+weight_ml <- update(age_ml, . ~ . + w)
+interaction_ml <- update(weight_ml, . ~ . + t:w)
+weight_final <- update(interaction_ml, REML = TRUE)
+likelihood_test <- function(reduced, full) {
+  test <- anova(reduced, full, refit = FALSE)
+  list(reduced_loglik = test$logLik[1], full_loglik = test$logLik[2],
+       chisq = test$Chisq[2], df = test$Df[2], p = test[["Pr(>Chisq)"]][2])
+}
 
 theme_set(theme_minimal(base_size = 19, base_family = "Liberation Sans") +
   theme(panel.grid.minor = element_blank(), panel.grid.major = element_line(colour = color_grid),
@@ -132,30 +139,135 @@ curves <- ggplot(grid, aes(age)) +
   growth_axes + labs(y = "Mean height (cm)")
 save_plot("curvature", curves, 6, 4)
 
-feeding_colors <- c("Other feeding" = color_primary, "Exclusive breastfeeding" = "#AD641F")
-feeding_style <- list(scale_colour_manual(values = feeding_colors),
-  scale_linetype_manual(values = c("Other feeding" = "solid", "Exclusive breastfeeding" = "longdash")))
-# Use the means at each week to show an empirical trend for each feeding group.
-weekly <- aggregate(height ~ age + bf, growth, mean)
-eda <- ggplot(weekly, aes(age, height, colour = bf, linetype = bf)) +
-  geom_point(size = 2.0, alpha = .60) +
-  geom_smooth(method = "loess", formula = y ~ x, se = FALSE, linewidth = 1.4) +
-  growth_axes + feeding_style + labs(y = "Mean height (cm)")
-save_plot("feeding_observed", eda, 10, 4.1)
-feeding_grid <- merge(grid[c("age", "t")], unique(growth["bf"]))
-feeding_grid$height <- predict(feeding, newdata = feeding_grid, re.form = NA)
-fitted_plot <- ggplot(feeding_grid, aes(age, height, colour = bf, linetype = bf)) +
-  geom_vline(xintercept = c(26, 40), colour = color_muted, linetype = 3) +
-  geom_line(linewidth = 1.4) + growth_axes + feeding_style + labs(y = "Fitted mean height (cm)") +
-  theme(legend.text = element_text(size = 14))
-save_plot("feeding_fitted", fitted_plot, 6, 4)
+# Use one birth weight per boy when defining tertiles and reference weights.
+boys <- unique(growth[c("id", "bw")])
+stopifnot(nrow(boys) == nlevels(growth$id))
+cutoffs <- unname(quantile(boys$bw, c(1/3, 2/3)))
+references <- unname(quantile(boys$bw, c(1/6, 5/6))) / 1000
+growth$tertile <- cut(growth$bw, c(-Inf, cutoffs, Inf),
+                      labels = c("Lower third", "Middle third", "Upper third"))
+birth_colours <- c("#A65E1B", "#52765B", color_primary)
+eda <- ggplot(growth, aes(age, height, colour = tertile)) +
+  geom_point(alpha = .16, size = 1.45, show.legend = FALSE) +
+  geom_smooth(aes(linetype = tertile), method = "loess", formula = y ~ x, span = .85,
+              se = FALSE, linewidth = 1.25) +
+  scale_colour_manual(values = birth_colours) +
+  scale_linetype_manual(values = c("dashed", "dotdash", "solid")) +
+  age_axis + labs(x = "Age (weeks)", y = "Height (cm)") +
+  theme(panel.grid.major.x = element_blank(), legend.key.width = grid::unit(1.3, "cm"))
+save_plot("birth_weight_tertiles", eda, 9.4, 3.6)
+
+# Illustrate the null hypotheses and the alternative with the same underlying mean.
+shapes <- c("Age only", "Add birth weight", "Add age × birth weight")
+sketch <- expand.grid(age = 8:48, model = factor(shapes, levels = shapes))
+sketch$mean <- predict(quad_slope, data.frame(t = sketch$age - 26), re.form = NA)
+sketch$gap <- with(sketch, ifelse(model == shapes[1], 0,
+                          ifelse(model == shapes[2], 3, 3 - .1 * (age - 26))))
+sketch_plot <- ggplot(sketch, aes(age)) +
+  geom_line(aes(y = mean + gap / 2), colour = birth_colours[3], linewidth = 1.4) +
+  geom_line(aes(y = mean - gap / 2), colour = birth_colours[1], linewidth = 1.1, linetype = "dashed") +
+  facet_wrap(~model, nrow = 1) + scale_x_continuous(breaks = c(8, 26, 48)) +
+  labs(x = "Age (weeks)", y = "Mean height (cm)") +
+  theme(strip.text = element_text(face = "bold", colour = color_primary))
+save_plot("birth_weight_models", sketch_plot, 10.5, 3.75)
+
+emm_ages <- seq(min(growth$age), max(growth$age), by = .5)
+reference_ages <- c(8, 26, 48)
+weight_emm <- emmeans(weight_final, ~ w | t,
+  at = list(w = references - 3.5, t = emm_ages - 26), lmer.df = "satterthwaite")
+pred <- as.data.frame(weight_emm)
+pred$age <- pred$t + 26
+pred$weight <- factor(pred$w, labels = paste(formatC(references, format = "f", digits = 2), "kg"))
+emm_plot <- ggplot(pred, aes(age, emmean, colour = weight, linetype = weight)) +
+  geom_line(linewidth = 1.4) +
+  geom_point(data = subset(pred, age %in% reference_ages), size = 3.3, show.legend = FALSE) +
+  scale_colour_manual(values = birth_colours[c(1, 3)]) +
+  scale_linetype_manual(values = c("dashed", "solid")) +
+  scale_x_continuous(breaks = c(8, 16, 26, 36, 48, 52)) +
+  coord_cartesian(xlim = c(6, 52), ylim = c(54, 82)) +
+  labs(x = "Age (weeks)", y = "Mean height (cm)")
+save_plot("birth_weight_emms", emm_plot, 9.4, 3.6)
+
+gap <- as.data.frame(confint(pairs(weight_emm, reverse = TRUE), adjust = "none"))
+gap$age <- gap$t + 26
+marked <- subset(gap, age %in% reference_ages)
+gap_plot <- ggplot(gap, aes(age, estimate)) +
+  geom_ribbon(aes(ymin = lower.CL, ymax = upper.CL), fill = "#DDEBE4") +
+  geom_hline(yintercept = 0, colour = color_muted, linewidth = .5) +
+  geom_line(colour = color_primary, linewidth = 1.35) +
+  geom_point(data = marked, colour = color_primary, size = 2.7) +
+  geom_text(data = marked, aes(label = sprintf("%.2f", estimate)), nudge_y = .23,
+            fontface = "bold", size = 5, colour = color_primary) +
+  scale_x_continuous(breaks = c(8, 16, 26, 36, 48, 52)) +
+  labs(x = "Age (weeks)", y = "Height gap (cm)")
+save_plot("birth_weight_contrast", gap_plot, 9.4, 3.6)
+
+# Adolescent alcohol-use scores at three common visit ages.
+alcohol <- foreign::read.spss(file.path(root, "labs_2526/data/alcoholpp.sav"), to.data.frame = TRUE)
+alcohol$id <- factor(alcohol$id)
+alcohol$t <- alcohol$age - 14
+alcohol$visit <- factor(alcohol$age)
+stopifnot(all(table(alcohol$id, alcohol$visit) == 1), !anyNA(alcohol$alcuse))
+visit_linear <- lmer(alcuse ~ t + (1 | id), data = alcohol)
+visit_factor <- lmer(alcuse ~ visit + (1 | id), data = alcohol)
+visit_quad <- lmer(alcuse ~ t + I(t^2) + (1 | id), data = alcohol)
+visits3 <- aggregate(alcuse ~ age, alcohol, mean)
+visits3$t <- visits3$age - 14
+visits3$visit <- factor(visits3$age, levels = levels(alcohol$visit))
+visits3$linear <- predict(visit_linear, visits3, re.form = NA)
+visits3$factor_mean <- predict(visit_factor, visits3, re.form = NA)
+stopifnot(max(abs(predict(visit_quad, visits3, re.form = NA) - visits3$factor_mean)) < 1e-6)
+age_grid <- data.frame(age = seq(14, 16, length.out = 101))
+age_grid$t <- age_grid$age - 14
+age_grid$score <- predict(visit_quad, age_grid, re.form = NA)
+visit_plot <- ggplot(age_grid, aes(age, score)) +
+  geom_line(colour = color_secondary, linewidth = 1.4) +
+  geom_point(data = visits3, aes(y = factor_mean), colour = color_primary, size = 4.2) +
+  scale_x_continuous(breaks = 14:16) +
+  labs(x = "Age (years)", y = "Mean score")
+save_plot("alcohol_visit_means", visit_plot, 6, 3.5)
+
+# Schematic residual spreads illustrate an extension, independently of the study data.
+spreads <- data.frame(age = 14:16, sd = c(0.35, 0.6, 0.9))
+spread_plot <- ggplot(spreads, aes(age, 0)) +
+  geom_hline(yintercept = 0, colour = color_grid) +
+  geom_errorbar(aes(ymin = -sd, ymax = sd), width = .22, linewidth = 1.25,
+                colour = color_secondary) +
+  geom_point(size = 2.4, colour = color_primary) +
+  scale_x_continuous(breaks = 14:16) + scale_y_continuous(breaks = -1:1, limits = c(-1, 1)) +
+  labs(x = "Age (years)", y = "Residual")
+save_plot("visit_residual_spread", spread_plot, 5.5, 2.55)
+
+# Compare the two boys using the common curvature from slide 19 in both fits.
+# Subtracting the population curve makes the smaller shifts in fitted lines visible.
+boy_grid$pooled <- predict(quad_slope, boy_grid) - predict(quad_slope, boy_grid, re.form = NA)
+two_boys$deviation <- two_boys$height - predict(quad_slope, two_boys, re.form = NA)
+boy_grid$separate <- NA_real_
+for (boy in unique(two_boys$id)) {
+  rows <- boy_grid$id == boy
+  separate_fit <- lm(deviation ~ t, data = two_boys[two_boys$id == boy, ])
+  boy_grid$separate[rows] <- predict(separate_fit, boy_grid[rows, ])
+}
+boy_grid$boy <- paste("Boy", boy_grid$id)
+two_boys$boy <- paste("Boy", two_boys$id)
+pool_plot <- ggplot(boy_grid, aes(age)) +
+  geom_hline(yintercept = 0, colour = color_muted, linewidth = .7) +
+  geom_line(aes(y = separate, colour = "Boy alone", linetype = "Boy alone"), linewidth = 1.2) +
+  geom_line(aes(y = pooled, colour = "Mixed model", linetype = "Mixed model"), linewidth = 1.3) +
+  geom_point(data = two_boys, aes(y = deviation), colour = color_text, size = 2.6) +
+  facet_wrap(~ boy, nrow = 1) +
+  scale_colour_manual(name = "Fit", values = c("Boy alone" = "#AD641F", "Mixed model" = color_primary)) +
+  scale_linetype_manual(name = "Fit", values = c("Boy alone" = "dashed", "Mixed model" = "solid")) +
+  scale_x_continuous(breaks = c(10, 20, 30, 40, 50)) +
+  labs(x = "Age (weeks)", y = "Height minus mean (cm)") +
+  theme(strip.text = element_text(face = "bold", colour = color_primary),
+        legend.key.width = grid::unit(1.3, "cm"))
+save_plot("growth_partial_pooling", pool_plot, 10.2, 3.8)
 
 ages <- c(12, 20, 36, 44)
 heights <- predict(quad_ri, newdata = data.frame(t = ages - 26), re.form = NA)
-# Within-age comparisons use the model's covariance of the fixed-effect estimates.
-means <- emmeans(feeding, ~ bf | t, at = list(t = c(0, 14)), lmer.df = "asymptotic")
-contrasts <- as.data.frame(confint(pairs(means, reverse = TRUE)))
-results <- list(children = nlevels(growth$id), age_range = range(growth$age),
+results <- list(alcohol_n = nlevels(alcohol$id),
+  alcohol_visits = visits3[c("age", "linear", "factor_mean")], children = nlevels(growth$id), age_range = range(growth$age),
   ri_fixed = fixed_results(ri), ri_variance = ri_variance,
   comparison = comparison[c("model", "df", "AIC")],
   full_sd = unname(attr(full_cov, "stddev") / c(1, 10, 100)),
@@ -165,7 +277,10 @@ results <- list(children = nlevels(growth$id), age_range = range(growth$age),
   correlation = attr(VarCorr(quad_slope)$id, "correlation")[1, 2],
   quad_fixed = fixed_results(quad_ri), gain = heights[c(2, 4)] - heights[c(1, 3)],
   selected_fixed = fixed_results(quad_slope),
-  contrasts = contrasts[c("estimate", "asymp.LCL", "asymp.UCL")],
-  interaction = unname(tail(fixef(feeding), 1)))
+  birth_cutoffs = cutoffs, birth_references = references,
+  overall_test = likelihood_test(age_ml, interaction_ml),
+  interaction_test = likelihood_test(weight_ml, interaction_ml),
+  birth_fixed = fixed_results(weight_final),
+  birth_contrasts = marked[c("age", "estimate", "lower.CL", "upper.CL")])
 jsonlite::write_json(results, file.path(assets, "growth_results.json"), auto_unbox = TRUE,
                      digits = 9, pretty = TRUE)

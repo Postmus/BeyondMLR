@@ -1,0 +1,271 @@
+---
+title: "Beyond MLR Lab 7: Growth trajectories in young chicks"
+format:
+  html:
+    html-math-method: mathml
+    toc: true
+    toc-depth: 3
+    toc-location: right
+  pdf:
+    pdf-engine: xelatex
+    geometry: margin=0.9in
+    toc: false
+format-links: [pdf]
+execute:
+  warning: false
+  message: false
+  eval: false
+  echo: true
+---
+
+# Weight gain in young chicks
+
+In a feeding experiment, 50 chicks were weighed repeatedly from hatching to three weeks of age. Each chick received one of four diets. We begin with two questions about growth across all four groups. What shape does the population mean trajectory follow? How much do individual chicks differ in the way they grow? In [Lab 8](BLR_lab_chick_diet.html) we return to the same chicks to study differences between diets.
+
+# Setup and data
+
+Create a `week4` folder, save your script as `lab7.R` there, and set it as your working directory. The `ChickWeight` dataset comes with R. Install the analysis packages with `pak` if needed, as in [Lab 1](BLR_lab_center_fixed.html#install-pak-once).
+
+```{r}
+#| label: setup
+library(pak)
+pkg_install(c("dplyr", "ggplot2", "lmerTest"))
+```
+
+```{r}
+#| label: read-chicks
+library(dplyr)
+library(ggplot2)
+library(lmerTest)
+
+chicks <- as.data.frame(datasets::ChickWeight)
+head(chicks)
+visits <- count(chicks, Chick, name = "weighings")
+count(visits, weighings, name = "chicks")
+```
+
+Each row gives the weight in grams of one chick at one age. `Chick` identifies the chick and `Time` gives its age in days since hatching. The first count above gives the number of weighings for each chick. The second shows how many chicks contributed to each count.
+
+::: {.callout-important icon=false title="Question 1"}
+What is the unit of observation? How many chicks have all 12 scheduled weighings? Why would it matter if we treated each weighing as an independent observation?
+:::
+
+```{=latex}
+\clearpage
+```
+
+# Explore the observed growth trajectories
+
+Before choosing a model for growth, we can look at how the chicks gain weight over the three weeks. Following each chick over time lets us see how its growth compares with the average.
+
+```{r}
+#| label: observed-growth
+ggplot(chicks, aes(Time, weight)) +
+  geom_line(aes(group = Chick), color = "grey60", alpha = 0.55) +
+  stat_summary(fun = mean, geom = "line", linewidth = 1.2,
+               color = "#175C65") +
+  labs(x = "Age (days)", y = "Weight (g)") +
+  theme_minimal(base_size = 13)
+```
+
+Each grey line follows one chick. The darker line joins the mean weights of the chicks observed at each age.
+
+::: {.callout-important icon=false title="Question 2"}
+What shape does the mean trajectory follow? How similar are the chicks at hatching, and how similar are the shapes of their trajectories as they grow?
+:::
+
+# Fit a linear population mean growth trajectory
+
+We start with age in days, the unit recorded at each weighing. We use day 10, near the middle of the study, as the reference age. Subtracting 10 from `Time` gives `day_c`: day 10 has `day_c = 0` and day 11 has `day_c = 1`. If $t_{ij}$ is the number of days from day 10 at weighing $i$ of chick $j$, the straight-line model is
+
+$$
+Y_{ij} = (\beta_0+b_{0j}) + \beta_1 t_{ij} + \varepsilon_{ij}.
+$$
+
+The fixed intercept is the population mean weight on day 10. The random intercept shifts that trajectory up or down for each chick. All chicks share the same expected weight gain per day.
+
+```{r}
+#| label: linear-growth
+chicks$day_c <- chicks$Time - 10
+model_linear <- lmer(weight ~ day_c + (1 | Chick), data = chicks)
+coef(summary(model_linear))
+```
+
+::: {.callout-important icon=false title="Question 3"}
+Under the linear model, what is the estimated population mean weight on day 10? What daily weight gain does it predict for a given chick?
+:::
+
+```{=latex}
+\clearpage
+```
+
+# Check the shape of the mean trajectory
+
+How well does a straight line describe mean growth over the three weeks? At each weighing we can compare the chick’s observed weight with the weight predicted for that chick. The difference is its conditional residual.
+
+```{r}
+#| label: linear-residuals
+plot_residuals <- function(model, data) {
+  data$residual <- resid(model)
+  ggplot(data, aes(Time, residual)) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_point(alpha = 0.25, color = "#173F48") +
+    stat_summary(fun = mean, geom = "line", linewidth = 1,
+                 color = "#C57722") +
+    labs(x = "Age (days)", y = "Conditional residual (g)") +
+    theme_minimal(base_size = 13)
+}
+plot_residuals(model_linear, chicks)
+```
+
+The orange line joins the mean residuals at each age. Where it lies above zero, the model underestimates mean weight. Where it lies below zero, the model overestimates it.
+
+::: {.callout-important icon=false title="Question 4"}
+At which ages does the straight line predict too low or too high on average? What change to the population mean trajectory does the pattern suggest?
+:::
+
+## Add a quadratic age term
+
+A quadratic term lets the expected gain over a day depend on the chick’s age. We add $\beta_2 t_{ij}^2$ to the population mean trajectory, keeping the linear term and the same random intercept. Using the same residual plot for both models lets us see what difference the extra term makes.
+
+```{r}
+#| label: quadratic-residuals
+model_intercept <- update(model_linear, . ~ . + I(day_c^2))
+plot_residuals(model_intercept, chicks)
+```
+
+Here `I(day_c^2)` tells R to square the centered age.
+
+::: {.callout-important icon=false title="Question 5"}
+How does the pattern in the mean residuals change when the quadratic term is included? Looking back at the individual trajectories, what differences among chicks does a random intercept allow?
+:::
+
+```{=latex}
+\clearpage
+```
+
+# Differences in growth between chicks
+
+So far, every chick’s fitted curve has the same shape. A random intercept allows one chick to be heavier than another by the same amount at every age. The observed trajectories suggest two further ways in which chicks might differ. Some curves are steeper around day 10, and some bend more sharply over the following days. We can explore these possibilities while keeping the same quadratic population mean trajectory throughout.
+
+We first give each chick its own linear slope. The term `(1 + day_c | Chick)` allows chicks to differ in weight and steepness at day 10 and estimates the correlation between the two. The mean trajectory is still quadratic.
+
+```{r}
+#| label: random-slope-days
+#| warning: true
+model_slope_days <- lmer(weight ~ day_c + I(day_c^2) +
+                           (1 + day_c | Chick), data = chicks)
+```
+
+This fit can produce a convergence warning. R has found estimates, but its numerical check raises a question about how accurately it located the optimum. The size of the predictors gives us something to investigate. At day 21, centered age is 11 days and its square is 121. Expressed in weeks from the same reference age, those values are about 1.57 and 2.47. Working with these smaller values can help the fitting algorithm.
+
+## The same model in weeks
+
+Dividing `day_c` by 7 keeps day 10 at zero and changes the unit to one week. Both the fixed and random age terms use the new unit. The intercept and the linear age coefficient let us see what this change of unit means for weight and steepness at day 10.
+
+```{r}
+#| label: random-slope-weeks
+chicks$week_c <- chicks$day_c / 7
+model_slope <- lmer(weight ~ week_c + I(week_c^2) +
+                      (1 + week_c | Chick), data = chicks)
+fixef(model_slope_days)
+fixef(model_slope)
+```
+
+`fixef()` shows the population mean coefficients. In each output, `(Intercept)` gives the estimated mean weight on day 10. The `day_c` and `week_c` entries give the slope at that age in the corresponding units.
+
+::: {.callout-important icon=false title="Question 6"}
+What mean weight does each model estimate for day 10? If you multiply the slope in grams per day by seven, how does it compare with the slope in grams per week?
+:::
+
+```{=latex}
+\clearpage
+```
+
+## Adding a random quadratic slope
+
+We continue in weeks. The two fits above allowed chicks to differ in steepness at day 10 while sharing the same curvature. Adding `I(week_c^2)` inside the parentheses for `Chick` lets curvature vary between chicks as well. With all three random coefficients in the same term, R estimates all three correlations among them.
+
+```{r}
+#| label: random-growth
+#| message: true
+#| warning: true
+model_full <- lmer(weight ~ week_c + I(week_c^2) +
+                     (1 + week_c + I(week_c^2) | Chick), data = chicks)
+VarCorr(model_full)
+isSingular(model_full)
+```
+
+::: {.callout-note icon=false title="Understanding the model message"}
+The model with both random slopes produces the message `boundary (singular) fit`, and `isSingular(model_full)` returns `TRUE`. The output shows variation between chicks in all three features: weight at day 10, steepness at day 10, and curvature. In the fitted model these are so closely linked that, given two, the third is almost completely determined. This is what a *singular fit* means here.
+
+The growth plot suggests a reason. At hatching, all 50 chicks weighed between 39 and 43 g. Imagine that every chick started at exactly 41 g. Once we know how steeply a chick’s curve starts and how it bends, we can trace its curve forward to day 10. Its weight at day 10 is then determined. The chicks’ similar starting weights may explain why the model finds only two independent ways for their curves to vary.
+:::
+
+```{=latex}
+\clearpage
+```
+
+## Comparing models for differences in curvature
+
+Does it help to give each chick its own curvature? We can compare two models that both allow weight and steepness at day 10 to be correlated. In `model_slope` all chicks share the same curvature. In the model below we allow curvature to vary and make one simplifying assumption: a chick’s deviation in curvature is independent of its deviations in weight and steepness at day 10.
+
+```{r}
+#| label: curvature-comparison
+model_curve <- lmer(weight ~ week_c + I(week_c^2) +
+                      (1 + week_c | Chick) + (0 + I(week_c^2) | Chick),
+                    data = chicks)
+AIC(model_slope, model_curve)
+```
+
+The first parentheses still supply the chick’s random intercept and linear slope. The second parentheses add a separate random quadratic coefficient. The `0` applies only to this second term, since the model already has a random intercept. Putting curvature in a separate term sets its two correlations with the other random effects to zero.
+
+**Akaike’s information criterion (AIC)** balances fit against the number of parameters estimated. A lower value favors that model. Both candidates use the same observations and fixed effects, so we can compare their AIC values using restricted maximum likelihood (REML), the default in `lmer()`.
+
+::: {.callout-important icon=false title="Question 7"}
+How does AIC change when curvature can vary between chicks? Which random-effects structure would you carry forward?
+:::
+
+Having chosen a model, we can return to the chicks. How much do they differ in steepness at day 10, and do heavier chicks tend to be growing faster or slower at that age?
+
+```{r}
+#| label: selected-growth
+fixef(model_curve)
+VarCorr(model_curve)
+```
+
+The `week_c` coefficient from `fixef()` gives the population slope at day 10. In the `week_c` row of `VarCorr()`, `Std.Dev.` gives the between-chick SD in that slope and `Corr` gives its correlation with weight at day 10.
+
+::: {.callout-important icon=false title="Question 8"}
+In the model with both random slopes, how large is the between-chick SD in steepness at day 10? What does the estimated intercept–linear slope correlation tell you about the chicks?
+:::
+
+```{=latex}
+\clearpage
+```
+
+# Compare fitted trajectories for two chicks
+
+What do these differences in steepness and curvature mean for an individual chick? We can look at chicks 1 and 21 and compare the model’s predictions for each with the population mean at the same ages.
+
+```{r}
+#| label: fitted-growth
+examples <- filter(chicks, Chick %in% c("1", "21"))
+examples$individual <- predict(model_curve, newdata = examples)
+examples$population <- predict(model_curve, newdata = examples,
+                               re.form = NA)
+
+ggplot(examples, aes(Time, weight)) +
+  geom_point() +
+  geom_line(aes(y = individual), color = "#175C65", linewidth = 1) +
+  geom_line(aes(y = population), linetype = "dashed") +
+  facet_wrap(~ Chick, labeller = label_both) +
+  labs(x = "Age (days)", y = "Weight (g)") +
+  theme_minimal(base_size = 13)
+```
+
+The dots are the chick’s observed weights. The solid curve includes its estimated random effects. The dashed curve is the population mean, obtained with `re.form = NA` in `predict()`.
+
+::: {.callout-important icon=false title="Question 9"}
+How do the fitted curves for chicks 1 and 21 differ in weight at day 10 and in shape across the three weeks? Which of these differences could a random intercept alone describe?
+:::

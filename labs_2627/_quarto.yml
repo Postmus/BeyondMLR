@@ -41,6 +41,12 @@ website:
             href: BLR_lab_airbnb_slopes.qmd
           - text: "Assignment: Exam performance in Inner London schools"
             href: assignments/week3/assignment.qmd
+      - text: Week 4
+        menu:
+          - text: "Lab 7: Growth trajectories in young chicks"
+            href: BLR_lab_chick_growth.qmd
+          - text: "Lab 8: Diet and chick growth"
+            href: BLR_lab_chick_diet.qmd
       - text: Lab answers
         menu:
           - text: "Week 1 · Lab 1: Center as a fixed effect"
@@ -55,6 +61,10 @@ website:
             href: BLR_lab_airbnb_answers.qmd
           - text: "Week 3 · Lab 6: Guest capacity and neighborhood walkability"
             href: BLR_lab_airbnb_slopes_answers.qmd
+          - text: "Week 4 · Lab 7: Growth trajectories in young chicks"
+            href: BLR_lab_chick_growth_answers.qmd
+          - text: "Week 4 · Lab 8: Diet and chick growth"
+            href: BLR_lab_chick_diet_answers.qmd
   search: true
 
 format:
