@@ -93,6 +93,11 @@ The simulated trial uses raw baseline scores on the
 points. Each patient's CCI is drawn independently from the same distribution,
 so the observed mean CCI varies across centers by chance.
 
+Week 4 uses the infant growth data to introduce longitudinal mixed models. Run
+`npm run build:week4` for the PowerPoint and PDF, or `npm run rebuild:week4`
+to refit the models and regenerate the figures from `labs_2526/data/growth.sav`.
+Regeneration uses R with `foreign`, `lme4`, `lmerTest`, `emmeans`, `ggplot2` and `jsonlite`.
+
 PDF export requires LibreOffice on `PATH` (or set `LIBREOFFICE_BIN` to its executable).
 The renderer creates its own isolated profile and runtime under ignored `.cache/lecture-build/`,
 uses a memory-backed settings store, and removes these disposable files afterwards.

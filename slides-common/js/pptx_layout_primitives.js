@@ -376,35 +376,7 @@ function addFooter(slide, _shortTitle = "") {
   addSlideNumber(slide);
 }
 
-function addBrandedTitleSlide(pptx, {
-  courseLabel = "PRINCIPLES OF LABORATORY ANIMAL SCIENCE",
-  mainTitle = "Methodological and statistical aspects",
-  subtitle = "",
-  author = "Dr Douwe Postmus",
-  affiliation = "UMCG · Department of Epidemiology",
-  badge = "LAS",
-} = {}) {
-  const slide = pptx.addSlide();
-
-  // Use a canvas-sized shape instead of a slide background so the generated
-  // title slide contains only ordinary, positive-extent drawing geometry.
-  slide.addShape("rect", {
-    x: 0,
-    y: 0,
-    w: LAYOUT.slideW,
-    h: LAYOUT.slideH,
-    fill: { color: COLORS.background },
-    line: { color: COLORS.background, width: 0 },
-  });
-  slide.addShape("rect", {
-    x: 7.45,
-    y: 0,
-    w: LAYOUT.slideW - 7.45,
-    h: LAYOUT.slideH,
-    fill: { color: COLORS.primary },
-    line: { color: COLORS.primary, width: 0 },
-  });
-
+function addTitleMotif(slide, badge) {
   slide.addShape("ellipse", {
     x: 8.12,
     y: 0.76,
@@ -458,6 +430,58 @@ function addBrandedTitleSlide(pptx, {
     h: 0.86,
     line: { color: COLORS.accentLight, width: 2.2, transparency: 8 },
   });
+
+  slide.addText(badge, {
+    x: 9.22,
+    y: 2.64,
+    w: 2.35,
+    h: 0.55,
+    fontFace: TYPOGRAPHY.heroTitle.fontFace,
+    fontSize: 25,
+    bold: true,
+    color: COLORS.onPrimary,
+    margin: 0,
+    align: "center",
+    valign: "mid",
+  });
+}
+
+function addBrandedTitleSlide(pptx, {
+  courseLabel = "PRINCIPLES OF LABORATORY ANIMAL SCIENCE",
+  mainTitle = "Methodological and statistical aspects",
+  subtitle = "",
+  author = "Dr Douwe Postmus",
+  affiliation = "UMCG · Department of Epidemiology",
+  badge = "LAS",
+  figurePath,
+  figureCaption = "METHODS · DESIGN · STATISTICS",
+} = {}) {
+  const slide = pptx.addSlide();
+
+  // Use a canvas-sized shape instead of a slide background so the generated
+  // title slide contains only ordinary, positive-extent drawing geometry.
+  slide.addShape("rect", {
+    x: 0,
+    y: 0,
+    w: LAYOUT.slideW,
+    h: LAYOUT.slideH,
+    fill: { color: COLORS.background },
+    line: { color: COLORS.background, width: 0 },
+  });
+  slide.addShape("rect", {
+    x: 7.45,
+    y: 0,
+    w: LAYOUT.slideW - 7.45,
+    h: LAYOUT.slideH,
+    fill: { color: COLORS.primary },
+    line: { color: COLORS.primary, width: 0 },
+  });
+
+  if (figurePath) {
+    slide.addImage({ path: figurePath, ...imageSizingContain(figurePath, 7.72, 0.80, 5.34, 4.98) });
+  } else {
+    addTitleMotif(slide, badge);
+  }
 
   slide.addText(courseLabel, autoFontSize(courseLabel, TYPOGRAPHY.heroEyebrow.fontFace, {
     x: 0.78,
@@ -522,20 +546,7 @@ function addBrandedTitleSlide(pptx, {
     margin: 0,
   });
 
-  slide.addText(badge, {
-    x: 9.22,
-    y: 2.64,
-    w: 2.35,
-    h: 0.55,
-    fontFace: TYPOGRAPHY.heroTitle.fontFace,
-    fontSize: 25,
-    bold: true,
-    color: COLORS.onPrimary,
-    margin: 0,
-    align: "center",
-    valign: "mid",
-  });
-  slide.addText("METHODS · DESIGN · STATISTICS", {
+  slide.addText(figureCaption, {
     x: 8.16,
     y: 6.38,
     w: 4.35,

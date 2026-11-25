@@ -23,7 +23,12 @@
     "render:week3": "node scripts/render_lecture.js lectures_2627/week3/Beyond_MLR_Week_3.pptx",
     "build:week3": "npm run slides:week3 && npm run render:week3",
     "figures:week3": "Rscript lectures_2627/week3/generate_assignment_recap.R && Rscript lectures_2627/week3/generate_cluster_trial.R && Rscript lectures_2627/week3/generate_hba1c.R && Rscript lectures_2627/week3/generate_nested_airbnb.R",
-    "rebuild:week3": "npm run figures:week3 && npm run build:week3"
+    "rebuild:week3": "npm run figures:week3 && npm run build:week3",
+    "slides:week4": "node lectures_2627/week4/build_week4.js",
+    "render:week4": "node scripts/render_lecture.js lectures_2627/week4/Beyond_MLR_Week_4.pptx",
+    "build:week4": "npm run slides:week4 && npm run render:week4",
+    "figures:week4": "Rscript lectures_2627/week4/generate_growth.R",
+    "rebuild:week4": "npm run figures:week4 && npm run build:week4"
   },
   "dependencies": {
     "skia-canvas": "3.0.8"

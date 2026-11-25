@@ -8,7 +8,10 @@ function addStudyOverviewSlide(pptx, { title, studyTitle, bullets, groupsTitle, 
   addBase(slide);
   addSlideTitle(slide, title);
   addBulletBox(slide, { box: slots.text, title: studyTitle, bullets, fontSize: 19, minFontSize: 17 });
-  addNoteBox(slide, { box: slots.note, title: 'RESEARCH QUESTION', text: question, fontSize: 17, minFontSize: 16 });
+  const multipleQuestions = Array.isArray(question);
+  addNoteBox(slide, { box: slots.note, title: multipleQuestions ? 'RESEARCH QUESTIONS' : 'RESEARCH QUESTION',
+    text: multipleQuestions ? question.map((q, i) => `${i + 1}. ${q}`).join('\n\n') : question,
+    fontSize: 17, minFontSize: 16 });
   if (assetPath) addAssetFrame(slide, { box: slots.visual, assetPath, fit: 'cover' });
   else addTextBox(slide, { box: slots.visual, title: groupsTitle, text: groups, fontSize: 20, minFontSize: 18 });
   addFooter(slide);
