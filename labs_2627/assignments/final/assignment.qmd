@@ -1,0 +1,47 @@
+---
+title: "Final assignment: Practice schedule and retention of a clinical skill"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Study description
+
+A medical school is deciding how to schedule suturing practice. Medical students were randomly assigned to complete the same amount of practice in one intensive session or across several shorter sessions. The educators wanted to know how well students performed immediately after training and how well they retained that performance over the following eight weeks.
+
+Immediately after their final practice session, each student completed a standardised suturing task. The assessor recorded the time in seconds needed to complete the task to the required standard. A shorter completion time indicates better performance.
+
+Each student returned for three further assessments over the following eight weeks. Follow-up dates varied across students. The dataset records the actual number of days since each student finished training, with day 0 denoting the immediate post-training assessment.
+
+# Part 1. Analyse the suturing study
+
+Fit a mixed-effects model to examine how task-completion time changes after training. Use the recorded days since training and account for repeated assessments within students. Let the observed trajectories and your model checks guide your choice of fixed and random effects. Use your fitted model to answer two research questions.
+
+1. Immediately after training, how much faster or slower, on average, do students complete the suturing task after spaced practice compared with a single intensive session?
+2. How does the practice schedule affect retention of suturing performance over the following eight weeks?
+
+Show the estimated mean trajectory for each practice schedule. Report the **difference in mean completion time at day 0** and the **difference between schedules in the change in mean completion time from day 0 to week 8**. Give both estimates in seconds with 95% confidence intervals. Interpret what they mean for immediate performance and retention.
+
+Organise your report into four sections.
+
+- **Introduction.** Briefly introduce the study and the research questions.
+- **Exploratory data analysis.** Explore the data and summarise the findings most relevant to your research questions.
+- **Model fitting and results.** Present your model, justify your main modelling choices, and comment on model fit. Report and interpret the results for both research questions.
+- **Conclusion.** Summarise what the educators can learn about the two practice schedules.
+
+# Part 2. Extending the study to several medical schools
+
+The educators plan to repeat the study at several medical schools. Within each school, students will be randomly assigned to spaced practice or a single intensive session. The total practice time, suturing task and assessment procedure will be the same at every school. As in Part 1, each student will be assessed immediately after training and on three further occasions over the following eight weeks.
+
+A researcher proposes using the same model as in Part 1, this time with data from all students at all schools, to assess whether spaced practice improves retention over eight weeks.
+
+**Would you recommend using the Part 1 model as it stands?** Justify your recommendation with reference to the study design and the grouping structure of the data. If you would change the model, describe the change in words and explain what it would account for.
+
+Explain your recommendation in one or two short paragraphs. You are welcome to include a model equation, but it is not required. No R code is required for Part 2.
+
+# Submission
+
+Submit both parts in a single **Quarto source file (`.qmd`)** and its **rendered HTML report**. Keep the analysis code, results and figures for Part 1 visible.
+
+[Final assignment rubric](rubric.qmd)

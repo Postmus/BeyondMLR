@@ -1,0 +1,17 @@
+---
+title: "Final assignment rubric"
+page-layout: full
+toc: false
+---
+
+**Good (7.5)** is the expected standard for each criterion. At this level, the work is sound in all material respects.
+
+::: {.table-responsive}
+
+| Criterion | Insufficient (4) | Sufficient (6) | Good (7.5) | Excellent (10) |
+|---|---|---|---|---|
+| **Statistical reasoning and modelling choices (40%)** | Important modelling choices are inconsistent with the study design or research questions. The reasoning given leaves a central choice or recommendation unsupported. | Chooses a broadly appropriate approach in Part 1 and makes a defensible recommendation in Part 2. Gives a basic justification, although the reasoning behind some choices is incomplete. | Uses the study design, exploratory findings and model checks to justify the main choices in Part 1. In Part 2, explains how the proposed design informs the modelling recommendation. | Shows particularly sound judgment about consequential modelling choices. Identifies which features of the design and evidence matter, and explains why the chosen approach is appropriate when other approaches are plausible. Carries that reasoning through to Part 2. |
+| **Practical implementation in R and Quarto (25%)** | Errors or omissions in the code undermine a central result, or the submitted materials provide too little information to verify the analysis. | Implements the main analysis and produces the principal results. The source and report allow the reader to follow the analysis, although some calculations, checks or outputs are incomplete. | Correctly implements the stated analysis and model checks. The Quarto source reproduces the reported figures, estimates and confidence intervals. | Provides a reproducible analysis in which the reader can readily trace each reported result to the fitted model and verify how it was obtained. The code makes consequential implementation choices clear. A straightforward solution using familiar course tools can earn full credit. |
+| **Interpretation and communication of results (35%)** | A research question remains unanswered, a central result is misinterpreted, or a conclusion is inconsistent with the analysis. | Answers the research questions and gives the main findings in meaningful units. The overall conclusions are sound, although the explanation of magnitude or uncertainty is limited. | Interprets the direction, magnitude and uncertainty of the relevant estimates in context. Draws a clear, supported conclusion for each research question. | Brings the findings together to answer the overall study aim. Explains their practical meaning and uses the confidence intervals to distinguish conclusions that are well supported from those that remain uncertain. |
+
+:::

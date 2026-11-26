@@ -7,6 +7,7 @@
 
 Apply these preferences throughout the repository, including lectures, labs, assignments, and explanatory text.
 
+- Write contractions in full throughout course prose, using forms such as “you are”, “we will”, and “does not”.
 - Explain concepts directly by stating what they mean, what they describe, or what a method does.
 - Avoid sentences that define something by stating what it is not. Avoid contrastive wording such as "X, not Y" and "rather than Y" when a direct explanation conveys the point.
 - Keep explanations focused on the question being taught. Omit unsolicited caveats and unrelated conceptual detours, such as causal disclaimers when causality is outside the question at hand.

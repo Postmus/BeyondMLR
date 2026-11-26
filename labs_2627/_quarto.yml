@@ -7,6 +7,7 @@ project:
     - "!BLR_lab_chick_growth_answers.qmd"
     - "!BLR_lab_chick_diet_answers.qmd"
     - assignments/**/assignment.qmd
+    - assignments/final/rubric.qmd
     - "!assignments/**/downloads/**"
   resources:
     - data/*.csv
@@ -51,6 +52,8 @@ website:
             href: BLR_lab_chick_diet.qmd
           - text: "Assignment: Weight gain in early childhood"
             href: assignments/week4/assignment.qmd
+      - text: Final assignment
+        href: assignments/final/assignment.qmd
       - text: Lab answers
         menu:
           - text: "Week 1 · Lab 1: Center as a fixed effect"
