@@ -15,6 +15,9 @@ Apply these preferences throughout the repository, including lectures, labs, ass
 
 # Teaching code preferences
 
+- Name fitted models for the feature students are comparing, including units when a predictor is rescaled. Use matching names for derived quantities, such as `model_quadratic` and `residual_quadratic`.
+- Student lab exercises show the R code for students to run. Render plots and analysis output only in the model answer sheets.
+- After fitting a model, use `summary(model)` as the default next line so students can inspect the full model summary.
 - Keep teaching code simple and easy to adapt across case studies. Convert grouping variables with `factor(x)` when the default level order is suitable.
 - Specify factor levels explicitly when their order matters for the analysis, such as setting the treatment reference category or ordering ordinal categories. Avoid unnecessary label-construction code such as `levels = paste(...)` or `sprintf(...)` for grouping variables.
 - Use simple grouping identifiers in new teaching datasets, such as integers 1 to 12 or letters A to E, to make adapting the lab code straightforward.

@@ -36,17 +36,13 @@ pkg_install(c("dplyr", "ggplot2", "lmerTest", "emmeans"))
 
 ```{r}
 #| label: chick-data
-#| output: true
 library(dplyr)
 library(ggplot2)
 library(lmerTest)
 library(emmeans)
 
 chicks <- as.data.frame(datasets::ChickWeight)
-distinct(chicks, Chick, Diet) |> count(Diet, name = "chicks")
 ```
-
-Each chick contributes several weighings. Counting each chick once gives the number on each diet.
 
 # Explore the observed trajectories by diet
 
@@ -78,13 +74,27 @@ The four observed means are close to 41 g at hatching. By day 21 they range from
 
 # Specify the three models
 
-To examine these differences, we start with the growth model from Lab 7. It allows chicks to differ in weight and steepness at day 10 and in curvature. We keep those random effects in all three models and vary how diet enters the mean trajectory.
+We start with the final model from Lab 7. Its random intercept and random linear slope allow chicks to differ in weight and growth rate at day 10. We keep those random effects in all three models. In the interaction model, the fixed effects let curvature differ between diets, and chicks on the same diet share that curvature.
 
 | Model | What does it allow? |
 |---|---|
 | Growth alone | All four diets share one quadratic mean trajectory. |
 | Add diet | Each diet can shift the mean curve up or down by a constant amount. |
 | Add diet and its interactions with age | Each diet has its own intercept, linear slope, and curvature. |
+
+The models use the same weighings and different **fixed effects**, so we fit all three by **maximum likelihood** (`REML = FALSE`). As in Lab 7, we measure age in weeks from day 10. Diet 1 is the reference. Adding `Diet` allows the other three diets to differ from Diet 1 at day 10. The two interaction terms allow those differences to change with age.
+
+```{r}
+#| label: fit-diets
+#| output: true
+chicks$week_c <- (chicks$Time - 10) / 7
+model_growth_ml <- lmer(weight ~ week_c + I(week_c^2) +
+                          (1 + week_c | Chick),
+                        data = chicks, REML = FALSE)
+model_diet_ml <- update(model_growth_ml, . ~ . + Diet)
+model_interaction_ml <- update(model_diet_ml,
+                               . ~ . + Diet:week_c + Diet:I(week_c^2))
+```
 
 ::: {.callout-important icon=false title="Question 2"}
 Which two models would you compare to test for **any association with diet**? If you find evidence of an association, which comparison tells you whether the weight differences change with age?
@@ -96,21 +106,9 @@ First compare growth alone with the model containing diet and both age interacti
 
 # Test the overall association with diet
 
-The models use the same weighings and different **fixed effects**, so we fit all three by **maximum likelihood** (`REML = FALSE`). As in Lab 7, we measure age in weeks from day 10. Diet 1 is the reference. Adding `Diet` allows the other three diets to differ from Diet 1 at day 10. The two interaction terms allow those differences to change with age.
+When we pass two nested models fitted with `lmer()` to `anova()`, R performs a **likelihood-ratio test (LRT)**. Here the models are nested because setting the nine diet coefficients in `model_interaction_ml` to zero gives `model_growth_ml`.
 
-```{r}
-#| label: fit-diets
-#| output: true
-chicks$week_c <- (chicks$Time - 10) / 7
-model_growth_ml <- lmer(weight ~ week_c + I(week_c^2) +
-                          (1 + week_c | Chick) + (0 + I(week_c^2) | Chick),
-                        data = chicks, REML = FALSE)
-model_diet_ml <- update(model_growth_ml, . ~ . + Diet)
-model_interaction_ml <- update(model_diet_ml,
-                               . ~ . + Diet:week_c + Diet:I(week_c^2))
-```
-
-If all four diets share one mean trajectory, the nine added diet coefficients are zero in the population. A **likelihood-ratio test** asks whether allowing those coefficients to differ from zero improves the fit enough to provide evidence of an association.
+Pass the two fitted models to `anova()`, writing the simpler model first. The test asks whether allowing each diet to have its own mean growth curve improves the fit more than we would expect if all four diets shared one curve.
 
 ```{r}
 #| label: overall-diet-test
@@ -118,19 +116,19 @@ If all four diets share one mean trajectory, the nine added diet coefficients ar
 anova(model_growth_ml, model_interaction_ml)
 ```
 
-In the second row, `Chisq` is twice the gain in log likelihood, `Df` counts the extra coefficients, and `Pr(>Chisq)` gives the p-value.
+Read the second row. `Chisq` is twice the gain in log likelihood, `Df` counts the added coefficients, and `Pr(>Chisq)` gives the p-value for testing those coefficients together.
 
 ::: {.callout-important icon=false title="Question 3"}
-What evidence does the likelihood-ratio test give for an association between diet and mean weight? Which test statistic, degrees of freedom, and p-value support your conclusion? What possibilities for the shape of the diet differences are still open?
+What evidence does the test give for an association between diet and mean weight?
 :::
 
 ::: {.callout-tip icon=false title="Model answer 3"}
-The likelihood-ratio statistic is 35.54 on 9 degrees of freedom ($p<0.001$). There is evidence that mean weight differs between diets somewhere along the trajectory. A constant difference and an age-dependent difference are both compatible with this conclusion.
+There is strong evidence that the diets differ in mean weight at one or more ages (likelihood-ratio statistic 85.92, 9 degrees of freedom, $p<0.001$).
 :::
 
 # Test whether diet differences change with age
 
-If there is little evidence of an overall association, the common mean trajectory answers our first question and we can stop there. If there is evidence of an association, the next comparison concerns its shape. Both models below allow the diets to differ in mean weight on day 10. In the additive model, each diet difference stays constant as the chicks grow.
+If there is little evidence of an overall association, we can stop with the common mean trajectory. If there is evidence of an association, we use the same test with a different starting model. This time the simpler model, `model_diet_ml`, already allows a constant weight difference between diets. Testing the added diet-by-age interactions together tells us whether those differences change as the chicks grow.
 
 ```{r}
 #| label: age-diet-test
@@ -139,11 +137,11 @@ anova(model_diet_ml, model_interaction_ml)
 ```
 
 ::: {.callout-important icon=false title="Question 4"}
-How many coefficients describe the interactions between diet and age? What do the test statistic and p-value tell you about whether the differences between diets change with age?
+What evidence does the test give that differences in mean weight between diets change with age?
 :::
 
 ::: {.callout-tip icon=false title="Model answer 4"}
-There are three diet comparisons for the linear age term and three for the quadratic age term. The likelihood-ratio statistic is 25.87 on 6 degrees of freedom ($p=0.00024$). The evidence favors age-dependent diet differences. We retain the interaction model with both lower-order age terms and the diet main effect.
+There is strong evidence that differences in mean weight between diets change with age (likelihood-ratio statistic 72.12, 6 degrees of freedom, $p<0.001$). We therefore use the interaction model to estimate mean weights at selected ages.
 :::
 
 # Estimate mean weights at selected ages
@@ -161,63 +159,48 @@ weight_means <- emmeans(model_diet, ~ Diet | week_c,
 weight_means
 ```
 
-The four rows for `week_c = 0` give the estimated mean weights and 95% confidence intervals on day 10. To see how the diet differences develop between weighings, we can follow each group’s fitted mean from hatching to day 21.
+The four rows for `week_c = 0` give the estimated mean weights and 95% confidence intervals on day 10. To plot the table, use the `emmean` column for weight and convert `week_c` back to days with `10 + 7 * week_c`.
 
 ```{r}
 #| label: fitted-diet-means
 #| output: true
-grid <- expand.grid(Time = 0:21, Diet = levels(chicks$Diet))
-grid$week_c <- (grid$Time - 10) / 7
-grid$weight <- predict(model_diet, newdata = grid, re.form = NA)
-points <- as.data.frame(weight_means)
-points$Time <- 10 + 7 * points$week_c
+diet_means_plot <- as.data.frame(weight_means)
+diet_means_plot$Time <- 10 + 7 * diet_means_plot$week_c
 
-ggplot(grid, aes(Time, weight, color = Diet)) +
+ggplot(diet_means_plot, aes(Time, emmean, color = Diet)) +
   geom_line(aes(linetype = Diet), linewidth = 1) +
-  geom_point(data = points, aes(y = emmean), size = 2.5) +
+  geom_point(size = 2.5) +
   scale_x_continuous(breaks = days) +
   labs(x = "Age (days)", y = "Estimated mean weight (g)") +
   theme_minimal(base_size = 13)
 ```
 
-Each colored point corresponds to one estimated marginal mean in the table. The curve in the same color gives the fitted mean weight for that diet across ages.
+Each point shows one estimated mean from the table. The straight lines connect the three selected ages for each diet.
 
 ::: {.callout-important icon=false title="Question 5"}
-Which diet has the highest estimated mean weight on day 10, and which has the highest on day 21? How do the fitted curves help explain the change in their ordering?
+How does the ordering of Diets 3 and 4 by estimated mean weight change from day 10 to day 21?
 :::
 
 ::: {.callout-tip icon=false title="Model answer 5"}
-The fitted means are close together at hatching (about 36–39 g). At day 10, Diet 4 has the highest estimated mean (125 g), followed by Diet 3 (119 g). By day 21, Diet 3 has the highest estimated mean (276 g), followed by Diet 4 (234 g), Diet 2 (217 g), and Diet 1 (167 g).
+On day 10, Diet 4 has the higher estimated mean weight (124 g on Diet 4 and 119 g on Diet 3). By day 21, Diet 3 has the higher mean (276 g on Diet 3 and 236 g on Diet 4).
 :::
 
-# Interpret an age-specific diet difference
+# Compare diets at day 21
 
-The vertical gap between two curves has a simple interpretation in grams. For example, at day 10 (`week_c = 0`), the estimated mean weights are about 119 g on Diet 3 and 93 g on Diet 1. Subtracting gives about 26 g. A positive difference means that chicks on Diet 3 are heavier on average at that age.
-
-In Lab 6, `pairs()` compared two estimated marginal means. Here we have four means at each age and want one particular comparison. The `contrast()` function in **emmeans** lets us specify that comparison by giving each mean a weight. The weights follow the order of the diets in `weight_means`.
-
-| | Diet 1 | Diet 2 | Diet 3 | Diet 4 |
-|---|---:|---:|---:|---:|
-| Weight for Diet 3 minus Diet 1 | −1 | 0 | +1 | 0 |
-
-The +1 includes the Diet 3 mean, the −1 subtracts the Diet 1 mean, and the zeros leave Diets 2 and 4 out of this difference. In the code, `weight_means` supplies the estimated means and `method` supplies the weights. The name `"Diet 3 - Diet 1"` labels the result. Because we obtained the means with `~ Diet | week_c`, R applies the same subtraction separately at each age.
+Use `pairs()` to compare the estimated mean weights you just plotted. With four diets there are six pairs at each age. The Bonferroni correction adjusts the p-values for those six comparisons separately at each age.
 
 ```{r}
-#| label: diet-contrasts
+#| label: pairwise-diets
 #| output: true
-diet_difference <- contrast(
-  weight_means,
-  method = list("Diet 3 - Diet 1" = c(-1, 0, 1, 0))
-)
-confint(diet_difference)
+pairs(weight_means, adjust = "bonferroni")
 ```
 
-For each age, `estimate` gives the difference in grams. The day 10 estimate uses the full precision of the two means we rounded above. The `lower.CL` and `upper.CL` columns give the 95% confidence interval for the difference, accounting for the uncertainty in both means and their covariance.
+Day 21 is 11 days after the reference age, so read the block labeled `week_c = 1.57` (11/7 weeks). In each row, `estimate` is the first diet’s estimated mean weight minus the second’s, in grams. Compare the adjusted `p.value` with 0.05.
 
 ::: {.callout-important icon=false title="Question 6"}
-How does the estimated difference in mean weight between Diet 3 and Diet 1 change from hatching to day 21? At day 21, how much heavier are chicks on Diet 3 on average? Give the estimated difference in grams and its 95% confidence interval.
+At day 21, which pairs of diets differ significantly in estimated mean weight after the Bonferroni correction?
 :::
 
 ::: {.callout-tip icon=false title="Model answer 6"}
-The estimated gap grows from 1.2 g at hatching to 25.9 g on day 10. At day 21, we estimate that chicks on Diet 3 are 109.1 g heavier on average than chicks on Diet 1 (95% CI 62.5 to 155.7 g).
+Two pairs have adjusted p-values below 0.05. At day 21, chicks on Diet 3 were an estimated 104.9 g heavier on average than chicks on Diet 1 (adjusted $p = 0.0002$). Chicks on Diet 4 were an estimated 65.4 g heavier on average than chicks on Diet 1 (adjusted $p = 0.0394$).
 :::

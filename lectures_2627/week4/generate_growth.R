@@ -26,7 +26,7 @@ comparison$model <- c("full", "slope", "intercept")
 # Compare nested mean structures on the same visits using maximum likelihood.
 age_ml <- update(quad_slope, REML = FALSE)
 weight_ml <- update(age_ml, . ~ . + w)
-interaction_ml <- update(weight_ml, . ~ . + t:w)
+interaction_ml <- update(weight_ml, . ~ . + t:w + I(t^2):w)
 weight_final <- update(interaction_ml, REML = TRUE)
 likelihood_test <- function(reduced, full) {
   test <- anova(reduced, full, refit = FALSE)
@@ -158,11 +158,11 @@ eda <- ggplot(growth, aes(age, height, colour = tertile)) +
 save_plot("birth_weight_tertiles", eda, 9.4, 3.6)
 
 # Illustrate the null hypotheses and the alternative with the same underlying mean.
-shapes <- c("Age only", "Add birth weight", "Add age × birth weight")
+shapes <- c("Age only", "Add birth weight", "Add both age interactions")
 sketch <- expand.grid(age = 8:48, model = factor(shapes, levels = shapes))
 sketch$mean <- predict(quad_slope, data.frame(t = sketch$age - 26), re.form = NA)
 sketch$gap <- with(sketch, ifelse(model == shapes[1], 0,
-                          ifelse(model == shapes[2], 3, 3 - .1 * (age - 26))))
+                          ifelse(model == shapes[2], 3, 1.5 + .005 * (age - 42)^2)))
 sketch_plot <- ggplot(sketch, aes(age)) +
   geom_line(aes(y = mean + gap / 2), colour = birth_colours[3], linewidth = 1.4) +
   geom_line(aes(y = mean - gap / 2), colour = birth_colours[1], linewidth = 1.1, linetype = "dashed") +
@@ -212,11 +212,23 @@ visit_linear <- lmer(alcuse ~ t + (1 | id), data = alcohol)
 visit_factor <- lmer(alcuse ~ visit + (1 | id), data = alcohol)
 visit_quad <- lmer(alcuse ~ t + I(t^2) + (1 | id), data = alcohol)
 visits3 <- aggregate(alcuse ~ age, alcohol, mean)
+observed_scores <- ggplot(alcohol, aes(age, alcuse)) +
+  geom_line(aes(group = id, colour = "Individual adolescent"), alpha = .20, linewidth = .48) +
+  geom_line(data = visits3, aes(colour = "Visit mean"), linewidth = 1.6) +
+  geom_point(data = visits3, shape = 21, fill = "#B14721", colour = "white", stroke = .7, size = 3.5) +
+  scale_colour_manual(values = c("Individual adolescent" = "#417472", "Visit mean" = "#B14721"),
+                      breaks = c("Individual adolescent", "Visit mean")) +
+  guides(colour = guide_legend(override.aes = list(alpha = c(.55, 1), linewidth = c(.6, 1.6)))) +
+  scale_x_continuous(NULL, breaks = 14:16, labels = paste("Age", 14:16)) +
+  labs(y = "Alcohol-use score") +
+  theme(panel.grid.major.x = element_blank())
+save_plot("alcohol_observed_trajectories", observed_scores, 12, 5.75)
 visits3$t <- visits3$age - 14
 visits3$visit <- factor(visits3$age, levels = levels(alcohol$visit))
 visits3$linear <- predict(visit_linear, visits3, re.form = NA)
 visits3$factor_mean <- predict(visit_factor, visits3, re.form = NA)
-stopifnot(max(abs(predict(visit_quad, visits3, re.form = NA) - visits3$factor_mean)) < 1e-6)
+visits3$quadratic <- predict(visit_quad, visits3, re.form = NA)
+stopifnot(max(abs(visits3$quadratic - visits3$factor_mean)) < 1e-6)
 age_grid <- data.frame(age = seq(14, 16, length.out = 101))
 age_grid$t <- age_grid$age - 14
 age_grid$score <- predict(visit_quad, age_grid, re.form = NA)
@@ -238,7 +250,7 @@ spread_plot <- ggplot(spreads, aes(age, 0)) +
   labs(x = "Age (years)", y = "Residual")
 save_plot("visit_residual_spread", spread_plot, 5.5, 2.55)
 
-# Compare the two boys using the common curvature from slide 19 in both fits.
+# Compare the two boys using the common curvature from the random linear slope model in both fits.
 # Subtracting the population curve makes the smaller shifts in fitted lines visible.
 boy_grid$pooled <- predict(quad_slope, boy_grid) - predict(quad_slope, boy_grid, re.form = NA)
 two_boys$deviation <- two_boys$height - predict(quad_slope, two_boys, re.form = NA)
@@ -267,7 +279,7 @@ save_plot("growth_partial_pooling", pool_plot, 10.2, 3.8)
 ages <- c(12, 20, 36, 44)
 heights <- predict(quad_ri, newdata = data.frame(t = ages - 26), re.form = NA)
 results <- list(alcohol_n = nlevels(alcohol$id),
-  alcohol_visits = visits3[c("age", "linear", "factor_mean")], children = nlevels(growth$id), age_range = range(growth$age),
+  alcohol_visits = visits3[c("age", "linear", "quadratic", "factor_mean")], children = nlevels(growth$id), age_range = range(growth$age),
   ri_fixed = fixed_results(ri), ri_variance = ri_variance,
   comparison = comparison[c("model", "df", "AIC")],
   full_sd = unname(attr(full_cov, "stddev") / c(1, 10, 100)),

@@ -4,6 +4,8 @@ project:
   render:
     - index.qmd
     - BLR_lab_*.qmd
+    - "!BLR_lab_chick_growth_answers.qmd"
+    - "!BLR_lab_chick_diet_answers.qmd"
     - assignments/**/assignment.qmd
     - "!assignments/**/downloads/**"
   resources:
@@ -61,10 +63,6 @@ website:
             href: BLR_lab_airbnb_answers.qmd
           - text: "Week 3 · Lab 6: Guest capacity and neighborhood walkability"
             href: BLR_lab_airbnb_slopes_answers.qmd
-          - text: "Week 4 · Lab 7: Growth trajectories in young chicks"
-            href: BLR_lab_chick_growth_answers.qmd
-          - text: "Week 4 · Lab 8: Diet and chick growth"
-            href: BLR_lab_chick_diet_answers.qmd
   search: true
 
 format:

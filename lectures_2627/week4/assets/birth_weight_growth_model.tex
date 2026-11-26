@@ -1,0 +1,15 @@
+\documentclass[border=2pt]{standalone}
+\usepackage{amsmath}
+\begin{document}
+\(\displaystyle
+\begin{gathered}
+  \mathrm{Height}_{ij}
+    = \beta_0 + \beta_1 t_{ij} + \beta_2 t_{ij}^2
+    + w_i(\beta_3 + \beta_4 t_{ij} + \beta_5 t_{ij}^2)
+    + b_{0i} + b_{1i}t_{ij} + \varepsilon_{ij} \\[4pt]
+  (b_{0i},b_{1i})^\mathsf{T} \overset{\mathrm{iid}}{\sim} N_2(\mathbf{0},D)
+  \qquad
+  \varepsilon_{ij} \overset{\mathrm{iid}}{\sim} N(0,\sigma^2)
+\end{gathered}
+\)
+\end{document}
