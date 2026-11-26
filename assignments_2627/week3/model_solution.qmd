@@ -1,0 +1,172 @@
+---
+title: "Exam performance in Inner London schools"
+subtitle: "Week 3 assignment · Instructor model solution"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    embed-resources: true
+    code-fold: show
+execute:
+  echo: true
+  message: false
+---
+
+# Introduction
+
+The 1987 Inner London data contain one examination score per pupil, with pupils grouped in schools. We examine how much average performance differs across schools, how scores differ between pupils one verbal reasoning band apart within a school, and whether that association varies with school free-meal eligibility. All estimates are on the original exam-score scale.
+
+# Exploratory data analysis
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(lmerTest)
+library(emmeans)
+
+pupils <- read.csv("../../labs_2627/assignments/week3/downloads/ilea_1987.csv")
+pupils$School <- factor(pupils$School)
+pupils$fsm10 <- (pupils$PercentFSM - 45) / 10
+
+table(pupils$VRBand, useNA = "ifany")
+pupils |>
+  group_by(VRBand) |>
+  summarise(pupils = n(), mean_score = mean(ExamScore), sd_score = sd(ExamScore))
+```
+
+The dataset includes 5,921 pupils in 114 schools, with 16 to 135 pupils per school. All 114 schools contribute observations in each band. Free-meal eligibility ranges from 11% to 91% across schools, with a median of 44.5%. Centring at 45% makes the middle of this distribution a convenient reference. A one-unit increase in `fsm10` represents ten percentage points higher eligibility.
+
+```{r}
+#| fig-width: 8.5
+#| fig-height: 4.8
+#| fig-cap: "Observed pupil scores and separate fitted lines in the six largest schools. Horizontal jitter separates pupils with the same band."
+largest <- count(pupils, School, sort = TRUE) |> slice_head(n = 6)
+shown <- filter(pupils, School %in% largest$School)
+ggplot(shown, aes(VRBand, ExamScore)) +
+  geom_point(position = position_jitter(width = 0.12, height = 0, seed = 6),
+             alpha = 0.35, colour = "#173F48") +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, colour = "#C57722") +
+  facet_wrap(~ School, ncol = 3, labeller = label_both) +
+  scale_x_continuous(breaks = -1:1, labels = c("Lower", "Middle", "Higher")) +
+  labs(x = "Verbal reasoning band", y = "Exam score (points)") +
+  theme_minimal()
+```
+
+The pooled means rise from 11.2 to 20.2 to 31.1 points. Within each of the six displayed schools the fitted line also rises, with a visibly steeper increase in School 10 than in School 30. The spread of individual scores at a given band makes the school-specific lines uncertain. A random-slope model uses all schools to estimate the variation in slopes.
+
+# Model fitting and results
+
+## How much variation lies between schools?
+
+```{r}
+null <- lmer(ExamScore ~ 1 + (1 | School), data = pupils)
+components <- as.data.frame(VarCorr(null))
+components[c("grp", "vcov", "sdcor")]
+icc <- components$vcov[1] / sum(components$vcov)
+icc
+```
+
+The estimated between-school variance is 23.38 points² and the within-school variance is 147.80 points². The ICC is 23.38 / (23.38 + 147.80) = **13.7%**. The between-school standard deviation of 4.84 points describes the size of differences in school means on the exam-score scale. These are unadjusted differences, so they include differences in the pupils attending each school.
+
+```{r}
+#| fig-width: 7
+#| fig-height: 3.6
+#| fig-cap: "Conditional residuals from the random-intercept model. The line marks the residual for a score of 1."
+plot(fitted(null), resid(null), pch = 16, cex = 0.45,
+     col = adjustcolor("#173F48", 0.25), xlab = "Fitted school mean (points)",
+     ylab = "Conditional residual (points)")
+abline(h = 0, lty = 2)
+abline(a = 1, b = -1, col = "#C57722")
+```
+
+The line shows the score floor of 1 used in this assignment. A pupil scoring 1 has a residual of −14 at a fitted school mean of 15 and −29 at a fitted school mean of 30. There is more room for large negative residuals at higher fitted means. We retain the original scale as specified.
+
+## How much does the one-band increase vary across schools?
+
+The six-school plot suggests that the increase in exam score per band differs across schools. We let each school have its own intercept and band slope, and include free-meal eligibility to account for differences in mean score across schools.
+
+```{r}
+slopes <- lmer(ExamScore ~ VRBand + fsm10 + (1 + VRBand | School), data = pupils)
+coef(summary(slopes))["VRBand", c("Estimate", "Std. Error")]
+VarCorr(slopes)
+```
+
+Within a school, pupils one band higher score **9.77 points higher on average** (SE 0.30, 95% CI 9.18 to 10.36). The SE describes uncertainty about this average. The **random-slope SD of 2.25 points per band** describes how much individual school slopes typically differ from it.
+
+Under the model’s Normal distribution of school slopes, about 68% lie within one SD of the average, from **7.5 to 12.0 points per band**. An increase of around 12 points in one school and around 7.5 in another is a meaningful difference on this scale. A random slope lets the model represent that variation.
+
+## Does the one-band increase vary with school eligibility?
+
+```{r}
+interaction_fit <- lmer(ExamScore ~ VRBand * fsm10 + (1 + VRBand | School),
+                        data = pupils)
+fixed <- coef(summary(interaction_fit))
+margin <- qt(0.975, fixed[, "df"]) * fixed[, "Std. Error"]
+knitr::kable(cbind(fixed, lower = fixed[, "Estimate"] - margin,
+                   upper = fixed[, "Estimate"] + margin), digits = c(2, 2, 1, 2, 4, 2, 2))
+as.data.frame(VarCorr(interaction_fit))
+```
+
+At 45% eligibility the expected score for a middle-band pupil is 20.67 points and the one-band increase averages 9.76 points. For middle-band pupils, ten percentage points higher eligibility is associated with a 1.18-point lower expected score. For the third research question, **each ten-percentage-point increase in school eligibility corresponds to a 0.65-point smaller one-band increase** (signed estimate −0.65, 95% CI −1.04 to −0.26, Satterthwaite *p* = 0.0013). Eligibility is measured at the school level.
+
+To put the interaction in exam-score points, we estimate mean scores for the lower (−1), middle (0) and higher (+1) bands at 35% and 55% school eligibility. At each eligibility level, we then compare adjacent bands.
+
+```{r}
+band_means <- emmeans(
+  interaction_fit, ~ VRBand | fsm10,
+  at = list(VRBand = c(-1, 0, 1), fsm10 = (c(35, 55) - 45) / 10),
+  lmer.df = "satterthwaite", lmerTest.limit = nrow(pupils)
+)
+print(band_means, digits = 4)
+adjacent <- contrast(band_means, method = "consec")
+confint(adjacent, adjust = "none")
+```
+
+At 35% eligibility, the fitted mean rises by 10.41 points from lower to middle and by another 10.41 points from middle to higher. At 55% eligibility, each step is 9.10 points. The two steps are equal within each eligibility level because the model uses a linear band trend. The interaction allows that trend to change with eligibility.
+
+The school-slope variance decreases from 5.08 to 4.58 (about 10%), leaving an SD of 2.14 points per band among schools at the same eligibility. The estimated intercept–slope correlation is 0.79. At a given eligibility level, schools with higher fitted middle-band scores tend to have steeper slopes.
+
+## How well does the final model fit?
+
+```{r}
+#| fig-width: 9
+#| fig-height: 3.8
+#| fig-cap: "Conditional residuals against fitted pupil scores and a Normal Q–Q plot for the interaction model."
+par(mfrow = c(1, 2), mar = c(4, 4, 1.8, 0.8))
+errors <- resid(interaction_fit)
+plot(fitted(interaction_fit), errors, pch = 16, cex = 0.45,
+     col = adjustcolor("#173F48", 0.25), xlab = "Fitted exam score (points)",
+     ylab = "Conditional residual (points)")
+abline(h = 0, lty = 2)
+qqnorm(errors, pch = 16, cex = 0.45, main = "Normal Q–Q plot")
+qqline(errors, col = "#C57722")
+```
+
+The spread is smaller at low fitted scores. The Q–Q plot is approximately straight in the middle, with deviations in the tails, particularly the upper tail. The common residual variance is an approximation. The lower end of the score scale constrains the residuals, especially for pupils with low fitted scores.
+
+# Conclusion
+
+About 14% of the variation in exam scores lies between schools. Within a school, pupils one reasoning band higher score about 9.8 points higher on average, with a school-to-school slope SD of 2.3 points per band. The association is weaker in schools with higher free-meal eligibility. A twenty-percentage-point difference in eligibility corresponds to about 1.3 points less per band, and appreciable slope variation remains among schools with similar eligibility.
+
+---
+
+# Appendix · Instructor checks
+
+These checks assess the dataset and teaching assumptions. The four report sections above answer the assignment.
+
+**CSV and model fits.** A row-by-row comparison with the original 1987 archive confirmed the school, score, eligibility, band, gender and denomination fields after applying the preparation script's recodings. The archive lists VR3, VR2 and VR1 as source codes 1, 3 and 2. The preparation script excludes the 12 pupils with an unrecorded band before recoding the three recorded bands. [Original records and codebook](https://www.bristol.ac.uk/cmm/media/migrated/ilea567.zip).
+
+```{r}
+stopifnot(nrow(pupils) == 5921, nlevels(pupils$School) == 114,
+          is.numeric(pupils$VRBand), !anyNA(pupils$VRBand),
+          all(table(pupils$School, pupils$VRBand) > 0),
+          nrow(distinct(pupils, School, PercentFSM)) == 114)
+fits <- list(null = null, slopes = slopes, interaction = interaction_fit)
+data.frame(pupils = sapply(fits, nobs), singular = sapply(fits, isSingular),
+           optimizer_code = sapply(fits, function(m) m@optinfo$conv$opt),
+           fit_messages = sapply(fits, function(m) length(m@optinfo$conv$lme4$messages)))
+```
+
+All three models use the same 5,921 pupils and converged with nonsingular random-effects estimates.
+
+**Teaching assumptions.** The pooled means increase by 8.9 points from lower to middle and 11.0 points from middle to higher. Students may use one linear trend per school as specified in the assignment. The final residual plot also gives students a pattern to discuss while retaining exam scores on their original scale.

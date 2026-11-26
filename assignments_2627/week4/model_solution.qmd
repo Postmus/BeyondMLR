@@ -1,0 +1,177 @@
+---
+title: "Weight gain in early childhood"
+subtitle: "Week 4 assignment · Instructor model solution"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    embed-resources: true
+    code-fold: show
+execute:
+  echo: true
+  message: false
+---
+
+# Introduction
+
+The clinic recorded 1,572 weights from 568 children. We use age at weighing to describe the average growth curve and examine how the mean weight difference between boys and girls changes with age. Each child contributes one to five observations, so we keep measurements from the same child together in the analysis.
+
+# Exploratory data analysis
+
+```{r}
+library(ggplot2)
+library(lmerTest)
+library(emmeans)
+
+children <- read.csv("../../labs_2627/assignments/week4/downloads/asian_data.csv")
+children$ChildID <- factor(children$ChildID)
+children$Gender <- factor(children$Gender, levels = c("Boy", "Girl"))
+
+table(table(children$ChildID))
+table(round(children$Age))
+```
+
+Most children contributed two to four visits. Visits cluster around 2, 8–9, 12–13 and 27–28 months. We use 2, 8, 12 and 28 months when reporting fitted weights. Between about 18 and 26 months there are relatively few observations to tell us exactly how the curve bends.
+
+```{r}
+#| fig-width: 8
+#| fig-height: 4.2
+#| fig-cap: "Observed weights by age. Grey lines join visits for the same child. The orange line smooths the observed weights within each group."
+ggplot(children, aes(Age, Weight)) +
+  geom_line(aes(group = ChildID), colour = "grey50", alpha = 0.15) +
+  geom_point(colour = "grey50", alpha = 0.18, size = 0.7) +
+  geom_smooth(method = "loess", formula = y ~ x, se = FALSE, colour = "#B45D13") +
+  facet_wrap(~ Gender) +
+  labs(x = "Age (months)", y = "Weight (g)") +
+  theme_minimal()
+```
+
+Both groups gain weight quickly in infancy. The increase between the later visits is smaller per month. Children measured at similar ages also differ appreciably in weight. We first describe growth across all children, then examine how the two group curves differ.
+
+# Model fitting and results
+
+## 1. How does average weight change with age?
+
+We centre age at 12 months. As in Lab 7, we rescale time to keep its higher powers small during fitting. Here one unit of `age_6m` represents six months. Dividing a slope on this scale by six expresses it in grams per month.
+
+```{r}
+children$age_6m <- (children$Age - 12) / 6
+model_linear <- lmer(Weight ~ age_6m + (1 | ChildID), data = children)
+summary(model_linear)
+```
+
+A straight line assigns the same mean gain to every month. To see where this approximation works, we plot the conditional residuals against age. A positive residual means a child weighed more at that visit than the model predicted for that child.
+
+```{r}
+#| fig-height: 3.5
+children$residual_linear <- resid(model_linear)
+ggplot(children, aes(Age, residual_linear)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "loess", formula = y ~ x, se = FALSE, colour = "#B45D13") +
+  labs(x = "Age (months)", y = "Conditional residual (g)") +
+  theme_minimal()
+```
+
+The model overestimates weight at the youngest visits, underestimates it around 8–13 months, and overestimates it again at the last visits. We add a quadratic term so that the rate of gain can change with age.
+
+```{r}
+model_quadratic <- update(model_linear, . ~ . + I(age_6m^2))
+summary(model_quadratic)
+```
+
+The negative quadratic coefficient captures the slowing of growth. The quadratic model still underestimates weights around eight months and overestimates them around 13–18 months. A cubic term allows the rate of slowing itself to change. The two panels below show what this additional term contributes, keeping the random intercept in both models.
+
+```{r}
+model_cubic <- update(model_quadratic, . ~ . + I(age_6m^3))
+summary(model_cubic)
+```
+
+```{r}
+#| fig-width: 8
+#| fig-height: 3.6
+residual_models <- data.frame(
+  age = rep(children$Age, 2),
+  residual = c(resid(model_quadratic), resid(model_cubic)),
+  model = factor(rep(c("Quadratic", "Cubic"), each = nrow(children)),
+                 levels = c("Quadratic", "Cubic"))
+)
+ggplot(residual_models, aes(age, residual)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "loess", formula = y ~ x, se = FALSE, colour = "#B45D13") +
+  facet_wrap(~ model) +
+  labs(x = "Age (months)", y = "Conditional residual (g)") +
+  theme_minimal()
+```
+
+The systematic departures are smaller with the cubic curve. We retain this mean trajectory.
+
+### Comparing a common slope with a child-specific slope
+
+The random-intercept model allows children to differ in weight but gives them the same growth rate at each age. We compare it with a model that also allows the slope at 12 months to vary across children.
+
+```{r}
+model_random_slope <- lmer(Weight ~ age_6m + I(age_6m^2) + I(age_6m^3) +
+                             (1 + age_6m | ChildID), data = children)
+summary(model_random_slope)
+AIC(model_cubic, model_random_slope)
+```
+
+Both fits use REML, the same observations and the same fixed effects. Allowing a child-specific slope lowers AIC from 26,228 to 25,900, so we retain it. At 12 months, the estimated mean growth rate is **279 g/month** and the between-child standard deviation is **46 g/month**. These values come from dividing the linear age coefficient and the random-slope standard deviation in the summary by six.
+
+### Estimated mean weights
+
+We use the selected model to estimate mean weight at the four ages.
+
+```{r}
+ages <- c(2, 8, 12, 28)
+ages_model <- (ages - 12) / 6
+weight_means <- emmeans(model_random_slope, ~ age_6m, at = list(age_6m = ages_model),
+                        lmer.df = "satterthwaite")
+weight_table <- as.data.frame(weight_means)
+weight_table$Age <- 12 + 6 * weight_table$age_6m
+knitr::kable(weight_table[c("Age", "emmean", "lower.CL", "upper.CL")],
+             col.names = c("Months", "Mean (g)", "Lower 95% CI", "Upper 95% CI"),
+             digits = 0)
+```
+
+Mean weight rises from 4,776 g at 2 months to 8,388 g at 8 months, 9,798 g at 12 months and 12,978 g at 28 months. That is about 602 g/month on average between 2 and 8 months, compared with about 199 g/month between 12 and 28 months.
+
+## 2. How does the difference in mean weight between boys and girls change with age?
+
+We compare three models using maximum likelihood. The first gives both groups the same curve. The second allows a constant weight difference. The third lets the size of the difference change with age through interactions with all three age terms. Each model retains the same child-specific intercept and linear slope.
+
+```{r}
+model_growth_ml <- update(model_random_slope, REML = FALSE)
+model_gender_ml <- update(model_growth_ml, . ~ . + Gender)
+model_interaction_ml <- lmer(
+  Weight ~ (age_6m + I(age_6m^2) + I(age_6m^3)) * Gender +
+    (1 + age_6m | ChildID), data = children, REML = FALSE
+)
+anova(model_growth_ml, model_interaction_ml)
+anova(model_gender_ml, model_interaction_ml)
+```
+
+The first likelihood-ratio test gives evidence of an overall association between gender and weight trajectory (χ² = 75.36, 4 df, p < 0.001). The second answers the research question directly. Allowing the difference to change with age improves fit over a constant difference (χ² = 25.88, 3 df, p < 0.001). We retain the three interactions together and refit with REML for estimation.
+
+```{r}
+model_interaction <- update(model_interaction_ml, REML = TRUE)
+summary(model_interaction)
+```
+
+```{r}
+gender_means <- emmeans(model_interaction, ~ Gender | age_6m,
+                        at = list(age_6m = ages_model), lmer.df = "satterthwaite")
+gender_gaps <- as.data.frame(confint(pairs(gender_means)))
+gender_gaps$Age <- 12 + 6 * gender_gaps$age_6m
+knitr::kable(gender_gaps[c("Age", "estimate", "lower.CL", "upper.CL")],
+             col.names = c("Months", "Boys minus girls (g)", "Lower 95% CI", "Upper 95% CI"),
+             digits = 0)
+```
+
+The estimated gap grows from 309 g at 2 months to 604 g at 8 months and 708 g at 12 months. By 28 months the estimate is smaller, 393 g, and less precise (95% CI 80 to 707 g). Each interval describes the group difference at that particular age. The joint test above provides the evidence that the gap varies over time.
+
+# Conclusion
+
+Mean weight increased from about 4.8 kg at 2 months to 13.0 kg at 28 months, with faster gains early in infancy. Boys were heavier on average at each of the four selected ages. The estimated difference was largest at 12 months among the ages compared.
