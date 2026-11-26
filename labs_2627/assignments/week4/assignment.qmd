@@ -1,0 +1,50 @@
+---
+title: "Week 4 assignment: Weight gain in early childhood"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+# Study description
+
+In a study of growth in early childhood, 568 Asian children were weighed during clinic visits. The children attended at different ages, and each child contributed between one and five measurements. The 1,572 recorded weights give us a way to study how average weight changes with age and how growth trajectories compare between boys and girls.
+
+As in Week 3, use the research questions to decide how to explore the data, which models to fit, and which results to report. Explain how the observed trajectories and your model checks informed your choices.
+
+# Research questions
+
+1. How does average weight change with age over the study period?
+2. How does the difference in mean weight between boys and girls change with age?
+
+# Dataset
+
+Each row in `asian_data.csv` represents one weighing at a clinic visit. The data come from the University of Bristol’s Centre for Multilevel Modelling.
+
+| Variable | Description |
+| --- | --- |
+| `ChildID` | Child identifier. Measurements with the same identifier belong to the same child. |
+| `Age` | Age at the visit, in months, recorded to a fraction of a month. Observed ages range from about 0.7 to 31.4 months. |
+| `Weight` | Weight at the visit, in grams. |
+| `Gender` | Group recorded in the dataset, coded `Boy` or `Girl`. |
+
+# For this assignment
+
+**Age at measurement.** Use the recorded age as a continuous predictor. Centre age at 12 months so that the intercept represents expected weight at that age.
+
+**Group differences.** To show what your fitted curves mean in practice, estimate the difference in mean weight between boys and girls at 2, 8, 12 and 28 months. Many children were measured close to each of these ages. Report the differences in grams with confidence intervals.
+
+# Report and submission
+
+Write a Quarto report answering both research questions, organized into four sections.
+
+1. **Introduction.** Briefly describe the study and the research questions.
+2. **Exploratory data analysis.** Present the summaries and figures that informed your analysis. Explain what you learned from them.
+3. **Model fitting and results.** Explain which models you fitted and why. Comment on model fit and interpret the estimates that answer the research questions. Include appropriate measures of uncertainty.
+4. **Conclusion.** Bring your findings together in a short paragraph answering both research questions in the context of child growth.
+
+Submit both your completed **Quarto source file (`.qmd`)** and your **rendered HTML report**. Keep your analysis code, results, and figures visible.
+
+# Download
+
+[Download the child-growth dataset (CSV)](downloads/asian_data.csv){download="asian_data.csv"}
